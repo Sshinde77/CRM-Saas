@@ -1,13 +1,9 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
+
 import '../profile/admin_profile_screen.dart';
 import '../settings/admin_settings_screen.dart';
 import '../../widgets/app_drawer.dart';
 
-/// Admin Dashboard — glassmorphism redesign on a white background.
-/// Section order (as requested): Overview stats -> Sales Trend -> Top Products -> Recent Orders.
-/// Same accent colour theme as the reference screens (teal / green / purple / blue / amber / orange / red),
-/// re-styled with frosted glass cards over a white backdrop with soft pastel colour glows.
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
 
@@ -20,10 +16,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   String _query = '';
 
-  // Side drawer nav is now handled by the shared AppDrawer widget
-  // (see lib/widgets/app_drawer.dart).
-
-  // ---- Theme colours (kept from the original app's palette) ----
   static const Color bg = Color(0xFFFFFFFF);
   static const Color teal = Color(0xFF1FA2B0);
   static const Color green = Color(0xFF10B981);
@@ -33,26 +25,25 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   static const Color orange = Color(0xFFFB923C);
   static const Color red = Color(0xFFEF4444);
 
-  // ---- Text colours for a light background ----
   static const Color textPrimary = Color(0xFF1F2A2E);
   static const Color textSecondary = Color(0xFF667077);
 
-  // ---- Mock data — replace with your providers / API calls ----
   final List<_StatItem> _stats = const [
-    _StatItem("Today's Sales", '₹23,242', Icons.currency_rupee, green),
-    _StatItem('Monthly Sales', '₹66,160', Icons.calendar_month, purple),
-    _StatItem('Yearly Sales', '₹66,160', Icons.event, blue),
-    _StatItem('Purchases This Month', '₹1,89,215', Icons.inventory_2, teal),
+    _StatItem("Today's Sales", 'Rs. 23,242', Icons.currency_rupee, green),
+    _StatItem('Monthly Sales', 'Rs. 66,160', Icons.calendar_month, purple),
+    _StatItem('Yearly Sales', 'Rs. 66,160', Icons.event, blue),
+    _StatItem('Purchases This Month', 'Rs. 1,89,215', Icons.inventory_2, teal),
     _StatItem('Low Stock Items', '5', Icons.warning_amber_rounded, amber),
     _StatItem('Pending Orders', '6', Icons.schedule, blue),
     _StatItem('Pending Deliveries', '6', Icons.local_shipping, orange),
-    _StatItem('Outstanding Receivables', '₹42,225', Icons.account_balance_wallet, green),
-    _StatItem('Outstanding Payables', '₹93,820', Icons.credit_card, red),
+    _StatItem('Outstanding Receivables', 'Rs. 42,225', Icons.account_balance_wallet, green),
+    _StatItem('Outstanding Payables', 'Rs. 93,820', Icons.credit_card, red),
   ];
 
   final List<double> _salesTrend = const [
     2, 5, 9, 3, 12, 6, 4, 7, 6, 2, 1, 3, 1, 1, 1, 1, 34,
   ];
+
   final List<String> _trendLabels = const ['1 Jul', '4 Jul', '7 Jul', '10 Jul', '13 Jul', '17 Jul'];
 
   final List<_ProductRevenue> _topProducts = const [
@@ -67,7 +58,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     _OrderItem('SO-2026-1016', 'Silver Oak Apartments', 'Draft'),
     _OrderItem('SO-2026-1015', 'Rajdhani Sweets & Snacks', 'Draft'),
     _OrderItem('SO-2026-1014', 'Prime Legal Associates', 'Draft'),
-    _OrderItem('SO-2026-1013', 'Cloud Nine Café', 'Confirmed'),
+    _OrderItem('SO-2026-1013', 'Cloud Nine Cafe', 'Confirmed'),
     _OrderItem('SO-2026-1011', 'TechNova Solutions Pvt Ltd', 'Confirmed'),
   ];
 
@@ -82,32 +73,28 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final filteredOrders = _query.isEmpty
         ? _orders
         : _orders
-            .where((o) =>
-                o.orderNo.toLowerCase().contains(_query.toLowerCase()) ||
-                o.customer.toLowerCase().contains(_query.toLowerCase()))
+            .where(
+              (o) =>
+                  o.orderNo.toLowerCase().contains(_query.toLowerCase()) ||
+                  o.customer.toLowerCase().contains(_query.toLowerCase()),
+            )
             .toList();
 
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: bg,
       drawer: const AppDrawer(activeItem: 'Dashboard'),
-      body: Stack(
-        children: [
-          // Soft pastel glows behind the glass cards — this is what gives the
-          // frosted panels something visible to blur, even on a plain white page.
-          Positioned(top: -60, left: -70, child: _glowBlob(teal, 220)),
-          Positioned(top: 140, right: -100, child: _glowBlob(purple, 260)),
-          Positioned(bottom: -90, left: 30, child: _glowBlob(orange, 240)),
-          Positioned(top: 420, right: 10, child: _glowBlob(green, 180)),
-
-          SafeArea(
-            child: CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(child: _buildHeader()),
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate([
+      body: SafeArea(
+        child: Container(
+          color: bg,
+          child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(child: _buildHeader()),
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate(
+                    [
                       _buildStatsGrid(),
                       const SizedBox(height: 20),
                       _buildSalesTrend(),
@@ -115,22 +102,21 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       _buildTopProducts(),
                       const SizedBox(height: 20),
                       _buildRecentOrders(filteredOrders),
-                    ]),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 
-  // ---------------- Header ----------------
   Widget _buildHeader() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-      child: _GlassContainer(
+      child: _CardContainer(
         borderRadius: 24,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
@@ -144,11 +130,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Dashboard',
-                      style: TextStyle(color: textPrimary, fontSize: 20, fontWeight: FontWeight.w700)),
+                  const Text(
+                    'Dashboard',
+                    style: TextStyle(color: textPrimary, fontSize: 20, fontWeight: FontWeight.w700),
+                  ),
                   const SizedBox(height: 2),
-                  Text('SAAS Distributors · as of 2026-07-17',
-                      style: TextStyle(color: textSecondary.withOpacity(0.9), fontSize: 12)),
+                  Text(
+                    'SAAS Distributors as of 2026-07-17',
+                    style: TextStyle(color: textSecondary.withOpacity(0.9), fontSize: 12),
+                  ),
                 ],
               ),
             ),
@@ -175,12 +165,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  // ---------------- Account dropdown (Profile / Settings / Logout) ----------------
   Widget _buildAccountMenu() {
     return PopupMenuButton<String>(
       offset: const Offset(-8, 48),
       elevation: 0,
-      color: Colors.white.withOpacity(0.96),
+      color: Colors.white,
       shadowColor: textPrimary.withOpacity(0.15),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
@@ -195,25 +184,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => const AdminSettingsScreen()),
           );
-        } else if (value == 'logout') {
-          // TODO: call your auth sign-out logic here.
         }
       },
       itemBuilder: (context) => [
         _accountMenuItem(value: 'profile', icon: Icons.person_outline, label: 'Profile'),
         _accountMenuItem(value: 'settings', icon: Icons.settings_outlined, label: 'Settings'),
-        const PopupMenuItem<String>(
-          enabled: false,
-          height: 1,
-          padding: EdgeInsets.zero,
-          child: Divider(height: 1),
-        ),
-        _accountMenuItem(
-          value: 'logout',
-          icon: Icons.logout_rounded,
-          label: 'Logout',
-          color: red,
-        ),
       ],
       child: Container(
         width: 38,
@@ -223,8 +198,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           gradient: LinearGradient(colors: [purple, blue]),
         ),
         alignment: Alignment.center,
-        child: const Text('AS',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13)),
+        child: const Text(
+          'AS',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13),
+        ),
       ),
     );
   }
@@ -243,39 +220,24 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         children: [
           Icon(icon, size: 20, color: c),
           const SizedBox(width: 14),
-          Text(label,
-              style: TextStyle(
-                  color: c, fontSize: 15, fontWeight: FontWeight.w500)),
+          Text(
+            label,
+            style: TextStyle(color: c, fontSize: 15, fontWeight: FontWeight.w500),
+          ),
         ],
       ),
     );
   }
 
-
-  Widget _iconBadge(IconData icon, Color bg, Color fg) {
+  Widget _iconBadge(IconData icon, Color bgColor, Color fg) {
     return Container(
       width: 38,
       height: 38,
-      decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
+      decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
       child: Icon(icon, color: fg, size: 20),
     );
   }
 
-  Widget _glowBlob(Color color, double size) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color.withOpacity(0.18),
-        boxShadow: [
-          BoxShadow(color: color.withOpacity(0.20), blurRadius: 100, spreadRadius: 30),
-        ],
-      ),
-    );
-  }
-
-  // ---------------- Stats Grid (main dashboard) ----------------
   Widget _buildStatsGrid() {
     return GridView.builder(
       shrinkWrap: true,
@@ -289,7 +251,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       ),
       itemBuilder: (context, i) {
         final s = _stats[i];
-        return _GlassContainer(
+        return _CardContainer(
           borderRadius: 20,
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -305,13 +267,17 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 child: Icon(s.icon, color: s.color, size: 19),
               ),
               const Spacer(),
-              Text(s.label,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: textSecondary, fontSize: 12)),
+              Text(
+                s.label,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: textSecondary, fontSize: 12),
+              ),
               const SizedBox(height: 4),
-              Text(s.value,
-                  style: const TextStyle(color: textPrimary, fontSize: 18, fontWeight: FontWeight.w700)),
+              Text(
+                s.value,
+                style: const TextStyle(color: textPrimary, fontSize: 18, fontWeight: FontWeight.w700),
+              ),
             ],
           ),
         );
@@ -319,9 +285,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  // ---------------- Sales Trend ----------------
   Widget _buildSalesTrend() {
-    return _GlassContainer(
+    return _CardContainer(
       borderRadius: 24,
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
       child: Column(
@@ -340,7 +305,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: _trendLabels
-                .map((l) => Text(l, style: TextStyle(color: textSecondary.withOpacity(0.85), fontSize: 11)))
+                .map((label) => Text(label, style: TextStyle(color: textSecondary.withOpacity(0.85), fontSize: 11)))
                 .toList(),
           ),
           const SizedBox(height: 4),
@@ -349,10 +314,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  // ---------------- Top Products ----------------
   Widget _buildTopProducts() {
     final maxVal = _topProducts.map((p) => p.revenue).reduce((a, b) => a > b ? a : b);
-    return _GlassContainer(
+    return _CardContainer(
       borderRadius: 24,
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -371,10 +335,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
-                        child: Text(p.name, style: TextStyle(color: textPrimary.withOpacity(0.85), fontSize: 13)),
+                        child: Text(
+                          p.name,
+                          style: TextStyle(color: textPrimary.withOpacity(0.85), fontSize: 13),
+                        ),
                       ),
-                      Text('₹${(p.revenue / 1000).toStringAsFixed(1)}K',
-                          style: const TextStyle(color: textPrimary, fontWeight: FontWeight.w700, fontSize: 13)),
+                      Text(
+                        'Rs. ${(p.revenue / 1000).toStringAsFixed(1)}K',
+                        style: const TextStyle(color: textPrimary, fontWeight: FontWeight.w700, fontSize: 13),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 6),
@@ -404,9 +373,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  // ---------------- Recent Orders ----------------
   Widget _buildRecentOrders(List<_OrderItem> orders) {
-    return _GlassContainer(
+    return _CardContainer(
       borderRadius: 24,
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -446,17 +414,20 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           if (orders.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16),
-              child: Text('No orders match your search.', style: TextStyle(color: textSecondary, fontSize: 13)),
+              child: Text(
+                'No orders match your search.',
+                style: TextStyle(color: textSecondary, fontSize: 13),
+              ),
             )
           else
-            ...orders.map((o) => _orderTile(o)),
+            ...orders.map(_orderTile),
         ],
       ),
     );
   }
 
-  Widget _orderTile(_OrderItem o) {
-    final isConfirmed = o.status == 'Confirmed';
+  Widget _orderTile(_OrderItem order) {
+    final isConfirmed = order.status == 'Confirmed';
     final statusColor = isConfirmed ? blue : textSecondary;
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -470,12 +441,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         children: [
           Expanded(
             flex: 3,
-            child: Text(o.orderNo, style: const TextStyle(color: textPrimary, fontWeight: FontWeight.w600, fontSize: 13)),
+            child: Text(
+              order.orderNo,
+              style: const TextStyle(color: textPrimary, fontWeight: FontWeight.w600, fontSize: 13),
+            ),
           ),
           Expanded(
             flex: 4,
-            child: Text(o.customer,
-                overflow: TextOverflow.ellipsis, style: TextStyle(color: textPrimary.withOpacity(0.75), fontSize: 13)),
+            child: Text(
+              order.customer,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: textPrimary.withOpacity(0.75), fontSize: 13),
+            ),
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -484,9 +461,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: statusColor.withOpacity(0.35)),
             ),
-            child: Text(o.status,
-                style: TextStyle(
-                    color: isConfirmed ? blue : textSecondary, fontSize: 11, fontWeight: FontWeight.w600)),
+            child: Text(
+              order.status,
+              style: TextStyle(
+                color: isConfirmed ? blue : textSecondary,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),
@@ -505,13 +487,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 }
 
-// ---------------- Reusable Glass Container ----------------
-class _GlassContainer extends StatelessWidget {
+class _CardContainer extends StatelessWidget {
   final Widget child;
   final double borderRadius;
   final EdgeInsets padding;
 
-  const _GlassContainer({
+  const _CardContainer({
     required this.child,
     this.borderRadius = 20,
     this.padding = const EdgeInsets.all(16),
@@ -519,32 +500,27 @@ class _GlassContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(borderRadius),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
-        child: Container(
-          padding: padding,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(borderRadius),
-            color: Colors.white.withOpacity(0.55),
-            border: Border.all(color: Colors.white.withOpacity(0.8)),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF1F2A2E).withOpacity(0.08),
-                blurRadius: 24,
-                offset: const Offset(0, 12),
-              ),
-            ],
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(borderRadius),
+        color: Colors.white,
+        border: Border.all(color: const Color(0xFFE6E8EB)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1F2A2E).withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
-          child: child,
-        ),
+        ],
+      ),
+      child: Padding(
+        padding: padding,
+        child: child,
       ),
     );
   }
 }
 
-// ---------------- Line Chart Painter (Sales Trend) ----------------
 class _LineChartPainter extends CustomPainter {
   final List<double> values;
   final Color color;
@@ -566,7 +542,6 @@ class _LineChartPainter extends CustomPainter {
       points.add(Offset(x, y));
     }
 
-    // Gridlines
     final gridPaint = Paint()
       ..color = const Color(0xFF1F2A2E).withOpacity(0.06)
       ..strokeWidth = 1;
@@ -575,10 +550,9 @@ class _LineChartPainter extends CustomPainter {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
     }
 
-    // Area fill under the line
     final fillPath = Path()..moveTo(points.first.dx, size.height);
-    for (final p in points) {
-      fillPath.lineTo(p.dx, p.dy);
+    for (final point in points) {
+      fillPath.lineTo(point.dx, point.dy);
     }
     fillPath.lineTo(points.last.dx, size.height);
     fillPath.close();
@@ -591,10 +565,9 @@ class _LineChartPainter extends CustomPainter {
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
     canvas.drawPath(fillPath, fillPaint);
 
-    // Line
     final linePath = Path()..moveTo(points.first.dx, points.first.dy);
-    for (final p in points.skip(1)) {
-      linePath.lineTo(p.dx, p.dy);
+    for (final point in points.skip(1)) {
+      linePath.lineTo(point.dx, point.dy);
     }
     final linePaint = Paint()
       ..color = color
@@ -603,30 +576,31 @@ class _LineChartPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
     canvas.drawPath(linePath, linePaint);
 
-    // Dots
-    for (final p in points) {
-      canvas.drawCircle(p, 5, Paint()..color = color.withOpacity(0.20));
-      canvas.drawCircle(p, 3, Paint()..color = color);
+    for (final point in points) {
+      canvas.drawCircle(point, 5, Paint()..color = color.withOpacity(0.20));
+      canvas.drawCircle(point, 3, Paint()..color = color);
     }
   }
 
   @override
-  bool shouldRepaint(covariant _LineChartPainter oldDelegate) =>
-      oldDelegate.values != values || oldDelegate.color != color;
+  bool shouldRepaint(covariant _LineChartPainter oldDelegate) {
+    return oldDelegate.values != values || oldDelegate.color != color;
+  }
 }
 
-// ---------------- Data Models ----------------
 class _StatItem {
   final String label;
   final String value;
   final IconData icon;
   final Color color;
+
   const _StatItem(this.label, this.value, this.icon, this.color);
 }
 
 class _ProductRevenue {
   final String name;
   final double revenue;
+
   const _ProductRevenue(this.name, this.revenue);
 }
 
@@ -634,5 +608,6 @@ class _OrderItem {
   final String orderNo;
   final String customer;
   final String status;
+
   const _OrderItem(this.orderNo, this.customer, this.status);
 }
