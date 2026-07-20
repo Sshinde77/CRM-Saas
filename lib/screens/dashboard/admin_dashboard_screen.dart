@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../profile/admin_profile_screen.dart';
 import '../settings/admin_settings_screen.dart';
+import '../../widgets/app_drawer.dart';
 
 /// Admin Dashboard — glassmorphism redesign on a white background.
 /// Section order (as requested): Overview stats -> Sales Trend -> Top Products -> Recent Orders.
@@ -19,21 +20,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   String _query = '';
 
-  // ---- Side drawer nav items ----
-  final List<_NavItem> _navItems = const [
-    _NavItem('Vehicle Stock', Icons.local_shipping_outlined),
-    _NavItem('Purchases', Icons.inventory_2_outlined),
-    _NavItem('Suppliers', Icons.people_outline),
-    _NavItem('Deliveries', Icons.local_shipping_outlined),
-    _NavItem('Expenses', Icons.receipt_long_outlined),
-    _NavItem('Invoices', Icons.description_outlined),
-    _NavItem('Returns', Icons.replay_outlined),
-    _NavItem('Leave Approvals', Icons.event_available_outlined),
-    _NavItem('Reports', Icons.bar_chart_outlined),
-    _NavItem('Notifications', Icons.notifications_none_rounded),
-    _NavItem('Audit Logs', Icons.history_rounded),
-    _NavItem('Settings', Icons.settings_outlined),
-  ];
+  // Side drawer nav is now handled by the shared AppDrawer widget
+  // (see lib/widgets/app_drawer.dart).
 
   // ---- Theme colours (kept from the original app's palette) ----
   static const Color bg = Color(0xFFFFFFFF);
@@ -102,7 +90,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: bg,
-      drawer: _buildDrawer(),
+      drawer: const AppDrawer(activeItem: 'Dashboard'),
       body: Stack(
         children: [
           // Soft pastel glows behind the glass cards — this is what gives the
@@ -263,117 +251,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  // ---------------- Side Drawer ----------------
-  Widget _buildDrawer() {
-    return Drawer(
-      backgroundColor: Colors.white,
-      width: 280,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-          topRight: Radius.circular(28),
-          bottomRight: Radius.circular(28),
-        ),
-      ),
-      child: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 18, 12, 12),
-              child: Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      gradient: const LinearGradient(colors: [purple, blue]),
-                    ),
-                    child: const Icon(Icons.water_drop_rounded, color: Colors.white, size: 22),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('SAAS CRM',
-                            style: TextStyle(
-                                color: textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
-                        Text('Admin',
-                            style: TextStyle(
-                                color: purple, fontSize: 12, fontWeight: FontWeight.w600)),
-                      ],
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).pop(),
-                    child: Icon(Icons.close, color: textSecondary, size: 22),
-                  ),
-                ],
-              ),
-            ),
-            Divider(color: textPrimary.withOpacity(0.08), height: 1),
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                itemCount: _navItems.length,
-                itemBuilder: (context, i) {
-                  final item = _navItems[i];
-                  return ListTile(
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      if (item.label == 'Settings') {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const AdminSettingsScreen()),
-                        );
-                      }
-                      // TODO: wire up the remaining nav items to their screens, e.g.
-                      // Navigator.of(context).pushNamed(item.label);
-                    },
-                    leading: Icon(item.icon, color: textSecondary, size: 22),
-                    title: Text(item.label,
-                        style: const TextStyle(
-                            color: textPrimary, fontSize: 15, fontWeight: FontWeight.w500)),
-                  );
-                },
-              ),
-            ),
-            Divider(color: textPrimary.withOpacity(0.08), height: 1),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Container(
-                    width: 38,
-                    height: 38,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: purple.withOpacity(0.15),
-                    ),
-                    alignment: Alignment.center,
-                    child: const Text('AS',
-                        style: TextStyle(color: purple, fontWeight: FontWeight.w700, fontSize: 13)),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Anita Sharma',
-                            style: TextStyle(
-                                color: textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
-                        Text('admin@demo.com',
-                            style: TextStyle(color: textSecondary, fontSize: 12)),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _iconBadge(IconData icon, Color bg, Color fg) {
     return Container(
@@ -758,10 +635,4 @@ class _OrderItem {
   final String customer;
   final String status;
   const _OrderItem(this.orderNo, this.customer, this.status);
-}
-
-class _NavItem {
-  final String label;
-  final IconData icon;
-  const _NavItem(this.label, this.icon);
 }

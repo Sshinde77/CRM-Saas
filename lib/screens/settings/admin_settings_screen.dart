@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../../widgets/app_drawer.dart';
 
 /// Admin Settings screen — glassmorphism redesign on a white background.
 /// Section order (as requested):
@@ -17,6 +18,7 @@ class AdminSettingsScreen extends StatefulWidget {
 }
 
 class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   // ---- Theme colours (kept consistent with the rest of the app) ----
   static const Color bg = Color(0xFFFFFFFF);
   static const Color teal = Color(0xFF1FA2B0);
@@ -108,7 +110,9 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: bg,
+      drawer: const AppDrawer(activeItem: 'Settings'),
       body: Stack(
         children: [
           Positioned(top: -60, left: -70, child: _glowBlob(purple, 220)),
@@ -177,8 +181,8 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => Navigator.of(context).maybePop(),
-            child: _iconBadge(Icons.arrow_back_rounded, textPrimary.withOpacity(0.06), textPrimary),
+            onTap: () => _scaffoldKey.currentState?.openDrawer(),
+            child: _iconBadge(Icons.menu, textPrimary.withOpacity(0.06), textPrimary),
           ),
           const Spacer(),
           Stack(
