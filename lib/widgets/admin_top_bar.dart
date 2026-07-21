@@ -47,8 +47,6 @@ class AdminTopBar extends StatelessWidget {
               ),
             ),
           ),
-          const Icon(Icons.search, color: AppColors.textPrimary, size: 30),
-          const SizedBox(width: 16),
           Stack(
             clipBehavior: Clip.none,
             children: [

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
 import '../../widgets/admin_top_bar.dart';
 import '../../widgets/app_drawer.dart';
+import '../../widgets/soft_action_button.dart';
 import '../profile/admin_profile_screen.dart';
 import '../settings/admin_settings_screen.dart';
 
@@ -286,27 +287,59 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             style: TextStyle(color: textSecondary, fontSize: 12),
           ),
           const SizedBox(height: 16),
-          TextField(
-            controller: _searchController,
-            onChanged: (value) => setState(() => _query = value),
-            decoration: InputDecoration(
-              hintText: 'Search orders',
-              prefixIcon: const Icon(Icons.search),
-              filled: true,
-              fillColor: AppColors.surfaceSoft,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(color: AppColors.secondary.withValues(alpha: 0.28)),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(color: AppColors.secondary.withValues(alpha: 0.28)),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: const BorderSide(color: AppColors.purple),
-              ),
-            ),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final stacked = constraints.maxWidth < 520;
+              final searchField = TextField(
+                controller: _searchController,
+                onChanged: (value) => setState(() => _query = value),
+                decoration: InputDecoration(
+                  hintText: 'Search orders',
+                  prefixIcon: const Icon(Icons.search),
+                  filled: true,
+                  fillColor: AppColors.surfaceSoft,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide(color: AppColors.secondary.withValues(alpha: 0.28)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide(color: AppColors.secondary.withValues(alpha: 0.28)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(color: AppColors.purple),
+                  ),
+                ),
+              );
+
+              final actionButton = SoftActionButton(
+                label: 'New Order',
+                icon: Icons.add_rounded,
+                onPressed: () {},
+              );
+
+              if (stacked) {
+                return Column(
+                  children: [
+                    searchField,
+                    const SizedBox(height: 12),
+                    SizedBox(width: double.infinity, child: actionButton),
+                  ],
+                );
+              }
+
+              return Row(
+                children: [
+                  Expanded(child: searchField),
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    width: 180,
+                    child: actionButton,
+                  ),
+                ],
+              );
+            },
           ),
           const SizedBox(height: 16),
           if (orders.isEmpty)

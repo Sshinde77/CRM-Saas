@@ -35,6 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
   static const Color greyText = AppColors.textSecondary;
   static const Color fieldBorder = AppColors.secondary;
   static const Color fieldFill = AppColors.primary;
+  static const double _bottomWaveHeight = 140;
 
   // Update these to match your own demo/test accounts.
   static const List<_DemoRole> _demoRoles = [
@@ -97,7 +98,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: const Color(0xFFFBFAFF),
       body: GestureDetector(
         // Tapping outside the email field closes the role dropdown.
         onTap: () {
@@ -106,19 +107,71 @@ class _LoginScreenState extends State<LoginScreen> {
             _emailFocusNode.unfocus();
           }
         },
-        child: SafeArea(
-          bottom: false,
-          child: LayoutBuilder(
+        child: Stack(
+          children: [
             // Top-right faint concentric circles
+            const Positioned(
+              top: -40,
+              right: -60,
+              child: _ConcentricCircles(),
+            ),
 
-            builder: (context, constraints) {
-              final content = Padding(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
+            // Top-left soft purple wave
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: ClipPath(
+                clipper: _TopWaveClipper(),
+                child: Container(
+                  height: 140,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        primaryPurple.withValues(alpha: 0.18),
+                        primaryPurple.withValues(alpha: 0.06),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // Bottom purple wave
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: ClipPath(
+                clipper: _BottomWaveClipper(),
+                child: Container(
+                  height: _bottomWaveHeight,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        primaryPurple.withValues(alpha: 0.9),
+                        primaryPurple,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            SafeArea(
+              bottom: false,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final content = Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
                           // Logo icon
                           Container(
                             width: 84,
@@ -384,6 +437,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   );
                 },
               ),
+            ),
+          ],
         ),
       ),
     );
@@ -505,4 +560,97 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
+}
+
+class _TopWaveClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+
+    path.lineTo(0, size.height * 0.6);
+    path.quadraticBezierTo(
+      size.width * 0.25,
+      size.height,
+      size.width * 0.5,
+      size.height * 0.75,
+    );
+    path.quadraticBezierTo(
+      size.width * 0.8,
+      size.height * 0.45,
+      size.width,
+      size.height * 0.6,
+    );
+    path.lineTo(size.width, 0);
+    path.close();
+
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
+}
+
+class _BottomWaveClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+
+    path.moveTo(0, size.height * 0.5);
+    path.quadraticBezierTo(
+      size.width * 0.25,
+      size.height * 0.1,
+      size.width * 0.55,
+      size.height * 0.4,
+    );
+    path.quadraticBezierTo(
+      size.width * 0.8,
+      size.height * 0.65,
+      size.width,
+      size.height * 0.3,
+    );
+    path.lineTo(size.width, size.height);
+    path.lineTo(0, size.height);
+    path.close();
+
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
+}
+
+class _ConcentricCircles extends StatelessWidget {
+  const _ConcentricCircles();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox(
+      width: 220,
+      height: 220,
+      child: CustomPaint(
+        painter: _CirclesPainter(),
+      ),
+    );
+  }
+}
+
+class _CirclesPainter extends CustomPainter {
+  const _CirclesPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1
+      ..color = const Color(0xFF6C4EE3).withValues(alpha: 0.15);
+
+    final center = Offset(size.width, 0);
+
+    for (var i = 1; i <= 5; i++) {
+      canvas.drawCircle(center, i * 30.0, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }
