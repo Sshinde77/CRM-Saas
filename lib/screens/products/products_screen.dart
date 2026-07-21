@@ -348,6 +348,8 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
   // ---------------- Product card ----------------
   Widget _productCard(_ProductItem product, int index) {
+    final statusColor = _statusColor(product.status);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
@@ -362,6 +364,34 @@ class _ProductsScreenState extends State<ProductsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _statusChip(product.status, statusColor),
+              const Spacer(),
+              _iconActionButton(
+                icon: Icons.visibility_outlined,
+                color: AppColors.blue,
+                tooltip: 'View',
+                onTap: () => _showProductDetails(product),
+              ),
+              const SizedBox(width: 8),
+              _iconActionButton(
+                icon: Icons.edit_outlined,
+                color: AppColors.purple,
+                tooltip: 'Edit',
+                onTap: () => _openProductFormDialog(existing: product, index: index),
+              ),
+              const SizedBox(width: 8),
+              _iconActionButton(
+                icon: Icons.delete_outline_rounded,
+                color: AppColors.red,
+                tooltip: 'Delete',
+                onTap: () => _confirmDelete(product, index),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
           GestureDetector(
             onTap: () => _showProductDetails(product),
             child: Text(
@@ -390,43 +420,25 @@ class _ProductsScreenState extends State<ProductsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(child: _infoItem('Stock', '${product.stock} units')),
-              Expanded(child: _statusItem(product.status)),
-            ],
-          ),
-          const SizedBox(height: 16),
-          const Divider(color: AppColors.secondary, height: 1),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _actionButton(
-                  label: 'View',
-                  icon: Icons.visibility_outlined,
-                  color: AppColors.blue,
-                  onTap: () => _showProductDetails(product),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _actionButton(
-                  label: 'Edit',
-                  icon: Icons.edit_outlined,
-                  color: AppColors.purple,
-                  onTap: () => _openProductFormDialog(existing: product, index: index),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _actionButton(
-                  label: 'Delete',
-                  icon: Icons.delete_outline_rounded,
-                  color: AppColors.red,
-                  onTap: () => _confirmDelete(product, index),
-                ),
-              ),
+              Expanded(child: _infoItem('Status', product.status)),
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _statusChip(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.35)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(color: color, fontSize: 11.5, fontWeight: FontWeight.w700),
       ),
     );
   }
@@ -444,44 +456,35 @@ class _ProductsScreenState extends State<ProductsScreen> {
     );
   }
 
-  Widget _statusItem(String status) {
-    final active = status == 'Active';
-    final color = active ? AppColors.green : AppColors.textSecondary;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('Status', style: TextStyle(color: textSecondary, fontSize: 11.5, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 4),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: color.withValues(alpha: 0.35)),
-          ),
-          child: Text(status, style: TextStyle(color: color, fontSize: 11.5, fontWeight: FontWeight.w700)),
-        ),
-      ],
-    );
-  }
-
-  Widget _actionButton({
-    required String label,
+  Widget _iconActionButton({
     required IconData icon,
     required Color color,
     required VoidCallback onTap,
+    required String tooltip,
   }) {
-    return OutlinedButton.icon(
-      onPressed: onTap,
-      icon: Icon(icon, size: 15, color: color),
-      label: Text(label, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w700)),
-      style: OutlinedButton.styleFrom(
-        backgroundColor: color.withValues(alpha: 0.06),
-        side: BorderSide(color: color.withValues(alpha: 0.3)),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: color.withValues(alpha: 0.28)),
+          ),
+          child: Icon(icon, size: 18, color: color),
+        ),
       ),
     );
+  }
+
+  Color _statusColor(String status) {
+    if (status == 'Active') return AppColors.green;
+    if (status == 'Inactive') return AppColors.textSecondary;
+    return AppColors.blue;
   }
 }
 

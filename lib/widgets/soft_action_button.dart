@@ -22,10 +22,11 @@ class SoftActionButton extends StatelessWidget {
       height: 56,
       child: OutlinedButton.icon(
         onPressed: onPressed,
-        icon: Icon(icon, size: 22),
+        icon: Icon(icon, size: 22, color: color),
         label: Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
+            color: color,
             fontSize: 16,
             fontWeight: FontWeight.w700,
           ),
