@@ -1,5 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+
+import '../../constants/app_colors.dart';
+import '../../widgets/admin_top_bar.dart';
 import '../../widgets/app_drawer.dart';
 
 /// Admin Settings screen — glassmorphism redesign on a white background.
@@ -20,16 +23,16 @@ class AdminSettingsScreen extends StatefulWidget {
 class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   // ---- Theme colours (kept consistent with the rest of the app) ----
-  static const Color bg = Color(0xFFFFFFFF);
-  static const Color teal = Color(0xFF1FA2B0);
-  static const Color green = Color(0xFF10B981);
-  static const Color purple = Color(0xFF8B5CF6);
-  static const Color blue = Color(0xFF3B82F6);
-  static const Color amber = Color(0xFFF6A609);
-  static const Color orange = Color(0xFFFB923C);
+  static const Color bg = AppColors.primary;
+  static const Color teal = AppColors.teal;
+  static const Color green = AppColors.green;
+  static const Color purple = AppColors.purple;
+  static const Color blue = AppColors.blue;
+  static const Color amber = AppColors.amber;
+  static const Color orange = AppColors.orange;
 
-  static const Color textPrimary = Color(0xFF1F2A2E);
-  static const Color textSecondary = Color(0xFF667077);
+  static const Color textPrimary = AppColors.textPrimary;
+  static const Color textSecondary = AppColors.textSecondary;
 
   bool _saving = false;
 
@@ -113,53 +116,49 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
       key: _scaffoldKey,
       backgroundColor: bg,
       drawer: const AppDrawer(activeItem: 'Settings'),
-      body: Stack(
-        children: [
-          Positioned(top: -60, left: -70, child: _glowBlob(purple, 220)),
-          Positioned(top: 220, right: -90, child: _glowBlob(teal, 240)),
-          Positioned(bottom: -80, left: 20, child: _glowBlob(green, 200)),
-          Positioned(top: 560, right: 10, child: _glowBlob(orange, 180)),
-
-          SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildTopBar(context),
-                  const SizedBox(height: 18),
-                  _buildTitleRow(),
-                  const SizedBox(height: 20),
-                  _buildFinancialYearSection(),
-                  const SizedBox(height: 16),
-                  _buildGstSection(),
-                  const SizedBox(height: 16),
-                  _buildPaymentMethodsSection(),
-                  const SizedBox(height: 16),
-                  _buildChipSection(
-                    title: 'Product Categories',
-                    items: _categories,
-                    controller: _categoryController,
-                    hint: 'New category',
-                    onAdd: () => _addChip(_categories, _categoryController),
-                    onRemove: (item) => setState(() => _categories.remove(item)),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildChipSection(
-                    title: 'Units of Measurement',
-                    items: _units,
-                    controller: _unitController,
-                    hint: 'New unit',
-                    onAdd: () => _addChip(_units, _unitController),
-                    onRemove: (item) => setState(() => _units.remove(item)),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildNotificationPrefsSection(),
-                ],
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildTopBar(context),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildTitleRow(),
+                    const SizedBox(height: 20),
+                    _buildFinancialYearSection(),
+                    const SizedBox(height: 16),
+                    _buildGstSection(),
+                    const SizedBox(height: 16),
+                    _buildPaymentMethodsSection(),
+                    const SizedBox(height: 16),
+                    _buildChipSection(
+                      title: 'Product Categories',
+                      items: _categories,
+                      controller: _categoryController,
+                      hint: 'New category',
+                      onAdd: () => _addChip(_categories, _categoryController),
+                      onRemove: (item) => setState(() => _categories.remove(item)),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildChipSection(
+                      title: 'Units of Measurement',
+                      items: _units,
+                      controller: _unitController,
+                      hint: 'New unit',
+                      onAdd: () => _addChip(_units, _unitController),
+                      onRemove: (item) => setState(() => _units.remove(item)),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildNotificationPrefsSection(),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -174,42 +173,12 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
   }
 
   // ---------------- Top bar ----------------
+  // ---------------- Top bar ----------------
   Widget _buildTopBar(BuildContext context) {
-    return _GlassContainer(
-      borderRadius: 20,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: () => _scaffoldKey.currentState?.openDrawer(),
-            child: _iconBadge(Icons.menu, textPrimary.withOpacity(0.06), textPrimary),
-          ),
-          const Spacer(),
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              _iconBadge(Icons.notifications_none_rounded, textPrimary.withOpacity(0.06), textPrimary),
-              const Positioned(
-                right: 6,
-                top: 6,
-                child: _NotificationDot(),
-              ),
-            ],
-          ),
-          const SizedBox(width: 10),
-          Container(
-            width: 36,
-            height: 36,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(colors: [purple, blue]),
-            ),
-            alignment: Alignment.center,
-            child: const Text('AS',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12)),
-          ),
-        ],
-      ),
+    return AdminTopBar(
+      title: 'Settings',
+      leadingIcon: Icons.menu_rounded,
+      onLeadingTap: () => _scaffoldKey.currentState?.openDrawer(),
     );
   }
 
@@ -219,20 +188,6 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
       height: 36,
       decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
       child: Icon(icon, color: fg, size: 19),
-    );
-  }
-
-  Widget _glowBlob(Color color, double size) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color.withOpacity(0.18),
-        boxShadow: [
-          BoxShadow(color: color.withOpacity(0.20), blurRadius: 100, spreadRadius: 30),
-        ],
-      ),
     );
   }
 
@@ -275,11 +230,11 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
             ? const SizedBox(
                 width: 16,
                 height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2.2, color: Colors.white),
+                child: CircularProgressIndicator(strokeWidth: 2.2, color: AppColors.primary),
               )
             : const Text('Save Settings',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700)),
+                style: TextStyle(color: AppColors.primary, fontSize: 13, fontWeight: FontWeight.w700)),
       ),
     );
   }
@@ -366,7 +321,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                 isExpanded: true,
                 icon: Icon(Icons.keyboard_arrow_down_rounded, color: textSecondary),
                 style: const TextStyle(color: textPrimary, fontSize: 14),
-                dropdownColor: Colors.white,
+                dropdownColor: AppColors.primary,
                 borderRadius: BorderRadius.circular(14),
                 items: _gstOptions
                     .map((rate) => DropdownMenuItem(value: rate, child: Text(rate)))
@@ -585,7 +540,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
               color: value ? blue : Colors.transparent,
               border: Border.all(color: value ? blue : textPrimary.withOpacity(0.25), width: 1.5),
             ),
-            child: value ? const Icon(Icons.check_rounded, size: 16, color: Colors.white) : null,
+            child: value ? const Icon(Icons.check_rounded, size: 16, color: AppColors.primary) : null,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -632,8 +587,8 @@ class _GlassContainer extends StatelessWidget {
           padding: padding,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(borderRadius),
-            color: Colors.white.withOpacity(0.55),
-            border: Border.all(color: Colors.white.withOpacity(0.8)),
+            color: AppColors.primary.withOpacity(0.55),
+            border: Border.all(color: AppColors.primary.withOpacity(0.8)),
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFF1F2A2E).withOpacity(0.08),
@@ -648,3 +603,4 @@ class _GlassContainer extends StatelessWidget {
     );
   }
 }
+

@@ -2,6 +2,9 @@ import 'dart:typed_data';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+
+import '../../constants/app_colors.dart';
+import '../../widgets/admin_top_bar.dart';
 import '../../widgets/app_drawer.dart';
 
 // Place this file at: lib/screens/settings/company_settings_screen.dart
@@ -18,17 +21,17 @@ class CompanySettingsScreen extends StatefulWidget {
 
 class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
   // ---- Theme colours (kept identical to AdminDashboardScreen) ----
-  static const Color bg = Color(0xFFFFFFFF);
-  static const Color teal = Color(0xFF1FA2B0);
-  static const Color green = Color(0xFF10B981);
-  static const Color purple = Color(0xFF8B5CF6);
-  static const Color blue = Color(0xFF3B82F6);
-  static const Color amber = Color(0xFFF6A609);
-  static const Color orange = Color(0xFFFB923C);
-  static const Color red = Color(0xFFEF4444);
+  static const Color bg = AppColors.primary;
+  static const Color teal = AppColors.teal;
+  static const Color green = AppColors.green;
+  static const Color purple = AppColors.purple;
+  static const Color blue = AppColors.blue;
+  static const Color amber = AppColors.amber;
+  static const Color orange = AppColors.orange;
+  static const Color red = AppColors.red;
 
-  static const Color textPrimary = Color(0xFF1F2A2E);
-  static const Color textSecondary = Color(0xFF667077);
+  static const Color textPrimary = AppColors.textPrimary;
+  static const Color textSecondary = AppColors.textSecondary;
 
   // ---- Controllers ----
   final _companyNameController = TextEditingController(text: 'SAAS Distributors');
@@ -127,118 +130,66 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
       key: _scaffoldKey,
       backgroundColor: bg,
       drawer: const AppDrawer(activeItem: 'Company Settings'),
-      body: Stack(
-        children: [
-          // Same soft pastel glows as the dashboard, so the frosted cards
-          // have something visible to blur beneath them.
-          Positioned(top: -60, left: -70, child: _glowBlob(purple, 220)),
-          Positioned(top: 160, right: -100, child: _glowBlob(teal, 240)),
-          Positioned(bottom: 260, left: -40, child: _glowBlob(orange, 200)),
-          Positioned(bottom: -80, right: 20, child: _glowBlob(green, 220)),
-
-          SafeArea(
-            child: Column(
-              children: [
-                _buildTopBar(),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildHeaderRow(),
-                        const SizedBox(height: 20),
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildTopBar(),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHeaderRow(),
+                    const SizedBox(height: 20),
 
                         // 1. Company Logo
-                        _GlassContainer(
-                          borderRadius: 24,
-                          padding: const EdgeInsets.all(20),
-                          child: _sectionWrap('Company Logo', _buildLogoRow()),
-                        ),
-                        const SizedBox(height: 20),
+                    _GlassContainer(
+                      borderRadius: 24,
+                      padding: const EdgeInsets.all(20),
+                      child: _sectionWrap('Company Logo', _buildLogoRow()),
+                    ),
+                    const SizedBox(height: 20),
 
                         // 2. Company Information
-                        _GlassContainer(
-                          borderRadius: 24,
-                          padding: const EdgeInsets.all(20),
-                          child: _sectionWrap('Company Information', _buildCompanyInfoFields()),
-                        ),
-                        const SizedBox(height: 20),
+                    _GlassContainer(
+                      borderRadius: 24,
+                      padding: const EdgeInsets.all(20),
+                      child: _sectionWrap('Company Information', _buildCompanyInfoFields()),
+                    ),
+                    const SizedBox(height: 20),
 
                         // 3. Address
-                        _GlassContainer(
-                          borderRadius: 24,
-                          padding: const EdgeInsets.all(20),
-                          child: _sectionWrap('Address', _buildAddressFields()),
-                        ),
-                        const SizedBox(height: 20),
+                    _GlassContainer(
+                      borderRadius: 24,
+                      padding: const EdgeInsets.all(20),
+                      child: _sectionWrap('Address', _buildAddressFields()),
+                    ),
+                    const SizedBox(height: 20),
 
                         // 4. Financial Year & Invoice Numbering
-                        _GlassContainer(
-                          borderRadius: 24,
-                          padding: const EdgeInsets.all(20),
-                          child: _sectionWrap('Financial Year & Invoice Numbering', _buildFinancialFields()),
-                        ),
-                      ],
+                    _GlassContainer(
+                      borderRadius: 24,
+                      padding: const EdgeInsets.all(20),
+                      child: _sectionWrap('Financial Year & Invoice Numbering', _buildFinancialFields()),
                     ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   // ---------------- Top bar (glass, matches dashboard header) ----------------
+  // ---------------- Top bar (glass, matches dashboard header) ----------------
   Widget _buildTopBar() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-      child: _GlassContainer(
-        borderRadius: 24,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Row(
-          children: [
-            GestureDetector(
-              onTap: () => _scaffoldKey.currentState?.openDrawer(),
-              child: _iconBadge(Icons.menu, textPrimary.withOpacity(0.06), textPrimary),
-            ),
-            const SizedBox(width: 14),
-            const Expanded(
-              child: Text('Company Settings',
-                  style: TextStyle(color: textPrimary, fontSize: 18, fontWeight: FontWeight.w700)),
-            ),
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                _iconBadge(Icons.notifications_none_rounded, textPrimary.withOpacity(0.06), textPrimary),
-                Positioned(
-                  right: 6,
-                  top: 6,
-                  child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: const BoxDecoration(color: red, shape: BoxShape.circle),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(width: 10),
-            Container(
-              width: 38,
-              height: 38,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(colors: [purple, blue]),
-              ),
-              alignment: Alignment.center,
-              child: const Text('AS',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13)),
-            ),
-          ],
-        ),
-      ),
+    return AdminTopBar(
+      title: 'Company Settings',
+      leadingIcon: Icons.menu_rounded,
+      onLeadingTap: () => _scaffoldKey.currentState?.openDrawer(),
     );
   }
 
@@ -277,10 +228,10 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
                   ? const SizedBox(
                       height: 16,
                       width: 16,
-                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                      child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2),
                     )
                   : const Text('Save Changes',
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13)),
+                      style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600, fontSize: 13)),
             ),
           ),
         ],
@@ -514,7 +465,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
           isExpanded: true,
           icon: const Icon(Icons.keyboard_arrow_down, color: purple),
           style: const TextStyle(color: textPrimary, fontSize: 14),
-          dropdownColor: Colors.white,
+          dropdownColor: AppColors.primary,
           items: items
               .map((item) => DropdownMenuItem<String>(value: item, child: Text(item)))
               .toList(),
@@ -532,19 +483,6 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
     );
   }
 
-  Widget _glowBlob(Color color, double size) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color.withOpacity(0.18),
-        boxShadow: [
-          BoxShadow(color: color.withOpacity(0.20), blurRadius: 100, spreadRadius: 30),
-        ],
-      ),
-    );
-  }
 }
 
 // ---------------- Reusable Glass Container (same as AdminDashboardScreen) ----------------
@@ -569,8 +507,8 @@ class _GlassContainer extends StatelessWidget {
           padding: padding,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(borderRadius),
-            color: Colors.white.withOpacity(0.55),
-            border: Border.all(color: Colors.white.withOpacity(0.8)),
+            color: AppColors.primary.withOpacity(0.55),
+            border: Border.all(color: AppColors.primary.withOpacity(0.8)),
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFF1F2A2E).withOpacity(0.08),
@@ -585,3 +523,4 @@ class _GlassContainer extends StatelessWidget {
     );
   }
 }
+

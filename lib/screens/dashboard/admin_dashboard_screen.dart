@@ -1,5 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+
+import '../../constants/app_colors.dart';
+import '../../widgets/admin_top_bar.dart';
 import '../profile/admin_profile_screen.dart';
 import '../settings/admin_settings_screen.dart';
 import '../../widgets/app_drawer.dart';
@@ -24,18 +27,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   // (see lib/widgets/app_drawer.dart).
 
   // ---- Theme colours (kept from the original app's palette) ----
-  static const Color bg = Color(0xFFFFFFFF);
-  static const Color teal = Color(0xFF1FA2B0);
-  static const Color green = Color(0xFF10B981);
-  static const Color purple = Color(0xFF8B5CF6);
-  static const Color blue = Color(0xFF3B82F6);
-  static const Color amber = Color(0xFFF6A609);
-  static const Color orange = Color(0xFFFB923C);
-  static const Color red = Color(0xFFEF4444);
+  static const Color bg = AppColors.primary;
+  static const Color teal = AppColors.teal;
+  static const Color green = AppColors.green;
+  static const Color purple = AppColors.purple;
+  static const Color blue = AppColors.blue;
+  static const Color amber = AppColors.amber;
+  static const Color orange = AppColors.orange;
+  static const Color red = AppColors.red;
 
   // ---- Text colours for a light background ----
-  static const Color textPrimary = Color(0xFF1F2A2E);
-  static const Color textSecondary = Color(0xFF667077);
+  static const Color textPrimary = AppColors.textPrimary;
+  static const Color textSecondary = AppColors.textSecondary;
 
   // ---- Mock data — replace with your providers / API calls ----
   final List<_StatItem> _stats = const [
@@ -91,21 +94,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       key: _scaffoldKey,
       backgroundColor: bg,
       drawer: const AppDrawer(activeItem: 'Dashboard'),
-      body: Stack(
-        children: [
+      body: SafeArea(
+        child: CustomScrollView(
           // Soft pastel glows behind the glass cards — this is what gives the
           // frosted panels something visible to blur, even on a plain white page.
-          Positioned(top: -60, left: -70, child: _glowBlob(teal, 220)),
-          Positioned(top: 140, right: -100, child: _glowBlob(purple, 260)),
-          Positioned(bottom: -90, left: 30, child: _glowBlob(orange, 240)),
-          Positioned(top: 420, right: 10, child: _glowBlob(green, 180)),
 
-          SafeArea(
-            child: CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(child: _buildHeader()),
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+          slivers: [
+            SliverToBoxAdapter(child: _buildHeader()),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
                       _buildStatsGrid(),
@@ -117,61 +114,21 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       _buildRecentOrders(filteredOrders),
                     ]),
                   ),
-                ),
-              ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   // ---------------- Header ----------------
+  // ---------------- Header ----------------
   Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-      child: _GlassContainer(
-        borderRadius: 24,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Row(
-          children: [
-            GestureDetector(
-              onTap: () => _scaffoldKey.currentState?.openDrawer(),
-              child: _iconBadge(Icons.menu, textPrimary.withOpacity(0.06), textPrimary),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Dashboard',
-                      style: TextStyle(color: textPrimary, fontSize: 20, fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 2),
-                  Text('SAAS Distributors · as of 2026-07-17',
-                      style: TextStyle(color: textSecondary.withOpacity(0.9), fontSize: 12)),
-                ],
-              ),
-            ),
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                _iconBadge(Icons.notifications_none_rounded, textPrimary.withOpacity(0.06), textPrimary),
-                Positioned(
-                  right: 6,
-                  top: 6,
-                  child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: const BoxDecoration(color: red, shape: BoxShape.circle),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(width: 10),
-            _buildAccountMenu(),
-          ],
-        ),
-      ),
+    return AdminTopBar(
+      title: 'Dashboard',
+      leadingIcon: Icons.menu_rounded,
+      onLeadingTap: () => _scaffoldKey.currentState?.openDrawer(),
+      trailingAvatar: _buildAccountMenu(),
     );
   }
 
@@ -180,7 +137,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     return PopupMenuButton<String>(
       offset: const Offset(-8, 48),
       elevation: 0,
-      color: Colors.white.withOpacity(0.96),
+      color: AppColors.primary.withOpacity(0.96),
       shadowColor: textPrimary.withOpacity(0.15),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
@@ -224,7 +181,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         ),
         alignment: Alignment.center,
         child: const Text('AS',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13)),
+            style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700, fontSize: 13)),
       ),
     );
   }
@@ -258,20 +215,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       height: 38,
       decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
       child: Icon(icon, color: fg, size: 20),
-    );
-  }
-
-  Widget _glowBlob(Color color, double size) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color.withOpacity(0.18),
-        boxShadow: [
-          BoxShadow(color: color.withOpacity(0.20), blurRadius: 100, spreadRadius: 30),
-        ],
-      ),
     );
   }
 
@@ -527,8 +470,8 @@ class _GlassContainer extends StatelessWidget {
           padding: padding,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(borderRadius),
-            color: Colors.white.withOpacity(0.55),
-            border: Border.all(color: Colors.white.withOpacity(0.8)),
+            color: AppColors.primary.withOpacity(0.55),
+            border: Border.all(color: AppColors.primary.withOpacity(0.8)),
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFF1F2A2E).withOpacity(0.08),
@@ -636,3 +579,4 @@ class _OrderItem {
   final String status;
   const _OrderItem(this.orderNo, this.customer, this.status);
 }
+

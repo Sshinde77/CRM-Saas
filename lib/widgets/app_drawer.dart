@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../constants/app_colors.dart';
 import '../screens/dashboard/admin_dashboard_screen.dart';
 import '../screens/settings/admin_settings_screen.dart';
 import '../screens/settings/company_settings_screen.dart';
@@ -21,10 +22,10 @@ class AppDrawer extends StatelessWidget {
 
   const AppDrawer({super.key, required this.activeItem});
 
-  static const Color purple = Color(0xFF8B5CF6);
-  static const Color blue = Color(0xFF3B82F6);
-  static const Color textPrimary = Color(0xFF1F2A2E);
-  static const Color textSecondary = Color(0xFF667077);
+  static const Color purple = AppColors.purple;
+  static const Color blue = AppColors.blue;
+  static const Color textPrimary = AppColors.textPrimary;
+  static const Color textSecondary = AppColors.textSecondary;
 
   static const List<_NavItem> _navItems = [
     _NavItem('Dashboard', Icons.dashboard_outlined),
@@ -83,7 +84,7 @@ class AppDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.primary,
       width: 280,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
@@ -105,7 +106,7 @@ class AppDrawer extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                       gradient: const LinearGradient(colors: [purple, blue]),
                     ),
-                    child: const Icon(Icons.water_drop_rounded, color: Colors.white, size: 22),
+                    child: const Icon(Icons.water_drop_rounded, color: AppColors.primary, size: 22),
                   ),
                   const SizedBox(width: 12),
                   const Expanded(
