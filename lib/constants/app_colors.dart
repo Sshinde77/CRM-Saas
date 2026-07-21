@@ -4,7 +4,7 @@ class AppColors {
   const AppColors._();
 
   static const Color primary = Color(0xFFFFFFFF);
-  static const Color secondary = Color(0xFFA25DA1);
+  static const Color secondary = Color.fromARGB(255, 213, 116, 212);
 
   static const Color background = primary;
   static const Color surface = primary;
@@ -15,7 +15,7 @@ class AppColors {
 
   static const Color teal = Color(0xFF1FA2B0);
   static const Color green = Color(0xFF10B981);
-  static const Color purple = Color(0xFF8B5CF6);
+  static const Color purple = Color.fromARGB(255, 97, 99, 248);
   static const Color blue = Color(0xFF3B82F6);
   static const Color amber = Color(0xFFF6A609);
   static const Color orange = Color(0xFFFB923C);

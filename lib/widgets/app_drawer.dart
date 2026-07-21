@@ -5,6 +5,8 @@ import '../screens/dashboard/admin_dashboard_screen.dart';
 import '../screens/settings/admin_settings_screen.dart';
 import '../screens/settings/company_settings_screen.dart';
 import '../screens/users/admin_user_management_screen.dart';
+import '../screens/products/products_screen.dart';
+import '../screens/vehicles/vehicle_stock_screen.dart';
 
 // Place this file at: lib/widgets/app_drawer.dart
 
@@ -70,6 +72,16 @@ class AppDrawer extends StatelessWidget {
       case 'User Management':
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const AdminUserManagementScreen()),
+        );
+        break;
+      case 'Products':
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const ProductsScreen()),
+        );
+        break;
+      case 'Vehicle Stock':
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const VehicleStockScreen()),
         );
         break;
       default:
