@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../constants/app_colors.dart';
 import '../../widgets/admin_top_bar.dart';
+import '../../widgets/app_drawer.dart';
 import '../profile/admin_profile_screen.dart';
 import '../settings/admin_settings_screen.dart';
-import '../../widgets/app_drawer.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -14,51 +14,27 @@ class AdminDashboardScreen extends StatefulWidget {
 }
 
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
-  final TextEditingController _searchController = TextEditingController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final TextEditingController _searchController = TextEditingController();
   String _query = '';
 
-  // Side drawer nav is now handled by the shared AppDrawer widget
-  // (see lib/widgets/app_drawer.dart).
-
-  // ---- Theme colours (kept from the original app's palette) ----
-  static const Color bg = Color(0xFFFFFFFF);
-  static const Color teal = Color(0xFF1FA2B0);
-  static const Color green = Color(0xFF10B981);
-  static const Color purple = Color(0xFF8B5CF6);
-  static const Color blue = Color(0xFF3B82F6);
-  static const Color amber = Color(0xFFF6A609);
-  static const Color orange = Color(0xFFFB923C);
-  static const Color red = Color(0xFFEF4444);
-
-  // ---- Text colours for a light background ----
-  static const Color textPrimary = Color(0xFF1F2A2E);
-  static const Color textSecondary = Color(0xFF667077);
+  static const Color textPrimary = AppColors.textPrimary;
+  static const Color textSecondary = AppColors.textSecondary;
 
   final List<_StatItem> _stats = const [
-    _StatItem("Today's Sales", 'Rs. 23,242', Icons.currency_rupee, green),
-    _StatItem('Monthly Sales', 'Rs. 66,160', Icons.calendar_month, purple),
-    _StatItem('Yearly Sales', 'Rs. 66,160', Icons.event, blue),
-    _StatItem('Purchases This Month', 'Rs. 1,89,215', Icons.inventory_2, teal),
-    _StatItem('Low Stock Items', '5', Icons.warning_amber_rounded, amber),
-    _StatItem('Pending Orders', '6', Icons.schedule, blue),
-    _StatItem('Pending Deliveries', '6', Icons.local_shipping, orange),
-    _StatItem('Outstanding Receivables', 'Rs. 42,225', Icons.account_balance_wallet, green),
-    _StatItem('Outstanding Payables', 'Rs. 93,820', Icons.credit_card, red),
+    _StatItem("Today's Sales", 'Rs. 23,242', Icons.currency_rupee, AppColors.green),
+    _StatItem('Monthly Sales', 'Rs. 66,160', Icons.calendar_month, AppColors.purple),
+    _StatItem('Yearly Sales', 'Rs. 66,160', Icons.event, AppColors.blue),
+    _StatItem('Purchases This Month', 'Rs. 1,89,215', Icons.inventory_2, AppColors.teal),
+    _StatItem('Low Stock Items', '5', Icons.warning_amber_rounded, AppColors.amber),
+    _StatItem('Pending Orders', '6', Icons.schedule, AppColors.blue),
   ];
-
-  final List<double> _salesTrend = const [
-    2, 5, 9, 3, 12, 6, 4, 7, 6, 2, 1, 3, 1, 1, 1, 1, 34,
-  ];
-
-  final List<String> _trendLabels = const ['1 Jul', '4 Jul', '7 Jul', '10 Jul', '13 Jul', '17 Jul'];
 
   final List<_ProductRevenue> _topProducts = const [
     _ProductRevenue('Water Jar Refill (20L)', 14400),
-    _ProductRevenue('Water Dispenser - Normal (Standard)', 11200),
-    _ProductRevenue('Water Dispenser - Hot & Cold (Standard)', 9000),
+    _ProductRevenue('Water Dispenser - Normal', 11200),
+    _ProductRevenue('Water Dispenser - Hot & Cold', 9000),
     _ProductRevenue('Packaged Drinking Water (1L)', 6400),
-    _ProductRevenue('Packaged Drinking Water (500ml)', 4300),
   ];
 
   final List<_OrderItem> _orders = const [
@@ -81,94 +57,54 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         ? _orders
         : _orders
             .where(
-              (o) =>
-                  o.orderNo.toLowerCase().contains(_query.toLowerCase()) ||
-                  o.customer.toLowerCase().contains(_query.toLowerCase()),
+              (order) =>
+                  order.orderNo.toLowerCase().contains(_query.toLowerCase()) ||
+                  order.customer.toLowerCase().contains(_query.toLowerCase()),
             )
             .toList();
 
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: bg,
+      backgroundColor: AppColors.primary,
       drawer: const AppDrawer(activeItem: 'Dashboard'),
-      body: Stack(
-        children: [
-          // Soft pastel glows behind the glass cards — this is what gives the
-          // frosted panels something visible to blur, even on a plain white page.
-          Positioned(top: -60, left: -70, child: _glowBlob(teal, 220)),
-          Positioned(top: 140, right: -100, child: _glowBlob(purple, 260)),
-          Positioned(bottom: -90, left: 30, child: _glowBlob(orange, 240)),
-          Positioned(top: 420, right: 10, child: _glowBlob(green, 180)),
-
-          SafeArea(
-            child: CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(child: _buildHeader()),
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate([
-                      _buildStatsGrid(),
-                      const SizedBox(height: 20),
-                      _buildSalesTrend(),
-                      const SizedBox(height: 20),
-                      _buildTopProducts(),
-                      const SizedBox(height: 20),
-                      _buildRecentOrders(filteredOrders),
-                    ]),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ---------------- Header ----------------
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-      child: _GlassContainer(
-        borderRadius: 24,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Row(
+      body: SafeArea(
+        child: Column(
           children: [
-            GestureDetector(
-              onTap: () => _scaffoldKey.currentState?.openDrawer(),
-              child: _iconBadge(Icons.menu, textPrimary.withOpacity(0.06), textPrimary),
+            AdminTopBar(
+              title: 'Dashboard',
+              leadingIcon: Icons.menu_rounded,
+              onLeadingTap: () => _scaffoldKey.currentState?.openDrawer(),
+              trailingAvatar: _buildAccountMenu(),
             ),
-            const SizedBox(width: 14),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Dashboard',
-                      style: TextStyle(color: textPrimary, fontSize: 20, fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 2),
-                  Text('SAAS Distributors · as of 2026-07-17',
-                      style: TextStyle(color: textSecondary.withOpacity(0.9), fontSize: 12)),
-                ],
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Overview',
+                      style: TextStyle(
+                        color: textPrimary,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Key business metrics and recent orders',
+                      style: TextStyle(color: textSecondary, fontSize: 13),
+                    ),
+                    const SizedBox(height: 20),
+                    _buildStatsGrid(),
+                    const SizedBox(height: 20),
+                    _buildTopProducts(),
+                    const SizedBox(height: 20),
+                    _buildRecentOrders(filteredOrders),
+                  ],
+                ),
               ),
             ),
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                _iconBadge(Icons.notifications_none_rounded, textPrimary.withOpacity(0.06), textPrimary),
-                Positioned(
-                  right: 6,
-                  top: 6,
-                  child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: const BoxDecoration(color: red, shape: BoxShape.circle),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(width: 10),
-            _buildAccountMenu(),
           ],
         ),
       ),
@@ -177,90 +113,44 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   Widget _buildAccountMenu() {
     return PopupMenuButton<String>(
-      offset: const Offset(-8, 48),
-      elevation: 0,
-      color: Colors.white.withOpacity(0.96),
-      shadowColor: textPrimary.withOpacity(0.15),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-        side: BorderSide(color: textPrimary.withOpacity(0.06)),
-      ),
+      color: AppColors.primary,
       onSelected: (value) {
         if (value == 'profile') {
           Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => const AdminProfileScreen()),
           );
-        } else if (value == 'settings') {
+        }
+        if (value == 'settings') {
           Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => const AdminSettingsScreen()),
           );
         }
       },
-      itemBuilder: (context) => [
-        _accountMenuItem(value: 'profile', icon: Icons.person_outline, label: 'Profile'),
-        _accountMenuItem(value: 'settings', icon: Icons.settings_outlined, label: 'Settings'),
+      itemBuilder: (context) => const [
+        PopupMenuItem<String>(value: 'profile', child: Text('Profile')),
+        PopupMenuItem<String>(value: 'settings', child: Text('Settings')),
       ],
       child: Container(
-        width: 38,
-        height: 38,
-        decoration: const BoxDecoration(
+        width: 42,
+        height: 42,
+        decoration: BoxDecoration(
+          color: AppColors.surfaceSoft,
           shape: BoxShape.circle,
-          gradient: LinearGradient(colors: [purple, blue]),
+          border: Border.all(color: AppColors.secondary),
         ),
         alignment: Alignment.center,
-        child: const Text('AS',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13)),
-      ),
-    );
-  }
-
-  PopupMenuItem<String> _accountMenuItem({
-    required String value,
-    required IconData icon,
-    required String label,
-    Color? color,
-  }) {
-    final c = color ?? textPrimary;
-    return PopupMenuItem<String>(
-      value: value,
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: c),
-          const SizedBox(width: 14),
-          Text(
-            label,
-            style: TextStyle(color: c, fontSize: 15, fontWeight: FontWeight.w500),
+        child: const Text(
+          'AS',
+          style: TextStyle(
+            color: AppColors.purple,
+            fontWeight: FontWeight.w700,
+            fontSize: 12,
           ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _iconBadge(IconData icon, Color bgColor, Color fg) {
-    return Container(
-      width: 38,
-      height: 38,
-      decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
-      child: Icon(icon, color: fg, size: 20),
-    );
-  }
-
-  Widget _glowBlob(Color color, double size) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color.withOpacity(0.18),
-        boxShadow: [
-          BoxShadow(color: color.withOpacity(0.20), blurRadius: 100, spreadRadius: 30),
-        ],
-      ),
-    );
-  }
-
-  // ---------------- Stats Grid (main dashboard) ----------------
   Widget _buildStatsGrid() {
     return GridView.builder(
       shrinkWrap: true,
@@ -268,38 +158,40 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       itemCount: _stats.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        mainAxisSpacing: 14,
         crossAxisSpacing: 14,
-        childAspectRatio: 1.25,
+        mainAxisSpacing: 14,
+        childAspectRatio: 1.22,
       ),
-      itemBuilder: (context, i) {
-        final s = _stats[i];
+      itemBuilder: (context, index) {
+        final stat = _stats[index];
         return _CardContainer(
-          borderRadius: 20,
-          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 36,
-                height: 36,
+                width: 42,
+                height: 42,
                 decoration: BoxDecoration(
-                  color: s.color.withOpacity(0.15),
+                  color: stat.color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(s.icon, color: s.color, size: 19),
+                child: Icon(stat.icon, color: stat.color),
               ),
               const Spacer(),
               Text(
-                s.label,
+                stat.label,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: textSecondary, fontSize: 12),
+                style: const TextStyle(color: textSecondary, fontSize: 12),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 6),
               Text(
-                s.value,
-                style: const TextStyle(color: textPrimary, fontSize: 18, fontWeight: FontWeight.w700),
+                stat.value,
+                style: const TextStyle(
+                  color: textPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ],
           ),
@@ -308,47 +200,31 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  Widget _buildSalesTrend() {
+  Widget _buildTopProducts() {
+    final maxRevenue = _topProducts
+        .map((product) => product.revenue)
+        .reduce((a, b) => a > b ? a : b);
+
     return _CardContainer(
-      borderRadius: 24,
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _sectionTitle('Sales Trend', 'Daily sales this month'),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 180,
-            child: CustomPaint(
-              size: Size.infinite,
-              painter: _LineChartPainter(values: _salesTrend, color: teal),
+          const Text(
+            'Top Products',
+            style: TextStyle(
+              color: textPrimary,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: _trendLabels
-                .map((label) => Text(label, style: TextStyle(color: textSecondary.withOpacity(0.85), fontSize: 11)))
-                .toList(),
+          const SizedBox(height: 6),
+          const Text(
+            'By revenue this month',
+            style: TextStyle(color: textSecondary, fontSize: 12),
           ),
-          const SizedBox(height: 4),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTopProducts() {
-    final maxVal = _topProducts.map((p) => p.revenue).reduce((a, b) => a > b ? a : b);
-    return _CardContainer(
-      borderRadius: 24,
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _sectionTitle('Top Products', 'By revenue this month'),
           const SizedBox(height: 18),
-          ..._topProducts.map((p) {
-            final fraction = (p.revenue / maxVal).clamp(0.05, 1.0);
+          ..._topProducts.map((product) {
+            final widthFactor = (product.revenue / maxRevenue).clamp(0.08, 1.0);
             return Padding(
               padding: const EdgeInsets.only(bottom: 14),
               child: Column(
@@ -359,32 +235,27 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     children: [
                       Expanded(
                         child: Text(
-                          p.name,
-                          style: TextStyle(color: textPrimary.withOpacity(0.85), fontSize: 13),
+                          product.name,
+                          style: const TextStyle(color: textPrimary, fontSize: 13),
                         ),
                       ),
                       Text(
-                        'Rs. ${(p.revenue / 1000).toStringAsFixed(1)}K',
-                        style: const TextStyle(color: textPrimary, fontWeight: FontWeight.w700, fontSize: 13),
+                        'Rs. ${product.revenue.toStringAsFixed(0)}',
+                        style: const TextStyle(
+                          color: textPrimary,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 8),
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Stack(
-                      children: [
-                        Container(height: 10, color: textPrimary.withOpacity(0.06)),
-                        FractionallySizedBox(
-                          widthFactor: fraction,
-                          child: Container(
-                            height: 10,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(colors: [teal, teal.withOpacity(0.55)]),
-                            ),
-                          ),
-                        ),
-                      ],
+                    borderRadius: BorderRadius.circular(999),
+                    child: LinearProgressIndicator(
+                      value: widthFactor,
+                      minHeight: 10,
+                      backgroundColor: AppColors.secondary.withValues(alpha: 0.14),
+                      valueColor: const AlwaysStoppedAnimation<Color>(AppColors.purple),
                     ),
                   ),
                 ],
@@ -398,67 +269,69 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   Widget _buildRecentOrders(List<_OrderItem> orders) {
     return _CardContainer(
-      borderRadius: 24,
-      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: _sectionTitle('Recent Orders', 'Latest sales orders across the organization'),
-              ),
-              Text('${orders.length} results', style: TextStyle(color: textSecondary, fontSize: 12)),
-            ],
-          ),
-          const SizedBox(height: 14),
-          Container(
-            decoration: BoxDecoration(
-              color: textPrimary.withOpacity(0.04),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: textPrimary.withOpacity(0.08)),
-            ),
-            child: TextField(
-              controller: _searchController,
-              onChanged: (v) => setState(() => _query = v),
-              style: const TextStyle(color: textPrimary),
-              decoration: InputDecoration(
-                hintText: 'Search orders...',
-                hintStyle: TextStyle(color: textSecondary.withOpacity(0.7)),
-                prefixIcon: Icon(Icons.search, color: textSecondary.withOpacity(0.7)),
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(vertical: 14),
-              ),
+          const Text(
+            'Recent Orders',
+            style: TextStyle(
+              color: textPrimary,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 6),
+          const Text(
+            'Latest sales orders across the organization',
+            style: TextStyle(color: textSecondary, fontSize: 12),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _searchController,
+            onChanged: (value) => setState(() => _query = value),
+            decoration: InputDecoration(
+              hintText: 'Search orders',
+              prefixIcon: const Icon(Icons.search),
+              filled: true,
+              fillColor: AppColors.surfaceSoft,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide(color: AppColors.secondary.withValues(alpha: 0.28)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide(color: AppColors.secondary.withValues(alpha: 0.28)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: AppColors.purple),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
           if (orders.isEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              child: Text(
-                'No orders match your search.',
-                style: TextStyle(color: textSecondary, fontSize: 13),
-              ),
+            const Text(
+              'No orders match your search.',
+              style: TextStyle(color: textSecondary),
             )
           else
-            ...orders.map(_orderTile),
+            ...orders.map(_buildOrderTile),
         ],
       ),
     );
   }
 
-  Widget _orderTile(_OrderItem order) {
+  Widget _buildOrderTile(_OrderItem order) {
     final isConfirmed = order.status == 'Confirmed';
-    final statusColor = isConfirmed ? blue : textSecondary;
+    final statusColor = isConfirmed ? AppColors.blue : AppColors.textSecondary;
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: textPrimary.withOpacity(0.03),
+        color: AppColors.surfaceSoft,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: textPrimary.withOpacity(0.06)),
+        border: Border.all(color: AppColors.secondary.withValues(alpha: 0.18)),
       ),
       child: Row(
         children: [
@@ -466,7 +339,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             flex: 3,
             child: Text(
               order.orderNo,
-              style: const TextStyle(color: textPrimary, fontWeight: FontWeight.w600, fontSize: 13),
+              style: const TextStyle(
+                color: textPrimary,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           Expanded(
@@ -474,22 +350,21 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             child: Text(
               order.customer,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: textPrimary.withOpacity(0.75), fontSize: 13),
+              style: const TextStyle(color: textSecondary),
             ),
           ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
-              color: statusColor.withOpacity(isConfirmed ? 0.14 : 0.08),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: statusColor.withOpacity(0.35)),
+              color: statusColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(999),
             ),
             child: Text(
               order.status,
               style: TextStyle(
-                color: isConfirmed ? blue : textSecondary,
+                color: statusColor,
                 fontSize: 11,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -497,121 +372,31 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       ),
     );
   }
-
-  Widget _sectionTitle(String title, String subtitle) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(title, style: const TextStyle(color: textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
-        const SizedBox(height: 2),
-        Text(subtitle, style: TextStyle(color: textSecondary, fontSize: 12)),
-      ],
-    );
-  }
 }
 
 class _CardContainer extends StatelessWidget {
   final Widget child;
-  final double borderRadius;
-  final EdgeInsets padding;
 
-  const _CardContainer({
-    required this.child,
-    this.borderRadius = 20,
-    this.padding = const EdgeInsets.all(16),
-  });
+  const _CardContainer({required this.child});
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(borderRadius),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
-        child: Container(
-          padding: padding,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(borderRadius),
-            color: Colors.white.withOpacity(0.55),
-            border: Border.all(color: Colors.white.withOpacity(0.8)),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF1F2A2E).withOpacity(0.08),
-                blurRadius: 24,
-                offset: const Offset(0, 12),
-              ),
-            ],
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.primary,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.secondary.withValues(alpha: 0.18)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.textPrimary.withValues(alpha: 0.05),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
           ),
-          child: child,
-        ),
+        ],
       ),
+      child: child,
     );
-  }
-}
-
-class _LineChartPainter extends CustomPainter {
-  final List<double> values;
-  final Color color;
-
-  _LineChartPainter({required this.values, required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (values.isEmpty) return;
-    final maxVal = values.reduce((a, b) => a > b ? a : b);
-    const minVal = 0.0;
-    final range = (maxVal - minVal) == 0 ? 1 : (maxVal - minVal);
-
-    final dx = values.length > 1 ? size.width / (values.length - 1) : 0.0;
-    final points = <Offset>[];
-    for (var i = 0; i < values.length; i++) {
-      final x = dx * i;
-      final y = size.height - ((values[i] - minVal) / range) * size.height;
-      points.add(Offset(x, y));
-    }
-
-    final gridPaint = Paint()
-      ..color = const Color(0xFF1F2A2E).withOpacity(0.06)
-      ..strokeWidth = 1;
-    for (var i = 0; i <= 3; i++) {
-      final y = size.height / 3 * i;
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
-    }
-
-    final fillPath = Path()..moveTo(points.first.dx, size.height);
-    for (final point in points) {
-      fillPath.lineTo(point.dx, point.dy);
-    }
-    fillPath.lineTo(points.last.dx, size.height);
-    fillPath.close();
-
-    final fillPaint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [color.withOpacity(0.30), color.withOpacity(0.0)],
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
-    canvas.drawPath(fillPath, fillPaint);
-
-    final linePath = Path()..moveTo(points.first.dx, points.first.dy);
-    for (final point in points.skip(1)) {
-      linePath.lineTo(point.dx, point.dy);
-    }
-    final linePaint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.5
-      ..strokeCap = StrokeCap.round;
-    canvas.drawPath(linePath, linePaint);
-
-    for (final point in points) {
-      canvas.drawCircle(point, 5, Paint()..color = color.withOpacity(0.20));
-      canvas.drawCircle(point, 3, Paint()..color = color);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _LineChartPainter oldDelegate) {
-    return oldDelegate.values != values || oldDelegate.color != color;
   }
 }
 

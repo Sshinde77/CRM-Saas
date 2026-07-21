@@ -15,37 +15,30 @@ class CompanySettingsScreen extends StatefulWidget {
 }
 
 class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
-  // ---- Theme colours (kept identical to AdminDashboardScreen) ----
-  static const Color bg = AppColors.primary;
-  static const Color teal = AppColors.teal;
-  static const Color green = AppColors.green;
-  static const Color purple = AppColors.purple;
-  static const Color blue = AppColors.blue;
-  static const Color amber = AppColors.amber;
-  static const Color orange = AppColors.orange;
-  static const Color red = AppColors.red;
-
-  static const Color textPrimary = AppColors.textPrimary;
-  static const Color textSecondary = AppColors.textSecondary;
-
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  final _companyNameController = TextEditingController(text: 'SAAS Distributors');
-  final _emailController = TextEditingController(text: 'contact@saasdistributors.in');
-  final _phoneController = TextEditingController(text: '+91 80 4567 8901');
-  final _altPhoneController = TextEditingController();
-  final _websiteController = TextEditingController();
-  final _gstController = TextEditingController(text: '29AAACA1234F1Z5');
-  final _panController = TextEditingController();
-  final _billingAddressController = TextEditingController();
-  final _shippingAddressController = TextEditingController();
-  final _invoicePrefixController = TextEditingController();
-  final _invoiceStartController = TextEditingController(text: '1');
 
+  final TextEditingController _companyNameController =
+      TextEditingController(text: 'SAAS Distributors');
+  final TextEditingController _emailController =
+      TextEditingController(text: 'contact@saasdistributors.in');
+  final TextEditingController _phoneController =
+      TextEditingController(text: '+91 80 4567 8901');
+  final TextEditingController _altPhoneController = TextEditingController();
+  final TextEditingController _websiteController = TextEditingController();
+  final TextEditingController _gstController =
+      TextEditingController(text: '29AAACA1234F1Z5');
+  final TextEditingController _panController = TextEditingController();
+  final TextEditingController _billingAddressController = TextEditingController();
+  final TextEditingController _shippingAddressController = TextEditingController();
+  final TextEditingController _invoicePrefixController = TextEditingController();
+  final TextEditingController _invoiceStartController =
+      TextEditingController(text: '1');
+
+  Uint8List? _logoBytes;
+  bool _isSaving = false;
+  bool _shippingSameAsBilling = true;
   String _businessType = 'Water Distribution';
   String _financialYear = 'FY 2026-27';
-  bool _shippingSameAsBilling = true;
-  bool _isSaving = false;
-  Uint8List? _logoBytes;
 
   static const List<String> _businessTypes = [
     'Water Distribution',
@@ -80,7 +73,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
 
   Future<void> _handleSave() async {
     setState(() => _isSaving = true);
-    await Future.delayed(const Duration(seconds: 1));
+    await Future.delayed(const Duration(milliseconds: 700));
     if (!mounted) return;
     setState(() => _isSaving = false);
     ScaffoldMessenger.of(context).showSnackBar(
@@ -91,20 +84,15 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
   Future<void> _pickLogo() async {
     try {
       final picker = ImagePicker();
-      final picked = await picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 512,
-        maxHeight: 512,
-        imageQuality: 85,
-      );
+      final picked = await picker.pickImage(source: ImageSource.gallery);
       if (picked == null) return;
       final bytes = await picked.readAsBytes();
       if (!mounted) return;
       setState(() => _logoBytes = bytes);
-    } catch (e) {
+    } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not open image picker: $e')),
+        SnackBar(content: Text('Could not open image picker: $error')),
       );
     }
   }
@@ -113,51 +101,77 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: bg,
+      backgroundColor: AppColors.primary,
       drawer: const AppDrawer(activeItem: 'Company Settings'),
       body: SafeArea(
         child: Column(
           children: [
-            _buildTopBar(),
+            AdminTopBar(
+              title: 'Company Settings',
+              leadingIcon: Icons.menu_rounded,
+              onLeadingTap: () => _scaffoldKey.currentState?.openDrawer(),
+            ),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildHeaderRow(),
-                    const SizedBox(height: 20),
-
-                        // 1. Company Logo
-                    _GlassContainer(
-                      borderRadius: 24,
-                      padding: const EdgeInsets.all(20),
-                      child: _sectionWrap('Company Logo', _buildLogoRow()),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Company Profile',
+                                style: TextStyle(
+                                  color: AppColors.textPrimary,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              SizedBox(height: 4),
+                              Text(
+                                'Manage your company identity and invoicing details',
+                                style: TextStyle(
+                                  color: AppColors.textSecondary,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        ElevatedButton(
+                          onPressed: _isSaving ? null : _handleSave,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.purple,
+                            foregroundColor: AppColors.primary,
+                            elevation: 0,
+                          ),
+                          child: _isSaving
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.2,
+                                    color: AppColors.primary,
+                                  ),
+                                )
+                              : const Text('Save Changes'),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 20),
-
-                        // 2. Company Information
-                    _GlassContainer(
-                      borderRadius: 24,
-                      padding: const EdgeInsets.all(20),
-                      child: _sectionWrap('Company Information', _buildCompanyInfoFields()),
-                    ),
-                    const SizedBox(height: 20),
-
-                        // 3. Address
-                    _GlassContainer(
-                      borderRadius: 24,
-                      padding: const EdgeInsets.all(20),
-                      child: _sectionWrap('Address', _buildAddressFields()),
-                    ),
-                    const SizedBox(height: 20),
-
-                        // 4. Financial Year & Invoice Numbering
-                    _GlassContainer(
-                      borderRadius: 24,
-                      padding: const EdgeInsets.all(20),
-                      child: _sectionWrap('Financial Year & Invoice Numbering', _buildFinancialFields()),
-                    ),
+                    _buildCard(child: _buildLogoSection()),
+                    const SizedBox(height: 16),
+                    _buildCard(child: _buildCompanyInfoFields()),
+                    const SizedBox(height: 16),
+                    _buildCard(child: _buildAddressFields()),
+                    const SizedBox(height: 16),
+                    _buildCard(child: _buildFinancialFields()),
                   ],
                 ),
               ),
@@ -168,113 +182,53 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
     );
   }
 
-  // ---------------- Top bar (glass, matches dashboard header) ----------------
-  // ---------------- Top bar (glass, matches dashboard header) ----------------
-  Widget _buildTopBar() {
-    return AdminTopBar(
-      title: 'Company Settings',
-      leadingIcon: Icons.menu_rounded,
-      onLeadingTap: () => _scaffoldKey.currentState?.openDrawer(),
-    );
-  }
-
-  Widget _buildHeaderRow() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Company Settings',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: textPrimary)),
-                SizedBox(height: 4),
-                Text('Manage your company profile and invoicing identity',
-                    style: TextStyle(color: textSecondary, fontSize: 12.5)),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          GestureDetector(
-            onTap: _isSaving ? null : _handleSave,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [purple, blue]),
-                borderRadius: BorderRadius.circular(30),
-                boxShadow: [
-                  BoxShadow(color: purple.withOpacity(0.35), blurRadius: 16, offset: const Offset(0, 6)),
-                ],
-              ),
-              child: _isSaving
-                  ? const SizedBox(
-                      height: 16,
-                      width: 16,
-                      child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2),
-                    )
-                  : const Text('Save Changes',
-                      style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600, fontSize: 13)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _sectionWrap(String title, Widget child) {
+  Widget _buildLogoSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: const TextStyle(fontSize: 15.5, fontWeight: FontWeight.w700, color: textPrimary)),
-        const SizedBox(height: 18),
-        child,
-      ],
-    );
-  }
-
-  Widget _buildLogoRow() {
-    return Row(
-      children: [
-        Container(
-          width: 72,
-          height: 72,
-          decoration: BoxDecoration(
-            color: textPrimary.withOpacity(0.04),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: textPrimary.withOpacity(0.08)),
+        const Text(
+          'Company Logo',
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
           ),
-          alignment: Alignment.center,
-          child: _logoBytes != null
-              ? ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: Image.memory(_logoBytes!, width: 72, height: 72, fit: BoxFit.cover),
-                )
-              : Text(
-                  _companyNameController.text.isNotEmpty ? _companyNameController.text[0].toUpperCase() : '?',
-                  style: TextStyle(fontSize: 26, color: textSecondary, fontWeight: FontWeight.w600),
-                ),
         ),
-        const SizedBox(width: 16),
-        GestureDetector(
-          onTap: _pickLogo,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-            decoration: BoxDecoration(
-              color: purple.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(30),
-              border: Border.all(color: purple.withOpacity(0.25)),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: AppColors.surfaceSoft,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.secondary.withValues(alpha: 0.24)),
+              ),
+              alignment: Alignment.center,
+              child: _logoBytes != null
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Image.memory(_logoBytes!, fit: BoxFit.cover),
+                    )
+                  : Text(
+                      _companyNameController.text.isEmpty
+                          ? '?'
+                          : _companyNameController.text[0].toUpperCase(),
+                      style: const TextStyle(
+                        color: AppColors.purple,
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
             ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.upload_outlined, color: purple, size: 18),
-                SizedBox(width: 8),
-                Text('Upload Logo', style: TextStyle(color: purple, fontWeight: FontWeight.w600, fontSize: 13.5)),
-              ],
+            const SizedBox(width: 16),
+            OutlinedButton.icon(
+              onPressed: _pickLogo,
+              icon: const Icon(Icons.upload_outlined),
+              label: const Text('Upload Logo'),
             ),
-          ),
+          ],
         ),
       ],
     );
@@ -284,31 +238,47 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        const Text(
+          'Company Information',
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 16),
         _fieldLabel('Company Name'),
         _textField(controller: _companyNameController),
-        const SizedBox(height: 18),
+        const SizedBox(height: 16),
         _fieldLabel('Business Type'),
-        _dropdownField(
+        DropdownButtonFormField<String>(
           value: _businessType,
-          items: _businessTypes,
-          onChanged: (v) => setState(() => _businessType = v!),
+          decoration: _inputDecoration(),
+          items: _businessTypes
+              .map((item) => DropdownMenuItem<String>(value: item, child: Text(item)))
+              .toList(),
+          onChanged: (value) {
+            if (value != null) {
+              setState(() => _businessType = value);
+            }
+          },
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 16),
         _fieldLabel('Email'),
         _textField(controller: _emailController, keyboardType: TextInputType.emailAddress),
-        const SizedBox(height: 18),
+        const SizedBox(height: 16),
         _fieldLabel('Phone'),
         _textField(controller: _phoneController, keyboardType: TextInputType.phone),
-        const SizedBox(height: 18),
+        const SizedBox(height: 16),
         _fieldLabel('Alternate Phone'),
         _textField(controller: _altPhoneController, keyboardType: TextInputType.phone),
-        const SizedBox(height: 18),
+        const SizedBox(height: 16),
         _fieldLabel('Website'),
         _textField(controller: _websiteController, hint: 'https://example.com'),
-        const SizedBox(height: 18),
+        const SizedBox(height: 16),
         _fieldLabel('GST Number'),
         _textField(controller: _gstController),
-        const SizedBox(height: 18),
+        const SizedBox(height: 16),
         _fieldLabel('PAN Number'),
         _textField(controller: _panController),
       ],
@@ -319,34 +289,30 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        const Text(
+          'Address',
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 16),
         _fieldLabel('Billing Address'),
         _textField(controller: _billingAddressController, maxLines: 3),
-        const SizedBox(height: 14),
-        InkWell(
-          onTap: () => setState(() => _shippingSameAsBilling = !_shippingSameAsBilling),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Checkbox(
-                value: _shippingSameAsBilling,
-                activeColor: purple,
-                onChanged: (v) => setState(() => _shippingSameAsBilling = v ?? true),
-              ),
-              const SizedBox(width: 4),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 14),
-                  child: Text(
-                    'Shipping / warehouse address is the same as billing',
-                    style: TextStyle(color: textPrimary.withOpacity(0.85), fontSize: 13.5),
-                  ),
-                ),
-              ),
-            ],
+        const SizedBox(height: 12),
+        SwitchListTile(
+          value: _shippingSameAsBilling,
+          onChanged: (value) => setState(() => _shippingSameAsBilling = value),
+          activeColor: AppColors.purple,
+          contentPadding: EdgeInsets.zero,
+          title: const Text(
+            'Shipping / warehouse address is the same as billing',
+            style: TextStyle(color: AppColors.textPrimary),
           ),
         ),
         if (!_shippingSameAsBilling) ...[
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
           _fieldLabel('Shipping / Warehouse Address'),
           _textField(controller: _shippingAddressController, maxLines: 3),
         ],
@@ -358,16 +324,32 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _fieldLabel('Financial Year'),
-        _dropdownField(
-          value: _financialYear,
-          items: _financialYears,
-          onChanged: (v) => setState(() => _financialYear = v!),
+        const Text(
+          'Financial Year & Invoice Numbering',
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+          ),
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 16),
+        _fieldLabel('Financial Year'),
+        DropdownButtonFormField<String>(
+          value: _financialYear,
+          decoration: _inputDecoration(),
+          items: _financialYears
+              .map((item) => DropdownMenuItem<String>(value: item, child: Text(item)))
+              .toList(),
+          onChanged: (value) {
+            if (value != null) {
+              setState(() => _financialYear = value);
+            }
+          },
+        ),
+        const SizedBox(height: 16),
         _fieldLabel('Invoice Prefix'),
         _textField(controller: _invoicePrefixController, hint: 'e.g. INV-'),
-        const SizedBox(height: 18),
+        const SizedBox(height: 16),
         _fieldLabel('Invoice Starting Number'),
         _textField(controller: _invoiceStartController, keyboardType: TextInputType.number),
       ],
@@ -377,7 +359,13 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
   Widget _fieldLabel(String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Text(text, style: TextStyle(color: textPrimary.withOpacity(0.85), fontWeight: FontWeight.w600, fontSize: 13.5)),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: AppColors.textPrimary,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
     );
   }
 
@@ -391,104 +379,47 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
       controller: controller,
       keyboardType: keyboardType,
       maxLines: maxLines,
-      style: const TextStyle(color: textPrimary, fontSize: 14),
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: TextStyle(color: textSecondary.withOpacity(0.7), fontSize: 13.5),
-        filled: true,
-        fillColor: textPrimary.withOpacity(0.03),
-        contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: textPrimary.withOpacity(0.08)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: textPrimary.withOpacity(0.08)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: purple, width: 1.4),
-        ),
-      ),
+      decoration: _inputDecoration(hint: hint),
     );
   }
 
-  Widget _dropdownField({
-    required String value,
-    required List<String> items,
-    required ValueChanged<String?> onChanged,
-  }) {
+  Widget _buildCard({required Widget child}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14),
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: textPrimary.withOpacity(0.03),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: textPrimary.withOpacity(0.08)),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: value,
-          isExpanded: true,
-          icon: const Icon(Icons.keyboard_arrow_down, color: purple),
-          style: const TextStyle(color: textPrimary, fontSize: 14),
-          dropdownColor: AppColors.primary,
-          items: items
-              .map((item) => DropdownMenuItem<String>(value: item, child: Text(item)))
-              .toList(),
-          onChanged: onChanged,
-        ),
-      ),
-    );
-  }
-
-  Widget _iconBadge(IconData icon, Color background, Color fg) {
-    return Container(
-      width: 38,
-      height: 38,
-      decoration: BoxDecoration(color: background, shape: BoxShape.circle),
-      child: Icon(icon, color: fg, size: 20),
-    );
-  }
-
-}
-
-// ---------------- Reusable Glass Container (same as AdminDashboardScreen) ----------------
-class _GlassContainer extends StatelessWidget {
-  final Widget child;
-  final double borderRadius;
-  final EdgeInsets padding;
-
-  const _CardContainer({
-    required this.child,
-    this.borderRadius = 20,
-    this.padding = const EdgeInsets.all(16),
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(borderRadius),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
-        child: Container(
-          padding: padding,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(borderRadius),
-            color: AppColors.primary.withOpacity(0.55),
-            border: Border.all(color: AppColors.primary.withOpacity(0.8)),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF1F2A2E).withOpacity(0.08),
-                blurRadius: 24,
-                offset: const Offset(0, 12),
-              ),
-            ],
+        color: AppColors.primary,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.secondary.withValues(alpha: 0.18)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.textPrimary.withValues(alpha: 0.05),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
           ),
-          child: child,
-        ),
+        ],
+      ),
+      child: child,
+    );
+  }
+
+  InputDecoration _inputDecoration({String? hint}) {
+    return InputDecoration(
+      hintText: hint,
+      filled: true,
+      fillColor: AppColors.surfaceSoft,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(color: AppColors.secondary.withValues(alpha: 0.24)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(color: AppColors.secondary.withValues(alpha: 0.24)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: AppColors.purple),
       ),
     );
   }
 }
-

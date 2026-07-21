@@ -73,28 +73,26 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleSignIn() async {
-  if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) return;
 
-  setState(() => _isLoading = true);
+    setState(() => _isLoading = true);
 
-  // TODO: replace this with your real auth check (ApiService.login etc.)
-  await Future.delayed(const Duration(seconds: 1));
+    await Future.delayed(const Duration(seconds: 1));
 
-  if (!mounted) return;
-  setState(() => _isLoading = false);
+    if (!mounted) return;
+    setState(() => _isLoading = false);
 
-  final email = _emailController.text.trim().toLowerCase();
+    final email = _emailController.text.trim().toLowerCase();
 
-  if (email == 'admin@demo.com') {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
-    );
-  } else {
-    // Fallback for other roles until their dashboards are built
-    Navigator.pushReplacementNamed(context, '/home');
+    if (email == 'admin@demo.com') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
+      );
+    } else {
+      Navigator.pushReplacementNamed(context, '/home');
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -126,7 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             width: 84,
                             height: 84,
                             decoration: BoxDecoration(
-                              color: primaryPurple.withOpacity(0.08),
+                              color: primaryPurple.withValues(alpha: 0.08),
                               shape: BoxShape.circle,
                             ),
                             child: Center(
@@ -172,7 +170,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               borderRadius: BorderRadius.circular(24),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.05),
+                                  color: Colors.black.withValues(alpha: 0.05),
                                   blurRadius: 24,
                                   offset: const Offset(0, 8),
                                 ),
@@ -339,7 +337,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               borderRadius: BorderRadius.circular(30),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.08),
+                                  color: Colors.black.withValues(alpha: 0.08),
                                   blurRadius: 14,
                                   offset: const Offset(0, 4),
                                 ),
@@ -402,7 +400,7 @@ class _LoginScreenState extends State<LoginScreen> {
         border: Border.all(color: fieldBorder),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 16,
             offset: const Offset(0, 6),
           ),
@@ -415,7 +413,7 @@ class _LoginScreenState extends State<LoginScreen> {
             shrinkWrap: true,
             padding: const EdgeInsets.symmetric(vertical: 4),
             itemCount: _demoRoles.length,
-            separatorBuilder: (_, __) => const Divider(height: 1, color: fieldFill),
+            separatorBuilder: (_, index) => const Divider(height: 1, color: fieldFill),
             itemBuilder: (context, index) {
               final role = _demoRoles[index];
               return InkWell(
@@ -428,7 +426,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         width: 38,
                         height: 38,
                         decoration: BoxDecoration(
-                          color: primaryPurple.withOpacity(0.08),
+                          color: primaryPurple.withValues(alpha: 0.08),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(role.icon, color: primaryPurple, size: 19),

@@ -127,7 +127,7 @@ class AppDrawer extends StatelessWidget {
                 ],
               ),
             ),
-            Divider(color: textPrimary.withOpacity(0.08), height: 1),
+            Divider(color: textPrimary.withValues(alpha: 0.08), height: 1),
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
@@ -148,7 +148,7 @@ class AppDrawer extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                           decoration: BoxDecoration(
-                            color: active ? purple.withOpacity(0.10) : Colors.transparent,
+                            color: active ? purple.withValues(alpha: 0.10) : Colors.transparent,
                             borderRadius: BorderRadius.circular(14),
                             border: active
                                 ? Border(left: BorderSide(color: purple, width: 3))
@@ -177,7 +177,7 @@ class AppDrawer extends StatelessWidget {
                 },
               ),
             ),
-            Divider(color: textPrimary.withOpacity(0.08), height: 1),
+            Divider(color: textPrimary.withValues(alpha: 0.08), height: 1),
             Padding(
               padding: const EdgeInsets.all(16),
               child: Row(
@@ -187,7 +187,7 @@ class AppDrawer extends StatelessWidget {
                     height: 38,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: purple.withOpacity(0.15),
+                      color: purple.withValues(alpha: 0.15),
                     ),
                     alignment: Alignment.center,
                     child: const Text('AS',
