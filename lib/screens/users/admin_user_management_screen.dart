@@ -1,14 +1,9 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import '../../constants/app_colors.dart';
 import '../../widgets/admin_top_bar.dart';
 import '../../widgets/app_drawer.dart';
 
-/// Admin "User Management" screen — glassmorphism redesign on a white background.
-/// Two sections, switchable via a pill tab control:
-/// 1. Users               — table of all users with their email.
-/// 2. Roles & Permissions — pick a role, then toggle View/Create/Edit/Delete per module.
 class AdminUserManagementScreen extends StatefulWidget {
   const AdminUserManagementScreen({super.key});
 
@@ -30,18 +25,17 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
   static const Color textPrimary = AppColors.textPrimary;
   static const Color textSecondary = AppColors.textSecondary;
 
-  int _tabIndex = 0; // 0 = Users, 1 = Roles & Permissions
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  int _tabIndex = 0;
 
-  // ---- Users ----
-  final List<_UserItem> _users = const [
+  final List<_UserItem> _users = [
     _UserItem('Anita Sharma', 'admin@demo.com'),
     _UserItem('Vikram Singh', 'sales@demo.com'),
     _UserItem('Suresh Kumar', 'delivery@demo.com'),
     _UserItem('Priya Nair', 'accountant@demo.com'),
   ];
 
-  // ---- Roles ----
-  final List<String> _roles = const [
+  final List<String> _roles = [
     'Super Admin',
     'Admin',
     'Sales Officer',
@@ -51,7 +45,6 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
   ];
   String _selectedRole = 'Sales Officer';
 
-  // ---- Modules × [View, Create, Edit, Delete] ----
   final List<String> _modules = const [
     'Products',
     'Inventory',
@@ -63,7 +56,6 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
     'Reports',
   ];
 
-  // Mock permission matrix — replace with data from your backend.
   late final Map<String, Map<String, List<bool>>> _permissions = {
     'Super Admin': {for (final m in _modules) m: [true, true, true, true]},
     'Admin': {for (final m in _modules) m: [true, true, true, false]},
@@ -154,11 +146,11 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
     );
   }
 
-  Widget _iconBadge(IconData icon, Color bg, Color fg) {
+  Widget _iconBadge(IconData icon, Color bgColor, Color fg) {
     return Container(
       width: 36,
       height: 36,
-      decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
+      decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
       child: Icon(icon, color: fg, size: 19),
     );
   }
@@ -196,17 +188,19 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
                 : [],
           ),
           alignment: Alignment.center,
-          child: Text(label,
-              style: TextStyle(
-                  color: active ? purple : textSecondary,
-                  fontSize: 13.5,
-                  fontWeight: active ? FontWeight.w700 : FontWeight.w500)),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: active ? purple : textSecondary,
+              fontSize: 13.5,
+              fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+            ),
+          ),
         ),
       ),
     );
   }
 
-  // ---------------- Users section ----------------
   Widget _buildUsersSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -214,17 +208,12 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
         Align(
           alignment: Alignment.centerRight,
           child: GestureDetector(
-            onTap: () {
-              // TODO: open your Add User form / dialog.
-            },
+            onTap: _openAddUserDialog,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(colors: [purple, blue]),
                 borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(color: purple.withOpacity(0.35), blurRadius: 16, offset: const Offset(0, 6)),
-                ],
               ),
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
@@ -239,7 +228,7 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        _GlassContainer(
+        _CardContainer(
           borderRadius: 24,
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -248,18 +237,18 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
               Row(
                 children: [
                   Expanded(
-                      flex: 3,
-                      child: Text('User',
-                          style: TextStyle(color: textSecondary, fontSize: 12.5, fontWeight: FontWeight.w600))),
+                    flex: 3,
+                    child: Text('User', style: TextStyle(color: textSecondary, fontSize: 12.5, fontWeight: FontWeight.w600)),
+                  ),
                   Expanded(
-                      flex: 4,
-                      child: Text('Email',
-                          style: TextStyle(color: textSecondary, fontSize: 12.5, fontWeight: FontWeight.w600))),
+                    flex: 4,
+                    child: Text('Email', style: TextStyle(color: textSecondary, fontSize: 12.5, fontWeight: FontWeight.w600)),
+                  ),
                 ],
               ),
               const SizedBox(height: 10),
               Divider(color: textPrimary.withOpacity(0.08), height: 1),
-              ..._users.map((u) => _userRow(u)),
+              ..._users.map(_userRow),
             ],
           ),
         ),
@@ -280,28 +269,31 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(color: purple.withOpacity(0.14), shape: BoxShape.circle),
-                  child: Icon(Icons.person_outline, size: 19, color: purple),
+                  child: const Icon(Icons.person_outline, size: 19, color: purple),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: Text(user.name,
-                      style: const TextStyle(color: textPrimary, fontSize: 13.5, fontWeight: FontWeight.w600)),
+                  child: Text(
+                    user.name,
+                    style: const TextStyle(color: textPrimary, fontSize: 13.5, fontWeight: FontWeight.w600),
+                  ),
                 ),
               ],
             ),
           ),
           Expanded(
             flex: 4,
-            child: Text(user.email,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: textSecondary, fontSize: 13)),
+            child: Text(
+              user.email,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: textSecondary, fontSize: 13),
+            ),
           ),
         ],
       ),
     );
   }
 
-  // ---------------- Roles & Permissions section ----------------
   Widget _buildRolesSection() {
     final permissions = _permissions[_selectedRole]!;
     return Column(
@@ -311,19 +303,18 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
           spacing: 10,
           runSpacing: 10,
           children: [
-            ..._roles.map((role) => _roleChip(role)),
+            ..._roles.map(_roleChip),
             _createCustomRoleChip(),
           ],
         ),
         const SizedBox(height: 20),
-        _GlassContainer(
+        _CardContainer(
           borderRadius: 24,
           padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Permissions — $_selectedRole',
-                  style: const TextStyle(color: textPrimary, fontSize: 15, fontWeight: FontWeight.w700)),
+              Text('Permissions - $_selectedRole', style: const TextStyle(color: textPrimary, fontSize: 15, fontWeight: FontWeight.w700)),
               const SizedBox(height: 18),
               Row(
                 children: [
@@ -355,9 +346,6 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
           gradient: active ? const LinearGradient(colors: [purple, blue]) : null,
           color: active ? null : textPrimary.withOpacity(0.05),
           borderRadius: BorderRadius.circular(20),
-          boxShadow: active
-              ? [BoxShadow(color: purple.withOpacity(0.30), blurRadius: 12, offset: const Offset(0, 5))]
-              : [],
         ),
         child: Text(role,
             style: TextStyle(
@@ -368,25 +356,47 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
     );
   }
 
+  Future<void> _openAddUserDialog() async {
+    final result = await showDialog<_UserItem>(
+      context: context,
+      barrierColor: textPrimary.withOpacity(0.25),
+      builder: (_) => _AddUserDialog(roles: _roles, initialRole: _selectedRole),
+    );
+    if (result == null) return;
+    setState(() => _users.add(result));
+  }
+
+  Future<void> _openCreateRoleDialog() async {
+    final name = await showDialog<String>(
+      context: context,
+      barrierColor: textPrimary.withOpacity(0.25),
+      builder: (_) => const _CreateRoleDialog(),
+    );
+    if (name == null || name.trim().isEmpty) return;
+    final roleName = name.trim();
+    setState(() {
+      if (!_roles.contains(roleName)) _roles.add(roleName);
+      _permissions[roleName] = {for (final m in _modules) m: [false, false, false, false]};
+      _selectedRole = roleName;
+    });
+  }
+
   Widget _createCustomRoleChip() {
     return GestureDetector(
-      onTap: () {
-        // TODO: open a "create custom role" form.
-      },
+      onTap: _openCreateRoleDialog,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: purple.withOpacity(0.35), style: BorderStyle.solid),
+          border: Border.all(color: purple.withOpacity(0.35)),
           color: purple.withOpacity(0.04),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.add_rounded, size: 16, color: purple),
+            const Icon(Icons.add_rounded, size: 16, color: purple),
             const SizedBox(width: 6),
-            Text('Create Custom Role',
-                style: TextStyle(color: purple, fontSize: 13.5, fontWeight: FontWeight.w700)),
+            Text('Create Custom Role', style: TextStyle(color: purple, fontSize: 13.5, fontWeight: FontWeight.w700)),
           ],
         ),
       ),
@@ -395,9 +405,11 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
 
   Widget _permHeaderCell(String label) {
     return Expanded(
-      child: Text(label,
-          textAlign: TextAlign.center,
-          style: TextStyle(color: textSecondary, fontSize: 12.5, fontWeight: FontWeight.w600)),
+      child: Text(
+        label,
+        textAlign: TextAlign.center,
+        style: TextStyle(color: textSecondary, fontSize: 12.5, fontWeight: FontWeight.w600),
+      ),
     );
   }
 
@@ -408,8 +420,7 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
         children: [
           Expanded(
             flex: 3,
-            child: Text(module,
-                style: const TextStyle(color: textPrimary, fontSize: 13.5, fontWeight: FontWeight.w600)),
+            child: Text(module, style: const TextStyle(color: textPrimary, fontSize: 13.5, fontWeight: FontWeight.w600)),
           ),
           for (var i = 0; i < 4; i++)
             Expanded(
@@ -442,13 +453,12 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
   }
 }
 
-// ---------------- Reusable Glass Container (matches app-wide styling) ----------------
-class _GlassContainer extends StatelessWidget {
+class _CardContainer extends StatelessWidget {
   final Widget child;
   final double borderRadius;
   final EdgeInsets padding;
 
-  const _GlassContainer({
+  const _CardContainer({
     required this.child,
     this.borderRadius = 20,
     this.padding = const EdgeInsets.all(16),

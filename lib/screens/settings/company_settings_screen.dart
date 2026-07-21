@@ -1,5 +1,5 @@
 import 'dart:typed_data';
-import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -7,11 +7,6 @@ import '../../constants/app_colors.dart';
 import '../../widgets/admin_top_bar.dart';
 import '../../widgets/app_drawer.dart';
 
-// Place this file at: lib/screens/settings/company_settings_screen.dart
-
-/// Company Settings screen — glassmorphism style, matching AdminDashboardScreen.
-/// Section order: Company Logo -> Company Information -> Address ->
-/// Financial Year & Invoice Numbering.
 class CompanySettingsScreen extends StatefulWidget {
   const CompanySettingsScreen({super.key});
 
@@ -33,7 +28,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
   static const Color textPrimary = AppColors.textPrimary;
   static const Color textSecondary = AppColors.textSecondary;
 
-  // ---- Controllers ----
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final _companyNameController = TextEditingController(text: 'SAAS Distributors');
   final _emailController = TextEditingController(text: 'contact@saasdistributors.in');
   final _phoneController = TextEditingController(text: '+91 80 4567 8901');
@@ -51,7 +46,6 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
   bool _shippingSameAsBilling = true;
   bool _isSaving = false;
   Uint8List? _logoBytes;
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   static const List<String> _businessTypes = [
     'Water Distribution',
@@ -86,13 +80,9 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
 
   Future<void> _handleSave() async {
     setState(() => _isSaving = true);
-
-    // TODO: send the form data to your API / provider here.
     await Future.delayed(const Duration(seconds: 1));
-
     if (!mounted) return;
     setState(() => _isSaving = false);
-
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Company settings saved')),
     );
@@ -100,22 +90,17 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
 
   Future<void> _pickLogo() async {
     try {
-      final ImagePicker picker = ImagePicker();
-      final XFile? picked = await picker.pickImage(
+      final picker = ImagePicker();
+      final picked = await picker.pickImage(
         source: ImageSource.gallery,
         maxWidth: 512,
         maxHeight: 512,
         imageQuality: 85,
       );
-
-      if (picked == null) return; // user cancelled the file dialog
-
+      if (picked == null) return;
       final bytes = await picked.readAsBytes();
       if (!mounted) return;
       setState(() => _logoBytes = bytes);
-
-      // TODO: upload `bytes` (or `picked.path` on mobile/desktop) to your
-      // storage/API here, then save the returned URL with the rest of the form.
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -193,7 +178,6 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
     );
   }
 
-  // ---------------- Page header with Save button ----------------
   Widget _buildHeaderRow() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -250,7 +234,6 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
     );
   }
 
-  // ---------------- Section 1: Company Logo ----------------
   Widget _buildLogoRow() {
     return Row(
       children: [
@@ -283,9 +266,9 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
               borderRadius: BorderRadius.circular(30),
               border: Border.all(color: purple.withOpacity(0.25)),
             ),
-            child: Row(
+            child: const Row(
               mainAxisSize: MainAxisSize.min,
-              children: const [
+              children: [
                 Icon(Icons.upload_outlined, color: purple, size: 18),
                 SizedBox(width: 8),
                 Text('Upload Logo', style: TextStyle(color: purple, fontWeight: FontWeight.w600, fontSize: 13.5)),
@@ -297,7 +280,6 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
     );
   }
 
-  // ---------------- Section 2: Company Information ----------------
   Widget _buildCompanyInfoFields() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -305,7 +287,6 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
         _fieldLabel('Company Name'),
         _textField(controller: _companyNameController),
         const SizedBox(height: 18),
-
         _fieldLabel('Business Type'),
         _dropdownField(
           value: _businessType,
@@ -313,34 +294,27 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
           onChanged: (v) => setState(() => _businessType = v!),
         ),
         const SizedBox(height: 18),
-
         _fieldLabel('Email'),
         _textField(controller: _emailController, keyboardType: TextInputType.emailAddress),
         const SizedBox(height: 18),
-
         _fieldLabel('Phone'),
         _textField(controller: _phoneController, keyboardType: TextInputType.phone),
         const SizedBox(height: 18),
-
         _fieldLabel('Alternate Phone'),
         _textField(controller: _altPhoneController, keyboardType: TextInputType.phone),
         const SizedBox(height: 18),
-
         _fieldLabel('Website'),
         _textField(controller: _websiteController, hint: 'https://example.com'),
         const SizedBox(height: 18),
-
         _fieldLabel('GST Number'),
         _textField(controller: _gstController),
         const SizedBox(height: 18),
-
         _fieldLabel('PAN Number'),
         _textField(controller: _panController),
       ],
     );
   }
 
-  // ---------------- Section 3: Address ----------------
   Widget _buildAddressFields() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -348,10 +322,8 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
         _fieldLabel('Billing Address'),
         _textField(controller: _billingAddressController, maxLines: 3),
         const SizedBox(height: 14),
-
         InkWell(
           onTap: () => setState(() => _shippingSameAsBilling = !_shippingSameAsBilling),
-          borderRadius: BorderRadius.circular(8),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -373,7 +345,6 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
             ],
           ),
         ),
-
         if (!_shippingSameAsBilling) ...[
           const SizedBox(height: 14),
           _fieldLabel('Shipping / Warehouse Address'),
@@ -383,7 +354,6 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
     );
   }
 
-  // ---------------- Section 4: Financial Year & Invoice Numbering ----------------
   Widget _buildFinancialFields() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -395,18 +365,15 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
           onChanged: (v) => setState(() => _financialYear = v!),
         ),
         const SizedBox(height: 18),
-
         _fieldLabel('Invoice Prefix'),
         _textField(controller: _invoicePrefixController, hint: 'e.g. INV-'),
         const SizedBox(height: 18),
-
         _fieldLabel('Invoice Starting Number'),
         _textField(controller: _invoiceStartController, keyboardType: TextInputType.number),
       ],
     );
   }
 
-  // ---------------- Shared field widgets (glass-tinted, translucent) ----------------
   Widget _fieldLabel(String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -474,6 +441,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
       ),
     );
   }
+
   Widget _iconBadge(IconData icon, Color background, Color fg) {
     return Container(
       width: 38,
@@ -491,7 +459,7 @@ class _GlassContainer extends StatelessWidget {
   final double borderRadius;
   final EdgeInsets padding;
 
-  const _GlassContainer({
+  const _CardContainer({
     required this.child,
     this.borderRadius = 20,
     this.padding = const EdgeInsets.all(16),

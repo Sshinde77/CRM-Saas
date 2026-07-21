@@ -1,18 +1,9 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import '../../constants/app_colors.dart';
 import '../../widgets/admin_top_bar.dart';
 import '../../widgets/app_drawer.dart';
 
-/// Admin Settings screen — glassmorphism redesign on a white background.
-/// Section order (as requested):
-/// 1. Financial Year & Invoice Numbering
-/// 2. GST & Tax Defaults
-/// 3. Payment Methods
-/// 4. Product Categories
-/// 5. Units of Measurement
-/// 6. Notification Preferences
 class AdminSettingsScreen extends StatefulWidget {
   const AdminSettingsScreen({super.key});
 
@@ -34,14 +25,12 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
   static const Color textPrimary = AppColors.textPrimary;
   static const Color textSecondary = AppColors.textSecondary;
 
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _saving = false;
-
-  // ---- GST & Tax Defaults ----
   String _gstRate = '18%';
   final List<String> _gstOptions = const ['0%', '5%', '12%', '18%', '28%'];
   bool _roundOffInvoices = true;
 
-  // ---- Payment Methods (toggleable) ----
   final Map<String, bool> _paymentMethods = {
     'Cash': true,
     'UPI': true,
@@ -51,7 +40,6 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
     'Cheque': false,
   };
 
-  // ---- Product Categories ----
   final List<String> _categories = [
     'Packaged Water',
     'Mineral Water',
@@ -64,7 +52,6 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
   ];
   final TextEditingController _categoryController = TextEditingController();
 
-  // ---- Units of Measurement ----
   final List<String> _units = [
     'unit',
     'jar',
@@ -78,7 +65,6 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
   ];
   final TextEditingController _unitController = TextEditingController();
 
-  // ---- Notification Preferences ----
   final Map<String, bool> _notificationPrefs = {
     'Low stock alerts': true,
     'Overdue customer payments': true,
@@ -96,7 +82,6 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
 
   Future<void> _handleSave() async {
     setState(() => _saving = true);
-    // TODO: persist these settings via your API / provider.
     await Future.delayed(const Duration(milliseconds: 700));
     if (!mounted) return;
     setState(() => _saving = false);
@@ -196,15 +181,13 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
+        const Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Settings',
-                  style: TextStyle(color: textPrimary, fontSize: 24, fontWeight: FontWeight.w800)),
-              const SizedBox(height: 4),
-              Text('Operational configuration for invoicing, payments, and products',
-                  style: TextStyle(color: textSecondary, fontSize: 12.5)),
+              Text('Settings', style: TextStyle(color: textPrimary, fontSize: 24, fontWeight: FontWeight.w800)),
+              SizedBox(height: 4),
+              Text('Operational configuration for invoicing, payments, and products', style: TextStyle(color: textSecondary, fontSize: 12.5)),
             ],
           ),
         ),
@@ -239,41 +222,32 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
     );
   }
 
-  // ---------------- 1. Financial Year & Invoice Numbering ----------------
   Widget _buildFinancialYearSection() {
-    return _GlassContainer(
-      borderRadius: 24,
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _sectionTitle('Financial Year & Invoice Numbering'),
-          const SizedBox(height: 2),
-          Text('Owned by Company Settings — shown here for reference',
-              style: TextStyle(color: textSecondary, fontSize: 12)),
-          const SizedBox(height: 16),
-          _readOnlyField('Financial Year'),
-          const SizedBox(height: 14),
-          _readOnlyField('Invoice Prefix'),
-          const SizedBox(height: 14),
-          _readOnlyField('Invoice Starting Number'),
-          const SizedBox(height: 14),
-          GestureDetector(
-            onTap: () {
-              // TODO: navigate to your Company Settings screen.
-            },
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Edit in Company Settings',
-                    style: TextStyle(color: purple, fontSize: 13, fontWeight: FontWeight.w700)),
-                const SizedBox(width: 4),
-                Icon(Icons.arrow_forward_rounded, size: 15, color: purple),
-              ],
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionTitle('Financial Year & Invoice Numbering'),
+        const SizedBox(height: 2),
+        Text('Owned by Company Settings - shown here for reference', style: TextStyle(color: textSecondary, fontSize: 12)),
+        const SizedBox(height: 16),
+        _readOnlyField('Financial Year'),
+        const SizedBox(height: 14),
+        _readOnlyField('Invoice Prefix'),
+        const SizedBox(height: 14),
+        _readOnlyField('Invoice Starting Number'),
+        const SizedBox(height: 14),
+        GestureDetector(
+          onTap: () {},
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Edit in Company Settings', style: TextStyle(color: purple, fontSize: 13, fontWeight: FontWeight.w700)),
+              const SizedBox(width: 4),
+              const Icon(Icons.arrow_forward_rounded, size: 15, color: purple),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -290,13 +264,12 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: textPrimary.withOpacity(0.07)),
           ),
-          child: Text('—', style: TextStyle(color: textSecondary.withOpacity(0.7), fontSize: 14)),
+          child: Text('-', style: TextStyle(color: textSecondary.withOpacity(0.7), fontSize: 14)),
         ),
       ],
     );
   }
 
-  // ---------------- 2. GST & Tax Defaults ----------------
   Widget _buildGstSection() {
     return _GlassContainer(
       borderRadius: 24,
@@ -343,62 +316,58 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
     );
   }
 
-  // ---------------- 3. Payment Methods ----------------
   Widget _buildPaymentMethodsSection() {
-    return _GlassContainer(
-      borderRadius: 24,
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _sectionTitle('Payment Methods'),
-          const SizedBox(height: 2),
-          Text('Methods available when recording payments or delivery collections',
-              style: TextStyle(color: textSecondary, fontSize: 12)),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: _paymentMethods.entries.map((entry) {
-              final active = entry.value;
-              return GestureDetector(
-                onTap: () => setState(() => _paymentMethods[entry.key] = !active),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-                  decoration: BoxDecoration(
-                    color: active ? green.withOpacity(0.12) : textPrimary.withOpacity(0.04),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: active ? green.withOpacity(0.4) : textPrimary.withOpacity(0.1)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: active ? green : textSecondary.withOpacity(0.5),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(entry.key,
-                          style: TextStyle(
-                              color: active ? green : textSecondary,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600)),
-                    ],
-                  ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionTitle('Payment Methods'),
+        const SizedBox(height: 2),
+        Text('Methods available when recording payments or delivery collections', style: TextStyle(color: textSecondary, fontSize: 12)),
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: _paymentMethods.entries.map((entry) {
+            final active = entry.value;
+            return GestureDetector(
+              onTap: () => setState(() => _paymentMethods[entry.key] = !active),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                decoration: BoxDecoration(
+                  color: active ? green.withOpacity(0.12) : textPrimary.withOpacity(0.04),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: active ? green.withOpacity(0.4) : textPrimary.withOpacity(0.1)),
                 ),
-              );
-            }).toList(),
-          ),
-        ],
-      ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: active ? green : textSecondary.withOpacity(0.5),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      entry.key,
+                      style: TextStyle(
+                        color: active ? green : textSecondary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 
-  // ---------------- 4 & 5. Chip sections (Product Categories / Units of Measurement) ----------------
   Widget _buildChipSection({
     required String title,
     required List<String> items,
@@ -407,110 +376,99 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
     required VoidCallback onAdd,
     required ValueChanged<String> onRemove,
   }) {
-    return _GlassContainer(
-      borderRadius: 24,
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _sectionTitle(title),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: items
-                .map((item) => Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-                      decoration: BoxDecoration(
-                        color: teal.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: teal.withOpacity(0.25)),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(item,
-                              style: const TextStyle(
-                                  color: textPrimary, fontSize: 13, fontWeight: FontWeight.w500)),
-                          const SizedBox(width: 8),
-                          GestureDetector(
-                            onTap: () => onRemove(item),
-                            child: Icon(Icons.close_rounded, size: 15, color: textSecondary),
-                          ),
-                        ],
-                      ),
-                    ))
-                .toList(),
-          ),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              Expanded(
-                child: Container(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionTitle(title),
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: items
+              .map(
+                (item) => Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
                   decoration: BoxDecoration(
-                    color: textPrimary.withOpacity(0.03),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: textPrimary.withOpacity(0.08)),
+                    color: teal.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: teal.withOpacity(0.25)),
                   ),
-                  child: TextField(
-                    controller: controller,
-                    style: const TextStyle(color: textPrimary, fontSize: 14),
-                    decoration: InputDecoration(
-                      hintText: hint,
-                      hintStyle: TextStyle(color: textSecondary.withOpacity(0.6)),
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                    ),
-                    onSubmitted: (_) => onAdd(),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(item, style: const TextStyle(color: textPrimary, fontSize: 13, fontWeight: FontWeight.w500)),
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: () => onRemove(item),
+                        child: Icon(Icons.close_rounded, size: 15, color: textSecondary),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              GestureDetector(
-                onTap: onAdd,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
-                  decoration: BoxDecoration(
-                    color: textPrimary.withOpacity(0.06),
-                    borderRadius: BorderRadius.circular(14),
+              )
+              .toList(),
+        ),
+        const SizedBox(height: 14),
+        Row(
+          children: [
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: textPrimary.withOpacity(0.03),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: textPrimary.withOpacity(0.08)),
+                ),
+                child: TextField(
+                  controller: controller,
+                  style: const TextStyle(color: textPrimary, fontSize: 14),
+                  decoration: InputDecoration(
+                    hintText: hint,
+                    hintStyle: TextStyle(color: textSecondary.withOpacity(0.6)),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                   ),
-                  child: const Text('Add',
-                      style: TextStyle(color: textPrimary, fontSize: 13, fontWeight: FontWeight.w700)),
+                  onSubmitted: (_) => onAdd(),
                 ),
               ),
-            ],
-          ),
-        ],
-      ),
+            ),
+            const SizedBox(width: 10),
+            GestureDetector(
+              onTap: onAdd,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
+                decoration: BoxDecoration(
+                  color: textPrimary.withOpacity(0.06),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Text('Add', style: TextStyle(color: textPrimary, fontSize: 13, fontWeight: FontWeight.w700)),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
-  // ---------------- 6. Notification Preferences ----------------
   Widget _buildNotificationPrefsSection() {
-    return _GlassContainer(
-      borderRadius: 24,
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _sectionTitle('Notification Preferences'),
-          const SizedBox(height: 14),
-          ..._notificationPrefs.entries.map((entry) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: _checkboxRow(
-                label: entry.key,
-                value: entry.value,
-                onChanged: (v) => setState(() => _notificationPrefs[entry.key] = v),
-              ),
-            );
-          }),
-        ],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionTitle('Notification Preferences'),
+        const SizedBox(height: 14),
+        ..._notificationPrefs.entries.map(
+          (entry) => Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _checkboxRow(
+              label: entry.key,
+              value: entry.value,
+              onChanged: (v) => setState(() => _notificationPrefs[entry.key] = v),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
-  // ---------------- Shared helpers ----------------
   Widget _sectionTitle(String title) {
     return Text(title, style: const TextStyle(color: textPrimary, fontSize: 15, fontWeight: FontWeight.w700));
   }
@@ -543,11 +501,18 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
             child: value ? const Icon(Icons.check_rounded, size: 16, color: AppColors.primary) : null,
           ),
           const SizedBox(width: 12),
-          Expanded(
-            child: Text(label, style: const TextStyle(color: textPrimary, fontSize: 14)),
-          ),
+          Expanded(child: Text(label, style: const TextStyle(color: textPrimary, fontSize: 14))),
         ],
       ),
+    );
+  }
+
+  Widget _iconBadge(IconData icon, Color bgColor, Color fg) {
+    return Container(
+      width: 36,
+      height: 36,
+      decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
+      child: Icon(icon, color: fg, size: 19),
     );
   }
 }
@@ -565,13 +530,12 @@ class _NotificationDot extends StatelessWidget {
   }
 }
 
-// ---------------- Reusable Glass Container (matches dashboard/profile styling) ----------------
-class _GlassContainer extends StatelessWidget {
+class _CardContainer extends StatelessWidget {
   final Widget child;
   final double borderRadius;
   final EdgeInsets padding;
 
-  const _GlassContainer({
+  const _CardContainer({
     required this.child,
     this.borderRadius = 20,
     this.padding = const EdgeInsets.all(16),
