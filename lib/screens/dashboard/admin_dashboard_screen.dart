@@ -23,11 +23,31 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   static const Color textSecondary = AppColors.textSecondary;
 
   final List<_StatItem> _stats = const [
-    _StatItem("Today's Sales", 'Rs. 23,242', Icons.currency_rupee, AppColors.green),
-    _StatItem('Monthly Sales', 'Rs. 66,160', Icons.calendar_month, AppColors.purple),
+    _StatItem(
+      "Today's Sales",
+      'Rs. 23,242',
+      Icons.currency_rupee,
+      AppColors.green,
+    ),
+    _StatItem(
+      'Monthly Sales',
+      'Rs. 66,160',
+      Icons.calendar_month,
+      AppColors.purple,
+    ),
     _StatItem('Yearly Sales', 'Rs. 66,160', Icons.event, AppColors.blue),
-    _StatItem('Purchases This Month', 'Rs. 1,89,215', Icons.inventory_2, AppColors.teal),
-    _StatItem('Low Stock Items', '5', Icons.warning_amber_rounded, AppColors.amber),
+    _StatItem(
+      'Purchases This Month',
+      'Rs. 1,89,215',
+      Icons.inventory_2,
+      AppColors.teal,
+    ),
+    _StatItem(
+      'Low Stock Items',
+      '5',
+      Icons.warning_amber_rounded,
+      AppColors.amber,
+    ),
     _StatItem('Pending Orders', '6', Icons.schedule, AppColors.blue),
   ];
 
@@ -57,12 +77,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final filteredOrders = _query.isEmpty
         ? _orders
         : _orders
-            .where(
-              (order) =>
-                  order.orderNo.toLowerCase().contains(_query.toLowerCase()) ||
-                  order.customer.toLowerCase().contains(_query.toLowerCase()),
-            )
-            .toList();
+              .where(
+                (order) =>
+                    order.orderNo.toLowerCase().contains(
+                      _query.toLowerCase(),
+                    ) ||
+                    order.customer.toLowerCase().contains(_query.toLowerCase()),
+              )
+              .toList();
 
     return Scaffold(
       key: _scaffoldKey,
@@ -117,9 +139,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       color: AppColors.primary,
       onSelected: (value) {
         if (value == 'profile') {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const AdminProfileScreen()),
-          );
+          Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (_) => const AdminProfileScreen()));
         }
         if (value == 'settings') {
           Navigator.of(context).push(
@@ -237,7 +259,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       Expanded(
                         child: Text(
                           product.name,
-                          style: const TextStyle(color: textPrimary, fontSize: 13),
+                          style: const TextStyle(
+                            color: textPrimary,
+                            fontSize: 13,
+                          ),
                         ),
                       ),
                       Text(
@@ -255,8 +280,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     child: LinearProgressIndicator(
                       value: widthFactor,
                       minHeight: 10,
-                      backgroundColor: AppColors.secondary.withValues(alpha: 0.14),
-                      valueColor: const AlwaysStoppedAnimation<Color>(AppColors.purple),
+                      backgroundColor: AppColors.secondary.withValues(
+                        alpha: 0.14,
+                      ),
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                        AppColors.purple,
+                      ),
                     ),
                   ),
                 ],
@@ -300,11 +329,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   fillColor: AppColors.surfaceSoft,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide(color: AppColors.secondary.withValues(alpha: 0.28)),
+                    borderSide: BorderSide(
+                      color: AppColors.secondary.withValues(alpha: 0.28),
+                    ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide(color: AppColors.secondary.withValues(alpha: 0.28)),
+                    borderSide: BorderSide(
+                      color: AppColors.secondary.withValues(alpha: 0.28),
+                    ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
@@ -333,10 +366,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 children: [
                   Expanded(child: searchField),
                   const SizedBox(width: 12),
-                  SizedBox(
-                    width: 180,
-                    child: actionButton,
-                  ),
+                  SizedBox(width: 180, child: actionButton),
                 ],
               );
             },

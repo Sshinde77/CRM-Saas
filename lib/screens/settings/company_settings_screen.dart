@@ -18,22 +18,30 @@ class CompanySettingsScreen extends StatefulWidget {
 class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  final TextEditingController _companyNameController =
-      TextEditingController(text: 'SAAS Distributors');
-  final TextEditingController _emailController =
-      TextEditingController(text: 'contact@saasdistributors.in');
-  final TextEditingController _phoneController =
-      TextEditingController(text: '+91 80 4567 8901');
+  final TextEditingController _companyNameController = TextEditingController(
+    text: 'SAAS Distributors',
+  );
+  final TextEditingController _emailController = TextEditingController(
+    text: 'contact@saasdistributors.in',
+  );
+  final TextEditingController _phoneController = TextEditingController(
+    text: '+91 80 4567 8901',
+  );
   final TextEditingController _altPhoneController = TextEditingController();
   final TextEditingController _websiteController = TextEditingController();
-  final TextEditingController _gstController =
-      TextEditingController(text: '29AAACA1234F1Z5');
+  final TextEditingController _gstController = TextEditingController(
+    text: '29AAACA1234F1Z5',
+  );
   final TextEditingController _panController = TextEditingController();
-  final TextEditingController _billingAddressController = TextEditingController();
-  final TextEditingController _shippingAddressController = TextEditingController();
-  final TextEditingController _invoicePrefixController = TextEditingController();
-  final TextEditingController _invoiceStartController =
-      TextEditingController(text: '1');
+  final TextEditingController _billingAddressController =
+      TextEditingController();
+  final TextEditingController _shippingAddressController =
+      TextEditingController();
+  final TextEditingController _invoicePrefixController =
+      TextEditingController();
+  final TextEditingController _invoiceStartController = TextEditingController(
+    text: '1',
+  );
 
   Uint8List? _logoBytes;
   bool _isSaving = false;
@@ -77,9 +85,9 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
     await Future.delayed(const Duration(milliseconds: 700));
     if (!mounted) return;
     setState(() => _isSaving = false);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Company settings saved')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Company settings saved')));
   }
 
   Future<void> _pickLogo() async {
@@ -204,7 +212,9 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
               decoration: BoxDecoration(
                 color: AppColors.surfaceSoft,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.secondary.withValues(alpha: 0.24)),
+                border: Border.all(
+                  color: AppColors.secondary.withValues(alpha: 0.24),
+                ),
               ),
               alignment: Alignment.center,
               child: _logoBytes != null
@@ -256,7 +266,10 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
           initialValue: _businessType,
           decoration: _inputDecoration(),
           items: _businessTypes
-              .map((item) => DropdownMenuItem<String>(value: item, child: Text(item)))
+              .map(
+                (item) =>
+                    DropdownMenuItem<String>(value: item, child: Text(item)),
+              )
               .toList(),
           onChanged: (value) {
             if (value != null) {
@@ -266,13 +279,22 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
         ),
         const SizedBox(height: 16),
         _fieldLabel('Email'),
-        _textField(controller: _emailController, keyboardType: TextInputType.emailAddress),
+        _textField(
+          controller: _emailController,
+          keyboardType: TextInputType.emailAddress,
+        ),
         const SizedBox(height: 16),
         _fieldLabel('Phone'),
-        _textField(controller: _phoneController, keyboardType: TextInputType.phone),
+        _textField(
+          controller: _phoneController,
+          keyboardType: TextInputType.phone,
+        ),
         const SizedBox(height: 16),
         _fieldLabel('Alternate Phone'),
-        _textField(controller: _altPhoneController, keyboardType: TextInputType.phone),
+        _textField(
+          controller: _altPhoneController,
+          keyboardType: TextInputType.phone,
+        ),
         const SizedBox(height: 16),
         _fieldLabel('Website'),
         _textField(controller: _websiteController, hint: 'https://example.com'),
@@ -339,7 +361,10 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
           initialValue: _financialYear,
           decoration: _inputDecoration(),
           items: _financialYears
-              .map((item) => DropdownMenuItem<String>(value: item, child: Text(item)))
+              .map(
+                (item) =>
+                    DropdownMenuItem<String>(value: item, child: Text(item)),
+              )
               .toList(),
           onChanged: (value) {
             if (value != null) {
@@ -352,7 +377,10 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
         _textField(controller: _invoicePrefixController, hint: 'e.g. INV-'),
         const SizedBox(height: 16),
         _fieldLabel('Invoice Starting Number'),
-        _textField(controller: _invoiceStartController, keyboardType: TextInputType.number),
+        _textField(
+          controller: _invoiceStartController,
+          keyboardType: TextInputType.number,
+        ),
       ],
     );
   }
@@ -411,11 +439,15 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
       fillColor: AppColors.surfaceSoft,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: AppColors.secondary.withValues(alpha: 0.24)),
+        borderSide: BorderSide(
+          color: AppColors.secondary.withValues(alpha: 0.24),
+        ),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: AppColors.secondary.withValues(alpha: 0.24)),
+        borderSide: BorderSide(
+          color: AppColors.secondary.withValues(alpha: 0.24),
+        ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),

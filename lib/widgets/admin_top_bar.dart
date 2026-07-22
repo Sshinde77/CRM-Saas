@@ -41,7 +41,7 @@ class AdminTopBar extends StatelessWidget {
             child: Text(
               title,
               style: const TextStyle(
-                  color: AppColors.secondary,
+                color: AppColors.secondary,
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
               ),
@@ -50,7 +50,11 @@ class AdminTopBar extends StatelessWidget {
           Stack(
             clipBehavior: Clip.none,
             children: [
-              const Icon(Icons.notifications_none_rounded, color: AppColors.textPrimary, size: 30),
+              const Icon(
+                Icons.notifications_none_rounded,
+                color: AppColors.textPrimary,
+                size: 30,
+              ),
               Positioned(
                 right: 1,
                 top: 1,
@@ -84,7 +88,7 @@ class _DefaultAvatar extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surfaceSoft,
         shape: BoxShape.circle,
-          border: Border.all(color: AppColors.secondary),
+        border: Border.all(color: AppColors.secondary),
       ),
       alignment: Alignment.center,
       child: const Text(

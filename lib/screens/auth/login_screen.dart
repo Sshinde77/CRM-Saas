@@ -10,7 +10,11 @@ class _DemoRole {
   final String email;
   final IconData icon;
 
-  const _DemoRole({required this.label, required this.email, required this.icon});
+  const _DemoRole({
+    required this.label,
+    required this.email,
+    required this.icon,
+  });
 }
 
 class LoginScreen extends StatefulWidget {
@@ -39,12 +43,36 @@ class _LoginScreenState extends State<LoginScreen> {
 
   // Update these to match your own demo/test accounts.
   static const List<_DemoRole> _demoRoles = [
-    _DemoRole(label: 'Super Admin', email: 'superadmin@demo.com', icon: Icons.shield_outlined),
-    _DemoRole(label: 'Admin', email: 'admin@demo.com', icon: Icons.admin_panel_settings_outlined),
-    _DemoRole(label: 'Sales Officer', email: 'sales@demo.com', icon: Icons.groups_outlined),
-    _DemoRole(label: 'Delivery Partner', email: 'delivery@demo.com', icon: Icons.local_shipping_outlined),
-    _DemoRole(label: 'Accountant', email: 'accountant@demo.com', icon: Icons.account_balance_wallet_outlined),
-    _DemoRole(label: 'Warehouse Manager', email: 'warehouse@demo.com', icon: Icons.warehouse_outlined),
+    _DemoRole(
+      label: 'Super Admin',
+      email: 'superadmin@demo.com',
+      icon: Icons.shield_outlined,
+    ),
+    _DemoRole(
+      label: 'Admin',
+      email: 'admin@demo.com',
+      icon: Icons.admin_panel_settings_outlined,
+    ),
+    _DemoRole(
+      label: 'Sales Officer',
+      email: 'sales@demo.com',
+      icon: Icons.groups_outlined,
+    ),
+    _DemoRole(
+      label: 'Delivery Partner',
+      email: 'delivery@demo.com',
+      icon: Icons.local_shipping_outlined,
+    ),
+    _DemoRole(
+      label: 'Accountant',
+      email: 'accountant@demo.com',
+      icon: Icons.account_balance_wallet_outlined,
+    ),
+    _DemoRole(
+      label: 'Warehouse Manager',
+      email: 'warehouse@demo.com',
+      icon: Icons.warehouse_outlined,
+    ),
   ];
 
   @override
@@ -110,11 +138,7 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Stack(
           children: [
             // Top-right faint concentric circles
-            const Positioned(
-              top: -40,
-              right: -60,
-              child: _ConcentricCircles(),
-            ),
+            const Positioned(top: -40, right: -60, child: _ConcentricCircles()),
 
             // Top-left soft purple wave
             Positioned(
@@ -185,7 +209,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                 width: 56,
                                 height: 56,
                                 decoration: BoxDecoration(
-                                  border: Border.all(color: primaryPurple, width: 2),
+                                  border: Border.all(
+                                    color: primaryPurple,
+                                    width: 2,
+                                  ),
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: const Icon(
@@ -259,25 +286,33 @@ class _LoginScreenState extends State<LoginScreen> {
                                           color: primaryPurple,
                                         ),
                                         onPressed: () {
-                                          setState(() => _showRoleSuggestions = !_showRoleSuggestions);
+                                          setState(
+                                            () => _showRoleSuggestions =
+                                                !_showRoleSuggestions,
+                                          );
                                           if (_showRoleSuggestions) {
                                             _emailFocusNode.requestFocus();
                                           }
                                         },
                                       ),
                                       validator: (value) {
-                                        if (value == null || value.trim().isEmpty) {
+                                        if (value == null ||
+                                            value.trim().isEmpty) {
                                           return 'Please enter your email or phone';
                                         }
                                         return null;
                                       },
                                     ),
                                     AnimatedSize(
-                                      duration: const Duration(milliseconds: 180),
+                                      duration: const Duration(
+                                        milliseconds: 180,
+                                      ),
                                       curve: Curves.easeOut,
                                       child: _showRoleSuggestions
                                           ? _buildRoleDropdown()
-                                          : const SizedBox(width: double.infinity),
+                                          : const SizedBox(
+                                              width: double.infinity,
+                                            ),
                                     ),
                                   ],
                                 ),
@@ -312,7 +347,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                       color: primaryPurple,
                                     ),
                                     onPressed: () {
-                                      setState(() => _obscurePassword = !_obscurePassword);
+                                      setState(
+                                        () => _obscurePassword =
+                                            !_obscurePassword,
+                                      );
                                     },
                                   ),
                                 ),
@@ -326,7 +364,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                     style: TextButton.styleFrom(
                                       padding: EdgeInsets.zero,
                                       minimumSize: const Size(0, 0),
-                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
                                     ),
                                     child: const Text(
                                       'Forgot Password?',
@@ -345,7 +384,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                   width: double.infinity,
                                   height: 54,
                                   child: ElevatedButton(
-                                    onPressed: _isLoading ? null : _handleSignIn,
+                                    onPressed: _isLoading
+                                        ? null
+                                        : _handleSignIn,
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: primaryPurple,
                                       shape: RoundedRectangleBorder(
@@ -363,7 +404,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                             ),
                                           )
                                         : const Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
                                             children: [
                                               Text(
                                                 'Sign In',
@@ -374,7 +416,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                                 ),
                                               ),
                                               SizedBox(width: 8),
-                                              Icon(Icons.arrow_forward, color: AppColors.primary, size: 20),
+                                              Icon(
+                                                Icons.arrow_forward,
+                                                color: AppColors.primary,
+                                                size: 20,
+                                              ),
                                             ],
                                           ),
                                   ),
@@ -384,7 +430,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(height: 20),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 18,
+                              vertical: 10,
+                            ),
                             decoration: BoxDecoration(
                               color: AppColors.primary,
                               borderRadius: BorderRadius.circular(30),
@@ -401,7 +450,10 @@ class _LoginScreenState extends State<LoginScreen> {
                               children: [
                                 const Text(
                                   "Don't have an account? ",
-                                  style: TextStyle(color: greyText, fontSize: 13),
+                                  style: TextStyle(
+                                    color: greyText,
+                                    fontSize: 13,
+                                  ),
                                 ),
                                 GestureDetector(
                                   onTap: () {
@@ -432,7 +484,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   }
 
                   return ConstrainedBox(
-                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
                     child: content,
                   );
                 },
@@ -468,13 +522,17 @@ class _LoginScreenState extends State<LoginScreen> {
             shrinkWrap: true,
             padding: const EdgeInsets.symmetric(vertical: 4),
             itemCount: _demoRoles.length,
-            separatorBuilder: (_, index) => const Divider(height: 1, color: fieldFill),
+            separatorBuilder: (_, index) =>
+                const Divider(height: 1, color: fieldFill),
             itemBuilder: (context, index) {
               final role = _demoRoles[index];
               return InkWell(
                 onTap: () => _selectRole(role),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
                   child: Row(
                     children: [
                       Container(
@@ -502,7 +560,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             const SizedBox(height: 2),
                             Text(
                               role.email,
-                              style: const TextStyle(color: greyText, fontSize: 12.5),
+                              style: const TextStyle(
+                                color: greyText,
+                                fontSize: 12.5,
+                              ),
                             ),
                           ],
                         ),
@@ -540,7 +601,10 @@ class _LoginScreenState extends State<LoginScreen> {
         suffixIcon: suffixIcon,
         filled: true,
         fillColor: fieldFill,
-        contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 16,
+          horizontal: 12,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: fieldBorder),
@@ -627,9 +691,7 @@ class _ConcentricCircles extends StatelessWidget {
     return const SizedBox(
       width: 220,
       height: 220,
-      child: CustomPaint(
-        painter: _CirclesPainter(),
-      ),
+      child: CustomPaint(painter: _CirclesPainter()),
     );
   }
 }

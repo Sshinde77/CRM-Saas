@@ -40,9 +40,9 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
     await Future.delayed(const Duration(milliseconds: 700));
     if (!mounted) return;
     setState(() => _saving = false);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Profile updated')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Profile updated')));
   }
 
   @override
@@ -196,7 +196,10 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                     )
                   : const Text(
                       'Save Changes',
-                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
             ),
           ),
@@ -233,11 +236,15 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
         fillColor: AppColors.surfaceSoft,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: AppColors.secondary.withValues(alpha: 0.24)),
+          borderSide: BorderSide(
+            color: AppColors.secondary.withValues(alpha: 0.24),
+          ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: AppColors.secondary.withValues(alpha: 0.24)),
+          borderSide: BorderSide(
+            color: AppColors.secondary.withValues(alpha: 0.24),
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),

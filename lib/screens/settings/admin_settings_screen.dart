@@ -58,9 +58,9 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
     await Future.delayed(const Duration(milliseconds: 700));
     if (!mounted) return;
     setState(() => _saving = false);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Settings saved')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Settings saved')));
   }
 
   @override
@@ -101,7 +101,10 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                               SizedBox(height: 4),
                               Text(
                                 'Configure invoicing, payments, products, and alerts',
-                                style: TextStyle(color: textSecondary, fontSize: 13),
+                                style: TextStyle(
+                                  color: textSecondary,
+                                  fontSize: 13,
+                                ),
                               ),
                             ],
                           ),
@@ -144,13 +147,21 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          const Text('Default GST Rate', style: TextStyle(color: textPrimary)),
+                          const Text(
+                            'Default GST Rate',
+                            style: TextStyle(color: textPrimary),
+                          ),
                           const SizedBox(height: 8),
                           DropdownButtonFormField<String>(
                             initialValue: _gstRate,
                             decoration: _inputDecoration(),
                             items: _gstOptions
-                                .map((rate) => DropdownMenuItem<String>(value: rate, child: Text(rate)))
+                                .map(
+                                  (rate) => DropdownMenuItem<String>(
+                                    value: rate,
+                                    child: Text(rate),
+                                  ),
+                                )
                                 .toList(),
                             onChanged: (value) {
                               if (value != null) {
@@ -161,7 +172,8 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                           const SizedBox(height: 16),
                           SwitchListTile(
                             value: _roundOffInvoices,
-                            onChanged: (value) => setState(() => _roundOffInvoices = value),
+                            onChanged: (value) =>
+                                setState(() => _roundOffInvoices = value),
                             activeThumbColor: AppColors.purple,
                             contentPadding: EdgeInsets.zero,
                             title: const Text(
@@ -173,9 +185,21 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    _buildCard(child: _buildChipSection('Product Categories', _categories, _categoryController)),
+                    _buildCard(
+                      child: _buildChipSection(
+                        'Product Categories',
+                        _categories,
+                        _categoryController,
+                      ),
+                    ),
                     const SizedBox(height: 16),
-                    _buildCard(child: _buildChipSection('Units of Measurement', _units, _unitController)),
+                    _buildCard(
+                      child: _buildChipSection(
+                        'Units of Measurement',
+                        _units,
+                        _unitController,
+                      ),
+                    ),
                     const SizedBox(height: 16),
                     _buildCard(
                       child: Column(
@@ -199,9 +223,13 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                                 label: Text(entry.key),
                                 selected: active,
                                 onSelected: (value) {
-                                  setState(() => _paymentMethods[entry.key] = value);
+                                  setState(
+                                    () => _paymentMethods[entry.key] = value,
+                                  );
                                 },
-                                selectedColor: AppColors.purple.withValues(alpha: 0.12),
+                                selectedColor: AppColors.purple.withValues(
+                                  alpha: 0.12,
+                                ),
                                 checkmarkColor: AppColors.purple,
                               );
                             }).toList(),
@@ -227,7 +255,9 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                             (entry) => SwitchListTile(
                               value: entry.value,
                               onChanged: (value) {
-                                setState(() => _notificationPrefs[entry.key] = value);
+                                setState(
+                                  () => _notificationPrefs[entry.key] = value,
+                                );
                               },
                               activeThumbColor: AppColors.purple,
                               contentPadding: EdgeInsets.zero,
@@ -342,11 +372,15 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
       fillColor: AppColors.surfaceSoft,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: AppColors.secondary.withValues(alpha: 0.24)),
+        borderSide: BorderSide(
+          color: AppColors.secondary.withValues(alpha: 0.24),
+        ),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: AppColors.secondary.withValues(alpha: 0.24)),
+        borderSide: BorderSide(
+          color: AppColors.secondary.withValues(alpha: 0.24),
+        ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),

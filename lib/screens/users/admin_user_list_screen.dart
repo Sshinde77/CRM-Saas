@@ -70,7 +70,8 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
     }).toList();
   }
 
-  int get _activeUserCount => _users.where((user) => user.status == 'Active').length;
+  int get _activeUserCount =>
+      _users.where((user) => user.status == 'Active').length;
 
   Future<void> _openUserDialog({_UserRecord? existing, int? index}) async {
     final result = await showDialog<_UserRecord>(
@@ -189,7 +190,10 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: AppColors.primary,
-      drawer: const AppDrawer(activeItem: 'User Management', activeSubItem: 'Users'),
+      drawer: const AppDrawer(
+        activeItem: 'User Management',
+        activeSubItem: 'Users',
+      ),
       body: SafeArea(
         child: Column(
           children: [
@@ -222,7 +226,10 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
                               SizedBox(height: 4),
                               Text(
                                 'Search, add, and manage user accounts',
-                                style: TextStyle(color: textSecondary, fontSize: 13),
+                                style: TextStyle(
+                                  color: textSecondary,
+                                  fontSize: 13,
+                                ),
                               ),
                             ],
                           ),
@@ -356,11 +363,15 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
         fillColor: AppColors.surfaceSoft,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: AppColors.secondary.withValues(alpha: 0.24)),
+          borderSide: BorderSide(
+            color: AppColors.secondary.withValues(alpha: 0.24),
+          ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: AppColors.secondary.withValues(alpha: 0.24)),
+          borderSide: BorderSide(
+            color: AppColors.secondary.withValues(alpha: 0.24),
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
@@ -394,21 +405,21 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
             ),
           )
         else
-          ...users.asMap().entries.map(
-            (entry) {
-              final index = _users.indexOf(entry.value);
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 14),
-                child: _userCard(entry.value, index),
-              );
-            },
-          ),
+          ...users.asMap().entries.map((entry) {
+            final index = _users.indexOf(entry.value);
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 14),
+              child: _userCard(entry.value, index),
+            );
+          }),
       ],
     );
   }
 
   Widget _userCard(_UserRecord user, int index) {
-    final statusColor = user.status == 'Active' ? AppColors.green : AppColors.textSecondary;
+    final statusColor = user.status == 'Active'
+        ? AppColors.green
+        : AppColors.textSecondary;
 
     return Container(
       width: double.infinity,
@@ -457,7 +468,10 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
                     const SizedBox(height: 4),
                     Text(
                       user.email,
-                      style: const TextStyle(color: textSecondary, fontSize: 12.5),
+                      style: const TextStyle(
+                        color: textSecondary,
+                        fontSize: 12.5,
+                      ),
                     ),
                   ],
                 ),
@@ -706,10 +720,17 @@ class _UserFormDialogState extends State<_UserFormDialog> {
                     ),
                     const SizedBox(height: 16),
                     _fieldLabel('Role'),
-                    _dropdownField(_role, _roles, (value) => setState(() => _role = value)),
+                    _dropdownField(
+                      _role,
+                      _roles,
+                      (value) => setState(() => _role = value),
+                    ),
                     const SizedBox(height: 16),
                     _fieldLabel('Status'),
-                    _dropdownField(_status, const ['Active', 'Inactive'], (value) => setState(() => _status = value)),
+                    _dropdownField(_status, const [
+                      'Active',
+                      'Inactive',
+                    ], (value) => setState(() => _status = value)),
                     const SizedBox(height: 16),
                     _fieldLabel('Email'),
                     TextField(
@@ -745,7 +766,8 @@ class _UserFormDialogState extends State<_UserFormDialog> {
                       final name = _nameController.text.trim();
                       final email = _emailController.text.trim();
                       final phone = _phoneController.text.trim();
-                      if (name.isEmpty || email.isEmpty || phone.isEmpty) return;
+                      if (name.isEmpty || email.isEmpty || phone.isEmpty)
+                        return;
                       Navigator.of(context).pop(
                         _UserRecord(
                           name: name,
@@ -761,7 +783,9 @@ class _UserFormDialogState extends State<_UserFormDialog> {
                       foregroundColor: AppColors.primary,
                       elevation: 0,
                     ),
-                    child: Text(widget.existing == null ? 'Add User' : 'Save Changes'),
+                    child: Text(
+                      widget.existing == null ? 'Add User' : 'Save Changes',
+                    ),
                   ),
                 ],
               ),
@@ -793,11 +817,15 @@ class _UserFormDialogState extends State<_UserFormDialog> {
       fillColor: AppColors.surfaceSoft,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: AppColors.secondary.withValues(alpha: 0.24)),
+        borderSide: BorderSide(
+          color: AppColors.secondary.withValues(alpha: 0.24),
+        ),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: AppColors.secondary.withValues(alpha: 0.24)),
+        borderSide: BorderSide(
+          color: AppColors.secondary.withValues(alpha: 0.24),
+        ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
@@ -806,7 +834,11 @@ class _UserFormDialogState extends State<_UserFormDialog> {
     );
   }
 
-  Widget _dropdownField(String value, List<String> options, ValueChanged<String> onChanged) {
+  Widget _dropdownField(
+    String value,
+    List<String> options,
+    ValueChanged<String> onChanged,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
@@ -829,7 +861,12 @@ class _UserFormDialogState extends State<_UserFormDialog> {
           ),
           dropdownColor: AppColors.primary,
           borderRadius: BorderRadius.circular(14),
-          items: options.map((option) => DropdownMenuItem(value: option, child: Text(option))).toList(),
+          items: options
+              .map(
+                (option) =>
+                    DropdownMenuItem(value: option, child: Text(option)),
+              )
+              .toList(),
           onChanged: (selected) {
             if (selected != null) onChanged(selected);
           },

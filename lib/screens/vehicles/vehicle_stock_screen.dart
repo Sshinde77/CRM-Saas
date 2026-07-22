@@ -45,9 +45,9 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
   ];
 
   List<String> get _partners => [
-        'All Delivery Partners',
-        ..._vehicles.map((v) => v.driver).toSet(),
-      ];
+    'All Delivery Partners',
+    ..._vehicles.map((v) => v.driver).toSet(),
+  ];
 
   List<_VehicleStock> get _filteredVehicles {
     if (_selectedPartner == 'All Delivery Partners') return _vehicles;
@@ -94,7 +94,10 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
                               SizedBox(height: 4),
                               Text(
                                 'Track stock levels in delivery vehicles',
-                                style: TextStyle(color: textSecondary, fontSize: 13),
+                                style: TextStyle(
+                                  color: textSecondary,
+                                  fontSize: 13,
+                                ),
                               ),
                             ],
                           ),
@@ -108,15 +111,22 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 40),
                         child: Center(
-                          child: Text('No vehicles for this delivery partner.',
-                              style: TextStyle(color: textSecondary, fontSize: 13)),
+                          child: Text(
+                            'No vehicles for this delivery partner.',
+                            style: TextStyle(
+                              color: textSecondary,
+                              fontSize: 13,
+                            ),
+                          ),
                         ),
                       )
                     else
-                      ...vehicles.map((v) => Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: _vehicleCard(v),
-                          )),
+                      ...vehicles.map(
+                        (v) => Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: _vehicleCard(v),
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -139,12 +149,24 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: _selectedPartner,
-          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: textSecondary),
-          style: const TextStyle(color: textPrimary, fontSize: 13.5, fontWeight: FontWeight.w600),
+          icon: const Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: textSecondary,
+          ),
+          style: const TextStyle(
+            color: textPrimary,
+            fontSize: 13.5,
+            fontWeight: FontWeight.w600,
+          ),
           dropdownColor: AppColors.primary,
           borderRadius: BorderRadius.circular(14),
           items: _partners
-              .map((p) => DropdownMenuItem(value: p, child: Text(p, overflow: TextOverflow.ellipsis)))
+              .map(
+                (p) => DropdownMenuItem(
+                  value: p,
+                  child: Text(p, overflow: TextOverflow.ellipsis),
+                ),
+              )
               .toList(),
           onChanged: (v) {
             if (v != null) setState(() => _selectedPartner = v);
@@ -184,61 +206,112 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
                   color: AppColors.blue.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: const Icon(Icons.directions_car_rounded, color: AppColors.blue, size: 24),
+                child: const Icon(
+                  Icons.directions_car_rounded,
+                  color: AppColors.blue,
+                  size: 24,
+                ),
               ),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Vehicle ${vehicle.vehicleNo}',
-                        style: const TextStyle(color: textPrimary, fontSize: 16.5, fontWeight: FontWeight.w800)),
+                    Text(
+                      'Vehicle ${vehicle.vehicleNo}',
+                      style: const TextStyle(
+                        color: textPrimary,
+                        fontSize: 16.5,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
                     const SizedBox(height: 2),
-                    Text('Driver: ${vehicle.driver}',
-                        style: const TextStyle(color: textSecondary, fontSize: 13)),
+                    Text(
+                      'Driver: ${vehicle.driver}',
+                      style: const TextStyle(
+                        color: textSecondary,
+                        fontSize: 13,
+                      ),
+                    ),
                   ],
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          ...vehicle.lines.map((line) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceSoft,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.inventory_2_outlined, size: 18, color: textSecondary),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(line.product,
-                            style: const TextStyle(color: textPrimary, fontSize: 13.5, fontWeight: FontWeight.w500)),
-                      ),
-                      const SizedBox(width: 8),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text('${line.count} case',
-                              style: const TextStyle(color: AppColors.purple, fontSize: 13.5, fontWeight: FontWeight.w700)),
-                          Text('(${line.caseSize})',
-                              style: const TextStyle(color: AppColors.purple, fontSize: 13.5, fontWeight: FontWeight.w700)),
-                        ],
-                      ),
-                    ],
-                  ),
+          ...vehicle.lines.map(
+            (line) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
                 ),
-              )),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceSoft,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.inventory_2_outlined,
+                      size: 18,
+                      color: textSecondary,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        line.product,
+                        style: const TextStyle(
+                          color: textPrimary,
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          '${line.count} case',
+                          style: const TextStyle(
+                            color: AppColors.purple,
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        Text(
+                          '(${line.caseSize})',
+                          style: const TextStyle(
+                            color: AppColors.purple,
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
           const Divider(color: AppColors.secondary, height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Total Stock', style: TextStyle(color: textSecondary, fontSize: 14)),
-              Text('$total units',
-                  style: const TextStyle(color: textPrimary, fontSize: 16, fontWeight: FontWeight.w800)),
+              const Text(
+                'Total Stock',
+                style: TextStyle(color: textSecondary, fontSize: 14),
+              ),
+              Text(
+                '$total units',
+                style: const TextStyle(
+                  color: textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
             ],
           ),
         ],
@@ -258,5 +331,9 @@ class _VehicleStock {
   final String vehicleNo;
   final String driver;
   final List<_StockLine> lines;
-  const _VehicleStock({required this.vehicleNo, required this.driver, required this.lines});
+  const _VehicleStock({
+    required this.vehicleNo,
+    required this.driver,
+    required this.lines,
+  });
 }

@@ -124,7 +124,8 @@ class _AppDrawerState extends State<AppDrawer> {
     if (widget.activeItem == 'User Management') {
       if (tabIndex == 0 && widget.activeSubItem == 'Users') return;
       if (tabIndex == 1 &&
-          (widget.activeSubItem == 'Roles' || widget.activeSubItem == 'Permissions')) {
+          (widget.activeSubItem == 'Roles' ||
+              widget.activeSubItem == 'Permissions')) {
         return;
       }
     }
@@ -158,11 +159,15 @@ class _AppDrawerState extends State<AppDrawer> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
-              color: active ? accent.withValues(alpha: 0.10) : Colors.transparent,
+              color: active
+                  ? accent.withValues(alpha: 0.10)
+                  : Colors.transparent,
               borderRadius: BorderRadius.circular(14),
               border: active
                   ? Border(left: BorderSide(color: accent, width: 3))
-                  : const Border(left: BorderSide(color: Colors.transparent, width: 3)),
+                  : const Border(
+                      left: BorderSide(color: Colors.transparent, width: 3),
+                    ),
             ),
             child: Row(
               children: [
@@ -208,12 +213,18 @@ class _AppDrawerState extends State<AppDrawer> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: selected ? accent.withValues(alpha: 0.10) : Colors.transparent,
+                color: selected
+                    ? accent.withValues(alpha: 0.10)
+                    : Colors.transparent,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 children: [
-                  Icon(icon, size: 18, color: selected ? accent : textSecondary),
+                  Icon(
+                    icon,
+                    size: 18,
+                    color: selected ? accent : textSecondary,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
@@ -221,7 +232,9 @@ class _AppDrawerState extends State<AppDrawer> {
                       style: TextStyle(
                         color: selected ? accent : textSecondary,
                         fontSize: 13.5,
-                        fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                        fontWeight: selected
+                            ? FontWeight.w700
+                            : FontWeight.w500,
                       ),
                     ),
                   ),
@@ -243,20 +256,33 @@ class _AppDrawerState extends State<AppDrawer> {
             InkWell(
               borderRadius: BorderRadius.circular(14),
               onTap: () {
-                setState(() => _isUserManagementExpanded = !_isUserManagementExpanded);
+                setState(
+                  () => _isUserManagementExpanded = !_isUserManagementExpanded,
+                );
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
-                  color: parentActive ? accent.withValues(alpha: 0.10) : Colors.transparent,
+                  color: parentActive
+                      ? accent.withValues(alpha: 0.10)
+                      : Colors.transparent,
                   borderRadius: BorderRadius.circular(14),
                   border: parentActive
                       ? Border(left: BorderSide(color: accent, width: 3))
-                      : const Border(left: BorderSide(color: Colors.transparent, width: 3)),
+                      : const Border(
+                          left: BorderSide(color: Colors.transparent, width: 3),
+                        ),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.people_alt_outlined, color: parentColor, size: 21),
+                    Icon(
+                      Icons.people_alt_outlined,
+                      color: parentColor,
+                      size: 21,
+                    ),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Text(
@@ -264,7 +290,9 @@ class _AppDrawerState extends State<AppDrawer> {
                         style: TextStyle(
                           color: parentColor,
                           fontSize: 14.5,
-                          fontWeight: parentActive ? FontWeight.w700 : FontWeight.w500,
+                          fontWeight: parentActive
+                              ? FontWeight.w700
+                              : FontWeight.w500,
                         ),
                       ),
                     ),
@@ -344,17 +372,33 @@ class _AppDrawerState extends State<AppDrawer> {
                       borderRadius: BorderRadius.circular(12),
                       color: accent,
                     ),
-                    child: const Icon(Icons.water_drop_rounded, color: AppColors.primary, size: 22),
+                    child: const Icon(
+                      Icons.water_drop_rounded,
+                      color: AppColors.primary,
+                      size: 22,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   const Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('SAAS CRM',
-                            style: TextStyle(color: textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
-                        Text('Admin',
-                            style: TextStyle(color: accent, fontSize: 12, fontWeight: FontWeight.w600)),
+                        Text(
+                          'SAAS CRM',
+                          style: TextStyle(
+                            color: textPrimary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        Text(
+                          'Admin',
+                          style: TextStyle(
+                            color: accent,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -392,17 +436,32 @@ class _AppDrawerState extends State<AppDrawer> {
                       color: accent.withValues(alpha: 0.15),
                     ),
                     alignment: Alignment.center,
-                    child: const Text('AS',
-                        style: TextStyle(color: accent, fontWeight: FontWeight.w700, fontSize: 13)),
+                    child: const Text(
+                      'AS',
+                      style: TextStyle(
+                        color: accent,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 12),
                   const Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Anita Sharma',
-                            style: TextStyle(color: textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
-                        Text('admin@demo.com', style: TextStyle(color: textSecondary, fontSize: 12)),
+                        Text(
+                          'Anita Sharma',
+                          style: TextStyle(
+                            color: textPrimary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          'admin@demo.com',
+                          style: TextStyle(color: textSecondary, fontSize: 12),
+                        ),
                       ],
                     ),
                   ),

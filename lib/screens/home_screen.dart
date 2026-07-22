@@ -29,7 +29,8 @@ class HomeScreen extends StatelessWidget {
                   children: [
                     const SectionTitle(
                       title: 'Project Structure Ready',
-                      subtitle: 'Your Flutter CRM starter is configured and running.',
+                      subtitle:
+                          'Your Flutter CRM starter is configured and running.',
                     ),
                     const SizedBox(height: 24),
                     Card(

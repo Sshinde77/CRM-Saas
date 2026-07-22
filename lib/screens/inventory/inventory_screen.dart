@@ -226,8 +226,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
     final query = _query.trim().toLowerCase();
     return _items.where((item) {
       final matchesCategory =
-          _selectedCategory == 'All Categories' || item.category == _selectedCategory;
-      final matchesQuery = query.isEmpty ||
+          _selectedCategory == 'All Categories' ||
+          item.category == _selectedCategory;
+      final matchesQuery =
+          query.isEmpty ||
           item.name.toLowerCase().contains(query) ||
           item.category.toLowerCase().contains(query) ||
           item.hsnSac.toLowerCase().contains(query);
@@ -237,13 +239,16 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
   int get _totalProducts => _items.length;
 
-  int get _lowStockItems =>
-      _items.where((item) => item.stock > 0 && item.stock <= item.minStock).length;
+  int get _lowStockItems => _items
+      .where((item) => item.stock > 0 && item.stock <= item.minStock)
+      .length;
 
   int get _outOfStockItems => _items.where((item) => item.stock == 0).length;
 
-  double get _stockValueAtCost =>
-      _items.fold<double>(0, (sum, item) => sum + (item.costPrice * item.stock));
+  double get _stockValueAtCost => _items.fold<double>(
+    0,
+    (sum, item) => sum + (item.costPrice * item.stock),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -291,7 +296,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
                         child: Center(
                           child: Text(
                             'No inventory items match your filters.',
-                            style: TextStyle(color: textSecondary, fontSize: 13),
+                            style: TextStyle(
+                              color: textSecondary,
+                              fontSize: 13,
+                            ),
                           ),
                         ),
                       )
@@ -455,11 +463,15 @@ class _InventoryScreenState extends State<InventoryScreen> {
               fillColor: AppColors.surfaceSoft,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(color: AppColors.secondary.withValues(alpha: 0.24)),
+                borderSide: BorderSide(
+                  color: AppColors.secondary.withValues(alpha: 0.24),
+                ),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(color: AppColors.secondary.withValues(alpha: 0.24)),
+                borderSide: BorderSide(
+                  color: AppColors.secondary.withValues(alpha: 0.24),
+                ),
               ),
               focusedBorder: const OutlineInputBorder(
                 borderRadius: BorderRadius.all(Radius.circular(14)),
@@ -480,7 +492,11 @@ class _InventoryScreenState extends State<InventoryScreen> {
     );
   }
 
-  Widget _filterDropdown(String value, List<String> options, ValueChanged<String> onChanged) {
+  Widget _filterDropdown(
+    String value,
+    List<String> options,
+    ValueChanged<String> onChanged,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
@@ -492,7 +508,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
         child: DropdownButton<String>(
           value: value,
           isExpanded: true,
-          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: textSecondary),
+          icon: const Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: textSecondary,
+          ),
           style: const TextStyle(
             color: textPrimary,
             fontSize: 13.5,
@@ -564,7 +583,9 @@ class _InventoryScreenState extends State<InventoryScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(child: _infoItem('Reorder Level', '${item.reorderLevel} units')),
+              Expanded(
+                child: _infoItem('Reorder Level', '${item.reorderLevel} units'),
+              ),
               Expanded(child: _infoItem('Category', item.category)),
             ],
           ),
@@ -573,7 +594,9 @@ class _InventoryScreenState extends State<InventoryScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(child: _infoItem('HSN/SAC', item.hsnSac)),
-              Expanded(child: _infoItem('Current Stock', '${item.stock} units')),
+              Expanded(
+                child: _infoItem('Current Stock', '${item.stock} units'),
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -581,7 +604,12 @@ class _InventoryScreenState extends State<InventoryScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(child: _infoItem('Min Stock', '${item.minStock} units')),
-              Expanded(child: _infoItem('Stock Value at Cost', 'Rs. ${item.stockValueAtCost.toStringAsFixed(0)}')),
+              Expanded(
+                child: _infoItem(
+                  'Stock Value at Cost',
+                  'Rs. ${item.stockValueAtCost.toStringAsFixed(0)}',
+                ),
+              ),
             ],
           ),
         ],
@@ -702,4 +730,3 @@ class _InventoryItem {
 
   double get stockValueAtCost => stock * costPrice;
 }
-

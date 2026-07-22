@@ -26,9 +26,7 @@ class AppTheme {
         foregroundColor: AppColors.textPrimary,
         surfaceTintColor: Colors.transparent,
       ),
-      drawerTheme: const DrawerThemeData(
-        backgroundColor: AppColors.primary,
-      ),
+      drawerTheme: const DrawerThemeData(backgroundColor: AppColors.primary),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.primary,

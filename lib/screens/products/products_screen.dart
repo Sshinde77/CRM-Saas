@@ -47,24 +47,168 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
   // Mock catalog — replace with your providers / API calls.
   final List<_ProductItem> _products = [
-    _ProductItem(name: 'Packaged Drinking Water (250ml)', brand: 'AquaPure', category: 'Packaged Water', hsn: '2201', price: 10, stock: 500, status: 'Active'),
-    _ProductItem(name: 'Packaged Drinking Water (500ml)', brand: 'AquaPure', category: 'Packaged Water', hsn: '2201', price: 15, stock: 420, status: 'Active'),
-    _ProductItem(name: 'Packaged Drinking Water (1L)', brand: 'AquaPure', category: 'Packaged Water', hsn: '2201', price: 20, stock: 300, status: 'Active'),
-    _ProductItem(name: 'Mineral Water Bottle (1L)', brand: 'CrystalClear', category: 'Mineral Water', hsn: '2201', price: 25, stock: 180, status: 'Active'),
-    _ProductItem(name: 'Mineral Water Bottle (2L)', brand: 'CrystalClear', category: 'Mineral Water', hsn: '2201', price: 40, stock: 90, status: 'Active'),
-    _ProductItem(name: 'Sparkling Water Can (330ml)', brand: 'HydroMax', category: 'Sparkling Water', hsn: '2202', price: 35, stock: 60, status: 'Active'),
-    _ProductItem(name: 'Water Jar Refill (20L)', brand: 'PureFlow', category: 'Water Jar', hsn: '2201', price: 45, stock: 25, status: 'Active'),
-    _ProductItem(name: 'Water Jar Refill (10L)', brand: 'PureFlow', category: 'Water Jar', hsn: '2201', price: 30, stock: 15, status: 'Active'),
-    _ProductItem(name: 'Flavored Water - Lemon (500ml)', brand: 'AquaPure', category: 'Flavored Water', hsn: '2202', price: 22, stock: 70, status: 'Active'),
-    _ProductItem(name: 'Flavored Water - Mint (500ml)', brand: 'AquaPure', category: 'Flavored Water', hsn: '2202', price: 22, stock: 0, status: 'Inactive'),
-    _ProductItem(name: 'Alkaline Water Bottle (1L)', brand: 'CrystalClear', category: 'Alkaline Water', hsn: '2201', price: 28, stock: 40, status: 'Active'),
-    _ProductItem(name: 'Water Dispenser - Normal (Standard)', brand: 'HydroMax', category: 'Dispenser', hsn: '8418', price: 3500, stock: 8, status: 'Active'),
-    _ProductItem(name: 'Water Dispenser - Hot & Cold (Standard)', brand: 'HydroMax', category: 'Dispenser', hsn: '8418', price: 6200, stock: 5, status: 'Active'),
-    _ProductItem(name: 'Dispenser Stand', brand: 'PureFlow', category: 'Accessories', hsn: '9403', price: 1200, stock: 12, status: 'Active'),
-    _ProductItem(name: 'Jar Cap (Pack of 10)', brand: 'PureFlow', category: 'Accessories', hsn: '3923', price: 150, stock: 200, status: 'Active'),
-    _ProductItem(name: 'Bottle Crate (24-slot)', brand: 'AquaPure', category: 'Accessories', hsn: '3923', price: 350, stock: 60, status: 'Active'),
-    _ProductItem(name: 'Dispenser Tap Kit', brand: 'HydroMax', category: 'Accessories', hsn: '3923', price: 250, stock: 30, status: 'Inactive'),
-    _ProductItem(name: 'Water Testing Kit', brand: 'CrystalClear', category: 'Accessories', hsn: '3822', price: 899, stock: 18, status: 'Active'),
+    _ProductItem(
+      name: 'Packaged Drinking Water (250ml)',
+      brand: 'AquaPure',
+      category: 'Packaged Water',
+      hsn: '2201',
+      price: 10,
+      stock: 500,
+      status: 'Active',
+    ),
+    _ProductItem(
+      name: 'Packaged Drinking Water (500ml)',
+      brand: 'AquaPure',
+      category: 'Packaged Water',
+      hsn: '2201',
+      price: 15,
+      stock: 420,
+      status: 'Active',
+    ),
+    _ProductItem(
+      name: 'Packaged Drinking Water (1L)',
+      brand: 'AquaPure',
+      category: 'Packaged Water',
+      hsn: '2201',
+      price: 20,
+      stock: 300,
+      status: 'Active',
+    ),
+    _ProductItem(
+      name: 'Mineral Water Bottle (1L)',
+      brand: 'CrystalClear',
+      category: 'Mineral Water',
+      hsn: '2201',
+      price: 25,
+      stock: 180,
+      status: 'Active',
+    ),
+    _ProductItem(
+      name: 'Mineral Water Bottle (2L)',
+      brand: 'CrystalClear',
+      category: 'Mineral Water',
+      hsn: '2201',
+      price: 40,
+      stock: 90,
+      status: 'Active',
+    ),
+    _ProductItem(
+      name: 'Sparkling Water Can (330ml)',
+      brand: 'HydroMax',
+      category: 'Sparkling Water',
+      hsn: '2202',
+      price: 35,
+      stock: 60,
+      status: 'Active',
+    ),
+    _ProductItem(
+      name: 'Water Jar Refill (20L)',
+      brand: 'PureFlow',
+      category: 'Water Jar',
+      hsn: '2201',
+      price: 45,
+      stock: 25,
+      status: 'Active',
+    ),
+    _ProductItem(
+      name: 'Water Jar Refill (10L)',
+      brand: 'PureFlow',
+      category: 'Water Jar',
+      hsn: '2201',
+      price: 30,
+      stock: 15,
+      status: 'Active',
+    ),
+    _ProductItem(
+      name: 'Flavored Water - Lemon (500ml)',
+      brand: 'AquaPure',
+      category: 'Flavored Water',
+      hsn: '2202',
+      price: 22,
+      stock: 70,
+      status: 'Active',
+    ),
+    _ProductItem(
+      name: 'Flavored Water - Mint (500ml)',
+      brand: 'AquaPure',
+      category: 'Flavored Water',
+      hsn: '2202',
+      price: 22,
+      stock: 0,
+      status: 'Inactive',
+    ),
+    _ProductItem(
+      name: 'Alkaline Water Bottle (1L)',
+      brand: 'CrystalClear',
+      category: 'Alkaline Water',
+      hsn: '2201',
+      price: 28,
+      stock: 40,
+      status: 'Active',
+    ),
+    _ProductItem(
+      name: 'Water Dispenser - Normal (Standard)',
+      brand: 'HydroMax',
+      category: 'Dispenser',
+      hsn: '8418',
+      price: 3500,
+      stock: 8,
+      status: 'Active',
+    ),
+    _ProductItem(
+      name: 'Water Dispenser - Hot & Cold (Standard)',
+      brand: 'HydroMax',
+      category: 'Dispenser',
+      hsn: '8418',
+      price: 6200,
+      stock: 5,
+      status: 'Active',
+    ),
+    _ProductItem(
+      name: 'Dispenser Stand',
+      brand: 'PureFlow',
+      category: 'Accessories',
+      hsn: '9403',
+      price: 1200,
+      stock: 12,
+      status: 'Active',
+    ),
+    _ProductItem(
+      name: 'Jar Cap (Pack of 10)',
+      brand: 'PureFlow',
+      category: 'Accessories',
+      hsn: '3923',
+      price: 150,
+      stock: 200,
+      status: 'Active',
+    ),
+    _ProductItem(
+      name: 'Bottle Crate (24-slot)',
+      brand: 'AquaPure',
+      category: 'Accessories',
+      hsn: '3923',
+      price: 350,
+      stock: 60,
+      status: 'Active',
+    ),
+    _ProductItem(
+      name: 'Dispenser Tap Kit',
+      brand: 'HydroMax',
+      category: 'Accessories',
+      hsn: '3923',
+      price: 250,
+      stock: 30,
+      status: 'Inactive',
+    ),
+    _ProductItem(
+      name: 'Water Testing Kit',
+      brand: 'CrystalClear',
+      category: 'Accessories',
+      hsn: '3822',
+      price: 899,
+      stock: 18,
+      status: 'Active',
+    ),
   ];
 
   @override
@@ -75,9 +219,13 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
   List<_ProductItem> get _filteredProducts {
     return _products.where((p) {
-      final matchesCategory = _selectedCategory == 'All Categories' || p.category == _selectedCategory;
-      final matchesBrand = _selectedBrand == 'All Brands' || p.brand == _selectedBrand;
-      final matchesQuery = _query.isEmpty ||
+      final matchesCategory =
+          _selectedCategory == 'All Categories' ||
+          p.category == _selectedCategory;
+      final matchesBrand =
+          _selectedBrand == 'All Brands' || p.brand == _selectedBrand;
+      final matchesQuery =
+          _query.isEmpty ||
           p.name.toLowerCase().contains(_query.toLowerCase()) ||
           p.brand.toLowerCase().contains(_query.toLowerCase()) ||
           p.category.toLowerCase().contains(_query.toLowerCase()) ||
@@ -86,7 +234,10 @@ class _ProductsScreenState extends State<ProductsScreen> {
     }).toList();
   }
 
-  Future<void> _openProductFormDialog({_ProductItem? existing, int? index}) async {
+  Future<void> _openProductFormDialog({
+    _ProductItem? existing,
+    int? index,
+  }) async {
     final result = await showDialog<_ProductItem>(
       context: context,
       builder: (_) => _ProductFormDialog(
@@ -111,7 +262,10 @@ class _ProductsScreenState extends State<ProductsScreen> {
       builder: (_) => AlertDialog(
         backgroundColor: AppColors.primary,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Delete product?', style: TextStyle(color: textPrimary, fontWeight: FontWeight.w700)),
+        title: const Text(
+          'Delete product?',
+          style: TextStyle(color: textPrimary, fontWeight: FontWeight.w700),
+        ),
         content: Text(
           'This will permanently remove "${product.name}" from your catalog.',
           style: const TextStyle(color: textSecondary),
@@ -148,13 +302,22 @@ class _ProductsScreenState extends State<ProductsScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(product.name,
-                  style: const TextStyle(color: textPrimary, fontSize: 18, fontWeight: FontWeight.w800)),
+              Text(
+                product.name,
+                style: const TextStyle(
+                  color: textPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
               const SizedBox(height: 16),
               _detailRow('Brand', product.brand),
               _detailRow('Category', product.category),
               _detailRow('HSN', product.hsn),
-              _detailRow('Selling Price', '₹${product.price.toStringAsFixed(2)}'),
+              _detailRow(
+                'Selling Price',
+                '₹${product.price.toStringAsFixed(2)}',
+              ),
               _detailRow('Stock', '${product.stock} units'),
               _detailRow('Status', product.status),
             ],
@@ -169,10 +332,22 @@ class _ProductsScreenState extends State<ProductsScreen> {
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         children: [
-          SizedBox(width: 120, child: Text(label, style: const TextStyle(color: textSecondary, fontSize: 13))),
+          SizedBox(
+            width: 120,
+            child: Text(
+              label,
+              style: const TextStyle(color: textSecondary, fontSize: 13),
+            ),
+          ),
           Expanded(
-            child: Text(value,
-                style: const TextStyle(color: textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
+            child: Text(
+              value,
+              style: const TextStyle(
+                color: textPrimary,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),
@@ -210,12 +385,19 @@ class _ProductsScreenState extends State<ProductsScreen> {
                             children: [
                               Text(
                                 'Products',
-                                style: TextStyle(color: textPrimary, fontSize: 24, fontWeight: FontWeight.w800),
+                                style: TextStyle(
+                                  color: textPrimary,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w800,
+                                ),
                               ),
                               SizedBox(height: 4),
                               Text(
                                 'Manage your product catalog and variants',
-                                style: TextStyle(color: textSecondary, fontSize: 13),
+                                style: TextStyle(
+                                  color: textSecondary,
+                                  fontSize: 13,
+                                ),
                               ),
                             ],
                           ),
@@ -229,8 +411,13 @@ class _ProductsScreenState extends State<ProductsScreen> {
                             backgroundColor: AppColors.purple,
                             foregroundColor: AppColors.primary,
                             elevation: 0,
-                            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 18,
+                              vertical: 14,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18),
+                            ),
                           ),
                         ),
                       ],
@@ -242,8 +429,13 @@ class _ProductsScreenState extends State<ProductsScreen> {
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 40),
                         child: Center(
-                          child: Text('No products match your filters.',
-                              style: const TextStyle(color: textSecondary, fontSize: 13)),
+                          child: Text(
+                            'No products match your filters.',
+                            style: const TextStyle(
+                              color: textSecondary,
+                              fontSize: 13,
+                            ),
+                          ),
                         ),
                       )
                     else
@@ -273,19 +465,42 @@ class _ProductsScreenState extends State<ProductsScreen> {
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: AppColors.secondary.withValues(alpha: 0.18)),
         boxShadow: [
-          BoxShadow(color: AppColors.textPrimary.withValues(alpha: 0.05), blurRadius: 18, offset: const Offset(0, 8)),
+          BoxShadow(
+            color: AppColors.textPrimary.withValues(alpha: 0.05),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Product Catalog', style: TextStyle(color: textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
+          const Text(
+            'Product Catalog',
+            style: TextStyle(
+              color: textPrimary,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
           const SizedBox(height: 16),
           Row(
             children: [
-              Expanded(child: _filterDropdown(_selectedCategory, _categories, (v) => setState(() => _selectedCategory = v))),
+              Expanded(
+                child: _filterDropdown(
+                  _selectedCategory,
+                  _categories,
+                  (v) => setState(() => _selectedCategory = v),
+                ),
+              ),
               const SizedBox(width: 10),
-              Expanded(child: _filterDropdown(_selectedBrand, _brands, (v) => setState(() => _selectedBrand = v))),
+              Expanded(
+                child: _filterDropdown(
+                  _selectedBrand,
+                  _brands,
+                  (v) => setState(() => _selectedBrand = v),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 14),
@@ -299,11 +514,15 @@ class _ProductsScreenState extends State<ProductsScreen> {
               fillColor: AppColors.surfaceSoft,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(color: AppColors.secondary.withValues(alpha: 0.24)),
+                borderSide: BorderSide(
+                  color: AppColors.secondary.withValues(alpha: 0.24),
+                ),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(color: AppColors.secondary.withValues(alpha: 0.24)),
+                borderSide: BorderSide(
+                  color: AppColors.secondary.withValues(alpha: 0.24),
+                ),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
@@ -314,14 +533,21 @@ class _ProductsScreenState extends State<ProductsScreen> {
           const SizedBox(height: 10),
           Align(
             alignment: Alignment.centerRight,
-            child: Text('$resultCount results', style: const TextStyle(color: textSecondary, fontSize: 12.5)),
+            child: Text(
+              '$resultCount results',
+              style: const TextStyle(color: textSecondary, fontSize: 12.5),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _filterDropdown(String value, List<String> options, ValueChanged<String> onChanged) {
+  Widget _filterDropdown(
+    String value,
+    List<String> options,
+    ValueChanged<String> onChanged,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
@@ -333,11 +559,25 @@ class _ProductsScreenState extends State<ProductsScreen> {
         child: DropdownButton<String>(
           value: value,
           isExpanded: true,
-          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: textSecondary),
-          style: const TextStyle(color: textPrimary, fontSize: 13.5, fontWeight: FontWeight.w600),
+          icon: const Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: textSecondary,
+          ),
+          style: const TextStyle(
+            color: textPrimary,
+            fontSize: 13.5,
+            fontWeight: FontWeight.w600,
+          ),
           dropdownColor: AppColors.primary,
           borderRadius: BorderRadius.circular(14),
-          items: options.map((o) => DropdownMenuItem(value: o, child: Text(o, overflow: TextOverflow.ellipsis))).toList(),
+          items: options
+              .map(
+                (o) => DropdownMenuItem(
+                  value: o,
+                  child: Text(o, overflow: TextOverflow.ellipsis),
+                ),
+              )
+              .toList(),
           onChanged: (v) {
             if (v != null) onChanged(v);
           },
@@ -358,7 +598,11 @@ class _ProductsScreenState extends State<ProductsScreen> {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.secondary.withValues(alpha: 0.18)),
         boxShadow: [
-          BoxShadow(color: AppColors.textPrimary.withValues(alpha: 0.05), blurRadius: 16, offset: const Offset(0, 6)),
+          BoxShadow(
+            color: AppColors.textPrimary.withValues(alpha: 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
         ],
       ),
       child: Column(
@@ -380,7 +624,8 @@ class _ProductsScreenState extends State<ProductsScreen> {
                 icon: Icons.edit_outlined,
                 color: AppColors.purple,
                 tooltip: 'Edit',
-                onTap: () => _openProductFormDialog(existing: product, index: index),
+                onTap: () =>
+                    _openProductFormDialog(existing: product, index: index),
               ),
               const SizedBox(width: 8),
               _iconActionButton(
@@ -396,7 +641,11 @@ class _ProductsScreenState extends State<ProductsScreen> {
             onTap: () => _showProductDetails(product),
             child: Text(
               product.name,
-              style: const TextStyle(color: AppColors.purple, fontSize: 15, fontWeight: FontWeight.w700),
+              style: const TextStyle(
+                color: AppColors.purple,
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
           const SizedBox(height: 14),
@@ -412,7 +661,12 @@ class _ProductsScreenState extends State<ProductsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(child: _infoItem('HSN', product.hsn)),
-              Expanded(child: _infoItem('Selling Price', '₹${product.price.toStringAsFixed(2)}')),
+              Expanded(
+                child: _infoItem(
+                  'Selling Price',
+                  '₹${product.price.toStringAsFixed(2)}',
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -438,7 +692,11 @@ class _ProductsScreenState extends State<ProductsScreen> {
       ),
       child: Text(
         label,
-        style: TextStyle(color: color, fontSize: 11.5, fontWeight: FontWeight.w700),
+        style: TextStyle(
+          color: color,
+          fontSize: 11.5,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }
@@ -447,11 +705,24 @@ class _ProductsScreenState extends State<ProductsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: textSecondary, fontSize: 11.5, fontWeight: FontWeight.w600)),
+        Text(
+          label,
+          style: const TextStyle(
+            color: textSecondary,
+            fontSize: 11.5,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         const SizedBox(height: 3),
-        Text(value,
-            style: const TextStyle(color: textPrimary, fontSize: 13.5, fontWeight: FontWeight.w600),
-            overflow: TextOverflow.ellipsis),
+        Text(
+          value,
+          style: const TextStyle(
+            color: textPrimary,
+            fontSize: 13.5,
+            fontWeight: FontWeight.w600,
+          ),
+          overflow: TextOverflow.ellipsis,
+        ),
       ],
     );
   }
@@ -513,7 +784,11 @@ class _ProductFormDialog extends StatefulWidget {
   final List<String> brands;
   final _ProductItem? existing;
 
-  const _ProductFormDialog({required this.categories, required this.brands, this.existing});
+  const _ProductFormDialog({
+    required this.categories,
+    required this.brands,
+    this.existing,
+  });
 
   @override
   State<_ProductFormDialog> createState() => _ProductFormDialogState();
@@ -542,8 +817,12 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
     final existing = widget.existing;
     _nameController = TextEditingController(text: existing?.name ?? '');
     _hsnController = TextEditingController(text: existing?.hsn ?? '');
-    _priceController = TextEditingController(text: existing != null ? existing.price.toStringAsFixed(2) : '');
-    _stockController = TextEditingController(text: existing != null ? existing.stock.toString() : '');
+    _priceController = TextEditingController(
+      text: existing != null ? existing.price.toStringAsFixed(2) : '',
+    );
+    _stockController = TextEditingController(
+      text: existing != null ? existing.stock.toString() : '',
+    );
     _category = existing?.category ?? widget.categories.first;
     _brand = existing?.brand ?? widget.brands.first;
     _status = existing?.status ?? 'Active';
@@ -560,21 +839,25 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
 
   void _submit() {
     final name = _nameController.text.trim();
-    setState(() => _nameError = name.isEmpty ? 'Please enter a product name' : null);
+    setState(
+      () => _nameError = name.isEmpty ? 'Please enter a product name' : null,
+    );
     if (_nameError != null) return;
 
     final price = double.tryParse(_priceController.text.trim()) ?? 0;
     final stock = int.tryParse(_stockController.text.trim()) ?? 0;
 
-    Navigator.of(context).pop(_ProductItem(
-      name: name,
-      brand: _brand,
-      category: _category,
-      hsn: _hsnController.text.trim(),
-      price: price,
-      stock: stock,
-      status: _status,
-    ));
+    Navigator.of(context).pop(
+      _ProductItem(
+        name: name,
+        brand: _brand,
+        category: _category,
+        hsn: _hsnController.text.trim(),
+        price: price,
+        stock: stock,
+        status: _status,
+      ),
+    );
   }
 
   @override
@@ -593,16 +876,29 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
               child: Row(
                 children: [
                   Expanded(
-                    child: Text(_isEditing ? 'Edit Product' : 'Add Product',
-                        style: const TextStyle(color: textPrimary, fontSize: 19, fontWeight: FontWeight.w800)),
+                    child: Text(
+                      _isEditing ? 'Edit Product' : 'Add Product',
+                      style: const TextStyle(
+                        color: textPrimary,
+                        fontSize: 19,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
                   ),
                   GestureDetector(
                     onTap: () => Navigator.of(context).pop(),
                     child: Container(
                       width: 32,
                       height: 32,
-                      decoration: BoxDecoration(color: AppColors.surfaceSoft, shape: BoxShape.circle),
-                      child: const Icon(Icons.close_rounded, size: 18, color: textSecondary),
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceSoft,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.close_rounded,
+                        size: 18,
+                        color: textSecondary,
+                      ),
                     ),
                   ),
                 ],
@@ -620,19 +916,34 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
                       controller: _nameController,
                       autofocus: !_isEditing,
                       onChanged: (_) {
-                        if (_nameError != null) setState(() => _nameError = null);
+                        if (_nameError != null)
+                          setState(() => _nameError = null);
                       },
-                      decoration: _decoration(hint: 'e.g. Packaged Drinking Water (1L)', errorText: _nameError),
+                      decoration: _decoration(
+                        hint: 'e.g. Packaged Drinking Water (1L)',
+                        errorText: _nameError,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     _fieldLabel('Brand'),
-                    _dropdownField(_brand, widget.brands, (v) => setState(() => _brand = v)),
+                    _dropdownField(
+                      _brand,
+                      widget.brands,
+                      (v) => setState(() => _brand = v),
+                    ),
                     const SizedBox(height: 16),
                     _fieldLabel('Category'),
-                    _dropdownField(_category, widget.categories, (v) => setState(() => _category = v)),
+                    _dropdownField(
+                      _category,
+                      widget.categories,
+                      (v) => setState(() => _category = v),
+                    ),
                     const SizedBox(height: 16),
                     _fieldLabel('HSN Code'),
-                    TextField(controller: _hsnController, decoration: _decoration(hint: 'e.g. 2201')),
+                    TextField(
+                      controller: _hsnController,
+                      decoration: _decoration(hint: 'e.g. 2201'),
+                    ),
                     const SizedBox(height: 16),
                     Row(
                       children: [
@@ -643,7 +954,10 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
                               _fieldLabel('Selling Price'),
                               TextField(
                                 controller: _priceController,
-                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                      decimal: true,
+                                    ),
                                 decoration: _decoration(hint: '₹0.00'),
                               ),
                             ],
@@ -667,7 +981,11 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
                     ),
                     const SizedBox(height: 16),
                     _fieldLabel('Status'),
-                    _dropdownField(_status, _statuses, (v) => setState(() => _status = v)),
+                    _dropdownField(
+                      _status,
+                      _statuses,
+                      (v) => setState(() => _status = v),
+                    ),
                     const SizedBox(height: 12),
                   ],
                 ),
@@ -705,7 +1023,14 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
   Widget _fieldLabel(String label) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Text(label, style: const TextStyle(color: textPrimary, fontSize: 13.5, fontWeight: FontWeight.w600)),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: textPrimary,
+          fontSize: 13.5,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
     );
   }
 
@@ -717,11 +1042,15 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
       fillColor: AppColors.surfaceSoft,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: AppColors.secondary.withValues(alpha: 0.24)),
+        borderSide: BorderSide(
+          color: AppColors.secondary.withValues(alpha: 0.24),
+        ),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: AppColors.secondary.withValues(alpha: 0.24)),
+        borderSide: BorderSide(
+          color: AppColors.secondary.withValues(alpha: 0.24),
+        ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
@@ -730,7 +1059,11 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
     );
   }
 
-  Widget _dropdownField(String value, List<String> options, ValueChanged<String> onChanged) {
+  Widget _dropdownField(
+    String value,
+    List<String> options,
+    ValueChanged<String> onChanged,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
@@ -742,11 +1075,16 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
         child: DropdownButton<String>(
           value: value,
           isExpanded: true,
-          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: textSecondary),
+          icon: const Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: textSecondary,
+          ),
           style: const TextStyle(color: textPrimary, fontSize: 14),
           dropdownColor: AppColors.primary,
           borderRadius: BorderRadius.circular(14),
-          items: options.map((o) => DropdownMenuItem(value: o, child: Text(o))).toList(),
+          items: options
+              .map((o) => DropdownMenuItem(value: o, child: Text(o)))
+              .toList(),
           onChanged: (v) {
             if (v != null) onChanged(v);
           },

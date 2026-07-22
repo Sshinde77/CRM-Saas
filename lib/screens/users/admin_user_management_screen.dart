@@ -11,7 +11,8 @@ class AdminUserManagementScreen extends StatefulWidget {
   const AdminUserManagementScreen({super.key, this.initialTabIndex = 0});
 
   @override
-  State<AdminUserManagementScreen> createState() => _AdminUserManagementScreenState();
+  State<AdminUserManagementScreen> createState() =>
+      _AdminUserManagementScreenState();
 }
 
 class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
@@ -102,7 +103,10 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
                     const SizedBox(height: 18),
                     _buildTabSwitcher(),
                     const SizedBox(height: 18),
-                    if (_tabIndex == 0) _buildUsersSection() else _buildRolesSection(),
+                    if (_tabIndex == 0)
+                      _buildUsersSection()
+                    else
+                      _buildRolesSection(),
                   ],
                 ),
               ),
@@ -210,10 +214,7 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
                   ),
                 ),
                 const SizedBox(height: 2),
-                Text(
-                  user.email,
-                  style: const TextStyle(color: textSecondary),
-                ),
+                Text(user.email, style: const TextStyle(color: textSecondary)),
               ],
             ),
           ),
@@ -254,7 +255,9 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              ..._modules.map((module) => _buildPermissionRow(module, permissions[module]!)),
+              ..._modules.map(
+                (module) => _buildPermissionRow(module, permissions[module]!),
+              ),
             ],
           ),
         ),
@@ -451,7 +454,8 @@ class _CreateRoleDialogState extends State<_CreateRoleDialog> {
           child: const Text('Cancel'),
         ),
         ElevatedButton(
-          onPressed: () => Navigator.of(context).pop(_roleController.text.trim()),
+          onPressed: () =>
+              Navigator.of(context).pop(_roleController.text.trim()),
           child: const Text('Create'),
         ),
       ],
