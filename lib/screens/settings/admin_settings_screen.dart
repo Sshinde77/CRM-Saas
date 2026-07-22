@@ -147,7 +147,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                           const Text('Default GST Rate', style: TextStyle(color: textPrimary)),
                           const SizedBox(height: 8),
                           DropdownButtonFormField<String>(
-                            value: _gstRate,
+                            initialValue: _gstRate,
                             decoration: _inputDecoration(),
                             items: _gstOptions
                                 .map((rate) => DropdownMenuItem<String>(value: rate, child: Text(rate)))
@@ -162,7 +162,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                           SwitchListTile(
                             value: _roundOffInvoices,
                             onChanged: (value) => setState(() => _roundOffInvoices = value),
-                            activeColor: AppColors.purple,
+                            activeThumbColor: AppColors.purple,
                             contentPadding: EdgeInsets.zero,
                             title: const Text(
                               'Round off invoice totals to nearest rupee',
@@ -229,7 +229,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                               onChanged: (value) {
                                 setState(() => _notificationPrefs[entry.key] = value);
                               },
-                              activeColor: AppColors.purple,
+                              activeThumbColor: AppColors.purple,
                               contentPadding: EdgeInsets.zero,
                               title: Text(
                                 entry.key,

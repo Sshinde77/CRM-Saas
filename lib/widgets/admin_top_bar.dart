@@ -33,7 +33,7 @@ class AdminTopBar extends StatelessWidget {
             child: SizedBox(
               width: 40,
               height: 40,
-              child: Icon(leadingIcon, color: AppColors.purple, size: 30),
+              child: Icon(leadingIcon, color: AppColors.secondary, size: 30),
             ),
           ),
           const SizedBox(width: 12),
@@ -41,7 +41,7 @@ class AdminTopBar extends StatelessWidget {
             child: Text(
               title,
               style: const TextStyle(
-                color: AppColors.purple,
+                  color: AppColors.secondary,
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
               ),
@@ -84,13 +84,13 @@ class _DefaultAvatar extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surfaceSoft,
         shape: BoxShape.circle,
-        border: Border.all(color: AppColors.secondary),
+          border: Border.all(color: AppColors.secondary),
       ),
       alignment: Alignment.center,
       child: const Text(
         'AS',
         style: TextStyle(
-          color: AppColors.purple,
+          color: AppColors.secondary,
           fontWeight: FontWeight.w700,
           fontSize: 12,
         ),

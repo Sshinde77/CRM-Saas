@@ -3,9 +3,12 @@ import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
 import '../../widgets/admin_top_bar.dart';
 import '../../widgets/app_drawer.dart';
+import '../../widgets/soft_action_button.dart';
 
 class AdminUserManagementScreen extends StatefulWidget {
-  const AdminUserManagementScreen({super.key});
+  final int initialTabIndex;
+
+  const AdminUserManagementScreen({super.key, this.initialTabIndex = 0});
 
   @override
   State<AdminUserManagementScreen> createState() => _AdminUserManagementScreenState();
@@ -55,11 +58,20 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
   };
 
   @override
+  void initState() {
+    super.initState();
+    _tabIndex = widget.initialTabIndex.clamp(0, 1).toInt();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: AppColors.primary,
-      drawer: const AppDrawer(activeItem: 'User Management'),
+      drawer: AppDrawer(
+        activeItem: 'User Management',
+        activeSubItem: _tabIndex == 0 ? 'Users' : 'Roles',
+      ),
       body: SafeArea(
         child: Column(
           children: [
@@ -221,10 +233,10 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
           runSpacing: 10,
           children: [
             ..._roles.map(_buildRoleChip),
-            OutlinedButton.icon(
+            SoftActionButton(
+              label: 'Create Role',
+              icon: Icons.add_rounded,
               onPressed: _openCreateRoleDialog,
-              icon: const Icon(Icons.add_rounded),
-              label: const Text('Create Role'),
             ),
           ],
         ),

@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../constants/app_colors.dart';
 import '../../widgets/admin_top_bar.dart';
 import '../../widgets/app_drawer.dart';
+import '../../widgets/soft_action_button.dart';
 
 class CompanySettingsScreen extends StatefulWidget {
   const CompanySettingsScreen({super.key});
@@ -223,10 +224,10 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
                     ),
             ),
             const SizedBox(width: 16),
-            OutlinedButton.icon(
+            SoftActionButton(
+              label: 'Upload Logo',
+              icon: Icons.upload_outlined,
               onPressed: _pickLogo,
-              icon: const Icon(Icons.upload_outlined),
-              label: const Text('Upload Logo'),
             ),
           ],
         ),
@@ -252,7 +253,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
         const SizedBox(height: 16),
         _fieldLabel('Business Type'),
         DropdownButtonFormField<String>(
-          value: _businessType,
+          initialValue: _businessType,
           decoration: _inputDecoration(),
           items: _businessTypes
               .map((item) => DropdownMenuItem<String>(value: item, child: Text(item)))
@@ -304,7 +305,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
         SwitchListTile(
           value: _shippingSameAsBilling,
           onChanged: (value) => setState(() => _shippingSameAsBilling = value),
-          activeColor: AppColors.purple,
+          activeThumbColor: AppColors.purple,
           contentPadding: EdgeInsets.zero,
           title: const Text(
             'Shipping / warehouse address is the same as billing',
@@ -335,7 +336,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
         const SizedBox(height: 16),
         _fieldLabel('Financial Year'),
         DropdownButtonFormField<String>(
-          value: _financialYear,
+          initialValue: _financialYear,
           decoration: _inputDecoration(),
           items: _financialYears
               .map((item) => DropdownMenuItem<String>(value: item, child: Text(item)))
