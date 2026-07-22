@@ -164,25 +164,24 @@ class _ReportsScreenState extends State<ReportsScreen> {
                     const SizedBox(height: 20),
                     LayoutBuilder(
                       builder: (context, constraints) {
-                        final crossAxisCount = constraints.maxWidth > 700 ? 2 : 1;
-                        return GridView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: _reports.length,
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: crossAxisCount,
-                            mainAxisSpacing: 14,
-                            crossAxisSpacing: 14,
-                            childAspectRatio: crossAxisCount == 2 ? 1.35 : 1.15,
-                          ),
-                          itemBuilder: (context, index) {
-                            return _ReportCard(
-                              data: _reports[index],
-                              selectedFormat: _selectedFormat,
-                              selectedPeriod: _selectedPeriod,
-                              onDownload: () => _downloadReport(_reports[index].title),
-                            );
-                          },
+                        final isWide = constraints.maxWidth > 700;
+                        final cardWidth = isWide ? (constraints.maxWidth - 14) / 2 : constraints.maxWidth;
+                        return Wrap(
+                          spacing: 14,
+                          runSpacing: 14,
+                          children: _reports
+                              .map(
+                                (report) => SizedBox(
+                                  width: cardWidth,
+                                  child: _ReportCard(
+                                    data: report,
+                                    selectedFormat: _selectedFormat,
+                                    selectedPeriod: _selectedPeriod,
+                                    onDownload: () => _downloadReport(report.title),
+                                  ),
+                                ),
+                              )
+                              .toList(),
                         );
                       },
                     ),

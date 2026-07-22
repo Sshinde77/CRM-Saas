@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../constants/app_colors.dart';
+import '../screens/notifications/notifications_screen.dart';
 
 class AdminTopBar extends StatelessWidget {
   final String title;
   final IconData leadingIcon;
   final VoidCallback? onLeadingTap;
+  final VoidCallback? onNotificationTap;
   final Widget? trailingAvatar;
 
   const AdminTopBar({
@@ -13,6 +15,7 @@ class AdminTopBar extends StatelessWidget {
     required this.title,
     required this.leadingIcon,
     this.onLeadingTap,
+    this.onNotificationTap,
     this.trailingAvatar,
   });
 
@@ -50,7 +53,20 @@ class AdminTopBar extends StatelessWidget {
           Stack(
             clipBehavior: Clip.none,
             children: [
-              const Icon(Icons.notifications_none_rounded, color: AppColors.textPrimary, size: 30),
+              InkWell(
+                onTap: onNotificationTap ??
+                    () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+                      );
+                    },
+                borderRadius: BorderRadius.circular(20),
+                child: const SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: Icon(Icons.notifications_none_rounded, color: AppColors.textPrimary, size: 30),
+                ),
+              ),
               Positioned(
                 right: 1,
                 top: 1,

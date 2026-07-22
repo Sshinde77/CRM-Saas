@@ -10,6 +10,8 @@ import '../screens/vehicles/vehicle_stock_screen.dart';
 import '../screens/inventory/inventory_screen.dart';
 import '../screens/purchases/purchases_screen.dart';
 import '../screens/reports/reports_screen.dart';
+import '../screens/notifications/notifications_screen.dart';
+import '../screens/audit_logs/audit_logs_screen.dart';
 
 // Place this file at: lib/widgets/app_drawer.dart
 
@@ -101,6 +103,16 @@ class AppDrawer extends StatelessWidget {
       case 'Reports':
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const ReportsScreen()),
+        );
+        break;
+      case 'Notifications':
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+        );
+        break;
+      case 'Audit Logs':
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const AuditLogsScreen()),
         );
         break;
       default:

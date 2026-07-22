@@ -626,6 +626,12 @@ class _PurchaseInvoiceFormDialogState extends State<_PurchaseInvoiceFormDialog> 
                 children: [
                   OutlinedButton(
                     onPressed: () => Navigator.of(context).pop(),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.purple,
+                      side: const BorderSide(color: AppColors.purple, width: 1.4),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                    ),
                     child: const Text('Cancel'),
                   ),
                   const SizedBox(width: 12),
