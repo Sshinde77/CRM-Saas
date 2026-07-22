@@ -4,10 +4,14 @@ import '../constants/app_colors.dart';
 import '../screens/dashboard/admin_dashboard_screen.dart';
 import '../screens/settings/admin_settings_screen.dart';
 import '../screens/settings/company_settings_screen.dart';
-import '../screens/users/admin_user_list_screen.dart';
 import '../screens/users/admin_user_management_screen.dart';
 import '../screens/products/products_screen.dart';
 import '../screens/vehicles/vehicle_stock_screen.dart';
+import '../screens/inventory/inventory_screen.dart';
+import '../screens/purchases/purchases_screen.dart';
+import '../screens/reports/reports_screen.dart';
+import '../screens/notifications/notifications_screen.dart';
+import '../screens/audit_logs/audit_logs_screen.dart';
 
 // Place this file at: lib/widgets/app_drawer.dart
 
@@ -20,20 +24,14 @@ class _NavItem {
 /// Shared nav drawer used across every admin screen (Dashboard, Company
 /// Settings, etc). Pass in the current screen's label via [activeItem] so it
 /// gets highlighted; tapping any other item swaps to that screen.
-class AppDrawer extends StatefulWidget {
+class AppDrawer extends StatelessWidget {
   final String activeItem;
   final String? activeSubItem;
 
   const AppDrawer({super.key, required this.activeItem, this.activeSubItem});
 
-  @override
-  State<AppDrawer> createState() => _AppDrawerState();
-}
-
-class _AppDrawerState extends State<AppDrawer> {
-  bool _isUserManagementExpanded = false;
-
-  static const Color accent = AppColors.secondary;
+  static const Color purple = AppColors.purple;
+  static const Color blue = AppColors.blue;
   static const Color textPrimary = AppColors.textPrimary;
   static const Color textSecondary = AppColors.textSecondary;
 
@@ -57,26 +55,9 @@ class _AppDrawerState extends State<AppDrawer> {
     _NavItem('Settings', Icons.settings_outlined),
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    _isUserManagementExpanded = _shouldExpandUserManagement;
-  }
-
-  @override
-  void didUpdateWidget(covariant AppDrawer oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (_shouldExpandUserManagement && !_isUserManagementExpanded) {
-      _isUserManagementExpanded = true;
-    }
-  }
-
-  bool get _shouldExpandUserManagement =>
-      widget.activeItem == 'User Management' || widget.activeSubItem != null;
-
   void _handleTap(BuildContext context, _NavItem item) {
     Navigator.of(context).pop(); // close the drawer first
-    if (item.label == widget.activeItem) return; // already on this screen
+    if (item.label == activeItem) return; // already on this screen
 
     switch (item.label) {
       case 'Dashboard':
@@ -107,6 +88,31 @@ class _AppDrawerState extends State<AppDrawer> {
       case 'Vehicle Stock':
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const VehicleStockScreen()),
+        );
+        break;
+      case 'Inventory':
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const InventoryScreen()),
+        );
+        break;
+      case 'Purchases':
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const PurchasesScreen()),
+        );
+        break;
+      case 'Reports':
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const ReportsScreen()),
+        );
+        break;
+      case 'Notifications':
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+        );
+        break;
+      case 'Audit Logs':
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const AuditLogsScreen()),
         );
         break;
       default:
@@ -370,7 +376,7 @@ class _AppDrawerState extends State<AppDrawer> {
                     height: 40,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
-                      color: accent,
+                      gradient: const LinearGradient(colors: [purple, blue]),
                     ),
                     child: const Icon(
                       Icons.water_drop_rounded,
@@ -416,10 +422,46 @@ class _AppDrawerState extends State<AppDrawer> {
                 itemCount: _navItems.length,
                 itemBuilder: (context, i) {
                   final item = _navItems[i];
-                  if (item.label == 'User Management') {
-                    return _buildUserManagementGroup();
-                  }
-                  return _buildNavRow(item);
+                  final bool active = item.label == activeItem;
+                  final Color rowColor = active ? purple : textSecondary;
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 3),
+                    child: Material(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(14),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(14),
+                        onTap: () => _handleTap(context, item),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: active ? purple.withValues(alpha: 0.10) : Colors.transparent,
+                            borderRadius: BorderRadius.circular(14),
+                            border: active
+                                ? Border(left: BorderSide(color: purple, width: 3))
+                                : const Border(left: BorderSide(color: Colors.transparent, width: 3)),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(item.icon, color: rowColor, size: 21),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Text(
+                                  item.label,
+                                  style: TextStyle(
+                                    color: rowColor,
+                                    fontSize: 14.5,
+                                    fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
                 },
               ),
             ),
@@ -433,7 +475,7 @@ class _AppDrawerState extends State<AppDrawer> {
                     height: 38,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: accent.withValues(alpha: 0.15),
+                      color: purple.withValues(alpha: 0.15),
                     ),
                     alignment: Alignment.center,
                     child: const Text(

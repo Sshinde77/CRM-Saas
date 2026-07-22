@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../constants/app_colors.dart';
+import '../screens/notifications/notifications_screen.dart';
 
 class AdminTopBar extends StatelessWidget {
   final String title;
   final IconData leadingIcon;
   final VoidCallback? onLeadingTap;
+  final VoidCallback? onNotificationTap;
   final Widget? trailingAvatar;
 
   const AdminTopBar({
@@ -13,6 +15,7 @@ class AdminTopBar extends StatelessWidget {
     required this.title,
     required this.leadingIcon,
     this.onLeadingTap,
+    this.onNotificationTap,
     this.trailingAvatar,
   });
 
