@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../constants/app_colors.dart';
-import '../screens/notifications/notifications_screen.dart';
 
 class AdminTopBar extends StatelessWidget {
   final String title;

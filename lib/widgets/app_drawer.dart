@@ -1,30 +1,28 @@
 import 'package:flutter/material.dart';
 
 import '../constants/app_colors.dart';
+import '../screens/audit_logs/audit_logs_screen.dart';
 import '../screens/dashboard/admin_dashboard_screen.dart';
-import '../screens/settings/admin_settings_screen.dart';
-import '../screens/settings/company_settings_screen.dart';
-import '../screens/users/admin_user_management_screen.dart';
-import '../screens/products/products_screen.dart';
-import '../screens/vehicles/vehicle_stock_screen.dart';
 import '../screens/inventory/inventory_screen.dart';
+import '../screens/notifications/notifications_screen.dart';
+import '../screens/products/products_screen.dart';
 import '../screens/purchases/purchases_screen.dart';
 import '../screens/reports/reports_screen.dart';
-import '../screens/notifications/notifications_screen.dart';
-import '../screens/audit_logs/audit_logs_screen.dart';
-
-// Place this file at: lib/widgets/app_drawer.dart
+import '../screens/settings/admin_settings_screen.dart';
+import '../screens/settings/company_settings_screen.dart';
+import '../screens/users/admin_user_list_screen.dart';
+import '../screens/users/admin_user_management_screen.dart';
+import '../screens/vehicles/vehicle_stock_screen.dart';
 
 class _NavItem {
   final String label;
   final IconData icon;
+
   const _NavItem(this.label, this.icon);
 }
 
-/// Shared nav drawer used across every admin screen (Dashboard, Company
-/// Settings, etc). Pass in the current screen's label via [activeItem] so it
-/// gets highlighted; tapping any other item swaps to that screen.
-class AppDrawer extends StatelessWidget {
+/// Shared nav drawer used across every admin screen.
+class AppDrawer extends StatefulWidget {
   final String activeItem;
   final String? activeSubItem;
 
@@ -38,7 +36,6 @@ class AppDrawer extends StatelessWidget {
   static const List<_NavItem> _navItems = [
     _NavItem('Dashboard', Icons.dashboard_outlined),
     _NavItem('Company Settings', Icons.storefront_outlined),
-    _NavItem('User Management', Icons.people_alt_outlined),
     _NavItem('Products', Icons.inventory_2_outlined),
     _NavItem('Inventory', Icons.warehouse_outlined),
     _NavItem('Vehicle Stock', Icons.local_shipping_outlined),
@@ -55,9 +52,23 @@ class AppDrawer extends StatelessWidget {
     _NavItem('Settings', Icons.settings_outlined),
   ];
 
-  void _handleTap(BuildContext context, _NavItem item) {
-    Navigator.of(context).pop(); // close the drawer first
-    if (item.label == activeItem) return; // already on this screen
+  @override
+  State<AppDrawer> createState() => _AppDrawerState();
+}
+
+class _AppDrawerState extends State<AppDrawer> {
+  static const Color accent = AppColors.purple;
+  bool _isUserManagementExpanded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isUserManagementExpanded = widget.activeItem == 'User Management';
+  }
+
+  void _handleTap(_NavItem item) {
+    Navigator.of(context).pop();
+    if (item.label == widget.activeItem) return;
 
     switch (item.label) {
       case 'Dashboard':
@@ -73,11 +84,6 @@ class AppDrawer extends StatelessWidget {
       case 'Settings':
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const AdminSettingsScreen()),
-        );
-        break;
-      case 'User Management':
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const AdminUserManagementScreen()),
         );
         break;
       case 'Products':
@@ -116,15 +122,11 @@ class AppDrawer extends StatelessWidget {
         );
         break;
       default:
-        // TODO: wire up the remaining nav items to their screens, e.g.
-        // Navigator.of(context).pushReplacement(
-        //   MaterialPageRoute(builder: (_) => const ProductsScreen()),
-        // );
         break;
     }
   }
 
-  void _openUserManagement(BuildContext context, int tabIndex) {
+  void _openUserManagement(int tabIndex) {
     Navigator.of(context).pop();
 
     if (widget.activeItem == 'User Management') {
@@ -152,7 +154,7 @@ class AppDrawer extends StatelessWidget {
 
   Widget _buildNavRow(_NavItem item) {
     final active = item.label == widget.activeItem;
-    final Color rowColor = active ? accent : textSecondary;
+    final Color rowColor = active ? accent : AppDrawer.textSecondary;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
@@ -161,16 +163,16 @@ class AppDrawer extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         child: InkWell(
           borderRadius: BorderRadius.circular(14),
-          onTap: () => _handleTap(context, item),
+          onTap: () => _handleTap(item),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
-              color: active
-                  ? accent.withValues(alpha: 0.10)
-                  : Colors.transparent,
+              color: active ? accent.withValues(alpha: 0.10) : Colors.transparent,
               borderRadius: BorderRadius.circular(14),
               border: active
-                  ? Border(left: BorderSide(color: accent, width: 3))
+                  ? const Border(
+                      left: BorderSide(color: accent, width: 3),
+                    )
                   : const Border(
                       left: BorderSide(color: Colors.transparent, width: 3),
                     ),
@@ -198,9 +200,8 @@ class AppDrawer extends StatelessWidget {
   }
 
   Widget _buildUserManagementGroup() {
-    final parentActive =
-        widget.activeItem == 'User Management' || widget.activeSubItem != null;
-    final parentColor = parentActive ? accent : textSecondary;
+    final parentActive = widget.activeItem == 'User Management';
+    final parentColor = parentActive ? accent : AppDrawer.textSecondary;
 
     Widget childRow({
       required String label,
@@ -215,13 +216,11 @@ class AppDrawer extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           child: InkWell(
             borderRadius: BorderRadius.circular(12),
-            onTap: () => _openUserManagement(context, tabIndex),
+            onTap: () => _openUserManagement(tabIndex),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: selected
-                    ? accent.withValues(alpha: 0.10)
-                    : Colors.transparent,
+                color: selected ? accent.withValues(alpha: 0.10) : Colors.transparent,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -229,18 +228,16 @@ class AppDrawer extends StatelessWidget {
                   Icon(
                     icon,
                     size: 18,
-                    color: selected ? accent : textSecondary,
+                    color: selected ? accent : AppDrawer.textSecondary,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       label,
                       style: TextStyle(
-                        color: selected ? accent : textSecondary,
+                        color: selected ? accent : AppDrawer.textSecondary,
                         fontSize: 13.5,
-                        fontWeight: selected
-                            ? FontWeight.w700
-                            : FontWeight.w500,
+                        fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                       ),
                     ),
                   ),
@@ -262,22 +259,19 @@ class AppDrawer extends StatelessWidget {
             InkWell(
               borderRadius: BorderRadius.circular(14),
               onTap: () {
-                setState(
-                  () => _isUserManagementExpanded = !_isUserManagementExpanded,
-                );
+                setState(() {
+                  _isUserManagementExpanded = !_isUserManagementExpanded;
+                });
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 12,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 decoration: BoxDecoration(
                   color: parentActive
                       ? accent.withValues(alpha: 0.10)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(14),
                   border: parentActive
-                      ? Border(left: BorderSide(color: accent, width: 3))
+                      ? const Border(left: BorderSide(color: accent, width: 3))
                       : const Border(
                           left: BorderSide(color: Colors.transparent, width: 3),
                         ),
@@ -296,9 +290,8 @@ class AppDrawer extends StatelessWidget {
                         style: TextStyle(
                           color: parentColor,
                           fontSize: 14.5,
-                          fontWeight: parentActive
-                              ? FontWeight.w700
-                              : FontWeight.w500,
+                          fontWeight:
+                              parentActive ? FontWeight.w700 : FontWeight.w500,
                         ),
                       ),
                     ),
@@ -376,7 +369,9 @@ class AppDrawer extends StatelessWidget {
                     height: 40,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
-                      gradient: const LinearGradient(colors: [purple, blue]),
+                      gradient: const LinearGradient(
+                        colors: [AppDrawer.purple, AppDrawer.blue],
+                      ),
                     ),
                     child: const Icon(
                       Icons.water_drop_rounded,
@@ -392,7 +387,7 @@ class AppDrawer extends StatelessWidget {
                         Text(
                           'SAAS CRM',
                           style: TextStyle(
-                            color: textPrimary,
+                            color: AppDrawer.textPrimary,
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                           ),
@@ -410,62 +405,39 @@ class AppDrawer extends StatelessWidget {
                   ),
                   GestureDetector(
                     onTap: () => Navigator.of(context).pop(),
-                    child: Icon(Icons.close, color: textSecondary, size: 22),
+                    child: const Icon(
+                      Icons.close,
+                      color: AppDrawer.textSecondary,
+                      size: 22,
+                    ),
                   ),
                 ],
               ),
             ),
-            Divider(color: textPrimary.withValues(alpha: 0.08), height: 1),
+            Divider(
+              color: AppDrawer.textPrimary.withValues(alpha: 0.08),
+              height: 1,
+            ),
             Expanded(
-              child: ListView.builder(
+              child: ListView(
                 padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-                itemCount: _navItems.length,
-                itemBuilder: (context, i) {
-                  final item = _navItems[i];
-                  final bool active = item.label == activeItem;
-                  final Color rowColor = active ? purple : textSecondary;
-
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 3),
-                    child: Material(
-                      color: Colors.transparent,
-                      borderRadius: BorderRadius.circular(14),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(14),
-                        onTap: () => _handleTap(context, item),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                          decoration: BoxDecoration(
-                            color: active ? purple.withValues(alpha: 0.10) : Colors.transparent,
-                            borderRadius: BorderRadius.circular(14),
-                            border: active
-                                ? Border(left: BorderSide(color: purple, width: 3))
-                                : const Border(left: BorderSide(color: Colors.transparent, width: 3)),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(item.icon, color: rowColor, size: 21),
-                              const SizedBox(width: 14),
-                              Expanded(
-                                child: Text(
-                                  item.label,
-                                  style: TextStyle(
-                                    color: rowColor,
-                                    fontSize: 14.5,
-                                    fontWeight: active ? FontWeight.w700 : FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+                children: [
+                  _buildNavRow(const _NavItem('Dashboard', Icons.dashboard_outlined)),
+                  _buildNavRow(
+                    const _NavItem(
+                      'Company Settings',
+                      Icons.storefront_outlined,
                     ),
-                  );
-                },
+                  ),
+                  _buildUserManagementGroup(),
+                  ...AppDrawer._navItems.map(_buildNavRow),
+                ],
               ),
             ),
-            Divider(color: textPrimary.withValues(alpha: 0.08), height: 1),
+            Divider(
+              color: AppDrawer.textPrimary.withValues(alpha: 0.08),
+              height: 1,
+            ),
             Padding(
               padding: const EdgeInsets.all(16),
               child: Row(
@@ -475,7 +447,7 @@ class AppDrawer extends StatelessWidget {
                     height: 38,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: purple.withValues(alpha: 0.15),
+                      color: AppDrawer.purple.withValues(alpha: 0.15),
                     ),
                     alignment: Alignment.center,
                     child: const Text(
@@ -495,14 +467,17 @@ class AppDrawer extends StatelessWidget {
                         Text(
                           'Anita Sharma',
                           style: TextStyle(
-                            color: textPrimary,
+                            color: AppDrawer.textPrimary,
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                         Text(
                           'admin@demo.com',
-                          style: TextStyle(color: textSecondary, fontSize: 12),
+                          style: TextStyle(
+                            color: AppDrawer.textSecondary,
+                            fontSize: 12,
+                          ),
                         ),
                       ],
                     ),
