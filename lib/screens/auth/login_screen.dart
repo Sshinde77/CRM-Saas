@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../dashboard/admin_dashboard_screen.dart';
+import '../../services/api_service.dart';
 import 'register_screen.dart';
 
 // Place this file at: lib/screens/auth/login_screen.dart
@@ -83,6 +84,8 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final ApiService _apiService = ApiService();
+
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -119,6 +122,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
+    _apiService.close();
     _emailController.dispose();
     _passwordController.dispose();
     _phoneController.dispose();
@@ -136,18 +140,47 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _handleSignIn() async {
     if (!_isPhoneTab && !_formKey.currentState!.validate()) return;
 
-    setState(() => _isLoading = true);
-    // TODO(api): call ApiService.login(role: _selectedRole, email/phone, ...)
-    // and route to a role-specific dashboard once those screens exist. For
-    // now every role lands on AdminDashboardScreen so the flow is testable.
-    await Future.delayed(const Duration(milliseconds: 900));
-    if (!mounted) return;
-    setState(() => _isLoading = false);
+    if (_isPhoneTab) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Phone login is not connected yet. Use email sign-in.'),
+        ),
+      );
+      return;
+    }
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
-    );
+    setState(() => _isLoading = true);
+    try {
+      final message = await _apiService.login(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+      await Future.delayed(const Duration(milliseconds: 700));
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
+      );
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.message)),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Login failed: $error')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
@@ -309,9 +342,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                           Align(
-                            alignment: Alignment.centerLeft,
+                            alignment: Alignment.centerRight,
                             child: Padding(
-                              padding: const EdgeInsets.only(top: 8, left: 6),
+                              padding: const EdgeInsets.only(top: 8, right: 6),
                               child: GestureDetector(
                                 onTap: () {
                                   // TODO(auth): navigate to forgot-password flow.
