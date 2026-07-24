@@ -11,7 +11,10 @@ import '../screens/reports/reports_screen.dart';
 import '../screens/settings/admin_settings_screen.dart';
 import '../screens/settings/company_settings_screen.dart';
 import '../screens/users/admin_user_list_screen.dart';
-import '../screens/users/admin_user_management_screen.dart';
+import '../screens/products/products_screen.dart';
+import '../screens/invoices/invoices_screen.dart';
+import '../screens/deliveries/deliveries_screen.dart';
+import '../screens/expenses/expenses_screen.dart';
 import '../screens/vehicles/vehicle_stock_screen.dart';
 
 class _NavItem {
@@ -30,6 +33,7 @@ class AppDrawer extends StatefulWidget {
 
   static const Color purple = AppColors.purple;
   static const Color blue = AppColors.blue;
+  static const Color accent = purple;
   static const Color textPrimary = AppColors.textPrimary;
   static const Color textSecondary = AppColors.textSecondary;
 
@@ -40,12 +44,9 @@ class AppDrawer extends StatefulWidget {
     _NavItem('Inventory', Icons.warehouse_outlined),
     _NavItem('Vehicle Stock', Icons.local_shipping_outlined),
     _NavItem('Purchases', Icons.inventory_2_outlined),
-    _NavItem('Suppliers', Icons.people_outline),
     _NavItem('Deliveries', Icons.local_shipping_outlined),
     _NavItem('Expenses', Icons.receipt_long_outlined),
     _NavItem('Invoices', Icons.description_outlined),
-    _NavItem('Returns', Icons.replay_outlined),
-    _NavItem('Leave Approvals', Icons.event_available_outlined),
     _NavItem('Reports', Icons.bar_chart_outlined),
     _NavItem('Notifications', Icons.notifications_none_rounded),
     _NavItem('Audit Logs', Icons.history_rounded),
@@ -86,6 +87,11 @@ class _AppDrawerState extends State<AppDrawer> {
           MaterialPageRoute(builder: (_) => const AdminSettingsScreen()),
         );
         break;
+      case 'User Management':
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const AdminUserListScreen()),
+        );
+        break;
       case 'Products':
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const ProductsScreen()),
@@ -106,6 +112,21 @@ class _AppDrawerState extends State<AppDrawer> {
           MaterialPageRoute(builder: (_) => const PurchasesScreen()),
         );
         break;
+      case 'Invoices':
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const InvoicesScreen()),
+        );
+        break;
+      case 'Deliveries':
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const DeliveriesScreen()),
+        );
+        break;
+      case 'Expenses':
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const ExpensesScreen()),
+        );
+        break;
       case 'Reports':
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const ReportsScreen()),
@@ -122,228 +143,9 @@ class _AppDrawerState extends State<AppDrawer> {
         );
         break;
       default:
+        // TODO: wire up the remaining nav items to their screens.
         break;
     }
-  }
-
-  void _openUserManagement(int tabIndex) {
-    Navigator.of(context).pop();
-
-    if (widget.activeItem == 'User Management') {
-      if (tabIndex == 0 && widget.activeSubItem == 'Users') return;
-      if (tabIndex == 1 &&
-          (widget.activeSubItem == 'Roles' ||
-              widget.activeSubItem == 'Permissions')) {
-        return;
-      }
-    }
-
-    if (tabIndex == 0) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const AdminUserListScreen()),
-      );
-      return;
-    }
-
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (_) => AdminUserManagementScreen(initialTabIndex: tabIndex),
-      ),
-    );
-  }
-
-  Widget _buildNavRow(_NavItem item) {
-    final active = item.label == widget.activeItem;
-    final Color rowColor = active ? accent : AppDrawer.textSecondary;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(14),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(14),
-          onTap: () => _handleTap(item),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            decoration: BoxDecoration(
-              color: active ? accent.withValues(alpha: 0.10) : Colors.transparent,
-              borderRadius: BorderRadius.circular(14),
-              border: active
-                  ? const Border(
-                      left: BorderSide(color: accent, width: 3),
-                    )
-                  : const Border(
-                      left: BorderSide(color: Colors.transparent, width: 3),
-                    ),
-            ),
-            child: Row(
-              children: [
-                Icon(item.icon, color: rowColor, size: 21),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Text(
-                    item.label,
-                    style: TextStyle(
-                      color: rowColor,
-                      fontSize: 14.5,
-                      fontWeight: active ? FontWeight.w700 : FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildUserManagementGroup() {
-    final parentActive = widget.activeItem == 'User Management';
-    final parentColor = parentActive ? accent : AppDrawer.textSecondary;
-
-    Widget childRow({
-      required String label,
-      required int tabIndex,
-      required bool selected,
-      required IconData icon,
-    }) {
-      return Padding(
-        padding: const EdgeInsets.only(left: 18, top: 4),
-        child: Material(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(12),
-            onTap: () => _openUserManagement(tabIndex),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: selected ? accent.withValues(alpha: 0.10) : Colors.transparent,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    icon,
-                    size: 18,
-                    color: selected ? accent : AppDrawer.textSecondary,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      label,
-                      style: TextStyle(
-                        color: selected ? accent : AppDrawer.textSecondary,
-                        fontSize: 13.5,
-                        fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(14),
-        child: Column(
-          children: [
-            InkWell(
-              borderRadius: BorderRadius.circular(14),
-              onTap: () {
-                setState(() {
-                  _isUserManagementExpanded = !_isUserManagementExpanded;
-                });
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                decoration: BoxDecoration(
-                  color: parentActive
-                      ? accent.withValues(alpha: 0.10)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(14),
-                  border: parentActive
-                      ? const Border(left: BorderSide(color: accent, width: 3))
-                      : const Border(
-                          left: BorderSide(color: Colors.transparent, width: 3),
-                        ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.people_alt_outlined,
-                      color: parentColor,
-                      size: 21,
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Text(
-                        'User Management',
-                        style: TextStyle(
-                          color: parentColor,
-                          fontSize: 14.5,
-                          fontWeight:
-                              parentActive ? FontWeight.w700 : FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                    Icon(
-                      _isUserManagementExpanded
-                          ? Icons.keyboard_arrow_up_rounded
-                          : Icons.keyboard_arrow_down_rounded,
-                      color: parentColor,
-                      size: 22,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            AnimatedSize(
-              duration: const Duration(milliseconds: 180),
-              curve: Curves.easeOut,
-              child: _isUserManagementExpanded
-                  ? Column(
-                      children: [
-                        childRow(
-                          label: 'User',
-                          tabIndex: 0,
-                          icon: Icons.person_outline_rounded,
-                          selected:
-                              widget.activeItem == 'User Management' &&
-                              widget.activeSubItem == 'Users',
-                        ),
-                        childRow(
-                          label: 'Roles',
-                          tabIndex: 1,
-                          icon: Icons.badge_outlined,
-                          selected:
-                              widget.activeItem == 'User Management' &&
-                              widget.activeSubItem == 'Roles',
-                        ),
-                        childRow(
-                          label: 'Permission',
-                          tabIndex: 1,
-                          icon: Icons.admin_panel_settings_outlined,
-                          selected:
-                              widget.activeItem == 'User Management' &&
-                              widget.activeSubItem == 'Permissions',
-                        ),
-                      ],
-                    )
-                  : const SizedBox.shrink(),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   @override

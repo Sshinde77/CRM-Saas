@@ -1,21 +1,79 @@
 import 'package:flutter/material.dart';
 
-import '../../constants/app_colors.dart';
 import '../dashboard/admin_dashboard_screen.dart';
+import 'register_screen.dart';
 
 // Place this file at: lib/screens/auth/login_screen.dart
+//
+// v4: same fields/logic as v3 (role picker, email/phone tabs, country code
+// picker, password visibility toggle, social buttons, register link) but
+// restyled as a soft rounded "gradient card" — inspired by the Uiverse.io
+// login card (Smit-Prajapati) — with a light blue/white gradient background,
+// 40px rounded card corners, pill-shaped inputs with a soft cyan glow, and a
+// blue-to-cyan gradient sign-in button.
 
-class _DemoRole {
-  final String label;
-  final String email;
-  final IconData icon;
+enum UserRole { superAdmin, admin, salesOfficer, deliveryPartner, accountant }
 
-  const _DemoRole({
-    required this.label,
-    required this.email,
-    required this.icon,
-  });
+extension on UserRole {
+  String get label {
+    switch (this) {
+      case UserRole.superAdmin:
+        return 'Super Admin';
+      case UserRole.admin:
+        return 'Admin';
+      case UserRole.salesOfficer:
+        return 'Sales Officer';
+      case UserRole.deliveryPartner:
+        return 'Delivery Partner';
+      case UserRole.accountant:
+        return 'Accountant';
+    }
+  }
+
+  IconData get icon {
+    switch (this) {
+      case UserRole.superAdmin:
+        return Icons.shield_outlined;
+      case UserRole.admin:
+        return Icons.admin_panel_settings_outlined;
+      case UserRole.salesOfficer:
+        return Icons.groups_outlined;
+      case UserRole.deliveryPartner:
+        return Icons.local_shipping_outlined;
+      case UserRole.accountant:
+        return Icons.account_balance_wallet_outlined;
+    }
+  }
 }
+
+class _CountryCode {
+  final String iso;
+  final String dialCode;
+
+  const _CountryCode(this.iso, this.dialCode);
+}
+
+const List<_CountryCode> _countryCodes = [
+  _CountryCode('IN', '+91'),
+  _CountryCode('US', '+44'),
+  _CountryCode('AE', '+971'),
+  _CountryCode('AU', '+61'),
+  _CountryCode('JP', '+81'),
+  _CountryCode('CN', '+86'),
+  _CountryCode('DE', '+49'),
+  _CountryCode('FR', '+33'),
+  _CountryCode('IT', '+39'),
+  _CountryCode('ES', '+34'),
+  _CountryCode('NL', '+31'),
+  _CountryCode('SG', '+65'),
+  _CountryCode('MY', '+60'),
+  _CountryCode('TH', '+66'),
+  _CountryCode('BD', '+880'),
+  _CountryCode('PK', '+92'),
+  _CountryCode('LK', '+94'),
+  _CountryCode('ZA', '+27'),
+  _CountryCode('BR', '+55'),
+];
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -28,59 +86,33 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
   final FocusNode _emailFocusNode = FocusNode();
 
+  bool _isPhoneTab = false;
   bool _obscurePassword = true;
   bool _isLoading = false;
-  bool _showRoleSuggestions = false;
+  bool _roleMenuOpen = false;
+  bool _countryMenuOpen = false;
+  UserRole? _selectedRole;
+  _CountryCode _selectedCountry = _countryCodes.first;
 
-  static const Color primaryPurple = Color(0xFF6C4EE3);
-  static const Color darkText = AppColors.textPrimary;
-  static const Color greyText = AppColors.textSecondary;
-  static const Color fieldBorder = AppColors.secondary;
-  static const Color fieldFill = AppColors.primary;
-  static const double _bottomWaveHeight = 140;
-
-  // Update these to match your own demo/test accounts.
-  static const List<_DemoRole> _demoRoles = [
-    _DemoRole(
-      label: 'Super Admin',
-      email: 'superadmin@demo.com',
-      icon: Icons.shield_outlined,
-    ),
-    _DemoRole(
-      label: 'Admin',
-      email: 'admin@demo.com',
-      icon: Icons.admin_panel_settings_outlined,
-    ),
-    _DemoRole(
-      label: 'Sales Officer',
-      email: 'sales@demo.com',
-      icon: Icons.groups_outlined,
-    ),
-    _DemoRole(
-      label: 'Delivery Partner',
-      email: 'delivery@demo.com',
-      icon: Icons.local_shipping_outlined,
-    ),
-    _DemoRole(
-      label: 'Accountant',
-      email: 'accountant@demo.com',
-      icon: Icons.account_balance_wallet_outlined,
-    ),
-    _DemoRole(
-      label: 'Warehouse Manager',
-      email: 'warehouse@demo.com',
-      icon: Icons.warehouse_outlined,
-    ),
-  ];
+  // Gradient-card palette (Uiverse-inspired)
+  static const Color cardTopColor = Color(0xFFFFFFFF);
+  static const Color cardBottomColor = Color(0xFFF4F7FB);
+  static const Color brandBlue = Color(0xFF1089D3);
+  static const Color brandCyan = Color(0xFF12B1D1);
+  static const Color darkText = Color(0xFF111827);
+  static const Color greyText = Color(0xFFAAAAAA);
+  static const Color shadowBlue = Color(0xFF85BDD7);
+  static const Color inputShadow = Color(0xFFCFF0FF);
 
   @override
   void initState() {
     super.initState();
     _emailFocusNode.addListener(() {
       if (_emailFocusNode.hasFocus) {
-        setState(() => _showRoleSuggestions = true);
+        setState(() => _roleMenuOpen = true);
       }
     });
   }
@@ -89,486 +121,516 @@ class _LoginScreenState extends State<LoginScreen> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _phoneController.dispose();
     _emailFocusNode.dispose();
     super.dispose();
   }
 
-  void _selectRole(_DemoRole role) {
+  void _selectRole(UserRole role) {
     setState(() {
-      _emailController.text = role.email;
-      _showRoleSuggestions = false;
+      _selectedRole = role;
+      _roleMenuOpen = false;
     });
-    _emailFocusNode.unfocus();
   }
 
   Future<void> _handleSignIn() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_isPhoneTab && !_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
-
-    await Future.delayed(const Duration(seconds: 1));
-
+    // TODO(api): call ApiService.login(role: _selectedRole, email/phone, ...)
+    // and route to a role-specific dashboard once those screens exist. For
+    // now every role lands on AdminDashboardScreen so the flow is testable.
+    await Future.delayed(const Duration(milliseconds: 900));
     if (!mounted) return;
     setState(() => _isLoading = false);
 
-    final email = _emailController.text.trim().toLowerCase();
-
-    if (email == 'admin@demo.com') {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
-      );
-    } else {
-      Navigator.pushReplacementNamed(context, '/home');
-    }
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFFBFAFF),
-      body: GestureDetector(
-        // Tapping outside the email field closes the role dropdown.
-        onTap: () {
-          if (_showRoleSuggestions) {
-            setState(() => _showRoleSuggestions = false);
-            _emailFocusNode.unfocus();
-          }
-        },
-        child: Stack(
-          children: [
-            // Top-right faint concentric circles
-            const Positioned(top: -40, right: -60, child: _ConcentricCircles()),
-
-            // Top-left soft purple wave
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: ClipPath(
-                clipper: _TopWaveClipper(),
+    return GestureDetector(
+      onTap: () {
+        setState(() => _countryMenuOpen = false);
+        _emailFocusNode.unfocus();
+        setState(() => _roleMenuOpen = false);
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFFEEF3F8),
+        body: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 380),
                 child: Container(
-                  height: 140,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        primaryPurple.withValues(alpha: 0.18),
-                        primaryPurple.withValues(alpha: 0.06),
-                      ],
-                    ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 28,
+                    vertical: 28,
                   ),
-                ),
-              ),
-            ),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [cardTopColor, cardBottomColor],
+                    ),
+                    borderRadius: BorderRadius.circular(40),
+                    border: Border.all(color: Colors.white, width: 5),
+                    boxShadow: [
+                      BoxShadow(
+                        color: shadowBlue.withValues(alpha: 0.55),
+                        blurRadius: 30,
+                        spreadRadius: -20,
+                        offset: const Offset(0, 30),
+                      ),
+                    ],
+                  ),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const Text(
+                          'Welcome back',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w900,
+                            color: brandBlue,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        const Text(
+                          'Sign in to your workspace to continue',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 13, color: greyText),
+                        ),
+                        const SizedBox(height: 22),
 
-            // Bottom purple wave
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: ClipPath(
-                clipper: _BottomWaveClipper(),
-                child: Container(
-                  height: _bottomWaveHeight,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        primaryPurple.withValues(alpha: 0.9),
-                        primaryPurple,
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            SafeArea(
-              bottom: false,
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final content = Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // Logo icon
-                          Container(
-                            width: 84,
-                            height: 84,
-                            decoration: BoxDecoration(
-                              color: primaryPurple.withValues(alpha: 0.08),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Center(
-                              child: Container(
-                                width: 56,
-                                height: 56,
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: primaryPurple,
-                                    width: 2,
+                        _buildTabSwitcher(),
+                        const SizedBox(height: 18),
+
+                        if (!_isPhoneTab) ...[
+                          Row(
+                            children: [
+                              const _FieldLabel('Email'),
+                              if (_selectedRole != null) ...[
+                                const SizedBox(width: 8),
+                                Icon(
+                                  _selectedRole!.icon,
+                                  size: 13,
+                                  color: brandBlue,
+                                ),
+                                const SizedBox(width: 3),
+                                Text(
+                                  _selectedRole!.label,
+                                  style: const TextStyle(
+                                    color: brandBlue,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
                                   ),
-                                  borderRadius: BorderRadius.circular(16),
                                 ),
-                                child: const Icon(
-                                  Icons.insert_chart_rounded,
-                                  color: primaryPurple,
-                                  size: 26,
+                              ],
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          TextFormField(
+                            controller: _emailController,
+                            focusNode: _emailFocusNode,
+                            keyboardType: TextInputType.emailAddress,
+                            style: const TextStyle(color: darkText, fontSize: 14),
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Email is required';
+                              }
+                              if (!value.contains('@')) {
+                                return 'Enter a valid email';
+                              }
+                              return null;
+                            },
+                            decoration: _pillDecoration(
+                              hint: 'you@company.com',
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _roleMenuOpen
+                                      ? Icons.keyboard_arrow_up_rounded
+                                      : Icons.keyboard_arrow_down_rounded,
+                                  color: greyText,
                                 ),
+                                onPressed: () {
+                                  setState(() => _roleMenuOpen = !_roleMenuOpen);
+                                  if (_roleMenuOpen) {
+                                    _emailFocusNode.requestFocus();
+                                  }
+                                },
                               ),
                             ),
                           ),
 
-                          const SizedBox(height: 20),
-
-                          const Text(
-                            'Welcome Back!',
-                            style: TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              color: darkText,
-                            ),
+                          AnimatedCrossFade(
+                            duration: const Duration(milliseconds: 150),
+                            crossFadeState: _roleMenuOpen
+                                ? CrossFadeState.showFirst
+                                : CrossFadeState.showSecond,
+                            firstChild: _buildRoleList(),
+                            secondChild: const SizedBox(width: double.infinity),
                           ),
+
+                          const SizedBox(height: 14),
+                          const _FieldLabel('Password'),
                           const SizedBox(height: 8),
-                          const Text(
-                            'Sign in to continue to your account',
-                            style: TextStyle(fontSize: 15, color: greyText),
-                          ),
-
-                          const SizedBox(height: 28),
-
-                          // Card
-                          Container(
-                            padding: const EdgeInsets.all(24),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary,
-                              borderRadius: BorderRadius.circular(24),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.05),
-                                  blurRadius: 24,
-                                  offset: const Offset(0, 8),
+                          TextFormField(
+                            controller: _passwordController,
+                            obscureText: _obscurePassword,
+                            style: const TextStyle(color: darkText, fontSize: 14),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Password is required';
+                              }
+                              return null;
+                            },
+                            decoration: _pillDecoration(
+                              hint: 'Enter your password',
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_outlined
+                                      : Icons.visibility_off_outlined,
+                                  color: greyText,
+                                  size: 20,
                                 ),
-                              ],
+                                onPressed: () => setState(
+                                  () => _obscurePassword = !_obscurePassword,
+                                ),
+                              ),
                             ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Email or Phone',
+                          ),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 8, left: 6),
+                              child: GestureDetector(
+                                onTap: () {
+                                  // TODO(auth): navigate to forgot-password flow.
+                                },
+                                child: const Text(
+                                  'Forgot Password?',
                                   style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    color: darkText,
-                                    fontSize: 14,
+                                    color: Color(0xFF0099FF),
+                                    fontSize: 11,
                                   ),
                                 ),
-                                const SizedBox(height: 8),
-
-                                // Email field + role suggestions dropdown
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    _buildTextField(
-                                      controller: _emailController,
-                                      focusNode: _emailFocusNode,
-                                      hint: 'Enter your email or phone number',
-                                      icon: Icons.person_outline,
-                                      suffixIcon: IconButton(
-                                        icon: Icon(
-                                          _showRoleSuggestions
-                                              ? Icons.keyboard_arrow_up
-                                              : Icons.keyboard_arrow_down,
-                                          color: primaryPurple,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          _GradientButton(
+                            label: 'Sign in',
+                            isLoading: _isLoading,
+                            onPressed: _handleSignIn,
+                          ),
+                        ] else ...[
+                          const _FieldLabel('Phone Number'),
+                          const SizedBox(height: 8),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              InkWell(
+                                borderRadius: BorderRadius.circular(20),
+                                onTap: () => setState(
+                                  () => _countryMenuOpen = !_countryMenuOpen,
+                                ),
+                                child: Container(
+                                  height: 52,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: _countryMenuOpen
+                                          ? brandCyan
+                                          : Colors.transparent,
+                                      width: 2,
+                                    ),
+                                    boxShadow: const [
+                                      BoxShadow(
+                                        color: inputShadow,
+                                        blurRadius: 10,
+                                        spreadRadius: -5,
+                                        offset: Offset(0, 10),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        _selectedCountry.iso,
+                                        style: const TextStyle(
+                                          color: darkText,
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 12,
                                         ),
-                                        onPressed: () {
-                                          setState(
-                                            () => _showRoleSuggestions =
-                                                !_showRoleSuggestions,
-                                          );
-                                          if (_showRoleSuggestions) {
-                                            _emailFocusNode.requestFocus();
-                                          }
-                                        },
                                       ),
-                                      validator: (value) {
-                                        if (value == null ||
-                                            value.trim().isEmpty) {
-                                          return 'Please enter your email or phone';
-                                        }
-                                        return null;
-                                      },
-                                    ),
-                                    AnimatedSize(
-                                      duration: const Duration(
-                                        milliseconds: 180,
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        _selectedCountry.dialCode,
+                                        style: const TextStyle(
+                                          color: darkText,
+                                          fontSize: 13,
+                                        ),
                                       ),
-                                      curve: Curves.easeOut,
-                                      child: _showRoleSuggestions
-                                          ? _buildRoleDropdown()
-                                          : const SizedBox(
-                                              width: double.infinity,
-                                            ),
-                                    ),
-                                  ],
+                                      Icon(
+                                        _countryMenuOpen
+                                            ? Icons.keyboard_arrow_up_rounded
+                                            : Icons.keyboard_arrow_down_rounded,
+                                        color: greyText,
+                                        size: 18,
+                                      ),
+                                    ],
+                                  ),
                                 ),
-
-                                const SizedBox(height: 20),
-
-                                const Text(
-                                  'Password',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w600,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: TextFormField(
+                                  controller: _phoneController,
+                                  keyboardType: TextInputType.phone,
+                                  style: const TextStyle(
                                     color: darkText,
                                     fontSize: 14,
                                   ),
-                                ),
-                                const SizedBox(height: 8),
-                                _buildTextField(
-                                  controller: _passwordController,
-                                  hint: 'Enter your password',
-                                  icon: Icons.lock_outline,
-                                  obscureText: _obscurePassword,
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please enter your password';
-                                    }
-                                    return null;
-                                  },
-                                  suffixIcon: IconButton(
-                                    icon: Icon(
-                                      _obscurePassword
-                                          ? Icons.visibility_off_outlined
-                                          : Icons.visibility_outlined,
-                                      color: primaryPurple,
-                                    ),
-                                    onPressed: () {
-                                      setState(
-                                        () => _obscurePassword =
-                                            !_obscurePassword,
-                                      );
-                                    },
+                                  decoration: _pillDecoration(
+                                    hint: '98450 11223',
+                                    topMargin: 0,
                                   ),
                                 ),
-
-                                Align(
-                                  alignment: Alignment.centerRight,
-                                  child: TextButton(
-                                    onPressed: () {
-                                      // Navigator.pushNamed(context, '/forgot-password');
-                                    },
-                                    style: TextButton.styleFrom(
-                                      padding: EdgeInsets.zero,
-                                      minimumSize: const Size(0, 0),
-                                      tapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
-                                    ),
-                                    child: const Text(
-                                      'Forgot Password?',
-                                      style: TextStyle(
-                                        color: primaryPurple,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-
-                                const SizedBox(height: 12),
-
-                                // Sign In button
-                                SizedBox(
-                                  width: double.infinity,
-                                  height: 54,
-                                  child: ElevatedButton(
-                                    onPressed: _isLoading
-                                        ? null
-                                        : _handleSignIn,
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: primaryPurple,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
-                                      elevation: 0,
-                                    ),
-                                    child: _isLoading
-                                        ? const SizedBox(
-                                            height: 22,
-                                            width: 22,
-                                            child: CircularProgressIndicator(
-                                              color: AppColors.primary,
-                                              strokeWidth: 2.4,
-                                            ),
-                                          )
-                                        : const Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Text(
-                                                'Sign In',
-                                                style: TextStyle(
-                                                  color: AppColors.primary,
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                              SizedBox(width: 8),
-                                              Icon(
-                                                Icons.arrow_forward,
-                                                color: AppColors.primary,
-                                                size: 20,
-                                              ),
-                                            ],
-                                          ),
-                                  ),
-                                ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 20),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 18,
-                              vertical: 10,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary,
-                              borderRadius: BorderRadius.circular(30),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.08),
-                                  blurRadius: 14,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Text(
-                                  "Don't have an account? ",
-                                  style: TextStyle(
-                                    color: greyText,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: () {
-                                    // Navigator.pushNamed(context, '/contact-admin');
-                                  },
-                                  child: const Text(
-                                    'Contact Admin',
-                                    style: TextStyle(
-                                      color: primaryPurple,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
+
+                          AnimatedCrossFade(
+                            duration: const Duration(milliseconds: 150),
+                            crossFadeState: _countryMenuOpen
+                                ? CrossFadeState.showFirst
+                                : CrossFadeState.showSecond,
+                            firstChild: _buildCountryList(),
+                            secondChild: const SizedBox(width: double.infinity),
+                          ),
+
+                          const SizedBox(height: 18),
+                          _GradientButton(
+                            label: 'Get OTP',
+                            isLoading: _isLoading,
+                            onPressed: _handleSignIn,
                           ),
                         ],
-                      ),
-                    ),
-                  );
 
-                  if (_showRoleSuggestions) {
-                    return SingleChildScrollView(
-                      padding: EdgeInsets.zero,
-                      child: content,
-                    );
-                  }
+                        const SizedBox(height: 18),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Divider(
+                                color: Colors.grey.shade300,
+                                thickness: 1,
+                              ),
+                            ),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 10),
+                              child: Text(
+                                'or',
+                                style: TextStyle(
+                                  color: greyText,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Divider(
+                                color: Colors.grey.shade300,
+                                thickness: 1,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          'Or sign in with social platforms',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 10, color: greyText),
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _SocialCircleButton(
+                              label: 'G',
+                              onTap: () {
+                                // TODO(auth): wire real Google SSO.
+                              },
+                            ),
+                            const SizedBox(width: 15),
+                            _SocialCircleButton(
+                              icon: Icons.apple,
+                              onTap: () {
+                                // TODO(auth): wire real Apple SSO.
+                              },
+                            ),
+                          ],
+                        ),
 
-                  return ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: constraints.maxHeight,
+                        const SizedBox(height: 18),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text(
+                              'New organization? ',
+                              style: TextStyle(color: greyText, fontSize: 12),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const RegisterScreen(),
+                                  ),
+                                );
+                              },
+                              child: const Text(
+                                'Register here',
+                                style: TextStyle(
+                                  color: Color(0xFF0099FF),
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                    child: content,
-                  );
-                },
+                  ),
+                ),
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildRoleDropdown() {
+  Widget _buildRoleList() {
     return Container(
       margin: const EdgeInsets.only(top: 8),
-      width: double.infinity,
-      constraints: const BoxConstraints(maxHeight: 260),
       decoration: BoxDecoration(
-        color: AppColors.primary,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: fieldBorder),
-        boxShadow: [
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: const [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
+            color: inputShadow,
+            blurRadius: 14,
+            spreadRadius: -4,
+            offset: Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 12, 16, 4),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'LOGIN AS',
+                style: TextStyle(
+                  color: greyText,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.4,
+                ),
+              ),
+            ),
+          ),
+          for (final role in UserRole.values)
+            InkWell(
+              onTap: () => _selectRole(role),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+                child: Row(
+                  children: [
+                    Icon(role.icon, size: 18, color: brandBlue),
+                    const SizedBox(width: 10),
+                    Text(
+                      role.label,
+                      style: const TextStyle(color: darkText, fontSize: 13),
+                    ),
+                    if (_selectedRole == role) ...[
+                      const Spacer(),
+                      const Icon(
+                        Icons.check_rounded,
+                        size: 16,
+                        color: brandBlue,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          const SizedBox(height: 6),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCountryList() {
+    return Container(
+      margin: const EdgeInsets.only(top: 8),
+      constraints: const BoxConstraints(maxHeight: 220),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: const [
+          BoxShadow(
+            color: inputShadow,
+            blurRadius: 14,
+            spreadRadius: -4,
+            offset: Offset(0, 10),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(20),
         child: Scrollbar(
-          child: ListView.separated(
+          thumbVisibility: true,
+          child: ListView.builder(
             shrinkWrap: true,
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            itemCount: _demoRoles.length,
-            separatorBuilder: (_, index) =>
-                const Divider(height: 1, color: fieldFill),
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            itemCount: _countryCodes.length,
             itemBuilder: (context, index) {
-              final role = _demoRoles[index];
+              final code = _countryCodes[index];
               return InkWell(
-                onTap: () => _selectRole(role),
+                onTap: () => setState(() {
+                  _selectedCountry = code;
+                  _countryMenuOpen = false;
+                }),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 10,
+                    horizontal: 16,
+                    vertical: 9,
                   ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 38,
-                        height: 38,
-                        decoration: BoxDecoration(
-                          color: primaryPurple.withValues(alpha: 0.08),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(role.icon, color: primaryPurple, size: 19),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              role.label,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                                color: darkText,
-                                fontSize: 14,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              role.email,
-                              style: const TextStyle(
-                                color: greyText,
-                                fontSize: 12.5,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    '${code.iso}  ${code.dialCode}',
+                    style: const TextStyle(color: darkText, fontSize: 13),
                   ),
                 ),
               );
@@ -579,140 +641,231 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildTextField({
-    required TextEditingController controller,
+  Widget _buildTabSwitcher() {
+    return Container(
+      height: 46,
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEEF2F7),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE3E9F0)),
+      ),
+      child: Row(
+        children: [
+          Expanded(child: _tabButton('Email', isActive: !_isPhoneTab)),
+          Expanded(child: _tabButton('Phone No', isActive: _isPhoneTab)),
+        ],
+      ),
+    );
+  }
+
+  Widget _tabButton(String label, {required bool isActive}) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _countryMenuOpen = false;
+          _roleMenuOpen = false;
+          _isPhoneTab = label == 'Phone No';
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: isActive ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: isActive
+              ? const [
+                  BoxShadow(
+                    color: inputShadow,
+                    blurRadius: 8,
+                    spreadRadius: -2,
+                    offset: Offset(0, 4),
+                  ),
+                ]
+              : null,
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isActive ? darkText : greyText,
+            fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+            fontSize: 13,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Pill-shaped input decoration matching the Uiverse card's soft cyan glow
+  // and rounded corners, with a colored inline border only while focused.
+  InputDecoration _pillDecoration({
     required String hint,
-    required IconData icon,
-    FocusNode? focusNode,
-    bool obscureText = false,
     Widget? suffixIcon,
-    String? Function(String?)? validator,
+    double topMargin = 8,
   }) {
-    return TextFormField(
-      controller: controller,
-      focusNode: focusNode,
-      obscureText: obscureText,
-      validator: validator,
-      style: const TextStyle(color: darkText),
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: const TextStyle(color: greyText, fontSize: 14),
-        prefixIcon: Icon(icon, color: primaryPurple),
-        suffixIcon: suffixIcon,
-        filled: true,
-        fillColor: fieldFill,
-        contentPadding: const EdgeInsets.symmetric(
-          vertical: 16,
-          horizontal: 12,
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: const TextStyle(color: greyText, fontSize: 14),
+      suffixIcon: suffixIcon,
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(20),
+        borderSide: BorderSide.none,
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(20),
+        borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(20),
+        borderSide: const BorderSide(color: brandCyan, width: 2),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(20),
+        borderSide: const BorderSide(color: Colors.redAccent),
+      ),
+    );
+  }
+}
+
+class _FieldLabel extends StatelessWidget {
+  final String text;
+
+  const _FieldLabel(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: const TextStyle(
+        color: _LoginScreenState.darkText,
+        fontWeight: FontWeight.w700,
+        fontSize: 12,
+      ),
+    );
+  }
+}
+
+class _GradientButton extends StatelessWidget {
+  final String label;
+  final bool isLoading;
+  final VoidCallback onPressed;
+
+  const _GradientButton({
+    required this.label,
+    required this.isLoading,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 52,
+      child: ElevatedButton(
+        onPressed: isLoading ? null : onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          padding: EdgeInsets.zero,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
         ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: fieldBorder),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: fieldBorder),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: primaryPurple, width: 1.4),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Colors.redAccent),
+        child: Ink(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                _LoginScreenState.brandBlue,
+                _LoginScreenState.brandCyan,
+              ],
+            ),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: _LoginScreenState.shadowBlue.withValues(alpha: 0.55),
+                blurRadius: 10,
+                spreadRadius: -8,
+                offset: const Offset(0, 20),
+              ),
+            ],
+          ),
+          child: Container(
+            alignment: Alignment.center,
+            child: isLoading
+                ? const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.4,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : Text(
+                    label,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                    ),
+                  ),
+          ),
         ),
       ),
     );
   }
 }
 
-class _TopWaveClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    final path = Path();
+class _SocialCircleButton extends StatelessWidget {
+  final String? label;
+  final IconData? icon;
+  final VoidCallback onTap;
 
-    path.lineTo(0, size.height * 0.6);
-    path.quadraticBezierTo(
-      size.width * 0.25,
-      size.height,
-      size.width * 0.5,
-      size.height * 0.75,
-    );
-    path.quadraticBezierTo(
-      size.width * 0.8,
-      size.height * 0.45,
-      size.width,
-      size.height * 0.6,
-    );
-    path.lineTo(size.width, 0);
-    path.close();
-
-    return path;
-  }
-
-  @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
-}
-
-class _BottomWaveClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    final path = Path();
-
-    path.moveTo(0, size.height * 0.5);
-    path.quadraticBezierTo(
-      size.width * 0.25,
-      size.height * 0.1,
-      size.width * 0.55,
-      size.height * 0.4,
-    );
-    path.quadraticBezierTo(
-      size.width * 0.8,
-      size.height * 0.65,
-      size.width,
-      size.height * 0.3,
-    );
-    path.lineTo(size.width, size.height);
-    path.lineTo(0, size.height);
-    path.close();
-
-    return path;
-  }
-
-  @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
-}
-
-class _ConcentricCircles extends StatelessWidget {
-  const _ConcentricCircles();
+  const _SocialCircleButton({this.label, this.icon, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return const SizedBox(
-      width: 220,
-      height: 220,
-      child: CustomPaint(painter: _CirclesPainter()),
+    return InkWell(
+      onTap: onTap,
+      customBorder: const CircleBorder(),
+      child: Container(
+        width: 40,
+        height: 40,
+        padding: const EdgeInsets.all(5),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Colors.black, Color(0xFF707070)],
+          ),
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white, width: 5),
+          boxShadow: [
+            BoxShadow(
+              color: _LoginScreenState.shadowBlue.withValues(alpha: 0.55),
+              blurRadius: 10,
+              spreadRadius: -6,
+              offset: const Offset(0, 12),
+            ),
+          ],
+        ),
+        child: Center(
+          child: label != null
+              ? Text(
+                  label!,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 14,
+                  ),
+                )
+              : Icon(icon, color: Colors.white, size: 18),
+        ),
+      ),
     );
   }
-}
-
-class _CirclesPainter extends CustomPainter {
-  const _CirclesPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1
-      ..color = const Color(0xFF6C4EE3).withValues(alpha: 0.15);
-
-    final center = Offset(size.width, 0);
-
-    for (var i = 1; i <= 5; i++) {
-      canvas.drawCircle(center, i * 30.0, paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }
