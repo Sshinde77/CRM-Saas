@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../services/api_service.dart';
 import 'login_screen.dart';
 
 // Place this file at: lib/screens/auth/register_screen.dart
@@ -16,15 +17,14 @@ import 'login_screen.dart';
 // and validation logic are unchanged from the original.
 
 const List<String> _businessTypes = [
-  'Sole Proprietorship',
-  'Partnership',
-  'Private Limited Company',
-  'Limited Liability Partnership (LLP)',
-  'Public Limited Company',
-  'Other',
+  'Manufacturer',
+  'Distributor',
+  'Wholesaler',
+  'Retailer',
+  'Service Provider',
 ];
 
-const List<String> _financialYears = ['2024-25', '2025-26', '2026-27'];
+const List<String> _financialYears = ['2024-2025', '2025-2026', '2026-2027'];
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -34,6 +34,8 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
+  final ApiService _apiService = ApiService();
+
   int _currentStep = 0;
   bool _isSubmitting = false;
 
@@ -85,6 +87,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   void dispose() {
+    _apiService.close();
     _adminNameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
@@ -119,22 +122,72 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _submit() async {
-    if (!_step3Key.currentState!.validate()) return;
+    if (!_validateAllSteps()) return;
 
     setState(() => _isSubmitting = true);
-    // TODO(api): call ApiService.registerOrganization(...) with all
-    // collected fields (BRD 3.1 "Company Registration").
-    await Future.delayed(const Duration(milliseconds: 900));
-    if (!mounted) return;
-    setState(() => _isSubmitting = false);
+    try {
+      final message = await _apiService.registerOrganization(
+        organizationName: _companyNameController.text.trim(),
+        businessType: _businessType!.trim(),
+        gstNumber: _gstController.text.trim(),
+        panNumber: _panController.text.trim(),
+        address: _billingAddressController.text.trim(),
+        phone: _phoneController.text.trim(),
+        email: _emailController.text.trim(),
+        financialYear: _financialYear!.trim(),
+        logoUrl: _logoFile?.path ?? '',
+        adminName: _adminNameController.text.trim(),
+        password: _passwordController.text,
+        role: 'admin',
+      );
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Organization created. Please sign in.')),
-    );
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
-    );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+      await Future.delayed(const Duration(milliseconds: 700));
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.message)),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Registration failed: $error')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
+    }
+  }
+
+  bool _validateAllSteps() {
+    final step1Valid = _step1Key.currentState?.validate() ?? false;
+    if (!step1Valid) {
+      setState(() => _currentStep = 0);
+      return false;
+    }
+
+    final step2Valid = _step2Key.currentState?.validate() ?? false;
+    if (!step2Valid) {
+      setState(() => _currentStep = 1);
+      return false;
+    }
+
+    final step3Valid = _step3Key.currentState?.validate() ?? false;
+    if (!step3Valid) {
+      setState(() => _currentStep = 2);
+      return false;
+    }
+
+    return true;
   }
 
   @override
@@ -571,7 +624,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
               maxLines: 4,
               enabled: !_shippingSameAsBilling,
               style: const TextStyle(color: darkText, fontSize: 14),
-              validator: _requiredValidator,
+              validator: (value) {
+                if (_shippingSameAsBilling) return null;
+                return _requiredValidator(value);
+              },
               decoration: _pillDecoration(
                 hint: 'e.g. Plot 45, MIDC Industrial Area, Pune, MH 411019',
               ),
