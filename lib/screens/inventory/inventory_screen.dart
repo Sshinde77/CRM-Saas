@@ -30,24 +30,168 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
   // Mock inventory — replace with your providers / API calls.
   final List<_InventoryItem> _items = const [
-    _InventoryItem(name: 'Packaged Drinking Water (250ml)', category: 'Packaged Water', hsnSac: '2201', currentStock: 500, minStock: 100, reorderLevel: 150, unitCost: 6),
-    _InventoryItem(name: 'Packaged Drinking Water (500ml)', category: 'Packaged Water', hsnSac: '2201', currentStock: 420, minStock: 100, reorderLevel: 150, unitCost: 9),
-    _InventoryItem(name: 'Packaged Drinking Water (1L)', category: 'Packaged Water', hsnSac: '2201', currentStock: 40, minStock: 80, reorderLevel: 120, unitCost: 12),
-    _InventoryItem(name: 'Mineral Water Bottle (1L)', category: 'Mineral Water', hsnSac: '2201', currentStock: 180, minStock: 60, reorderLevel: 90, unitCost: 15),
-    _InventoryItem(name: 'Mineral Water Bottle (2L)', category: 'Mineral Water', hsnSac: '2201', currentStock: 25, minStock: 30, reorderLevel: 50, unitCost: 24),
-    _InventoryItem(name: 'Sparkling Water Can (330ml)', category: 'Sparkling Water', hsnSac: '2202', currentStock: 0, minStock: 20, reorderLevel: 40, unitCost: 20),
-    _InventoryItem(name: 'Water Jar Refill (20L)', category: 'Water Jar', hsnSac: '2201', currentStock: 25, minStock: 20, reorderLevel: 35, unitCost: 28),
-    _InventoryItem(name: 'Water Jar Refill (10L)', category: 'Water Jar', hsnSac: '2201', currentStock: 8, minStock: 15, reorderLevel: 25, unitCost: 18),
-    _InventoryItem(name: 'Flavored Water - Lemon (500ml)', category: 'Flavored Water', hsnSac: '2202', currentStock: 70, minStock: 25, reorderLevel: 40, unitCost: 14),
-    _InventoryItem(name: 'Flavored Water - Mint (500ml)', category: 'Flavored Water', hsnSac: '2202', currentStock: 0, minStock: 25, reorderLevel: 40, unitCost: 14),
-    _InventoryItem(name: 'Alkaline Water Bottle (1L)', category: 'Alkaline Water', hsnSac: '2201', currentStock: 12, minStock: 15, reorderLevel: 25, unitCost: 18),
-    _InventoryItem(name: 'Water Dispenser - Normal (Standard)', category: 'Dispenser', hsnSac: '8418', currentStock: 8, minStock: 5, reorderLevel: 8, unitCost: 2400),
-    _InventoryItem(name: 'Water Dispenser - Hot & Cold (Standard)', category: 'Dispenser', hsnSac: '8418', currentStock: 5, minStock: 5, reorderLevel: 8, unitCost: 4200),
-    _InventoryItem(name: 'Dispenser Stand', category: 'Accessories', hsnSac: '9403', currentStock: 12, minStock: 10, reorderLevel: 15, unitCost: 800),
-    _InventoryItem(name: 'Jar Cap (Pack of 10)', category: 'Accessories', hsnSac: '3923', currentStock: 200, minStock: 50, reorderLevel: 80, unitCost: 90),
-    _InventoryItem(name: 'Bottle Crate (24-slot)', category: 'Accessories', hsnSac: '3923', currentStock: 60, minStock: 20, reorderLevel: 35, unitCost: 220),
-    _InventoryItem(name: 'Dispenser Tap Kit', category: 'Accessories', hsnSac: '3923', currentStock: 3, minStock: 10, reorderLevel: 15, unitCost: 150),
-    _InventoryItem(name: 'Water Testing Kit', category: 'Accessories', hsnSac: '3822', currentStock: 18, minStock: 10, reorderLevel: 15, unitCost: 550),
+    _InventoryItem(
+      name: 'Packaged Drinking Water (250ml)',
+      category: 'Packaged Water',
+      hsnSac: '2201',
+      currentStock: 500,
+      minStock: 100,
+      reorderLevel: 150,
+      unitCost: 6,
+    ),
+    _InventoryItem(
+      name: 'Packaged Drinking Water (500ml)',
+      category: 'Packaged Water',
+      hsnSac: '2201',
+      currentStock: 420,
+      minStock: 100,
+      reorderLevel: 150,
+      unitCost: 9,
+    ),
+    _InventoryItem(
+      name: 'Packaged Drinking Water (1L)',
+      category: 'Packaged Water',
+      hsnSac: '2201',
+      currentStock: 40,
+      minStock: 80,
+      reorderLevel: 120,
+      unitCost: 12,
+    ),
+    _InventoryItem(
+      name: 'Mineral Water Bottle (1L)',
+      category: 'Mineral Water',
+      hsnSac: '2201',
+      currentStock: 180,
+      minStock: 60,
+      reorderLevel: 90,
+      unitCost: 15,
+    ),
+    _InventoryItem(
+      name: 'Mineral Water Bottle (2L)',
+      category: 'Mineral Water',
+      hsnSac: '2201',
+      currentStock: 25,
+      minStock: 30,
+      reorderLevel: 50,
+      unitCost: 24,
+    ),
+    _InventoryItem(
+      name: 'Sparkling Water Can (330ml)',
+      category: 'Sparkling Water',
+      hsnSac: '2202',
+      currentStock: 0,
+      minStock: 20,
+      reorderLevel: 40,
+      unitCost: 20,
+    ),
+    _InventoryItem(
+      name: 'Water Jar Refill (20L)',
+      category: 'Water Jar',
+      hsnSac: '2201',
+      currentStock: 25,
+      minStock: 20,
+      reorderLevel: 35,
+      unitCost: 28,
+    ),
+    _InventoryItem(
+      name: 'Water Jar Refill (10L)',
+      category: 'Water Jar',
+      hsnSac: '2201',
+      currentStock: 8,
+      minStock: 15,
+      reorderLevel: 25,
+      unitCost: 18,
+    ),
+    _InventoryItem(
+      name: 'Flavored Water - Lemon (500ml)',
+      category: 'Flavored Water',
+      hsnSac: '2202',
+      currentStock: 70,
+      minStock: 25,
+      reorderLevel: 40,
+      unitCost: 14,
+    ),
+    _InventoryItem(
+      name: 'Flavored Water - Mint (500ml)',
+      category: 'Flavored Water',
+      hsnSac: '2202',
+      currentStock: 0,
+      minStock: 25,
+      reorderLevel: 40,
+      unitCost: 14,
+    ),
+    _InventoryItem(
+      name: 'Alkaline Water Bottle (1L)',
+      category: 'Alkaline Water',
+      hsnSac: '2201',
+      currentStock: 12,
+      minStock: 15,
+      reorderLevel: 25,
+      unitCost: 18,
+    ),
+    _InventoryItem(
+      name: 'Water Dispenser - Normal (Standard)',
+      category: 'Dispenser',
+      hsnSac: '8418',
+      currentStock: 8,
+      minStock: 5,
+      reorderLevel: 8,
+      unitCost: 2400,
+    ),
+    _InventoryItem(
+      name: 'Water Dispenser - Hot & Cold (Standard)',
+      category: 'Dispenser',
+      hsnSac: '8418',
+      currentStock: 5,
+      minStock: 5,
+      reorderLevel: 8,
+      unitCost: 4200,
+    ),
+    _InventoryItem(
+      name: 'Dispenser Stand',
+      category: 'Accessories',
+      hsnSac: '9403',
+      currentStock: 12,
+      minStock: 10,
+      reorderLevel: 15,
+      unitCost: 800,
+    ),
+    _InventoryItem(
+      name: 'Jar Cap (Pack of 10)',
+      category: 'Accessories',
+      hsnSac: '3923',
+      currentStock: 200,
+      minStock: 50,
+      reorderLevel: 80,
+      unitCost: 90,
+    ),
+    _InventoryItem(
+      name: 'Bottle Crate (24-slot)',
+      category: 'Accessories',
+      hsnSac: '3923',
+      currentStock: 60,
+      minStock: 20,
+      reorderLevel: 35,
+      unitCost: 220,
+    ),
+    _InventoryItem(
+      name: 'Dispenser Tap Kit',
+      category: 'Accessories',
+      hsnSac: '3923',
+      currentStock: 3,
+      minStock: 10,
+      reorderLevel: 15,
+      unitCost: 150,
+    ),
+    _InventoryItem(
+      name: 'Water Testing Kit',
+      category: 'Accessories',
+      hsnSac: '3822',
+      currentStock: 18,
+      minStock: 10,
+      reorderLevel: 15,
+      unitCost: 550,
+    ),
   ];
 
   @override
@@ -73,8 +217,9 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
   int get _totalProducts => _items.length;
 
-  int get _lowStockCount =>
-      _items.where((i) => i.currentStock > 0 && i.currentStock <= i.minStock).length;
+  int get _lowStockCount => _items
+      .where((i) => i.currentStock > 0 && i.currentStock <= i.minStock)
+      .length;
 
   int get _outOfStockCount => _items.where((i) => i.currentStock == 0).length;
 
@@ -83,8 +228,11 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
   List<_InventoryItem> get _filteredItems {
     return _items.where((item) {
-      final matchesCategory = _selectedCategory == 'All Categories' || item.category == _selectedCategory;
-      final matchesQuery = _query.isEmpty ||
+      final matchesCategory =
+          _selectedCategory == 'All Categories' ||
+          item.category == _selectedCategory;
+      final matchesQuery =
+          _query.isEmpty ||
           item.name.toLowerCase().contains(_query.toLowerCase()) ||
           item.category.toLowerCase().contains(_query.toLowerCase()) ||
           item.hsnSac.toLowerCase().contains(_query.toLowerCase());
@@ -133,7 +281,11 @@ class _InventoryScreenState extends State<InventoryScreen> {
                   children: [
                     const Text(
                       'Inventory',
-                      style: TextStyle(color: textPrimary, fontSize: 24, fontWeight: FontWeight.w800),
+                      style: TextStyle(
+                        color: textPrimary,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     const Text(
@@ -145,9 +297,19 @@ class _InventoryScreenState extends State<InventoryScreen> {
                     _buildStatsGrid(),
 
                     const SizedBox(height: 24),
-                    const Text('Stock Levels', style: TextStyle(color: textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
+                    const Text(
+                      'Stock Levels',
+                      style: TextStyle(
+                        color: textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                     const SizedBox(height: 4),
-                    const Text('Browse stock by category', style: TextStyle(color: textSecondary, fontSize: 12.5)),
+                    const Text(
+                      'Browse stock by category',
+                      style: TextStyle(color: textSecondary, fontSize: 12.5),
+                    ),
                     const SizedBox(height: 12),
                     _buildCategoryCatalog(),
 
@@ -159,15 +321,22 @@ class _InventoryScreenState extends State<InventoryScreen> {
                       const Padding(
                         padding: EdgeInsets.symmetric(vertical: 40),
                         child: Center(
-                          child: Text('No inventory items match your filters.',
-                              style: TextStyle(color: textSecondary, fontSize: 13)),
+                          child: Text(
+                            'No inventory items match your filters.',
+                            style: TextStyle(
+                              color: textSecondary,
+                              fontSize: 13,
+                            ),
+                          ),
                         ),
                       )
                     else
-                      ...filtered.map((item) => Padding(
-                            padding: const EdgeInsets.only(bottom: 14),
-                            child: _inventoryCard(item),
-                          )),
+                      ...filtered.map(
+                        (item) => Padding(
+                          padding: const EdgeInsets.only(bottom: 14),
+                          child: _inventoryCard(item),
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -181,10 +350,30 @@ class _InventoryScreenState extends State<InventoryScreen> {
   // ---------------- Stats grid ----------------
   Widget _buildStatsGrid() {
     final stats = [
-      _StatCardData('Total Products', '$_totalProducts', Icons.inventory_2_outlined, AppColors.purple),
-      _StatCardData('Low Stock Items', '$_lowStockCount', Icons.warning_amber_rounded, AppColors.amber),
-      _StatCardData('Out of Stock', '$_outOfStockCount', Icons.remove_shopping_cart_outlined, AppColors.red),
-      _StatCardData('Stock Value (at cost)', '₹${_formatMoney(_stockValue)}', Icons.account_balance_wallet_outlined, AppColors.green),
+      _StatCardData(
+        'Total Products',
+        '$_totalProducts',
+        Icons.inventory_2_outlined,
+        AppColors.purple,
+      ),
+      _StatCardData(
+        'Low Stock Items',
+        '$_lowStockCount',
+        Icons.warning_amber_rounded,
+        AppColors.amber,
+      ),
+      _StatCardData(
+        'Out of Stock',
+        '$_outOfStockCount',
+        Icons.remove_shopping_cart_outlined,
+        AppColors.red,
+      ),
+      _StatCardData(
+        'Stock Value (at cost)',
+        '₹${_formatMoney(_stockValue)}',
+        Icons.account_balance_wallet_outlined,
+        AppColors.green,
+      ),
     ];
 
     return LayoutBuilder(
@@ -214,7 +403,11 @@ class _InventoryScreenState extends State<InventoryScreen> {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.secondary.withValues(alpha: 0.18)),
         boxShadow: [
-          BoxShadow(color: AppColors.textPrimary.withValues(alpha: 0.05), blurRadius: 16, offset: const Offset(0, 6)),
+          BoxShadow(
+            color: AppColors.textPrimary.withValues(alpha: 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
         ],
       ),
       child: Column(
@@ -227,7 +420,11 @@ class _InventoryScreenState extends State<InventoryScreen> {
               Expanded(
                 child: Text(
                   stat.label,
-                  style: const TextStyle(color: textSecondary, fontSize: 12.5, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                    color: textSecondary,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                  ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -235,7 +432,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
               Container(
                 width: 34,
                 height: 34,
-                decoration: BoxDecoration(color: stat.color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
+                decoration: BoxDecoration(
+                  color: stat.color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
                 child: Icon(stat.icon, color: stat.color, size: 17),
               ),
             ],
@@ -243,7 +443,11 @@ class _InventoryScreenState extends State<InventoryScreen> {
           const SizedBox(height: 10),
           Text(
             stat.value,
-            style: const TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: textPrimary),
+            style: const TextStyle(
+              fontSize: 19,
+              fontWeight: FontWeight.bold,
+              color: textPrimary,
+            ),
           ),
         ],
       ),
@@ -258,7 +462,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: categories.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 10),
+        separatorBuilder: (_, index) => const SizedBox(width: 10),
         itemBuilder: (context, i) {
           final category = categories[i];
           final selected = category == _selectedCategory;
@@ -272,7 +476,11 @@ class _InventoryScreenState extends State<InventoryScreen> {
               decoration: BoxDecoration(
                 color: selected ? AppColors.purple : AppColors.surfaceSoft,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: selected ? AppColors.purple : AppColors.secondary.withValues(alpha: 0.2)),
+                border: Border.all(
+                  color: selected
+                      ? AppColors.purple
+                      : AppColors.secondary.withValues(alpha: 0.2),
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -292,7 +500,9 @@ class _InventoryScreenState extends State<InventoryScreen> {
                   Text(
                     '$count item${count == 1 ? '' : 's'}',
                     style: TextStyle(
-                      color: selected ? AppColors.primary.withValues(alpha: 0.85) : textSecondary,
+                      color: selected
+                          ? AppColors.primary.withValues(alpha: 0.85)
+                          : textSecondary,
                       fontSize: 11.5,
                     ),
                   ),
@@ -315,13 +525,24 @@ class _InventoryScreenState extends State<InventoryScreen> {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.secondary.withValues(alpha: 0.18)),
         boxShadow: [
-          BoxShadow(color: AppColors.textPrimary.withValues(alpha: 0.05), blurRadius: 16, offset: const Offset(0, 6)),
+          BoxShadow(
+            color: AppColors.textPrimary.withValues(alpha: 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Inventory Catalog', style: TextStyle(color: textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
+          const Text(
+            'Inventory Catalog',
+            style: TextStyle(
+              color: textPrimary,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
           const SizedBox(height: 14),
           TextField(
             controller: _searchController,
@@ -352,7 +573,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
           const SizedBox(height: 8),
           Align(
             alignment: Alignment.centerRight,
-            child: Text('$resultCount results', style: const TextStyle(color: textSecondary, fontSize: 12.5)),
+            child: Text(
+              '$resultCount results',
+              style: const TextStyle(color: textSecondary, fontSize: 12.5),
+            ),
           ),
         ],
       ),
@@ -371,9 +595,17 @@ class _InventoryScreenState extends State<InventoryScreen> {
       decoration: BoxDecoration(
         color: AppColors.primary,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: statusColor.withValues(alpha: status == 'In Stock' ? 0.18 : 0.35)),
+        border: Border.all(
+          color: statusColor.withValues(
+            alpha: status == 'In Stock' ? 0.18 : 0.35,
+          ),
+        ),
         boxShadow: [
-          BoxShadow(color: AppColors.textPrimary.withValues(alpha: 0.05), blurRadius: 16, offset: const Offset(0, 6)),
+          BoxShadow(
+            color: AppColors.textPrimary.withValues(alpha: 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
         ],
       ),
       child: Column(
@@ -385,18 +617,34 @@ class _InventoryScreenState extends State<InventoryScreen> {
               Expanded(
                 child: Text(
                   item.name,
-                  style: const TextStyle(color: AppColors.purple, fontSize: 15, fontWeight: FontWeight.w700),
+                  style: const TextStyle(
+                    color: AppColors.purple,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: statusColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: statusColor.withValues(alpha: 0.35)),
+                  border: Border.all(
+                    color: statusColor.withValues(alpha: 0.35),
+                  ),
                 ),
-                child: Text(status, style: TextStyle(color: statusColor, fontSize: 11.5, fontWeight: FontWeight.w700)),
+                child: Text(
+                  status,
+                  style: TextStyle(
+                    color: statusColor,
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ],
           ),
@@ -412,7 +660,9 @@ class _InventoryScreenState extends State<InventoryScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(child: _infoItem('Current Stock', '${item.currentStock} units')),
+              Expanded(
+                child: _infoItem('Current Stock', '${item.currentStock} units'),
+              ),
               Expanded(child: _infoItem('Min Stock', '${item.minStock} units')),
             ],
           ),
@@ -420,8 +670,15 @@ class _InventoryScreenState extends State<InventoryScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(child: _infoItem('Reorder Level', '${item.reorderLevel} units')),
-              Expanded(child: _infoItem('Stock Value', '₹${_formatMoney(item.currentStock * item.unitCost)}')),
+              Expanded(
+                child: _infoItem('Reorder Level', '${item.reorderLevel} units'),
+              ),
+              Expanded(
+                child: _infoItem(
+                  'Stock Value',
+                  '₹${_formatMoney(item.currentStock * item.unitCost)}',
+                ),
+              ),
             ],
           ),
         ],
@@ -433,11 +690,24 @@ class _InventoryScreenState extends State<InventoryScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: textSecondary, fontSize: 11.5, fontWeight: FontWeight.w600)),
+        Text(
+          label,
+          style: const TextStyle(
+            color: textSecondary,
+            fontSize: 11.5,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         const SizedBox(height: 3),
-        Text(value,
-            style: const TextStyle(color: textPrimary, fontSize: 13.5, fontWeight: FontWeight.w600),
-            overflow: TextOverflow.ellipsis),
+        Text(
+          value,
+          style: const TextStyle(
+            color: textPrimary,
+            fontSize: 13.5,
+            fontWeight: FontWeight.w600,
+          ),
+          overflow: TextOverflow.ellipsis,
+        ),
       ],
     );
   }

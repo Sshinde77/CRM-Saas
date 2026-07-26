@@ -766,8 +766,9 @@ class _UserFormDialogState extends State<_UserFormDialog> {
                       final name = _nameController.text.trim();
                       final email = _emailController.text.trim();
                       final phone = _phoneController.text.trim();
-                      if (name.isEmpty || email.isEmpty || phone.isEmpty)
+                      if (name.isEmpty || email.isEmpty || phone.isEmpty) {
                         return;
+                      }
                       Navigator.of(context).pop(
                         _UserRecord(
                           name: name,

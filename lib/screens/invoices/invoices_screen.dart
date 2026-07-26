@@ -229,8 +229,9 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
                             child: _tabButton(
                               label: 'Sales Invoices',
                               selected: isSales,
-                              onTap: () =>
-                                  setState(() => _selectedTab = _InvoiceTab.sales),
+                              onTap: () => setState(
+                                () => _selectedTab = _InvoiceTab.sales,
+                              ),
                             ),
                           ),
                           Expanded(
@@ -257,7 +258,9 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.textPrimary.withValues(alpha: 0.04),
+                            color: AppColors.textPrimary.withValues(
+                              alpha: 0.04,
+                            ),
                             blurRadius: 14,
                             offset: const Offset(0, 6),
                           ),
@@ -304,7 +307,9 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(16),
                                 borderSide: BorderSide(
-                                  color: AppColors.secondary.withValues(alpha: 0.14),
+                                  color: AppColors.secondary.withValues(
+                                    alpha: 0.14,
+                                  ),
                                 ),
                               ),
                               focusedBorder: OutlineInputBorder(
@@ -383,17 +388,19 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
 
     return Column(
       children: invoices
-          .map((invoice) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: _invoiceCard(
-                  invoiceNo: invoice.invoiceNo,
-                  primaryLabel: 'Customer',
-                  primaryValue: invoice.customer,
-                  date: invoice.date,
-                  status: invoice.status,
-                  total: invoice.total,
-                ),
-              ))
+          .map(
+            (invoice) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _invoiceCard(
+                invoiceNo: invoice.invoiceNo,
+                primaryLabel: 'Customer',
+                primaryValue: invoice.customer,
+                date: invoice.date,
+                status: invoice.status,
+                total: invoice.total,
+              ),
+            ),
+          )
           .toList(),
     );
   }
@@ -413,17 +420,19 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
 
     return Column(
       children: invoices
-          .map((invoice) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: _invoiceCard(
-                  invoiceNo: invoice.invoiceNo,
-                  primaryLabel: 'Supplier',
-                  primaryValue: invoice.supplier,
-                  date: invoice.date,
-                  status: invoice.status,
-                  total: invoice.total,
-                ),
-              ))
+          .map(
+            (invoice) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _invoiceCard(
+                invoiceNo: invoice.invoiceNo,
+                primaryLabel: 'Supplier',
+                primaryValue: invoice.supplier,
+                date: invoice.date,
+                status: invoice.status,
+                total: invoice.total,
+              ),
+            ),
+          )
           .toList(),
     );
   }
@@ -495,11 +504,16 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: statusColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: statusColor.withValues(alpha: 0.22)),
+                  border: Border.all(
+                    color: statusColor.withValues(alpha: 0.22),
+                  ),
                 ),
                 child: Text(
                   status,

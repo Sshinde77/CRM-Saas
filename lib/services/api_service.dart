@@ -23,7 +23,7 @@ class ApiService {
   final String baseUrl;
 
   ApiService({http.Client? client, this.baseUrl = _defaultBaseUrl})
-      : _client = client ?? http.Client();
+    : _client = client ?? http.Client();
 
   void close() {
     _client.close();
@@ -46,10 +46,7 @@ class ApiService {
             'accept': 'application/json',
             'Content-Type': 'application/json',
           },
-          body: jsonEncode({
-            'email': email,
-            'password': password,
-          }),
+          body: jsonEncode({'email': email, 'password': password}),
         )
         .timeout(const Duration(seconds: 20));
 

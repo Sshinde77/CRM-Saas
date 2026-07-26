@@ -27,7 +27,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     ),
     _NotificationItem(
       title: 'Order delivered',
-      message: 'Order #OD-2045 has been successfully delivered to the customer.',
+      message:
+          'Order #OD-2045 has been successfully delivered to the customer.',
       time: '18 min ago',
       icon: Icons.local_shipping_outlined,
       accent: AppColors.green,
@@ -91,19 +92,29 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             children: [
                               Text(
                                 'Notifications',
-                                style: TextStyle(color: textPrimary, fontSize: 24, fontWeight: FontWeight.w800),
+                                style: TextStyle(
+                                  color: textPrimary,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w800,
+                                ),
                               ),
                               SizedBox(height: 4),
                               Text(
                                 'Keep track of important system and business updates',
-                                style: TextStyle(color: textSecondary, fontSize: 13),
+                                style: TextStyle(
+                                  color: textSecondary,
+                                  fontSize: 13,
+                                ),
                               ),
                             ],
                           ),
                         ),
                         const SizedBox(width: 12),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.purple.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(16),
@@ -126,17 +137,20 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         child: Center(
                           child: Text(
                             'No notifications available.',
-                            style: TextStyle(color: textSecondary, fontSize: 13),
+                            style: TextStyle(
+                              color: textSecondary,
+                              fontSize: 13,
+                            ),
                           ),
                         ),
                       )
                     else
                       ..._items.asMap().entries.map(
-                            (entry) => Padding(
-                              padding: const EdgeInsets.only(bottom: 14),
-                              child: _notificationCard(entry.key, entry.value),
-                            ),
-                          ),
+                        (entry) => Padding(
+                          padding: const EdgeInsets.only(bottom: 14),
+                          child: _notificationCard(entry.key, entry.value),
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -155,7 +169,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         color: item.isRead ? AppColors.primary : AppColors.surfaceSoft,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: item.isRead ? AppColors.secondary.withValues(alpha: 0.16) : item.accent.withValues(alpha: 0.25),
+          color: item.isRead
+              ? AppColors.secondary.withValues(alpha: 0.16)
+              : item.accent.withValues(alpha: 0.25),
         ),
         boxShadow: [
           BoxShadow(
@@ -190,7 +206,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         style: TextStyle(
                           color: textPrimary,
                           fontSize: 15.5,
-                          fontWeight: item.isRead ? FontWeight.w600 : FontWeight.w800,
+                          fontWeight: item.isRead
+                              ? FontWeight.w600
+                              : FontWeight.w800,
                         ),
                       ),
                     ),
@@ -208,12 +226,20 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 const SizedBox(height: 5),
                 Text(
                   item.message,
-                  style: const TextStyle(color: textSecondary, fontSize: 12.8, height: 1.35),
+                  style: const TextStyle(
+                    color: textSecondary,
+                    fontSize: 12.8,
+                    height: 1.35,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   item.time,
-                  style: const TextStyle(color: textSecondary, fontSize: 11.5, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                    color: textSecondary,
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
@@ -224,18 +250,26 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               IconButton(
                 onPressed: item.isRead ? null : () => _markAsRead(index),
                 icon: Icon(
-                  item.isRead ? Icons.mark_email_read_outlined : Icons.mark_email_unread_outlined,
+                  item.isRead
+                      ? Icons.mark_email_read_outlined
+                      : Icons.mark_email_unread_outlined,
                   color: item.isRead ? AppColors.green : AppColors.purple,
                   size: 20,
                 ),
                 tooltip: item.isRead ? 'Marked as read' : 'Mark as read',
                 style: IconButton.styleFrom(
-                  backgroundColor: (item.isRead ? AppColors.green : AppColors.purple).withValues(alpha: 0.08),
+                  backgroundColor:
+                      (item.isRead ? AppColors.green : AppColors.purple)
+                          .withValues(alpha: 0.08),
                 ),
               ),
               IconButton(
                 onPressed: () => _deleteNotification(index),
-                icon: const Icon(Icons.delete_outline_rounded, color: AppColors.red, size: 20),
+                icon: const Icon(
+                  Icons.delete_outline_rounded,
+                  color: AppColors.red,
+                  size: 20,
+                ),
                 tooltip: 'Delete notification',
                 style: IconButton.styleFrom(
                   backgroundColor: AppColors.red.withValues(alpha: 0.08),
@@ -255,7 +289,7 @@ class _NotificationItem {
   final String time;
   final IconData icon;
   final Color accent;
-  bool isRead;
+  bool isRead = false;
 
   _NotificationItem({
     required this.title,
@@ -263,6 +297,5 @@ class _NotificationItem {
     required this.time,
     required this.icon,
     required this.accent,
-    this.isRead = false,
   });
 }

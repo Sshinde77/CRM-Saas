@@ -207,8 +207,8 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                         final crossAxisCount = width >= 1000
                             ? 4
                             : width >= 700
-                                ? 2
-                                : 1;
+                            ? 2
+                            : 1;
 
                         return GridView.count(
                           crossAxisCount: crossAxisCount,
@@ -258,7 +258,9 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.textPrimary.withValues(alpha: 0.04),
+                            color: AppColors.textPrimary.withValues(
+                              alpha: 0.04,
+                            ),
                             blurRadius: 14,
                             offset: const Offset(0, 6),
                           ),
@@ -278,7 +280,10 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                           const SizedBox(height: 4),
                           const Text(
                             'Search by order, customer, delivery partner, status, scheduled date, or amount due.',
-                            style: TextStyle(color: textSecondary, fontSize: 12.5),
+                            style: TextStyle(
+                              color: textSecondary,
+                              fontSize: 12.5,
+                            ),
                           ),
                           const SizedBox(height: 16),
                           TextField(
@@ -298,7 +303,9 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(16),
                                 borderSide: BorderSide(
-                                  color: AppColors.secondary.withValues(alpha: 0.14),
+                                  color: AppColors.secondary.withValues(
+                                    alpha: 0.14,
+                                  ),
                                 ),
                               ),
                               focusedBorder: OutlineInputBorder(
@@ -340,10 +347,10 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                                   .entries
                                   .map(
                                     (entry) => Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 12),
-                                      child:
-                                          _buildDeliveryCard(entry.value),
+                                      padding: const EdgeInsets.only(
+                                        bottom: 12,
+                                      ),
+                                      child: _buildDeliveryCard(entry.value),
                                     ),
                                   )
                                   .toList(),
@@ -476,13 +483,16 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                 ),
               ),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: statusColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(20),
-                  border:
-                      Border.all(color: statusColor.withValues(alpha: 0.22)),
+                  border: Border.all(
+                    color: statusColor.withValues(alpha: 0.22),
+                  ),
                 ),
                 child: Text(
                   delivery.status,

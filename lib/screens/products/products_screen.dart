@@ -916,8 +916,9 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
                       controller: _nameController,
                       autofocus: !_isEditing,
                       onChanged: (_) {
-                        if (_nameError != null)
+                        if (_nameError != null) {
                           setState(() => _nameError = null);
+                        }
                       },
                       decoration: _decoration(
                         hint: 'e.g. Packaged Drinking Water (1L)',

@@ -23,7 +23,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
   final List<_ReportCardData> _reports = const [
     _ReportCardData(
       title: 'Sales Report',
-      description: 'Track revenue, orders, and performance trends for the selected period.',
+      description:
+          'Track revenue, orders, and performance trends for the selected period.',
       icon: Icons.point_of_sale_rounded,
       accent: AppColors.green,
       highlights: [
@@ -34,7 +35,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
     ),
     _ReportCardData(
       title: 'Inventory Report',
-      description: 'Review stock movement, low stock alerts, and available inventory.',
+      description:
+          'Review stock movement, low stock alerts, and available inventory.',
       icon: Icons.inventory_2_rounded,
       accent: AppColors.purple,
       highlights: [
@@ -45,7 +47,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
     ),
     _ReportCardData(
       title: 'Customer Report',
-      description: 'See customer activity, repeat buyers, and top account summaries.',
+      description:
+          'See customer activity, repeat buyers, and top account summaries.',
       icon: Icons.groups_rounded,
       accent: AppColors.blue,
       highlights: [
@@ -56,7 +59,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
     ),
     _ReportCardData(
       title: 'Purchase Report',
-      description: 'Monitor purchase invoices, suppliers, and procurement totals.',
+      description:
+          'Monitor purchase invoices, suppliers, and procurement totals.',
       icon: Icons.receipt_long_rounded,
       accent: AppColors.orange,
       highlights: [
@@ -70,7 +74,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
   void _downloadReport(String reportName) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('$reportName download started as $_selectedFormat for $_selectedPeriod'),
+        content: Text(
+          '$reportName download started as $_selectedFormat for $_selectedPeriod',
+        ),
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -79,7 +85,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
   void _downloadAllReports() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('All reports download started as $_selectedFormat for $_selectedPeriod'),
+        content: Text(
+          'All reports download started as $_selectedFormat for $_selectedPeriod',
+        ),
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -114,12 +122,19 @@ class _ReportsScreenState extends State<ReportsScreen> {
                             children: [
                               Text(
                                 'Reports',
-                                style: TextStyle(color: textPrimary, fontSize: 24, fontWeight: FontWeight.w800),
+                                style: TextStyle(
+                                  color: textPrimary,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w800,
+                                ),
                               ),
                               SizedBox(height: 4),
                               Text(
                                 'Generate and download business reports in one place',
-                                style: TextStyle(color: textSecondary, fontSize: 13),
+                                style: TextStyle(
+                                  color: textSecondary,
+                                  fontSize: 13,
+                                ),
                               ),
                             ],
                           ),
@@ -133,8 +148,13 @@ class _ReportsScreenState extends State<ReportsScreen> {
                             backgroundColor: AppColors.purple,
                             foregroundColor: AppColors.primary,
                             elevation: 0,
-                            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 18,
+                              vertical: 14,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18),
+                            ),
                           ),
                         ),
                       ],
@@ -146,8 +166,14 @@ class _ReportsScreenState extends State<ReportsScreen> {
                           child: _FilterChipField(
                             label: 'Period',
                             value: _selectedPeriod,
-                            items: const ['Today', 'This Week', 'This Month', 'This Year'],
-                            onChanged: (value) => setState(() => _selectedPeriod = value),
+                            items: const [
+                              'Today',
+                              'This Week',
+                              'This Month',
+                              'This Year',
+                            ],
+                            onChanged: (value) =>
+                                setState(() => _selectedPeriod = value),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -156,7 +182,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
                             label: 'Format',
                             value: _selectedFormat,
                             items: const ['PDF', 'CSV', 'Excel'],
-                            onChanged: (value) => setState(() => _selectedFormat = value),
+                            onChanged: (value) =>
+                                setState(() => _selectedFormat = value),
                           ),
                         ),
                       ],
@@ -165,7 +192,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
                     LayoutBuilder(
                       builder: (context, constraints) {
                         final isWide = constraints.maxWidth > 700;
-                        final cardWidth = isWide ? (constraints.maxWidth - 14) / 2 : constraints.maxWidth;
+                        final cardWidth = isWide
+                            ? (constraints.maxWidth - 14) / 2
+                            : constraints.maxWidth;
                         return Wrap(
                           spacing: 14,
                           runSpacing: 14,
@@ -177,7 +206,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                     data: report,
                                     selectedFormat: _selectedFormat,
                                     selectedPeriod: _selectedPeriod,
-                                    onDownload: () => _downloadReport(report.title),
+                                    onDownload: () =>
+                                        _downloadReport(report.title),
                                   ),
                                 ),
                               )
@@ -234,10 +264,17 @@ class _FilterChipField extends StatelessWidget {
               child: DropdownButton<String>(
                 isExpanded: true,
                 value: value,
-                icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textSecondary),
+                icon: const Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: AppColors.textSecondary,
+                ),
                 borderRadius: BorderRadius.circular(14),
                 dropdownColor: AppColors.primary,
-                style: const TextStyle(color: AppColors.textPrimary, fontSize: 13.5, fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w600,
+                ),
                 items: items
                     .map(
                       (item) => DropdownMenuItem<String>(
@@ -319,7 +356,11 @@ class _ReportCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       data.description,
-                      style: const TextStyle(color: AppColors.textSecondary, fontSize: 12.5, height: 1.3),
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 12.5,
+                        height: 1.3,
+                      ),
                     ),
                   ],
                 ),
@@ -333,7 +374,10 @@ class _ReportCard extends StatelessWidget {
             children: data.highlights
                 .map(
                   (item) => Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.surfaceSoft,
                       borderRadius: BorderRadius.circular(14),
@@ -353,7 +397,11 @@ class _ReportCard extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           item.value,
-                          style: TextStyle(color: data.accent, fontSize: 14.5, fontWeight: FontWeight.w800),
+                          style: TextStyle(
+                            color: data.accent,
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
                       ],
                     ),
@@ -366,14 +414,21 @@ class _ReportCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: data.accent.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Text(
                     '$selectedPeriod - $selectedFormat',
-                    style: TextStyle(color: data.accent, fontSize: 12.5, fontWeight: FontWeight.w700),
+                    style: TextStyle(
+                      color: data.accent,
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -387,8 +442,13 @@ class _ReportCard extends StatelessWidget {
                   backgroundColor: data.accent,
                   foregroundColor: AppColors.primary,
                   elevation: 0,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
               ),
             ],

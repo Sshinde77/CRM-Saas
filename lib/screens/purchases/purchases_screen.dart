@@ -11,7 +11,11 @@ class _PurchaseItem {
   final int quantity;
   final double unitPrice;
 
-  const _PurchaseItem({required this.name, required this.quantity, required this.unitPrice});
+  const _PurchaseItem({
+    required this.name,
+    required this.quantity,
+    required this.unitPrice,
+  });
 
   double get lineTotal => quantity * unitPrice;
 }
@@ -56,9 +60,17 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
       date: DateTime(2024, 7, 15),
       supplier: 'Prime Manufacturing',
       items: const [
-        _PurchaseItem(name: 'Packaged Water (1L)', quantity: 500, unitPrice: 20),
+        _PurchaseItem(
+          name: 'Packaged Water (1L)',
+          quantity: 500,
+          unitPrice: 20,
+        ),
         _PurchaseItem(name: 'Bottle Crates', quantity: 50, unitPrice: 220),
-        _PurchaseItem(name: 'Jar Caps (Pack of 10)', quantity: 100, unitPrice: 90),
+        _PurchaseItem(
+          name: 'Jar Caps (Pack of 10)',
+          quantity: 100,
+          unitPrice: 90,
+        ),
       ],
     ),
     _PurchaseInvoice(
@@ -72,7 +84,10 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
     ),
   ];
 
-  Future<void> _openInvoiceFormDialog({_PurchaseInvoice? existing, int? index}) async {
+  Future<void> _openInvoiceFormDialog({
+    _PurchaseInvoice? existing,
+    int? index,
+  }) async {
     final result = await showDialog<_PurchaseInvoice>(
       context: context,
       builder: (_) => _PurchaseInvoiceFormDialog(existing: existing),
@@ -93,13 +108,19 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
       builder: (_) => AlertDialog(
         backgroundColor: AppColors.primary,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Delete invoice?', style: TextStyle(color: textPrimary, fontWeight: FontWeight.w700)),
+        title: const Text(
+          'Delete invoice?',
+          style: TextStyle(color: textPrimary, fontWeight: FontWeight.w700),
+        ),
         content: Text(
           'This will permanently remove "${invoice.poNumber}" from your purchase records.',
           style: const TextStyle(color: textSecondary),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: TextButton.styleFrom(foregroundColor: AppColors.red),
@@ -158,11 +179,22 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Purchase Invoices',
-                                  style: TextStyle(color: textPrimary, fontSize: 24, fontWeight: FontWeight.w800)),
+                              Text(
+                                'Purchase Invoices',
+                                style: TextStyle(
+                                  color: textPrimary,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
                               SizedBox(height: 4),
-                              Text('Manage all your purchase invoices',
-                                  style: TextStyle(color: textSecondary, fontSize: 13)),
+                              Text(
+                                'Manage all your purchase invoices',
+                                style: TextStyle(
+                                  color: textSecondary,
+                                  fontSize: 13,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -175,8 +207,13 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                             backgroundColor: AppColors.purple,
                             foregroundColor: AppColors.primary,
                             elevation: 0,
-                            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 18,
+                              vertical: 14,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18),
+                            ),
                           ),
                         ),
                       ],
@@ -186,7 +223,13 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                       const Padding(
                         padding: EdgeInsets.symmetric(vertical: 40),
                         child: Center(
-                          child: Text('No purchase invoices yet.', style: TextStyle(color: textSecondary, fontSize: 13)),
+                          child: Text(
+                            'No purchase invoices yet.',
+                            style: TextStyle(
+                              color: textSecondary,
+                              fontSize: 13,
+                            ),
+                          ),
                         ),
                       )
                     else
@@ -218,7 +261,11 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.secondary.withValues(alpha: 0.18)),
         boxShadow: [
-          BoxShadow(color: AppColors.textPrimary.withValues(alpha: 0.05), blurRadius: 16, offset: const Offset(0, 6)),
+          BoxShadow(
+            color: AppColors.textPrimary.withValues(alpha: 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
         ],
       ),
       child: Column(
@@ -234,23 +281,44 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                   color: AppColors.blue.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: const Icon(Icons.receipt_long_outlined, color: AppColors.blue, size: 22),
+                child: const Icon(
+                  Icons.receipt_long_outlined,
+                  color: AppColors.blue,
+                  size: 22,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(invoice.poNumber,
-                        style: const TextStyle(color: textPrimary, fontSize: 15.5, fontWeight: FontWeight.w800)),
+                    Text(
+                      invoice.poNumber,
+                      style: const TextStyle(
+                        color: textPrimary,
+                        fontSize: 15.5,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
                     const SizedBox(height: 2),
-                    Text(_formatDate(invoice.date), style: const TextStyle(color: textSecondary, fontSize: 12.5)),
+                    Text(
+                      _formatDate(invoice.date),
+                      style: const TextStyle(
+                        color: textSecondary,
+                        fontSize: 12.5,
+                      ),
+                    ),
                   ],
                 ),
               ),
               IconButton(
-                onPressed: () => _openInvoiceFormDialog(existing: invoice, index: index),
-                icon: const Icon(Icons.edit_outlined, size: 20, color: AppColors.purple),
+                onPressed: () =>
+                    _openInvoiceFormDialog(existing: invoice, index: index),
+                icon: const Icon(
+                  Icons.edit_outlined,
+                  size: 20,
+                  color: AppColors.purple,
+                ),
                 style: IconButton.styleFrom(
                   backgroundColor: AppColors.purple.withValues(alpha: 0.08),
                   padding: const EdgeInsets.all(8),
@@ -259,7 +327,11 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
               const SizedBox(width: 6),
               IconButton(
                 onPressed: () => _confirmDelete(invoice, index),
-                icon: const Icon(Icons.delete_outline_rounded, size: 20, color: AppColors.red),
+                icon: const Icon(
+                  Icons.delete_outline_rounded,
+                  size: 20,
+                  color: AppColors.red,
+                ),
                 style: IconButton.styleFrom(
                   backgroundColor: AppColors.red.withValues(alpha: 0.08),
                   padding: const EdgeInsets.all(8),
@@ -277,10 +349,20 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.storefront_outlined, size: 15, color: textSecondary),
+                const Icon(
+                  Icons.storefront_outlined,
+                  size: 15,
+                  color: textSecondary,
+                ),
                 const SizedBox(width: 6),
-                Text(invoice.supplier,
-                    style: const TextStyle(color: textPrimary, fontSize: 13, fontWeight: FontWeight.w600)),
+                Text(
+                  invoice.supplier,
+                  style: const TextStyle(
+                    color: textPrimary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ],
             ),
           ),
@@ -289,7 +371,10 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
             children: [
               Expanded(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.purple.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(14),
@@ -297,10 +382,23 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Total Amount', style: TextStyle(color: textSecondary, fontSize: 11.5, fontWeight: FontWeight.w600)),
+                      const Text(
+                        'Total Amount',
+                        style: TextStyle(
+                          color: textSecondary,
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                       const SizedBox(height: 4),
-                      Text('₹${_formatMoney(invoice.totalAmount)}',
-                          style: const TextStyle(color: AppColors.purple, fontSize: 16, fontWeight: FontWeight.w800)),
+                      Text(
+                        '₹${_formatMoney(invoice.totalAmount)}',
+                        style: const TextStyle(
+                          color: AppColors.purple,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -308,7 +406,10 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
               const SizedBox(width: 10),
               Expanded(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.green.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(14),
@@ -316,10 +417,23 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Items', style: TextStyle(color: textSecondary, fontSize: 11.5, fontWeight: FontWeight.w600)),
+                      const Text(
+                        'Items',
+                        style: TextStyle(
+                          color: textSecondary,
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                       const SizedBox(height: 4),
-                      Text('${invoice.itemCount}',
-                          style: const TextStyle(color: AppColors.green, fontSize: 16, fontWeight: FontWeight.w800)),
+                      Text(
+                        '${invoice.itemCount}',
+                        style: const TextStyle(
+                          color: AppColors.green,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -342,9 +456,9 @@ class _ItemFormRow {
   final TextEditingController priceController;
 
   _ItemFormRow({String name = '', String qty = '', String price = ''})
-      : nameController = TextEditingController(text: name),
-        qtyController = TextEditingController(text: qty),
-        priceController = TextEditingController(text: price);
+    : nameController = TextEditingController(text: name),
+      qtyController = TextEditingController(text: qty),
+      priceController = TextEditingController(text: price);
 
   void dispose() {
     nameController.dispose();
@@ -365,10 +479,12 @@ class _PurchaseInvoiceFormDialog extends StatefulWidget {
   const _PurchaseInvoiceFormDialog({this.existing});
 
   @override
-  State<_PurchaseInvoiceFormDialog> createState() => _PurchaseInvoiceFormDialogState();
+  State<_PurchaseInvoiceFormDialog> createState() =>
+      _PurchaseInvoiceFormDialogState();
 }
 
-class _PurchaseInvoiceFormDialogState extends State<_PurchaseInvoiceFormDialog> {
+class _PurchaseInvoiceFormDialogState
+    extends State<_PurchaseInvoiceFormDialog> {
   static const Color textPrimary = AppColors.textPrimary;
   static const Color textSecondary = AppColors.textSecondary;
 
@@ -394,11 +510,13 @@ class _PurchaseInvoiceFormDialogState extends State<_PurchaseInvoiceFormDialog> 
 
     if (existing != null && existing.items.isNotEmpty) {
       _itemRows = existing.items
-          .map((i) => _ItemFormRow(
-                name: i.name,
-                qty: i.quantity.toString(),
-                price: i.unitPrice.toString(),
-              ))
+          .map(
+            (i) => _ItemFormRow(
+              name: i.name,
+              qty: i.quantity.toString(),
+              price: i.unitPrice.toString(),
+            ),
+          )
           .toList();
     } else {
       _itemRows = [_ItemFormRow()];
@@ -426,7 +544,8 @@ class _PurchaseInvoiceFormDialogState extends State<_PurchaseInvoiceFormDialog> 
     });
   }
 
-  double get _totalAmount => _itemRows.fold(0, (sum, row) => sum + row.lineTotal);
+  double get _totalAmount =>
+      _itemRows.fold(0, (sum, row) => sum + row.lineTotal);
 
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
@@ -454,25 +573,32 @@ class _PurchaseInvoiceFormDialogState extends State<_PurchaseInvoiceFormDialog> 
     }).toList();
 
     setState(() {
-      _itemsError = validItems.isEmpty ? 'Add at least one item with a name and quantity' : null;
+      _itemsError = validItems.isEmpty
+          ? 'Add at least one item with a name and quantity'
+          : null;
     });
 
-    if (_supplierError != null || _poNumberError != null || _itemsError != null) return;
+    if (_supplierError != null || _poNumberError != null || _itemsError != null)
+      return;
 
     final items = validItems
-        .map((row) => _PurchaseItem(
-              name: row.nameController.text.trim(),
-              quantity: int.tryParse(row.qtyController.text.trim()) ?? 0,
-              unitPrice: double.tryParse(row.priceController.text.trim()) ?? 0,
-            ))
+        .map(
+          (row) => _PurchaseItem(
+            name: row.nameController.text.trim(),
+            quantity: int.tryParse(row.qtyController.text.trim()) ?? 0,
+            unitPrice: double.tryParse(row.priceController.text.trim()) ?? 0,
+          ),
+        )
         .toList();
 
-    Navigator.of(context).pop(_PurchaseInvoice(
-      poNumber: poNumber,
-      date: _date,
-      supplier: supplier,
-      items: items,
-    ));
+    Navigator.of(context).pop(
+      _PurchaseInvoice(
+        poNumber: poNumber,
+        date: _date,
+        supplier: supplier,
+        items: items,
+      ),
+    );
   }
 
   String _formatDate(DateTime d) {
@@ -495,16 +621,31 @@ class _PurchaseInvoiceFormDialogState extends State<_PurchaseInvoiceFormDialog> 
               child: Row(
                 children: [
                   Expanded(
-                    child: Text(_isEditing ? 'Edit Purchase Invoice' : 'Add Purchase Invoice',
-                        style: const TextStyle(color: textPrimary, fontSize: 18, fontWeight: FontWeight.w800)),
+                    child: Text(
+                      _isEditing
+                          ? 'Edit Purchase Invoice'
+                          : 'Add Purchase Invoice',
+                      style: const TextStyle(
+                        color: textPrimary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
                   ),
                   GestureDetector(
                     onTap: () => Navigator.of(context).pop(),
                     child: Container(
                       width: 32,
                       height: 32,
-                      decoration: BoxDecoration(color: AppColors.surfaceSoft, shape: BoxShape.circle),
-                      child: const Icon(Icons.close_rounded, size: 18, color: textSecondary),
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceSoft,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.close_rounded,
+                        size: 18,
+                        color: textSecondary,
+                      ),
                     ),
                   ),
                 ],
@@ -522,9 +663,13 @@ class _PurchaseInvoiceFormDialogState extends State<_PurchaseInvoiceFormDialog> 
                       controller: _supplierController,
                       autofocus: !_isEditing,
                       onChanged: (_) {
-                        if (_supplierError != null) setState(() => _supplierError = null);
+                        if (_supplierError != null)
+                          setState(() => _supplierError = null);
                       },
-                      decoration: _decoration(hint: 'e.g. Prime Manufacturing', errorText: _supplierError),
+                      decoration: _decoration(
+                        hint: 'e.g. Prime Manufacturing',
+                        errorText: _supplierError,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     Row(
@@ -538,9 +683,13 @@ class _PurchaseInvoiceFormDialogState extends State<_PurchaseInvoiceFormDialog> 
                               TextField(
                                 controller: _poNumberController,
                                 onChanged: (_) {
-                                  if (_poNumberError != null) setState(() => _poNumberError = null);
+                                  if (_poNumberError != null)
+                                    setState(() => _poNumberError = null);
                                 },
-                                decoration: _decoration(hint: 'e.g. PO-2024-003', errorText: _poNumberError),
+                                decoration: _decoration(
+                                  hint: 'e.g. PO-2024-003',
+                                  errorText: _poNumberError,
+                                ),
                               ),
                             ],
                           ),
@@ -554,19 +703,35 @@ class _PurchaseInvoiceFormDialogState extends State<_PurchaseInvoiceFormDialog> 
                               GestureDetector(
                                 onTap: _pickDate,
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 14,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: AppColors.surfaceSoft,
                                     borderRadius: BorderRadius.circular(14),
-                                    border: Border.all(color: AppColors.secondary.withValues(alpha: 0.24)),
+                                    border: Border.all(
+                                      color: AppColors.secondary.withValues(
+                                        alpha: 0.24,
+                                      ),
+                                    ),
                                   ),
                                   child: Row(
                                     children: [
                                       Expanded(
-                                        child: Text(_formatDate(_date),
-                                            style: const TextStyle(color: textPrimary, fontSize: 14)),
+                                        child: Text(
+                                          _formatDate(_date),
+                                          style: const TextStyle(
+                                            color: textPrimary,
+                                            fontSize: 14,
+                                          ),
+                                        ),
                                       ),
-                                      const Icon(Icons.calendar_today_outlined, size: 16, color: textSecondary),
+                                      const Icon(
+                                        Icons.calendar_today_outlined,
+                                        size: 16,
+                                        color: textSecondary,
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -580,25 +745,53 @@ class _PurchaseInvoiceFormDialogState extends State<_PurchaseInvoiceFormDialog> 
                     Row(
                       children: [
                         const Expanded(
-                          child: Text('Items', style: TextStyle(color: textPrimary, fontSize: 14.5, fontWeight: FontWeight.w700)),
+                          child: Text(
+                            'Items',
+                            style: TextStyle(
+                              color: textPrimary,
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                         ),
                         TextButton.icon(
                           onPressed: _addItemRow,
-                          icon: const Icon(Icons.add, size: 16, color: AppColors.purple),
-                          label: const Text('Add Item', style: TextStyle(color: AppColors.purple, fontWeight: FontWeight.w700)),
+                          icon: const Icon(
+                            Icons.add,
+                            size: 16,
+                            color: AppColors.purple,
+                          ),
+                          label: const Text(
+                            'Add Item',
+                            style: TextStyle(
+                              color: AppColors.purple,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                         ),
                       ],
                     ),
                     if (_itemsError != null)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 6),
-                        child: Text(_itemsError!, style: const TextStyle(color: AppColors.red, fontSize: 12)),
+                        child: Text(
+                          _itemsError!,
+                          style: const TextStyle(
+                            color: AppColors.red,
+                            fontSize: 12,
+                          ),
+                        ),
                       ),
-                    ..._itemRows.asMap().entries.map((entry) => _itemRowWidget(entry.key, entry.value)),
+                    ..._itemRows.asMap().entries.map(
+                      (entry) => _itemRowWidget(entry.key, entry.value),
+                    ),
                     const SizedBox(height: 12),
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.purple.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(14),
@@ -606,10 +799,22 @@ class _PurchaseInvoiceFormDialogState extends State<_PurchaseInvoiceFormDialog> 
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('Total Amount',
-                              style: TextStyle(color: textPrimary, fontSize: 13.5, fontWeight: FontWeight.w600)),
-                          Text('₹${_totalAmount.toStringAsFixed(2)}',
-                              style: const TextStyle(color: AppColors.purple, fontSize: 16, fontWeight: FontWeight.w800)),
+                          const Text(
+                            'Total Amount',
+                            style: TextStyle(
+                              color: textPrimary,
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            '₹${_totalAmount.toStringAsFixed(2)}',
+                            style: const TextStyle(
+                              color: AppColors.purple,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -628,9 +833,17 @@ class _PurchaseInvoiceFormDialogState extends State<_PurchaseInvoiceFormDialog> 
                     onPressed: () => Navigator.of(context).pop(),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.purple,
-                      side: const BorderSide(color: AppColors.purple, width: 1.4),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                      side: const BorderSide(
+                        color: AppColors.purple,
+                        width: 1.4,
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 14,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
                     ),
                     child: const Text('Cancel'),
                   ),
@@ -661,7 +874,9 @@ class _PurchaseInvoiceFormDialogState extends State<_PurchaseInvoiceFormDialog> 
         decoration: BoxDecoration(
           color: AppColors.surfaceSoft,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.secondary.withValues(alpha: 0.18)),
+          border: Border.all(
+            color: AppColors.secondary.withValues(alpha: 0.18),
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -678,11 +893,15 @@ class _PurchaseInvoiceFormDialogState extends State<_PurchaseInvoiceFormDialog> 
                 ),
                 const SizedBox(width: 8),
                 GestureDetector(
-                  onTap: _itemRows.length > 1 ? () => _removeItemRow(index) : null,
+                  onTap: _itemRows.length > 1
+                      ? () => _removeItemRow(index)
+                      : null,
                   child: Icon(
                     Icons.remove_circle_outline,
                     size: 22,
-                    color: _itemRows.length > 1 ? AppColors.red : textSecondary.withValues(alpha: 0.3),
+                    color: _itemRows.length > 1
+                        ? AppColors.red
+                        : textSecondary.withValues(alpha: 0.3),
                   ),
                 ),
               ],
@@ -703,7 +922,9 @@ class _PurchaseInvoiceFormDialogState extends State<_PurchaseInvoiceFormDialog> 
                 Expanded(
                   child: TextField(
                     controller: row.priceController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     onChanged: (_) => setState(() {}),
                     decoration: _decoration(hint: 'Unit Price'),
                     style: const TextStyle(fontSize: 13.5),
@@ -715,7 +936,11 @@ class _PurchaseInvoiceFormDialogState extends State<_PurchaseInvoiceFormDialog> 
                   child: Text(
                     '₹${row.lineTotal.toStringAsFixed(0)}',
                     textAlign: TextAlign.right,
-                    style: const TextStyle(color: textPrimary, fontSize: 13, fontWeight: FontWeight.w700),
+                    style: const TextStyle(
+                      color: textPrimary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ],
@@ -729,7 +954,14 @@ class _PurchaseInvoiceFormDialogState extends State<_PurchaseInvoiceFormDialog> 
   Widget _fieldLabel(String label) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Text(label, style: const TextStyle(color: textPrimary, fontSize: 13.5, fontWeight: FontWeight.w600)),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: textPrimary,
+          fontSize: 13.5,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
     );
   }
 
@@ -742,11 +974,15 @@ class _PurchaseInvoiceFormDialogState extends State<_PurchaseInvoiceFormDialog> 
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: AppColors.secondary.withValues(alpha: 0.24)),
+        borderSide: BorderSide(
+          color: AppColors.secondary.withValues(alpha: 0.24),
+        ),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: AppColors.secondary.withValues(alpha: 0.24)),
+        borderSide: BorderSide(
+          color: AppColors.secondary.withValues(alpha: 0.24),
+        ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),

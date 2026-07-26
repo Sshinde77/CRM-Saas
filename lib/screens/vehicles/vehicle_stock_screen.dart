@@ -209,21 +209,38 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
         children: [
           Row(
             children: [
-              const Text('Driver Details',
-                  style: TextStyle(color: textPrimary, fontSize: 13.5, fontWeight: FontWeight.w700)),
+              const Text(
+                'Driver Details',
+                style: TextStyle(
+                  color: textPrimary,
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
               const Spacer(),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: (active ? AppColors.green : textSecondary).withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: (active ? AppColors.green : textSecondary).withValues(alpha: 0.35)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
                 ),
-                child: Text(vehicle.status,
-                    style: TextStyle(
-                        color: active ? AppColors.green : textSecondary,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700)),
+                decoration: BoxDecoration(
+                  color: (active ? AppColors.green : textSecondary).withValues(
+                    alpha: 0.12,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: (active ? AppColors.green : textSecondary)
+                        .withValues(alpha: 0.35),
+                  ),
+                ),
+                child: Text(
+                  vehicle.status,
+                  style: TextStyle(
+                    color: active ? AppColors.green : textSecondary,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ],
           ),
@@ -239,8 +256,12 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(child: _driverDetailItem('Vehicle Model', vehicle.vehicleModel)),
-              Expanded(child: _driverDetailItem('License No.', vehicle.licenseNumber)),
+              Expanded(
+                child: _driverDetailItem('Vehicle Model', vehicle.vehicleModel),
+              ),
+              Expanded(
+                child: _driverDetailItem('License No.', vehicle.licenseNumber),
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -248,11 +269,19 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(child: _driverDetailItem('Joined On', vehicle.joinedOn)),
-              Expanded(child: _driverDetailItem('Total Deliveries', '${vehicle.totalDeliveries}')),
+              Expanded(
+                child: _driverDetailItem(
+                  'Total Deliveries',
+                  '${vehicle.totalDeliveries}',
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 12),
-          _driverDetailItem('Pending Deliveries', '${vehicle.pendingDeliveries}'),
+          _driverDetailItem(
+            'Pending Deliveries',
+            '${vehicle.pendingDeliveries}',
+          ),
         ],
       ),
     );
@@ -262,11 +291,24 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: textSecondary, fontSize: 11.5, fontWeight: FontWeight.w600)),
+        Text(
+          label,
+          style: const TextStyle(
+            color: textSecondary,
+            fontSize: 11.5,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         const SizedBox(height: 3),
-        Text(value,
-            style: const TextStyle(color: textPrimary, fontSize: 13.5, fontWeight: FontWeight.w600),
-            overflow: TextOverflow.ellipsis),
+        Text(
+          value,
+          style: const TextStyle(
+            color: textPrimary,
+            fontSize: 13.5,
+            fontWeight: FontWeight.w600,
+          ),
+          overflow: TextOverflow.ellipsis,
+        ),
       ],
     );
   }
@@ -341,7 +383,9 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
                   }
                 }),
                 icon: Icon(
-                  isExpanded ? Icons.expand_less_rounded : Icons.expand_more_rounded,
+                  isExpanded
+                      ? Icons.expand_less_rounded
+                      : Icons.expand_more_rounded,
                   color: textSecondary,
                   size: 24,
                 ),
@@ -352,7 +396,9 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
           ),
           AnimatedCrossFade(
             duration: const Duration(milliseconds: 220),
-            crossFadeState: isExpanded ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+            crossFadeState: isExpanded
+                ? CrossFadeState.showFirst
+                : CrossFadeState.showSecond,
             firstChild: Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Column(
@@ -360,46 +406,79 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
                 children: [
                   _driverDetails(vehicle),
                   const SizedBox(height: 12),
-                  ...vehicle.lines.map((line) => Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                          decoration: BoxDecoration(
-                            color: AppColors.surfaceSoft,
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.inventory_2_outlined, size: 18, color: textSecondary),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(line.product,
-                                    style:
-                                        const TextStyle(color: textPrimary, fontSize: 13.5, fontWeight: FontWeight.w500)),
-                              ),
-                              const SizedBox(width: 8),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text('${line.count} case',
-                                      style: const TextStyle(
-                                          color: AppColors.purple, fontSize: 13.5, fontWeight: FontWeight.w700)),
-                                  Text('(${line.caseSize})',
-                                      style: const TextStyle(
-                                          color: AppColors.purple, fontSize: 13.5, fontWeight: FontWeight.w700)),
-                                ],
-                              ),
-                            ],
-                          ),
+                  ...vehicle.lines.map(
+                    (line) => Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 12,
                         ),
-                      )),
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceSoft,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.inventory_2_outlined,
+                              size: 18,
+                              color: textSecondary,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                line.product,
+                                style: const TextStyle(
+                                  color: textPrimary,
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  '${line.count} case',
+                                  style: const TextStyle(
+                                    color: AppColors.purple,
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                Text(
+                                  '(${line.caseSize})',
+                                  style: const TextStyle(
+                                    color: AppColors.purple,
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                   const Divider(color: AppColors.secondary, height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Total Stock', style: TextStyle(color: textSecondary, fontSize: 14)),
-                      Text('$total units',
-                          style: const TextStyle(color: textPrimary, fontSize: 16, fontWeight: FontWeight.w800)),
+                      const Text(
+                        'Total Stock',
+                        style: TextStyle(color: textSecondary, fontSize: 14),
+                      ),
+                      Text(
+                        '$total units',
+                        style: const TextStyle(
+                          color: textPrimary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
                     ],
                   ),
                 ],

@@ -142,9 +142,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
       await Future.delayed(const Duration(milliseconds: 700));
       if (!mounted) return;
       Navigator.pushReplacement(
@@ -153,14 +153,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
     } on ApiException catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Registration failed: $error')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Registration failed: $error')));
     } finally {
       if (mounted) {
         setState(() => _isSubmitting = false);
@@ -542,9 +542,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   color: greyText,
                 ),
                 items: _financialYears
-                    .map(
-                      (fy) => DropdownMenuItem(value: fy, child: Text(fy)),
-                    )
+                    .map((fy) => DropdownMenuItem(value: fy, child: Text(fy)))
                     .toList(),
                 onChanged: (value) => setState(() => _financialYear = value),
               ),

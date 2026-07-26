@@ -11,7 +11,6 @@ import '../screens/reports/reports_screen.dart';
 import '../screens/settings/admin_settings_screen.dart';
 import '../screens/settings/company_settings_screen.dart';
 import '../screens/users/admin_user_list_screen.dart';
-import '../screens/products/products_screen.dart';
 import '../screens/invoices/invoices_screen.dart';
 import '../screens/deliveries/deliveries_screen.dart';
 import '../screens/expenses/expenses_screen.dart';
@@ -40,6 +39,7 @@ class AppDrawer extends StatefulWidget {
   static const List<_NavItem> _navItems = [
     _NavItem('Dashboard', Icons.dashboard_outlined),
     _NavItem('Company Settings', Icons.storefront_outlined),
+    _NavItem('User Management', Icons.people_outline_rounded),
     _NavItem('Products', Icons.inventory_2_outlined),
     _NavItem('Inventory', Icons.warehouse_outlined),
     _NavItem('Vehicle Stock', Icons.local_shipping_outlined),
@@ -59,13 +59,6 @@ class AppDrawer extends StatefulWidget {
 
 class _AppDrawerState extends State<AppDrawer> {
   static const Color accent = AppColors.purple;
-  bool _isUserManagementExpanded = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _isUserManagementExpanded = widget.activeItem == 'User Management';
-  }
 
   void _handleTap(_NavItem item) {
     Navigator.of(context).pop();
@@ -148,6 +141,69 @@ class _AppDrawerState extends State<AppDrawer> {
     }
   }
 
+  Widget _buildNavRow(_NavItem item) {
+    final isActive = item.label == widget.activeItem;
+    final isUserManagementActive =
+        item.label == 'User Management' && widget.activeSubItem != null;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _handleTap(item),
+          borderRadius: BorderRadius.circular(16),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 160),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              color: isActive
+                  ? accent.withValues(alpha: 0.16)
+                  : Colors.transparent,
+              border: Border.all(
+                color: isActive
+                    ? accent.withValues(alpha: 0.32)
+                    : AppDrawer.textPrimary.withValues(alpha: 0.06),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  item.icon,
+                  size: 20,
+                  color: isActive ? accent : AppDrawer.textSecondary,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    item.label,
+                    style: TextStyle(
+                      color: isActive
+                          ? AppDrawer.textPrimary
+                          : AppDrawer.textSecondary,
+                      fontSize: 14,
+                      fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                    ),
+                  ),
+                ),
+                if (isUserManagementActive)
+                  Text(
+                    widget.activeSubItem!,
+                    style: const TextStyle(
+                      color: accent,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -223,17 +279,7 @@ class _AppDrawerState extends State<AppDrawer> {
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-                children: [
-                  _buildNavRow(const _NavItem('Dashboard', Icons.dashboard_outlined)),
-                  _buildNavRow(
-                    const _NavItem(
-                      'Company Settings',
-                      Icons.storefront_outlined,
-                    ),
-                  ),
-                  _buildUserManagementGroup(),
-                  ...AppDrawer._navItems.map(_buildNavRow),
-                ],
+                children: AppDrawer._navItems.map(_buildNavRow).toList(),
               ),
             ),
             Divider(

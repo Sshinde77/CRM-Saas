@@ -13,40 +13,6 @@ import 'register_screen.dart';
 // 40px rounded card corners, pill-shaped inputs with a soft cyan glow, and a
 // blue-to-cyan gradient sign-in button.
 
-enum UserRole { superAdmin, admin, salesOfficer, deliveryPartner, accountant }
-
-extension on UserRole {
-  String get label {
-    switch (this) {
-      case UserRole.superAdmin:
-        return 'Super Admin';
-      case UserRole.admin:
-        return 'Admin';
-      case UserRole.salesOfficer:
-        return 'Sales Officer';
-      case UserRole.deliveryPartner:
-        return 'Delivery Partner';
-      case UserRole.accountant:
-        return 'Accountant';
-    }
-  }
-
-  IconData get icon {
-    switch (this) {
-      case UserRole.superAdmin:
-        return Icons.shield_outlined;
-      case UserRole.admin:
-        return Icons.admin_panel_settings_outlined;
-      case UserRole.salesOfficer:
-        return Icons.groups_outlined;
-      case UserRole.deliveryPartner:
-        return Icons.local_shipping_outlined;
-      case UserRole.accountant:
-        return Icons.account_balance_wallet_outlined;
-    }
-  }
-}
-
 class _CountryCode {
   final String iso;
   final String dialCode;
@@ -90,14 +56,11 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
-  final FocusNode _emailFocusNode = FocusNode();
 
   bool _isPhoneTab = false;
   bool _obscurePassword = true;
   bool _isLoading = false;
-  bool _roleMenuOpen = false;
   bool _countryMenuOpen = false;
-  UserRole? _selectedRole;
   _CountryCode _selectedCountry = _countryCodes.first;
 
   // Gradient-card palette (Uiverse-inspired)
@@ -111,30 +74,12 @@ class _LoginScreenState extends State<LoginScreen> {
   static const Color inputShadow = Color(0xFFCFF0FF);
 
   @override
-  void initState() {
-    super.initState();
-    _emailFocusNode.addListener(() {
-      if (_emailFocusNode.hasFocus) {
-        setState(() => _roleMenuOpen = true);
-      }
-    });
-  }
-
-  @override
   void dispose() {
     _apiService.close();
     _emailController.dispose();
     _passwordController.dispose();
     _phoneController.dispose();
-    _emailFocusNode.dispose();
     super.dispose();
-  }
-
-  void _selectRole(UserRole role) {
-    setState(() {
-      _selectedRole = role;
-      _roleMenuOpen = false;
-    });
   }
 
   Future<void> _handleSignIn() async {
@@ -157,9 +102,9 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
       await Future.delayed(const Duration(milliseconds: 700));
       if (!mounted) return;
       Navigator.pushReplacement(
@@ -168,14 +113,14 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     } on ApiException catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Login failed: $error')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Login failed: $error')));
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -188,8 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return GestureDetector(
       onTap: () {
         setState(() => _countryMenuOpen = false);
-        _emailFocusNode.unfocus();
-        setState(() => _roleMenuOpen = false);
+        FocusScope.of(context).unfocus();
       },
       child: Scaffold(
         backgroundColor: const Color(0xFFEEF3F8),
@@ -247,34 +191,15 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(height: 18),
 
                         if (!_isPhoneTab) ...[
-                          Row(
-                            children: [
-                              const _FieldLabel('Email'),
-                              if (_selectedRole != null) ...[
-                                const SizedBox(width: 8),
-                                Icon(
-                                  _selectedRole!.icon,
-                                  size: 13,
-                                  color: brandBlue,
-                                ),
-                                const SizedBox(width: 3),
-                                Text(
-                                  _selectedRole!.label,
-                                  style: const TextStyle(
-                                    color: brandBlue,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
+                          const _FieldLabel('Email'),
                           const SizedBox(height: 8),
                           TextFormField(
                             controller: _emailController,
-                            focusNode: _emailFocusNode,
                             keyboardType: TextInputType.emailAddress,
-                            style: const TextStyle(color: darkText, fontSize: 14),
+                            style: const TextStyle(
+                              color: darkText,
+                              fontSize: 14,
+                            ),
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
                                 return 'Email is required';
@@ -286,30 +211,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             },
                             decoration: _pillDecoration(
                               hint: 'you@company.com',
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _roleMenuOpen
-                                      ? Icons.keyboard_arrow_up_rounded
-                                      : Icons.keyboard_arrow_down_rounded,
-                                  color: greyText,
-                                ),
-                                onPressed: () {
-                                  setState(() => _roleMenuOpen = !_roleMenuOpen);
-                                  if (_roleMenuOpen) {
-                                    _emailFocusNode.requestFocus();
-                                  }
-                                },
-                              ),
                             ),
-                          ),
-
-                          AnimatedCrossFade(
-                            duration: const Duration(milliseconds: 150),
-                            crossFadeState: _roleMenuOpen
-                                ? CrossFadeState.showFirst
-                                : CrossFadeState.showSecond,
-                            firstChild: _buildRoleList(),
-                            secondChild: const SizedBox(width: double.infinity),
                           ),
 
                           const SizedBox(height: 14),
@@ -318,7 +220,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           TextFormField(
                             controller: _passwordController,
                             obscureText: _obscurePassword,
-                            style: const TextStyle(color: darkText, fontSize: 14),
+                            style: const TextStyle(
+                              color: darkText,
+                              fontSize: 14,
+                            ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Password is required';
@@ -474,14 +379,12 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
                             Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 10),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                              ),
                               child: Text(
                                 'or',
-                                style: TextStyle(
-                                  color: greyText,
-                                  fontSize: 11,
-                                ),
+                                style: TextStyle(color: greyText, fontSize: 11),
                               ),
                             ),
                             Expanded(
@@ -558,73 +461,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildRoleList() {
-    return Container(
-      margin: const EdgeInsets.only(top: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: const [
-          BoxShadow(
-            color: inputShadow,
-            blurRadius: 14,
-            spreadRadius: -4,
-            offset: Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 12, 16, 4),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'LOGIN AS',
-                style: TextStyle(
-                  color: greyText,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.4,
-                ),
-              ),
-            ),
-          ),
-          for (final role in UserRole.values)
-            InkWell(
-              onTap: () => _selectRole(role),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
-                ),
-                child: Row(
-                  children: [
-                    Icon(role.icon, size: 18, color: brandBlue),
-                    const SizedBox(width: 10),
-                    Text(
-                      role.label,
-                      style: const TextStyle(color: darkText, fontSize: 13),
-                    ),
-                    if (_selectedRole == role) ...[
-                      const Spacer(),
-                      const Icon(
-                        Icons.check_rounded,
-                        size: 16,
-                        color: brandBlue,
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          const SizedBox(height: 6),
-        ],
-      ),
-    );
-  }
-
   Widget _buildCountryList() {
     return Container(
       margin: const EdgeInsets.only(top: 8),
@@ -697,7 +533,6 @@ class _LoginScreenState extends State<LoginScreen> {
       onTap: () {
         setState(() {
           _countryMenuOpen = false;
-          _roleMenuOpen = false;
           _isPhoneTab = label == 'Phone No';
         });
       },

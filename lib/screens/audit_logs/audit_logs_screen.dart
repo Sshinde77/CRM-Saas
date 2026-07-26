@@ -101,17 +101,22 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
                         child: Center(
                           child: Text(
                             'No audit logs found for this filter.',
-                            style: TextStyle(color: textSecondary, fontSize: 13),
+                            style: TextStyle(
+                              color: textSecondary,
+                              fontSize: 13,
+                            ),
                           ),
                         ),
                       )
                     else
                       ...entries.asMap().entries.map(
-                            (entry) => Padding(
-                              padding: EdgeInsets.only(bottom: entry.key == entries.length - 1 ? 0 : 14),
-                              child: _auditCard(entry.value),
-                            ),
+                        (entry) => Padding(
+                          padding: EdgeInsets.only(
+                            bottom: entry.key == entries.length - 1 ? 0 : 14,
                           ),
+                          child: _auditCard(entry.value),
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -132,7 +137,11 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
             children: [
               Text(
                 'Audit Logs',
-                style: TextStyle(color: textPrimary, fontSize: 24, fontWeight: FontWeight.w800),
+                style: TextStyle(
+                  color: textPrimary,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
               SizedBox(height: 4),
               Text(
@@ -146,12 +155,18 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(colors: [AppColors.purple, AppColors.blue]),
+            gradient: const LinearGradient(
+              colors: [AppColors.purple, AppColors.blue],
+            ),
             borderRadius: BorderRadius.circular(18),
           ),
           child: const Text(
             'Live trail',
-            style: TextStyle(color: AppColors.primary, fontSize: 13, fontWeight: FontWeight.w700),
+            style: TextStyle(
+              color: AppColors.primary,
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
       ],
@@ -165,11 +180,32 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
 
     return Row(
       children: [
-        Expanded(child: _miniStat('Created', '$created', AppColors.green, Icons.add_circle_outline_rounded)),
+        Expanded(
+          child: _miniStat(
+            'Created',
+            '$created',
+            AppColors.green,
+            Icons.add_circle_outline_rounded,
+          ),
+        ),
         const SizedBox(width: 10),
-        Expanded(child: _miniStat('Updated', '$updated', AppColors.blue, Icons.sync_alt_rounded)),
+        Expanded(
+          child: _miniStat(
+            'Updated',
+            '$updated',
+            AppColors.blue,
+            Icons.sync_alt_rounded,
+          ),
+        ),
         const SizedBox(width: 10),
-        Expanded(child: _miniStat('Alerts', '$alerts', AppColors.orange, Icons.report_problem_outlined)),
+        Expanded(
+          child: _miniStat(
+            'Alerts',
+            '$alerts',
+            AppColors.orange,
+            Icons.report_problem_outlined,
+          ),
+        ),
       ],
     );
   }
@@ -196,11 +232,25 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
             children: [
               Icon(icon, size: 17, color: accent),
               const Spacer(),
-              Text(value, style: TextStyle(color: accent, fontSize: 18, fontWeight: FontWeight.w800)),
+              Text(
+                value,
+                style: TextStyle(
+                  color: accent,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 10),
-          Text(label, style: const TextStyle(color: textSecondary, fontSize: 12, fontWeight: FontWeight.w600)),
+          Text(
+            label,
+            style: const TextStyle(
+              color: textSecondary,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
     );
@@ -223,8 +273,14 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
           ),
           selectedColor: AppColors.purple,
           backgroundColor: AppColors.surfaceSoft,
-          side: BorderSide(color: selected ? AppColors.purple : AppColors.secondary.withValues(alpha: 0.18)),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          side: BorderSide(
+            color: selected
+                ? AppColors.purple
+                : AppColors.secondary.withValues(alpha: 0.18),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
         );
       }).toList(),
     );
@@ -279,49 +335,79 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: entry.accent.withValues(alpha: 0.10),
                         borderRadius: BorderRadius.circular(999),
                       ),
                       child: Text(
                         entry.type,
-                        style: TextStyle(color: entry.accent, fontSize: 12, fontWeight: FontWeight.w800),
+                        style: TextStyle(
+                          color: entry.accent,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         entry.module,
-                        style: const TextStyle(color: textSecondary, fontSize: 12.5, fontWeight: FontWeight.w600),
+                        style: const TextStyle(
+                          color: textSecondary,
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     const SizedBox(width: 8),
                     Text(
                       entry.time,
-                      style: const TextStyle(color: textSecondary, fontSize: 11.5),
+                      style: const TextStyle(
+                        color: textSecondary,
+                        fontSize: 11.5,
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
                 Text(
                   entry.title,
-                  style: const TextStyle(color: textPrimary, fontSize: 16, fontWeight: FontWeight.w800),
+                  style: const TextStyle(
+                    color: textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   entry.detail,
-                  style: const TextStyle(color: textSecondary, fontSize: 13, height: 1.35),
+                  style: const TextStyle(
+                    color: textSecondary,
+                    fontSize: 13,
+                    height: 1.35,
+                  ),
                 ),
                 const SizedBox(height: 10),
                 Row(
                   children: [
-                    Icon(Icons.person_outline_rounded, size: 16, color: entry.accent),
+                    Icon(
+                      Icons.person_outline_rounded,
+                      size: 16,
+                      color: entry.accent,
+                    ),
                     const SizedBox(width: 6),
                     Text(
                       'By ${entry.actor}',
-                      style: TextStyle(color: entry.accent, fontSize: 12.5, fontWeight: FontWeight.w700),
+                      style: TextStyle(
+                        color: entry.accent,
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ],
                 ),

@@ -216,8 +216,8 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                         final crossAxisCount = width >= 1000
                             ? 4
                             : width >= 700
-                                ? 2
-                                : 1;
+                            ? 2
+                            : 1;
 
                         return GridView.count(
                           crossAxisCount: crossAxisCount,
@@ -267,7 +267,9 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.textPrimary.withValues(alpha: 0.04),
+                            color: AppColors.textPrimary.withValues(
+                              alpha: 0.04,
+                            ),
                             blurRadius: 14,
                             offset: const Offset(0, 6),
                           ),
@@ -352,8 +354,9 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                               children: expenses
                                   .map(
                                     (expense) => Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 12),
+                                      padding: const EdgeInsets.only(
+                                        bottom: 12,
+                                      ),
                                       child: _buildExpenseCard(expense),
                                     ),
                                   )
@@ -487,13 +490,16 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                 ),
               ),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: statusColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(20),
-                  border:
-                      Border.all(color: statusColor.withValues(alpha: 0.22)),
+                  border: Border.all(
+                    color: statusColor.withValues(alpha: 0.22),
+                  ),
                 ),
                 child: Text(
                   expense.status,
@@ -513,13 +519,9 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
           const SizedBox(height: 10),
           Row(
             children: [
-              Expanded(
-                child: _infoRow('Date', _formatDate(expense.date)),
-              ),
+              Expanded(child: _infoRow('Date', _formatDate(expense.date))),
               const SizedBox(width: 12),
-              Expanded(
-                child: _infoRow('Amount', _formatMoney(expense.amount)),
-              ),
+              Expanded(child: _infoRow('Amount', _formatMoney(expense.amount))),
             ],
           ),
         ],

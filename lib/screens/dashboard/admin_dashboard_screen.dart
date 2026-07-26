@@ -151,12 +151,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       AppColors.amber,
       onTap: () => _openInventory(context),
     ),
-    _StatItem(
-      'Pending Orders',
-      '6',
-      Icons.schedule,
-      AppColors.blue,
-    ),
+    _StatItem('Pending Orders', '6', Icons.schedule, AppColors.blue),
     _StatItem(
       'Pending Deliveries',
       '9',
@@ -167,10 +162,22 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   // --- Sales trend (daily/monthly/yearly depending on selected range) ---
   final List<double> _salesTrend = const [
-    12000, 15400, 9800, 18200, 22400, 19800, 23242,
+    12000,
+    15400,
+    9800,
+    18200,
+    22400,
+    19800,
+    23242,
   ];
   final List<String> _salesTrendLabels = const [
-    'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun',
+    'Mon',
+    'Tue',
+    'Wed',
+    'Thu',
+    'Fri',
+    'Sat',
+    'Sun',
   ];
 
   // --- Purchase vs Sales comparison ---
@@ -224,8 +231,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         context: context,
         firstDate: DateTime(now.year - 2),
         lastDate: now,
-        initialDateRange: _customRange ??
-            DateTimeRange(start: now.subtract(const Duration(days: 7)), end: now),
+        initialDateRange:
+            _customRange ??
+            DateTimeRange(
+              start: now.subtract(const Duration(days: 7)),
+              end: now,
+            ),
       );
       if (picked == null) return;
       setState(() {
@@ -243,23 +254,33 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   void _openReports(BuildContext context) {
-    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ReportsScreen()));
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const ReportsScreen()));
   }
 
   void _openPurchases(BuildContext context) {
-    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const PurchasesScreen()));
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const PurchasesScreen()));
   }
 
   void _openProducts(BuildContext context) {
-    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ProductsScreen()));
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const ProductsScreen()));
   }
 
   void _openUsers(BuildContext context) {
-    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AdminUserListScreen()));
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const AdminUserListScreen()));
   }
 
   void _openInventory(BuildContext context) {
-    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const InventoryScreen()));
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const InventoryScreen()));
   }
 
   @override
@@ -391,7 +412,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   /// Month, Previous Month, This Financial Year, Previous Financial Year,
   /// Custom Date Range."
   Widget _buildRangeFilterBar() {
-    final label = _selectedRange == DashboardRange.custom && _customRange != null
+    final label =
+        _selectedRange == DashboardRange.custom && _customRange != null
         ? '${_fmtDate(_customRange!.start)} - ${_fmtDate(_customRange!.end)}'
         : null;
 
@@ -400,7 +422,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: DashboardRange.values.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        separatorBuilder: (_, index) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
           final range = DashboardRange.values[index];
           final isSelected = _selectedRange == range;
@@ -718,7 +740,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     required List<_ProductRevenue> items,
     required Color barColor,
   }) {
-    final maxRevenue = items.map((p) => p.revenue).reduce((a, b) => a > b ? a : b);
+    final maxRevenue = items
+        .map((p) => p.revenue)
+        .reduce((a, b) => a > b ? a : b);
 
     return _CardContainer(
       child: Column(
@@ -733,7 +757,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             ),
           ),
           const SizedBox(height: 6),
-          Text(subtitle, style: const TextStyle(color: textSecondary, fontSize: 12)),
+          Text(
+            subtitle,
+            style: const TextStyle(color: textSecondary, fontSize: 12),
+          ),
           const SizedBox(height: 18),
           ...items.map((item) {
             final widthFactor = (item.revenue / maxRevenue).clamp(0.08, 1.0);
@@ -748,7 +775,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       Expanded(
                         child: Text(
                           item.name,
-                          style: const TextStyle(color: textPrimary, fontSize: 13),
+                          style: const TextStyle(
+                            color: textPrimary,
+                            fontSize: 13,
+                          ),
                         ),
                       ),
                       Text(
@@ -766,7 +796,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     child: LinearProgressIndicator(
                       value: widthFactor,
                       minHeight: 10,
-                      backgroundColor: AppColors.secondary.withValues(alpha: 0.14),
+                      backgroundColor: AppColors.secondary.withValues(
+                        alpha: 0.14,
+                      ),
                       valueColor: AlwaysStoppedAnimation<Color>(barColor),
                     ),
                   ),
@@ -894,17 +926,28 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  Widget _outstandingRow(String label, double value, double maxVal, Color color) {
+  Widget _outstandingRow(
+    String label,
+    double value,
+    double maxVal,
+    Color color,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style: const TextStyle(color: textPrimary, fontSize: 13)),
+            Text(
+              label,
+              style: const TextStyle(color: textPrimary, fontSize: 13),
+            ),
             Text(
               'Rs. ${value.toStringAsFixed(0)}',
-              style: const TextStyle(color: textPrimary, fontWeight: FontWeight.w700),
+              style: const TextStyle(
+                color: textPrimary,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ],
         ),
@@ -978,7 +1021,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   // TODO(nav): push the sales-order creation screen once it
                   // exists (BRD 4.7 "Create sales orders").
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('New Order screen not wired yet')),
+                    const SnackBar(
+                      content: Text('New Order screen not wired yet'),
+                    ),
                   );
                 },
               );
@@ -1143,7 +1188,9 @@ class _LineSparklinePainter extends CustomPainter {
     final minVal = values.reduce((a, b) => a < b ? a : b);
     final maxVal = values.reduce((a, b) => a > b ? a : b);
     final range = (maxVal - minVal).abs() < 0.0001 ? 1.0 : (maxVal - minVal);
-    final horizontalStep = values.length == 1 ? size.width : size.width / (values.length - 1);
+    final horizontalStep = values.length == 1
+        ? size.width
+        : size.width / (values.length - 1);
     final points = <Offset>[];
 
     for (var i = 0; i < values.length; i++) {
