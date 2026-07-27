@@ -8,10 +8,8 @@ import '../../widgets/app_drawer.dart';
 import '../../widgets/soft_action_button.dart';
 import '../inventory/inventory_screen.dart';
 import '../products/products_screen.dart';
-import '../profile/admin_profile_screen.dart';
 import '../purchases/purchases_screen.dart';
 import '../reports/reports_screen.dart';
-import '../settings/admin_settings_screen.dart';
 import '../users/admin_user_list_screen.dart';
 
 /// Date-range filters required by BRD section 5 ("Dashboard Charts" filters).
@@ -308,7 +306,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               title: 'Dashboard',
               leadingIcon: Icons.menu_rounded,
               onLeadingTap: () => _scaffoldKey.currentState?.openDrawer(),
-              trailingAvatar: _buildAccountMenu(),
             ),
             Expanded(
               child: RefreshIndicator(
@@ -363,46 +360,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAccountMenu() {
-    return PopupMenuButton<String>(
-      color: AppColors.primary,
-      onSelected: (value) {
-        if (value == 'profile') {
-          Navigator.of(
-            context,
-          ).push(MaterialPageRoute(builder: (_) => const AdminProfileScreen()));
-        }
-        if (value == 'settings') {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const AdminSettingsScreen()),
-          );
-        }
-      },
-      itemBuilder: (context) => const [
-        PopupMenuItem<String>(value: 'profile', child: Text('Profile')),
-        PopupMenuItem<String>(value: 'settings', child: Text('Settings')),
-      ],
-      child: Container(
-        width: 42,
-        height: 42,
-        decoration: BoxDecoration(
-          color: AppColors.surfaceSoft,
-          shape: BoxShape.circle,
-          border: Border.all(color: AppColors.accentGrey),
-        ),
-        alignment: Alignment.center,
-        child: const Text(
-          'AS',
-          style: TextStyle(
-            color: AppColors.accentGrey,
-            fontWeight: FontWeight.w700,
-            fontSize: 12,
-          ),
         ),
       ),
     );

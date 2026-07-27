@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../constants/app_colors.dart';
+import '../../providers/api_provider.dart';
 import '../dashboard/admin_dashboard_screen.dart';
 import '../../services/api_service.dart';
 import 'register_screen.dart';
@@ -51,8 +52,6 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final ApiService _apiService = ApiService();
-
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -76,7 +75,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
-    _apiService.close();
     _emailController.dispose();
     _passwordController.dispose();
     _phoneController.dispose();
@@ -97,7 +95,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() => _isLoading = true);
     try {
-      final message = await _apiService.login(
+      final apiProvider = ApiProviderScope.of(context);
+      final session = await apiProvider.login(
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
@@ -105,7 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      ).showSnackBar(SnackBar(content: Text(session.message)));
       await Future.delayed(const Duration(milliseconds: 700));
       if (!mounted) return;
       Navigator.pushReplacement(

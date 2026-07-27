@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../models/auth_models.dart';
+import '../../providers/api_provider.dart';
 import '../../services/api_service.dart';
 import 'login_screen.dart';
 
@@ -34,8 +36,6 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final ApiService _apiService = ApiService();
-
   int _currentStep = 0;
   bool _isSubmitting = false;
 
@@ -87,7 +87,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   void dispose() {
-    _apiService.close();
     _adminNameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
@@ -126,25 +125,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     setState(() => _isSubmitting = true);
     try {
-      final message = await _apiService.registerOrganization(
-        organizationName: _companyNameController.text.trim(),
-        businessType: _businessType!.trim(),
-        gstNumber: _gstController.text.trim(),
-        panNumber: _panController.text.trim(),
-        address: _billingAddressController.text.trim(),
-        phone: _phoneController.text.trim(),
-        email: _emailController.text.trim(),
-        financialYear: _financialYear!.trim(),
-        logoUrl: _logoFile?.path ?? '',
-        adminName: _adminNameController.text.trim(),
-        password: _passwordController.text,
-        role: 'admin',
+      final apiProvider = ApiProviderScope.of(context);
+      final response = await apiProvider.registerOrganization(
+        request: RegisterOrganizationRequest(
+          organizationName: _companyNameController.text.trim(),
+          businessType: _businessType!.trim(),
+          gstNumber: _gstController.text.trim(),
+          panNumber: _panController.text.trim(),
+          address: _billingAddressController.text.trim(),
+          phone: _phoneController.text.trim(),
+          email: _emailController.text.trim(),
+          financialYear: _financialYear!.trim(),
+          logoUrl: _logoFile?.path ?? '',
+          adminName: _adminNameController.text.trim(),
+          password: _passwordController.text,
+          role: 'admin',
+        ),
       );
 
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      ).showSnackBar(SnackBar(content: Text(response.message)));
       await Future.delayed(const Duration(milliseconds: 700));
       if (!mounted) return;
       Navigator.pushReplacement(
