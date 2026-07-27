@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../constants/app_colors.dart';
 import '../dashboard/admin_dashboard_screen.dart';
 import '../../services/api_service.dart';
 import 'register_screen.dart';
@@ -66,8 +67,8 @@ class _LoginScreenState extends State<LoginScreen> {
   // Gradient-card palette (Uiverse-inspired)
   static const Color cardTopColor = Color(0xFFFFFFFF);
   static const Color cardBottomColor = Color(0xFFF4F7FB);
-  static const Color brandBlue = Color(0xFF1089D3);
-  static const Color brandCyan = Color(0xFF12B1D1);
+  static const Color brandBlue = AppColors.secondary;
+  static const Color brandCyan = Color(0xFFA855F7);
   static const Color darkText = Color(0xFF111827);
   static const Color greyText = Color(0xFFAAAAAA);
   static const Color shadowBlue = Color(0xFF85BDD7);
@@ -257,7 +258,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 child: const Text(
                                   'Forgot Password?',
                                   style: TextStyle(
-                                    color: Color(0xFF0099FF),
+                                    color: AppColors.secondary,
                                     fontSize: 11,
                                   ),
                                 ),
@@ -441,7 +442,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               child: const Text(
                                 'Register here',
                                 style: TextStyle(
-                                  color: Color(0xFF0099FF),
+                                  color: AppColors.secondary,
                                   fontWeight: FontWeight.w700,
                                   fontSize: 12,
                                 ),

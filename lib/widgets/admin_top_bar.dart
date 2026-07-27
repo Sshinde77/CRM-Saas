@@ -25,7 +25,7 @@ class AdminTopBar extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       decoration: const BoxDecoration(
         color: AppColors.primary,
-        border: Border(bottom: BorderSide(color: AppColors.secondary)),
+        border: Border(bottom: BorderSide(color: AppColors.accentGrey)),
       ),
       child: Row(
         children: [
@@ -35,7 +35,7 @@ class AdminTopBar extends StatelessWidget {
             child: SizedBox(
               width: 40,
               height: 40,
-              child: Icon(leadingIcon, color: AppColors.secondary, size: 30),
+              child: Icon(leadingIcon, color: AppColors.accentGrey, size: 30),
             ),
           ),
           const SizedBox(width: 12),
@@ -90,13 +90,13 @@ class _DefaultAvatar extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surfaceSoft,
         shape: BoxShape.circle,
-        border: Border.all(color: AppColors.secondary),
+        border: Border.all(color: AppColors.accentGrey),
       ),
       alignment: Alignment.center,
       child: const Text(
         'AS',
         style: TextStyle(
-          color: AppColors.secondary,
+          color: AppColors.accentGrey,
           fontWeight: FontWeight.w700,
           fontSize: 12,
         ),

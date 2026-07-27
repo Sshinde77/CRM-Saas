@@ -393,13 +393,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         decoration: BoxDecoration(
           color: AppColors.surfaceSoft,
           shape: BoxShape.circle,
-          border: Border.all(color: AppColors.secondary),
+          border: Border.all(color: AppColors.accentGrey),
         ),
         alignment: Alignment.center,
         child: const Text(
           'AS',
           style: TextStyle(
-            color: AppColors.purple,
+            color: AppColors.accentGrey,
             fontWeight: FontWeight.w700,
             fontSize: 12,
           ),
@@ -434,10 +434,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             label: Text(text),
             selected: isSelected,
             onSelected: (_) => _onRangeSelected(range),
-            selectedColor: AppColors.purple.withValues(alpha: 0.14),
+            selectedColor: AppColors.secondary.withValues(alpha: 0.14),
             backgroundColor: AppColors.surfaceSoft,
             labelStyle: TextStyle(
-              color: isSelected ? AppColors.purple : textSecondary,
+              color: isSelected ? AppColors.secondary : textSecondary,
               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               fontSize: 12,
             ),
@@ -445,7 +445,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               borderRadius: BorderRadius.circular(999),
               side: BorderSide(
                 color: isSelected
-                    ? AppColors.purple
+                    ? AppColors.secondary
                     : AppColors.secondary.withValues(alpha: 0.2),
               ),
             ),
