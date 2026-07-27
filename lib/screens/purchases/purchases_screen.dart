@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../../constants/app_colors.dart';
 import '../../widgets/admin_top_bar.dart';
@@ -37,7 +37,7 @@ class _PurchaseInvoice {
   int get itemCount => items.length;
 }
 
-/// Purchase Invoices screen — styled with colored stat chips (Total Amount /
+/// Purchase Invoices screen â€” styled with colored stat chips (Total Amount /
 /// Items) inside each card instead of a plain divider + text list, to look
 /// distinct from the flat reference layout while keeping the same info.
 class PurchasesScreen extends StatefulWidget {
@@ -53,7 +53,7 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
   static const Color textPrimary = AppColors.textPrimary;
   static const Color textSecondary = AppColors.textSecondary;
 
-  // Mock data — replace with your providers / API calls.
+  // Mock data â€” replace with your providers / API calls.
   final List<_PurchaseInvoice> _invoices = [
     _PurchaseInvoice(
       poNumber: 'PO-2024-001',
@@ -251,7 +251,7 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
     );
   }
 
-  // ---------------- Invoice card (distinct layout — colored stat chips) ----------------
+  // ---------------- Invoice card (distinct layout â€” colored stat chips) ----------------
   Widget _invoiceCard(_PurchaseInvoice invoice, int index) {
     return Container(
       width: double.infinity,
@@ -392,7 +392,7 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '₹${_formatMoney(invoice.totalAmount)}',
+                        'â‚¹${_formatMoney(invoice.totalAmount)}',
                         style: const TextStyle(
                           color: AppColors.purple,
                           fontSize: 16,
@@ -578,8 +578,9 @@ class _PurchaseInvoiceFormDialogState
           : null;
     });
 
-    if (_supplierError != null || _poNumberError != null || _itemsError != null)
+    if (_supplierError != null || _poNumberError != null || _itemsError != null) {
       return;
+    }
 
     final items = validItems
         .map(
@@ -663,8 +664,9 @@ class _PurchaseInvoiceFormDialogState
                       controller: _supplierController,
                       autofocus: !_isEditing,
                       onChanged: (_) {
-                        if (_supplierError != null)
+                        if (_supplierError != null) {
                           setState(() => _supplierError = null);
+                        }
                       },
                       decoration: _decoration(
                         hint: 'e.g. Prime Manufacturing',
@@ -683,8 +685,9 @@ class _PurchaseInvoiceFormDialogState
                               TextField(
                                 controller: _poNumberController,
                                 onChanged: (_) {
-                                  if (_poNumberError != null)
+                                  if (_poNumberError != null) {
                                     setState(() => _poNumberError = null);
+                                  }
                                 },
                                 decoration: _decoration(
                                   hint: 'e.g. PO-2024-003',
@@ -808,7 +811,7 @@ class _PurchaseInvoiceFormDialogState
                             ),
                           ),
                           Text(
-                            '₹${_totalAmount.toStringAsFixed(2)}',
+                            'â‚¹${_totalAmount.toStringAsFixed(2)}',
                             style: const TextStyle(
                               color: AppColors.purple,
                               fontSize: 16,
@@ -934,7 +937,7 @@ class _PurchaseInvoiceFormDialogState
                 SizedBox(
                   width: 80,
                   child: Text(
-                    '₹${row.lineTotal.toStringAsFixed(0)}',
+                    'â‚¹${row.lineTotal.toStringAsFixed(0)}',
                     textAlign: TextAlign.right,
                     style: const TextStyle(
                       color: textPrimary,
@@ -991,3 +994,5 @@ class _PurchaseInvoiceFormDialogState
     );
   }
 }
+
+

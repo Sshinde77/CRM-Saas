@@ -1,6 +1,8 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../../constants/app_colors.dart';
+import '../../models/app_user.dart';
+import '../../services/api_service.dart';
 import '../../widgets/admin_top_bar.dart';
 import '../../widgets/app_drawer.dart';
 import '../../widgets/soft_action_button.dart';
@@ -15,81 +17,90 @@ class AdminUserListScreen extends StatefulWidget {
 class _AdminUserListScreenState extends State<AdminUserListScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
+  late final ApiService _apiService;
+  late Future<List<AppUser>> _usersFuture;
 
   static const Color textPrimary = AppColors.textPrimary;
   static const Color textSecondary = AppColors.textSecondary;
 
   String _query = '';
 
-  final List<_UserRecord> _users = [
-    _UserRecord(
-      name: 'Anita Sharma',
-      role: 'Super Admin',
-      status: 'Active',
-      email: 'anita@demo.com',
-      phone: '+91 98220 33445',
-    ),
-    _UserRecord(
-      name: 'Vikram Singh',
-      role: 'Sales Officer',
-      status: 'Active',
-      email: 'vikram@demo.com',
-      phone: '+91 98765 43210',
-    ),
-    _UserRecord(
-      name: 'Suresh Kumar',
-      role: 'Delivery Partner',
-      status: 'Inactive',
-      email: 'suresh@demo.com',
-      phone: '+91 98111 22334',
-    ),
-    _UserRecord(
-      name: 'Priya Nair',
-      role: 'Accountant',
-      status: 'Active',
-      email: 'priya@demo.com',
-      phone: '+91 98700 11009',
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _apiService = ApiService();
+    _usersFuture = _apiService.fetchUsers();
+  }
 
   @override
   void dispose() {
+    _apiService.close();
     _searchController.dispose();
     super.dispose();
   }
 
-  List<_UserRecord> get _filteredUsers {
-    return _users.where((user) {
+  List<AppUser> _filteredUsers(List<AppUser> users) {
+    return users.where((user) {
       final query = _query.trim().toLowerCase();
-      if (query.isEmpty) return true;
+      if (query.isEmpty) {
+        return true;
+      }
+
       return user.name.toLowerCase().contains(query) ||
-          user.role.toLowerCase().contains(query) ||
-          user.status.toLowerCase().contains(query) ||
+          _formatRole(user.role).toLowerCase().contains(query) ||
+          _statusLabel(user).toLowerCase().contains(query) ||
           user.email.toLowerCase().contains(query) ||
-          user.phone.toLowerCase().contains(query);
+          (user.phone ?? '').toLowerCase().contains(query);
     }).toList();
   }
 
-  int get _activeUserCount =>
-      _users.where((user) => user.status == 'Active').length;
+  int _activeUserCount(List<AppUser> users) {
+    return users.where((user) => user.isActive == true).length;
+  }
 
-  Future<void> _openUserDialog({_UserRecord? existing, int? index}) async {
-    final result = await showDialog<_UserRecord>(
-      context: context,
-      builder: (_) => _UserFormDialog(existing: existing),
-    );
-    if (result == null) return;
-
+  void _refreshUsers() {
     setState(() {
-      if (index != null) {
-        _users[index] = result;
-      } else {
-        _users.add(result);
-      }
+      _usersFuture = _apiService.fetchUsers();
     });
   }
 
-  Future<void> _confirmDelete(_UserRecord user, int index) async {
+  String _formatRole(String? role) {
+    final value = role?.trim() ?? '';
+    if (value.isEmpty) {
+      return 'No role assigned';
+    }
+
+    return value
+        .split('_')
+        .where((part) => part.isNotEmpty)
+        .map(
+          (part) =>
+              '${part[0].toUpperCase()}${part.substring(1).toLowerCase()}',
+        )
+        .join(' ');
+  }
+
+  String _statusLabel(AppUser user) {
+    return user.isActive == true ? 'Active' : 'Inactive';
+  }
+
+  Future<void> _openUserDialog({AppUser? existing, int? index}) async {
+    final result = await showDialog<_DialogUserRecord>(
+      context: context,
+      builder: (_) => _UserFormDialog(existing: existing),
+    );
+    if (result == null) {
+      return;
+    }
+
+    _showMessage(
+      existing == null
+          ? 'Add user is not connected to the backend yet.'
+          : 'Edit user is not connected to the backend yet.',
+    );
+  }
+
+  Future<void> _confirmDelete(AppUser user, int index) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
@@ -100,7 +111,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
           style: TextStyle(color: textPrimary, fontWeight: FontWeight.w700),
         ),
         content: Text(
-          'This will remove ${user.name} from the user list.',
+          'This will remove ${user.name.trim().isEmpty ? 'this user' : user.name} from the user list.',
           style: const TextStyle(color: textSecondary),
         ),
         actions: [
@@ -118,11 +129,11 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
     );
 
     if (confirmed == true) {
-      setState(() => _users.removeAt(index));
+      _showMessage('Delete user is not connected to the backend yet.');
     }
   }
 
-  void _showUserDetails(_UserRecord user) {
+  void _showUserDetails(AppUser user) {
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.primary,
@@ -137,7 +148,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                user.name,
+                user.name.trim().isEmpty ? 'Unnamed user' : user.name,
                 style: const TextStyle(
                   color: textPrimary,
                   fontSize: 18,
@@ -145,15 +156,31 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              _detailRow('Role', user.role),
-              _detailRow('Status', user.status),
-              _detailRow('Email', user.email),
-              _detailRow('Phone', user.phone),
+              _detailRow('Role', _formatRole(user.role)),
+              _detailRow('Status', _statusLabel(user)),
+              _detailRow(
+                'Email',
+                user.email.trim().isEmpty ? 'No email' : user.email,
+              ),
+              _detailRow(
+                'Phone',
+                (user.phone ?? '').trim().isEmpty ? 'No phone' : user.phone!.trim(),
+              ),
             ],
           ),
         );
       },
     );
+  }
+
+  void _showMessage(String message) {
+    if (!mounted) {
+      return;
+    }
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   Widget _detailRow(String label, String value) {
@@ -185,8 +212,6 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final users = _filteredUsers;
-
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: AppColors.primary,
@@ -203,53 +228,73 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
               onLeadingTap: () => _scaffoldKey.currentState?.openDrawer(),
             ),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+              child: FutureBuilder<List<AppUser>>(
+                future: _usersFuture,
+                builder: (context, snapshot) {
+                  final allUsers = snapshot.data ?? const <AppUser>[];
+                  final users = _filteredUsers(allUsers);
+
+                  return SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'User Directory',
-                                style: TextStyle(
-                                  color: textPrimary,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.w800,
-                                ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'User Directory',
+                                    style: TextStyle(
+                                      color: textPrimary,
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  SizedBox(height: 4),
+                                  Text(
+                                    'Search, add, and manage user accounts',
+                                    style: TextStyle(
+                                      color: textSecondary,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              SizedBox(height: 4),
-                              Text(
-                                'Search, add, and manage user accounts',
-                                style: TextStyle(
-                                  color: textSecondary,
-                                  fontSize: 13,
-                                ),
+                            ),
+                            const SizedBox(width: 12),
+                            SoftActionButton(
+                              label: 'Add User',
+                              icon: Icons.person_add_alt_1_rounded,
+                              onPressed: () => _openUserDialog(),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        _buildSummaryCard(allUsers),
+                        const SizedBox(height: 16),
+                        _buildSearchField(),
+                        const SizedBox(height: 16),
+                        if (snapshot.connectionState == ConnectionState.waiting)
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 40),
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: AppColors.purple,
                               ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        SoftActionButton(
-                          label: 'Add User',
-                          icon: Icons.person_add_alt_1_rounded,
-                          onPressed: () => _openUserDialog(),
-                        ),
+                            ),
+                          )
+                        else if (snapshot.hasError)
+                          _buildUsersError(snapshot.error.toString())
+                        else
+                          _buildUserList(users, allUsers),
                       ],
                     ),
-                    const SizedBox(height: 20),
-                    _buildSummaryCard(),
-                    const SizedBox(height: 16),
-                    _buildSearchField(),
-                    const SizedBox(height: 16),
-                    _buildUserList(users),
-                  ],
-                ),
+                  );
+                },
               ),
             ),
           ],
@@ -258,7 +303,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
     );
   }
 
-  Widget _buildSummaryCard() {
+  Widget _buildSummaryCard(List<AppUser> users) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -279,7 +324,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
           Expanded(
             child: _statTile(
               label: 'Total Users',
-              value: '${_users.length}',
+              value: '${users.length}',
               icon: Icons.people_alt_outlined,
               color: AppColors.purple,
             ),
@@ -288,7 +333,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
           Expanded(
             child: _statTile(
               label: 'Active Users',
-              value: '$_activeUserCount',
+              value: '${_activeUserCount(users)}',
               icon: Icons.verified_user_outlined,
               color: AppColors.green,
             ),
@@ -381,20 +426,82 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
     );
   }
 
-  Widget _buildUserList(List<_UserRecord> users) {
+  Widget _buildUsersError(String message) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.primary,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.secondary.withValues(alpha: 0.18)),
+      ),
+      child: Column(
+        children: [
+          const Icon(
+            Icons.cloud_off_rounded,
+            color: textSecondary,
+            size: 42,
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            'Could not load users',
+            style: TextStyle(
+              color: textPrimary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: textSecondary, fontSize: 12),
+          ),
+          const SizedBox(height: 14),
+          SoftActionButton(
+            label: 'Retry',
+            icon: Icons.refresh_rounded,
+            onPressed: _refreshUsers,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUserList(List<AppUser> users, List<AppUser> allUsers) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Users',
-          style: TextStyle(
-            color: textPrimary,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-          ),
+        Row(
+          children: [
+            Text(
+              'Users (${allUsers.length})',
+              style: const TextStyle(
+                color: textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const Spacer(),
+            IconButton(
+              onPressed: _refreshUsers,
+              icon: const Icon(Icons.refresh_rounded),
+              color: AppColors.purple,
+              tooltip: 'Refresh users',
+            ),
+          ],
         ),
         const SizedBox(height: 16),
-        if (users.isEmpty)
+        if (allUsers.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 24),
+            child: Center(
+              child: Text(
+                'No users available.',
+                style: TextStyle(color: textSecondary),
+              ),
+            ),
+          )
+        else if (users.isEmpty)
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 24),
             child: Center(
@@ -406,7 +513,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
           )
         else
           ...users.asMap().entries.map((entry) {
-            final index = _users.indexOf(entry.value);
+            final index = allUsers.indexOf(entry.value);
             return Padding(
               padding: const EdgeInsets.only(bottom: 14),
               child: _userCard(entry.value, index),
@@ -416,10 +523,23 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
     );
   }
 
-  Widget _userCard(_UserRecord user, int index) {
-    final statusColor = user.status == 'Active'
+  Widget _userCard(AppUser user, int index) {
+    final statusColor = user.isActive == true
         ? AppColors.green
         : AppColors.textSecondary;
+    final displayName = user.name.trim().isEmpty ? 'Unnamed user' : user.name;
+    final displayEmail = user.email.trim().isEmpty ? 'No email' : user.email;
+    final displayPhone = (user.phone ?? '').trim().isEmpty
+        ? 'No phone'
+        : user.phone!.trim();
+    final roleLabel = _formatRole(user.role);
+    final statusLabel = _statusLabel(user);
+    final initials = displayName
+        .split(' ')
+        .where((part) => part.isNotEmpty)
+        .take(2)
+        .map((part) => part[0].toUpperCase())
+        .join();
 
     return Container(
       width: double.infinity,
@@ -444,7 +564,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
                 ),
                 alignment: Alignment.center,
                 child: Text(
-                  user.name.isEmpty ? '?' : user.name[0].toUpperCase(),
+                  initials.isEmpty ? '?' : initials,
                   style: const TextStyle(
                     color: AppColors.purple,
                     fontWeight: FontWeight.w800,
@@ -458,7 +578,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      user.name,
+                      displayName,
                       style: const TextStyle(
                         color: textPrimary,
                         fontSize: 15,
@@ -467,7 +587,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      user.email,
+                      displayEmail,
                       style: const TextStyle(
                         color: textSecondary,
                         fontSize: 12.5,
@@ -476,25 +596,25 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
                   ],
                 ),
               ),
-              _statusChip(user.status, statusColor),
+              _statusChip(statusLabel, statusColor),
             ],
           ),
           const SizedBox(height: 16),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(child: _infoText('Role', user.role)),
+              Expanded(child: _infoText('Role', roleLabel)),
               const SizedBox(width: 12),
-              Expanded(child: _infoText('Phone', user.phone)),
+              Expanded(child: _infoText('Phone', displayPhone)),
             ],
           ),
           const SizedBox(height: 10),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(child: _infoText('Email', user.email)),
+              Expanded(child: _infoText('Email', displayEmail)),
               const SizedBox(width: 12),
-              Expanded(child: _infoText('Status', user.status)),
+              Expanded(child: _infoText('Status', statusLabel)),
             ],
           ),
           const SizedBox(height: 14),
@@ -601,14 +721,14 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
   }
 }
 
-class _UserRecord {
+class _DialogUserRecord {
   final String name;
   final String role;
   final String status;
   final String email;
   final String phone;
 
-  const _UserRecord({
+  const _DialogUserRecord({
     required this.name,
     required this.role,
     required this.status,
@@ -618,7 +738,7 @@ class _UserRecord {
 }
 
 class _UserFormDialog extends StatefulWidget {
-  final _UserRecord? existing;
+  final AppUser? existing;
 
   const _UserFormDialog({this.existing});
 
@@ -650,8 +770,28 @@ class _UserFormDialogState extends State<_UserFormDialog> {
     _nameController.text = existing?.name ?? '';
     _emailController.text = existing?.email ?? '';
     _phoneController.text = existing?.phone ?? '';
-    _role = existing?.role ?? _roles.first;
-    _status = existing?.status ?? 'Active';
+    _role = existing == null
+        ? _roles.first
+        : _formatDialogRole(existing.role);
+    _status = existing?.isActive == false ? 'Inactive' : 'Active';
+  }
+
+  String _formatDialogRole(String? role) {
+    final value = role?.trim() ?? '';
+    if (value.isEmpty) {
+      return _roles.first;
+    }
+
+    final formatted = value
+        .split('_')
+        .where((part) => part.isNotEmpty)
+        .map(
+          (part) =>
+              '${part[0].toUpperCase()}${part.substring(1).toLowerCase()}',
+        )
+        .join(' ');
+
+    return _roles.contains(formatted) ? formatted : _roles.first;
   }
 
   @override
@@ -770,7 +910,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
                         return;
                       }
                       Navigator.of(context).pop(
-                        _UserRecord(
+                        _DialogUserRecord(
                           name: name,
                           role: _role,
                           status: _status,
@@ -869,7 +1009,9 @@ class _UserFormDialogState extends State<_UserFormDialog> {
               )
               .toList(),
           onChanged: (selected) {
-            if (selected != null) onChanged(selected);
+            if (selected != null) {
+              onChanged(selected);
+            }
           },
         ),
       ),

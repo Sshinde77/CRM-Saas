@@ -1,6 +1,8 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../../constants/app_colors.dart';
+import '../../models/app_user.dart';
+import '../../services/api_service.dart';
 import '../../widgets/admin_top_bar.dart';
 import '../../widgets/app_drawer.dart';
 import '../../widgets/soft_action_button.dart';
@@ -17,17 +19,13 @@ class AdminUserManagementScreen extends StatefulWidget {
 
 class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  late final ApiService _apiService;
+  late Future<List<AppUser>> _usersFuture;
 
   static const Color textPrimary = AppColors.textPrimary;
   static const Color textSecondary = AppColors.textSecondary;
 
   int _tabIndex = 0;
-  final List<_UserItem> _users = [
-    _UserItem('Anita Sharma', 'admin@demo.com'),
-    _UserItem('Vikram Singh', 'sales@demo.com'),
-    _UserItem('Suresh Kumar', 'delivery@demo.com'),
-    _UserItem('Priya Nair', 'accountant@demo.com'),
-  ];
 
   final List<String> _roles = [
     'Super Admin',
@@ -61,7 +59,56 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
   @override
   void initState() {
     super.initState();
+    _apiService = ApiService();
+    _usersFuture = _apiService.fetchUsers();
     _tabIndex = widget.initialTabIndex.clamp(0, 1).toInt();
+  }
+
+  @override
+  void dispose() {
+    _apiService.close();
+    super.dispose();
+  }
+
+  void _refreshUsers() {
+    setState(() {
+      _usersFuture = _apiService.fetchUsers();
+    });
+  }
+
+  String _formatRole(String? role) {
+    final value = role?.trim() ?? '';
+    if (value.isEmpty) return 'No role assigned';
+
+    return value
+        .split('_')
+        .where((part) => part.isNotEmpty)
+        .map(
+          (part) =>
+              '${part[0].toUpperCase()}${part.substring(1).toLowerCase()}',
+        )
+        .join(' ');
+  }
+
+  String _formatJoinedDate(DateTime? createdAt) {
+    if (createdAt == null) return 'Unknown join date';
+
+    final local = createdAt.toLocal();
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return 'Joined ${local.day} ${months[local.month - 1]} ${local.year}';
   }
 
   @override
@@ -158,31 +205,118 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
   }
 
   Widget _buildUsersSection() {
-    return _buildCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Align(
-            alignment: Alignment.centerRight,
-            child: ElevatedButton.icon(
-              onPressed: _openAddUserDialog,
-              icon: const Icon(Icons.person_add_alt_1_rounded),
-              label: const Text('Add User'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.purple,
-                foregroundColor: AppColors.primary,
-                elevation: 0,
+    return FutureBuilder<List<AppUser>>(
+      future: _usersFuture,
+      builder: (context, snapshot) {
+        return _buildCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      snapshot.hasData
+                          ? 'Users (${snapshot.data!.length})'
+                          : 'Users',
+                      style: const TextStyle(
+                        color: textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: _refreshUsers,
+                    icon: const Icon(Icons.refresh_rounded),
+                    color: AppColors.purple,
+                    tooltip: 'Refresh users',
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton.icon(
+                    onPressed: _openAddUserDialog,
+                    icon: const Icon(Icons.person_add_alt_1_rounded),
+                    label: const Text('Add User'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.purple,
+                      foregroundColor: AppColors.primary,
+                      elevation: 0,
+                    ),
+                  ),
+                ],
               ),
-            ),
+              const SizedBox(height: 16),
+              if (snapshot.connectionState == ConnectionState.waiting)
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(24),
+                    child: CircularProgressIndicator(color: AppColors.purple),
+                  ),
+                )
+              else if (snapshot.hasError)
+                _buildUsersError(snapshot.error.toString())
+              else if (!snapshot.hasData || snapshot.data!.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24),
+                  child: Center(
+                    child: Text(
+                      'No users available.',
+                      style: TextStyle(color: textSecondary),
+                    ),
+                  ),
+                )
+              else
+                ...snapshot.data!.map(_buildUserTile),
+            ],
           ),
-          const SizedBox(height: 16),
-          ..._users.map(_buildUserTile),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildUserTile(_UserItem user) {
+  Widget _buildUsersError(String message) {
+    return Column(
+      children: [
+        const SizedBox(height: 8),
+        const Icon(
+          Icons.cloud_off_rounded,
+          color: textSecondary,
+          size: 40,
+        ),
+        const SizedBox(height: 10),
+        const Text(
+          'Could not load users',
+          style: TextStyle(
+            color: textPrimary,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          message,
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: textSecondary, fontSize: 12),
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton(
+          onPressed: _refreshUsers,
+          child: const Text('Retry'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildUserTile(AppUser user) {
+    final initials = user.name.trim().isEmpty
+        ? '?'
+        : user.name
+            .trim()
+            .split(' ')
+            .where((part) => part.isNotEmpty)
+            .take(2)
+            .map((part) => part[0].toUpperCase())
+            .join();
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
@@ -199,7 +333,14 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
               color: AppColors.purple.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.person_outline, color: AppColors.purple),
+            alignment: Alignment.center,
+            child: Text(
+              initials,
+              style: const TextStyle(
+                color: AppColors.purple,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -207,15 +348,80 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  user.name,
+                  user.name.trim().isEmpty ? 'Unnamed user' : user.name,
                   style: const TextStyle(
                     color: textPrimary,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 2),
-                Text(user.email, style: const TextStyle(color: textSecondary)),
+                Text(
+                  user.email.trim().isEmpty ? 'No email' : user.email,
+                  style: const TextStyle(color: textSecondary),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _buildMetaChip(
+                      icon: Icons.badge_outlined,
+                      label: _formatRole(user.role),
+                    ),
+                    if ((user.phone ?? '').trim().isNotEmpty)
+                      _buildMetaChip(
+                        icon: Icons.call_outlined,
+                        label: user.phone!.trim(),
+                      ),
+                    _buildMetaChip(
+                      icon: Icons.calendar_today_outlined,
+                      label: _formatJoinedDate(user.createdAt),
+                    ),
+                  ],
+                ),
               ],
+            ),
+          ),
+          if (user.isActive != null)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: (user.isActive! ? AppColors.green : AppColors.red)
+                    .withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                user.isActive! ? 'Active' : 'Inactive',
+                style: TextStyle(
+                  color: user.isActive! ? AppColors.green : AppColors.red,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMetaChip({required IconData icon, required String label}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: AppColors.primary,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: textSecondary),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: const TextStyle(
+              color: textSecondary,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -313,13 +519,23 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
     );
   }
 
+  void _showMessage(String message) {
+    if (!mounted) {
+      return;
+    }
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
   Future<void> _openAddUserDialog() async {
-    final user = await showDialog<_UserItem>(
+    final user = await showDialog<_DialogUserItem>(
       context: context,
       builder: (_) => const _AddUserDialog(),
     );
     if (user == null) return;
-    setState(() => _users.add(user));
+    _showMessage('Local add user dialog is not connected to the backend yet.');
   }
 
   Future<void> _openCreateRoleDialog() async {
@@ -360,11 +576,11 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
   }
 }
 
-class _UserItem {
+class _DialogUserItem {
   final String name;
   final String email;
 
-  const _UserItem(this.name, this.email);
+  const _DialogUserItem(this.name, this.email);
 }
 
 class _AddUserDialog extends StatefulWidget {
@@ -414,7 +630,7 @@ class _AddUserDialogState extends State<_AddUserDialog> {
             final name = _nameController.text.trim();
             final email = _emailController.text.trim();
             if (name.isEmpty || email.isEmpty) return;
-            Navigator.of(context).pop(_UserItem(name, email));
+            Navigator.of(context).pop(_DialogUserItem(name, email));
           },
           child: const Text('Add'),
         ),
@@ -462,3 +678,5 @@ class _CreateRoleDialogState extends State<_CreateRoleDialog> {
     );
   }
 }
+
+

@@ -3,6 +3,7 @@ class ApiConstants {
 
   static const String baseUrl = 'https://crm-saas-backend-9nom.onrender.com';
   static const Duration requestTimeout = Duration(seconds: 20);
+  static const Duration loginRequestTimeout = Duration(seconds: 60);
 
   static const String acceptHeader = 'accept';
   static const String authorizationHeader = 'Authorization';
@@ -32,6 +33,7 @@ class ApiEndpoints {
   static const String authRegister = '/auth/register';
   static const String authMe = '/auth/me';
   static const String authLogout = '/auth/logout';
+  static const String plans = '/plans';
 
   static const String dashboard = '/dashboard';
   static const String users = '/users';
@@ -47,3 +49,5 @@ class ApiEndpoints {
   static const String adminSettings = '/settings/admin';
   static const String auditLogs = '/audit-logs';
 }
+
+

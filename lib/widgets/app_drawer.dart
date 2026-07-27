@@ -10,6 +10,7 @@ import '../screens/purchases/purchases_screen.dart';
 import '../screens/reports/reports_screen.dart';
 import '../screens/settings/admin_settings_screen.dart';
 import '../screens/settings/company_settings_screen.dart';
+import '../screens/settings/plans_screen.dart';
 import '../screens/users/admin_user_list_screen.dart';
 import '../screens/invoices/invoices_screen.dart';
 import '../screens/deliveries/deliveries_screen.dart';
@@ -32,13 +33,16 @@ class AppDrawer extends StatefulWidget {
 
   static const Color purple = AppColors.purple;
   static const Color blue = AppColors.blue;
-  static const Color accent = purple;
-  static const Color textPrimary = AppColors.textPrimary;
-  static const Color textSecondary = AppColors.textSecondary;
+  static const Color accent = AppColors.secondary;
+  static const Color drawerBackground = Color(0xFFF7F1FF);
+  static const Color drawerSurface = Color(0xFFEFE4FF);
+  static const Color textPrimary = Color(0xFF2F1A4B);
+  static const Color textSecondary = Color(0xFF6F5A91);
 
   static const List<_NavItem> _navItems = [
     _NavItem('Dashboard', Icons.dashboard_outlined),
     _NavItem('Company Settings', Icons.storefront_outlined),
+    _NavItem('Plans', Icons.workspace_premium_outlined),
     _NavItem('User Management', Icons.people_outline_rounded),
     _NavItem('Products', Icons.inventory_2_outlined),
     _NavItem('Inventory', Icons.warehouse_outlined),
@@ -58,7 +62,7 @@ class AppDrawer extends StatefulWidget {
 }
 
 class _AppDrawerState extends State<AppDrawer> {
-  static const Color accent = AppColors.purple;
+  static const Color accent = AppDrawer.accent;
 
   void _handleTap(_NavItem item) {
     Navigator.of(context).pop();
@@ -73,6 +77,11 @@ class _AppDrawerState extends State<AppDrawer> {
       case 'Company Settings':
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const CompanySettingsScreen()),
+        );
+        break;
+      case 'Plans':
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const PlansScreen()),
         );
         break;
       case 'Settings':
@@ -159,13 +168,8 @@ class _AppDrawerState extends State<AppDrawer> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
               color: isActive
-                  ? accent.withValues(alpha: 0.16)
-                  : Colors.transparent,
-              border: Border.all(
-                color: isActive
-                    ? accent.withValues(alpha: 0.32)
-                    : AppDrawer.textPrimary.withValues(alpha: 0.06),
-              ),
+                  ? accent.withValues(alpha: 0.18)
+                  : AppColors.primary.withValues(alpha: 0.72),
             ),
             child: Row(
               children: [
@@ -180,7 +184,7 @@ class _AppDrawerState extends State<AppDrawer> {
                     item.label,
                     style: TextStyle(
                       color: isActive
-                          ? AppDrawer.textPrimary
+                          ? accent
                           : AppDrawer.textSecondary,
                       fontSize: 14,
                       fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
@@ -207,7 +211,7 @@ class _AppDrawerState extends State<AppDrawer> {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      backgroundColor: AppColors.primary,
+      backgroundColor: AppDrawer.drawerBackground,
       width: 280,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
@@ -228,7 +232,9 @@ class _AppDrawerState extends State<AppDrawer> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
                       gradient: const LinearGradient(
-                        colors: [AppDrawer.purple, AppDrawer.blue],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [AppDrawer.accent, AppDrawer.blue],
                       ),
                     ),
                     child: const Icon(
@@ -295,7 +301,7 @@ class _AppDrawerState extends State<AppDrawer> {
                     height: 38,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: AppDrawer.purple.withValues(alpha: 0.15),
+                      color: AppDrawer.accent.withValues(alpha: 0.14),
                     ),
                     alignment: Alignment.center,
                     child: const Text(
