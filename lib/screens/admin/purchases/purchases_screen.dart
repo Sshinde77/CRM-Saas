@@ -204,7 +204,7 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                           icon: const Icon(Icons.add_rounded, size: 18),
                           label: const Text('Add Invoice'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.purple,
+                            backgroundColor: AppColors.secondary,
                             foregroundColor: AppColors.primary,
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(

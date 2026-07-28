@@ -145,7 +145,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                           icon: const Icon(Icons.download_rounded, size: 18),
                           label: const Text('Download All'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.purple,
+                            backgroundColor: AppColors.secondary,
                             foregroundColor: AppColors.primary,
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(
