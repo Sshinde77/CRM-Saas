@@ -474,11 +474,11 @@ class _InventoryScreenState extends State<InventoryScreen> {
               width: 150,
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
-                color: selected ? AppColors.purple : AppColors.surfaceSoft,
+                color: selected ? AppColors.secondary : AppColors.surfaceSoft,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: selected
-                      ? AppColors.purple
+                      ? AppColors.secondary
                       : AppColors.secondary.withValues(alpha: 0.2),
                 ),
               ),

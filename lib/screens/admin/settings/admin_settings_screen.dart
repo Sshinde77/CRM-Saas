@@ -113,7 +113,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                         ElevatedButton(
                           onPressed: _saving ? null : _handleSave,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.purple,
+                            backgroundColor: AppColors.secondary,
                             foregroundColor: AppColors.primary,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
