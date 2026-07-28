@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../constants/app_colors.dart';
 import '../../models/auth_models.dart';
 import '../../providers/api_provider.dart';
 import '../../services/api_service.dart';
@@ -68,8 +69,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   // Gradient-card palette (Uiverse-inspired) — matches login_screen.dart
   static const Color cardTopColor = Color(0xFFFFFFFF);
   static const Color cardBottomColor = Color(0xFFF4F7FB);
-  static const Color brandBlue = Color(0xFF1089D3);
-  static const Color brandCyan = Color(0xFF12B1D1);
+  static const Color brandBlue = AppColors.secondary;
+  static const Color brandCyan = Color(0xFFA855F7);
   static const Color darkText = Color(0xFF111827);
   static const Color greyText = Color(0xFFAAAAAA);
   static const Color shadowBlue = Color(0xFF85BDD7);
@@ -105,48 +106,45 @@ class _RegisterScreenState extends State<RegisterScreen> {
     try {
       final picker = ImagePicker();
       final picked = await picker.pickImage(source: ImageSource.gallery);
+      if (!mounted) return;
       if (picked != null) setState(() => _logoFile = picked);
-    } catch (_) {
-      // TODO(ux): surface a snackbar if picker permissions are denied.
+    } catch (error) {
+      if (!mounted) return;
+      _showSnackBar('Unable to open image picker: $error');
     }
   }
 
-  void _goNext(GlobalKey<FormState> key) {
-    if (!key.currentState!.validate()) return;
+  void _goNext() {
+    if (_isSubmitting) return;
+    if (_currentStep >= 2) {
+      _submit();
+      return;
+    }
+    FocusScope.of(context).unfocus();
     setState(() => _currentStep += 1);
   }
 
   void _goBack() {
+    if (_isSubmitting || _currentStep == 0) return;
+    FocusScope.of(context).unfocus();
     setState(() => _currentStep -= 1);
   }
 
   Future<void> _submit() async {
-    if (!_validateAllSteps()) return;
+    if (_isSubmitting) return;
+    FocusScope.of(context).unfocus();
+
+    final request = _buildRegisterRequest();
 
     setState(() => _isSubmitting = true);
     try {
       final apiProvider = ApiProviderScope.of(context);
       final response = await apiProvider.registerOrganization(
-        request: RegisterOrganizationRequest(
-          organizationName: _companyNameController.text.trim(),
-          businessType: _businessType!.trim(),
-          gstNumber: _gstController.text.trim(),
-          panNumber: _panController.text.trim(),
-          address: _billingAddressController.text.trim(),
-          phone: _phoneController.text.trim(),
-          email: _emailController.text.trim(),
-          financialYear: _financialYear!.trim(),
-          logoUrl: _logoFile?.path ?? '',
-          adminName: _adminNameController.text.trim(),
-          password: _passwordController.text,
-          role: 'admin',
-        ),
+        request: request,
       );
 
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(response.message)));
+      _showSnackBar(response.message);
       await Future.delayed(const Duration(milliseconds: 700));
       if (!mounted) return;
       Navigator.pushReplacement(
@@ -155,14 +153,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
     } on ApiException catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(error.message)));
+      _showSnackBar(error.message);
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Registration failed: $error')));
+      _showSnackBar('Registration failed: $error');
     } finally {
       if (mounted) {
         setState(() => _isSubmitting = false);
@@ -170,26 +164,36 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
-  bool _validateAllSteps() {
-    final step1Valid = _step1Key.currentState?.validate() ?? false;
-    if (!step1Valid) {
-      setState(() => _currentStep = 0);
-      return false;
-    }
+  RegisterOrganizationRequest _buildRegisterRequest() {
+    return RegisterOrganizationRequest(
+      organizationName: _companyNameController.text.trim(),
+      businessType: (_businessType ?? '').trim(),
+      gstNumber: _gstController.text.trim().toUpperCase(),
+      panNumber: _panController.text.trim().toUpperCase(),
+      address: _billingAddressController.text.trim(),
+      shippingAddress: _effectiveShippingAddress,
+      website: _websiteController.text.trim(),
+      invoicePrefix: _invoicePrefixController.text.trim().toUpperCase(),
+      phone: _phoneController.text.trim(),
+      email: _emailController.text.trim(),
+      financialYear: (_financialYear ?? '').trim(),
+      adminName: _adminNameController.text.trim(),
+      password: _passwordController.text,
+      role: 'admin',
+    );
+  }
 
-    final step2Valid = _step2Key.currentState?.validate() ?? false;
-    if (!step2Valid) {
-      setState(() => _currentStep = 1);
-      return false;
+  String get _effectiveShippingAddress {
+    if (_shippingSameAsBilling) {
+      return _billingAddressController.text.trim();
     }
+    return _shippingAddressController.text.trim();
+  }
 
-    final step3Valid = _step3Key.currentState?.validate() ?? false;
-    if (!step3Valid) {
-      setState(() => _currentStep = 2);
-      return false;
-    }
-
-    return true;
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -241,6 +245,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       'Set up your SAAS CRM workspace',
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 13, color: greyText),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Step ${_currentStep + 1} of 3',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: greyText,
+                      ),
                     ),
                     const SizedBox(height: 18),
                     _buildStepDots(),
@@ -306,7 +320,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               child: TextFormField(
                 controller: _adminNameController,
                 style: const TextStyle(color: darkText, fontSize: 14),
-                validator: _requiredValidator,
                 decoration: _pillDecoration(hint: 'e.g. Rohit Sharma'),
               ),
             ),
@@ -316,13 +329,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
                 style: const TextStyle(color: darkText, fontSize: 14),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Email is required';
-                  }
-                  if (!value.contains('@')) return 'Enter a valid email';
-                  return null;
-                },
                 decoration: _pillDecoration(hint: 'e.g. rohit@company.com'),
               ),
             ),
@@ -335,12 +341,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 controller: _passwordController,
                 obscureText: _obscurePassword,
                 style: const TextStyle(color: darkText, fontSize: 14),
-                validator: (value) {
-                  if (value == null || value.length < 6) {
-                    return 'Minimum 6 characters';
-                  }
-                  return null;
-                },
                 decoration: _pillDecoration(
                   hint: 'e.g. Minimum 6 characters',
                   suffixIcon: IconButton(
@@ -363,7 +363,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
                 style: const TextStyle(color: darkText, fontSize: 14),
-                validator: _requiredValidator,
                 decoration: _pillDecoration(hint: 'e.g. 98450 11223'),
               ),
             ),
@@ -372,7 +371,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           _GradientButton(
             label: 'Next',
             isLoading: false,
-            onPressed: () => _goNext(_step1Key),
+            onPressed: _goNext,
           ),
           const SizedBox(height: 16),
           Row(
@@ -423,69 +422,78 @@ class _RegisterScreenState extends State<RegisterScreen> {
               child: TextFormField(
                 controller: _companyNameController,
                 style: const TextStyle(color: darkText, fontSize: 14),
-                validator: _requiredValidator,
                 decoration: _pillDecoration(hint: 'e.g. Sharma Distributors'),
               ),
             ),
             right: _labeledField(
               label: 'Company Logo',
-              child: InkWell(
-                onTap: _pickLogo,
-                borderRadius: BorderRadius.circular(20),
-                child: Container(
-                  height: 52,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  InkWell(
+                    onTap: _pickLogo,
                     borderRadius: BorderRadius.circular(20),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: inputShadow,
-                        blurRadius: 10,
-                        spreadRadius: -5,
-                        offset: Offset(0, 10),
+                    child: Container(
+                      height: 52,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: inputShadow,
+                            blurRadius: 10,
+                            spreadRadius: -5,
+                            offset: Offset(0, 10),
+                          ),
+                        ],
                       ),
-                    ],
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.image_outlined,
+                            color: brandBlue,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _logoFile?.name ?? 'Select company logo',
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: _logoFile != null ? darkText : greyText,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                          OutlinedButton(
+                            onPressed: _pickLogo,
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              side: const BorderSide(color: Color(0xFFE5E7EB)),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 8,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            child: const Text(
+                              'Browse',
+                              style: TextStyle(color: darkText, fontSize: 12),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.image_outlined,
-                        color: brandBlue,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          _logoFile?.name ?? 'Upload company logo',
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: _logoFile != null ? darkText : greyText,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                      OutlinedButton(
-                        onPressed: _pickLogo,
-                        style: OutlinedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          side: const BorderSide(color: Color(0xFFE5E7EB)),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 8,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        child: const Text(
-                          'Browse',
-                          style: TextStyle(color: darkText, fontSize: 12),
-                        ),
-                      ),
-                    ],
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Logo selection stays local until a media upload API is added.',
+                    style: TextStyle(color: greyText, fontSize: 11),
                   ),
-                ),
+                ],
               ),
             ),
           ),
@@ -495,7 +503,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               label: 'Business Type',
               child: DropdownButtonFormField<String>(
                 initialValue: _businessType,
-                validator: (v) => v == null ? 'Select business type' : null,
                 style: const TextStyle(color: darkText, fontSize: 14),
                 decoration: _pillDecoration(hint: 'Select business type'),
                 icon: const Icon(
@@ -536,7 +543,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               label: 'Financial Year',
               child: DropdownButtonFormField<String>(
                 initialValue: _financialYear,
-                validator: (v) => v == null ? 'Select financial year' : null,
                 style: const TextStyle(color: darkText, fontSize: 14),
                 decoration: _pillDecoration(hint: 'Select financial year'),
                 icon: const Icon(
@@ -552,7 +558,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
           const SizedBox(height: 22),
           _buildStepButtons(
-            onNext: () => _goNext(_step2Key),
+            onNext: _goNext,
             nextLabel: 'Next',
           ),
         ],
@@ -578,7 +584,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               controller: _billingAddressController,
               maxLines: 4,
               style: const TextStyle(color: darkText, fontSize: 14),
-              validator: _requiredValidator,
               decoration: _pillDecoration(
                 hint: 'e.g. 12, MG Road, Andheri East, Mumbai, MH 400069',
               ),
@@ -624,10 +629,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               maxLines: 4,
               enabled: !_shippingSameAsBilling,
               style: const TextStyle(color: darkText, fontSize: 14),
-              validator: (value) {
-                if (_shippingSameAsBilling) return null;
-                return _requiredValidator(value);
-              },
               decoration: _pillDecoration(
                 hint: 'e.g. Plot 45, MIDC Industrial Area, Pune, MH 411019',
               ),
@@ -679,7 +680,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           width: 100,
           height: 52,
           child: OutlinedButton(
-            onPressed: _goBack,
+            onPressed: _currentStep == 0 || isLoading ? null : _goBack,
             style: OutlinedButton.styleFrom(
               side: const BorderSide(color: Color(0xFFE5E7EB)),
               shape: RoundedRectangleBorder(
@@ -745,11 +746,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         child,
       ],
     );
-  }
-
-  String? _requiredValidator(String? value) {
-    if (value == null || value.trim().isEmpty) return 'This field is required';
-    return null;
   }
 
   // Pill-shaped input decoration matching the Uiverse card's soft cyan glow

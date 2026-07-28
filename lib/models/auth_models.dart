@@ -15,10 +15,13 @@ class RegisterOrganizationRequest {
   final String gstNumber;
   final String panNumber;
   final String address;
+  final String? shippingAddress;
+  final String? website;
+  final String? invoicePrefix;
   final String phone;
   final String email;
   final String financialYear;
-  final String logoUrl;
+  final String? logoUrl;
   final String adminName;
   final String password;
   final String role;
@@ -29,17 +32,25 @@ class RegisterOrganizationRequest {
     required this.gstNumber,
     required this.panNumber,
     required this.address,
+    this.shippingAddress,
+    this.website,
+    this.invoicePrefix,
     required this.phone,
     required this.email,
     required this.financialYear,
-    required this.logoUrl,
+    this.logoUrl,
     required this.adminName,
     required this.password,
     this.role = 'admin',
   });
 
-  Map<String, dynamic> toJson() {
-    return {
+  bool get hasExtendedFields =>
+      _hasValue(shippingAddress) ||
+      _hasValue(website) ||
+      _hasValue(invoicePrefix);
+
+  Map<String, dynamic> toJson({bool includeExtendedFields = true}) {
+    final payload = <String, dynamic>{
       'organization_name': organizationName,
       'business_type': businessType,
       'gst_number': gstNumber,
@@ -48,12 +59,31 @@ class RegisterOrganizationRequest {
       'phone': phone,
       'email': email,
       'financial_year': financialYear,
-      'logo_url': logoUrl,
       'admin_name': adminName,
       'password': password,
       'role': role,
     };
+
+    if (_hasValue(logoUrl)) {
+      payload['logo_url'] = logoUrl!.trim();
+    }
+
+    if (includeExtendedFields) {
+      if (_hasValue(shippingAddress)) {
+        payload['shipping_address'] = shippingAddress!.trim();
+      }
+      if (_hasValue(website)) {
+        payload['website'] = website!.trim();
+      }
+      if (_hasValue(invoicePrefix)) {
+        payload['invoice_prefix'] = invoicePrefix!.trim();
+      }
+    }
+
+    return payload;
   }
+
+  static bool _hasValue(String? value) => value != null && value.trim().isNotEmpty;
 }
 
 class CurrentUserProfile {

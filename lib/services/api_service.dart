@@ -25,6 +25,7 @@ class ApiException implements Exception {
 
 class ApiService {
   static String? _accessToken;
+  static String? _refreshToken;
 
   final http.Client _client;
   final String baseUrl;
@@ -74,11 +75,13 @@ class ApiService {
     if (token == null || token.isEmpty) {
       throw const ApiException(message: 'Login token missing in response.');
     }
+    final refreshToken = _extractRefreshToken(decoded);
 
     _accessToken = token;
+    _refreshToken = refreshToken?.trim();
     return AuthSession(
       accessToken: token,
-      refreshToken: _extractRefreshToken(decoded),
+      refreshToken: refreshToken,
       message: _extractSuccessMessage(decoded, 'Login successful.'),
       user: _extractUserProfile(decoded),
     );
@@ -87,12 +90,30 @@ class ApiService {
   Future<ApiResponse<void>> registerOrganization({
     required RegisterOrganizationRequest request,
   }) async {
-    final response = await _send(
-      method: 'POST',
-      endpoint: ApiEndpoints.authRegister,
-      requiresAuth: false,
-      body: request.toJson(),
-    );
+    http.Response response;
+    try {
+      response = await _send(
+        method: 'POST',
+        endpoint: ApiEndpoints.authRegister,
+        requiresAuth: false,
+        body: request.toJson(),
+        timeout: ApiConstants.loginRequestTimeout,
+        retryOnTimeout: true,
+      );
+    } on ApiException catch (error) {
+      if (!_shouldRetryRegisterWithLegacyPayload(error, request)) {
+        rethrow;
+      }
+
+      response = await _send(
+        method: 'POST',
+        endpoint: ApiEndpoints.authRegister,
+        requiresAuth: false,
+        body: request.toJson(includeExtendedFields: false),
+        timeout: ApiConstants.loginRequestTimeout,
+        retryOnTimeout: true,
+      );
+    }
 
     final responseBody = response.body.trim();
     final decoded = _tryDecodeBody(responseBody);
@@ -106,6 +127,18 @@ class ApiService {
       message: message,
       rawBody: responseBody,
     );
+  }
+
+  bool _shouldRetryRegisterWithLegacyPayload(
+    ApiException error,
+    RegisterOrganizationRequest request,
+  ) {
+    final statusCode = error.statusCode;
+    if (!request.hasExtendedFields) {
+      return false;
+    }
+
+    return statusCode == 400 || statusCode == 422;
   }
 
   Future<CurrentUserProfile> fetchCurrentUserProfile() async {
@@ -169,9 +202,10 @@ class ApiService {
   }
 
   Future<void> logout() async {
-    final token = _accessToken;
-    if (token == null || token.trim().isEmpty) {
-      _accessToken = null;
+    final accessToken = _accessToken?.trim();
+    final refreshToken = (_refreshToken ?? _accessToken)?.trim();
+    if (accessToken == null || accessToken.isEmpty) {
+      _clearTokens();
       return;
     }
 
@@ -179,13 +213,24 @@ class ApiService {
       method: 'POST',
       endpoint: ApiEndpoints.authLogout,
       requiresAuth: true,
+      body: <String, dynamic>{
+        'access_token': accessToken,
+        'refresh_token': refreshToken ?? accessToken,
+      },
     );
-    _accessToken = null;
+    _clearTokens();
   }
 
   static String? get accessToken => _accessToken;
-  static void clearAccessToken() => _accessToken = null;
+  static String? get refreshToken => _refreshToken;
+  static void clearAccessToken() => _clearTokens();
   static void setAccessToken(String? token) => _accessToken = token?.trim();
+  static void setRefreshToken(String? token) => _refreshToken = token?.trim();
+
+  static void _clearTokens() {
+    _accessToken = null;
+    _refreshToken = null;
+  }
 
   static String? _extractToken(Map<String, dynamic> decoded) {
     final directCandidates = [

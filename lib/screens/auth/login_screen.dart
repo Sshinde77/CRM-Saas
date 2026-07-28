@@ -52,9 +52,6 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  static const String _startingServerMessage =
-      'Starting server, please wait...';
-
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -64,7 +61,6 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
   bool _isLoading = false;
   bool _countryMenuOpen = false;
-  String? _loadingMessage;
   _CountryCode _selectedCountry = _countryCodes.first;
 
   // Gradient-card palette (Uiverse-inspired)
@@ -98,7 +94,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     setState(() => _isLoading = true);
-    setState(() => _loadingMessage = _startingServerMessage);
     try {
       final apiProvider = ApiProviderScope.of(context);
       final session = await apiProvider.login(
@@ -130,10 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ).showSnackBar(SnackBar(content: Text('Login failed: $error')));
     } finally {
       if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _loadingMessage = null;
-        });
+        setState(() => _isLoading = false);
       }
     }
   }
@@ -280,18 +272,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             isLoading: _isLoading,
                             onPressed: _handleSignIn,
                           ),
-                          if (_isLoading && _loadingMessage != null) ...[
-                            const SizedBox(height: 10),
-                            Text(
-                              _loadingMessage!,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                color: AppColors.secondary,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
                         ] else ...[
                           const _FieldLabel('Phone Number'),
                           const SizedBox(height: 8),
