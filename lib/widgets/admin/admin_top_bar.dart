@@ -328,4 +328,3 @@ class _ProfileMenuHeader extends StatelessWidget {
     );
   }
 }
-

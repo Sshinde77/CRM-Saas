@@ -566,4 +566,3 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
     );
   }
 }
-

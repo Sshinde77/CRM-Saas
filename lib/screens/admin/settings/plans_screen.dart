@@ -640,4 +640,3 @@ class _PlansScreenState extends State<PlansScreen> {
     return _formatPrice(value);
   }
 }
-

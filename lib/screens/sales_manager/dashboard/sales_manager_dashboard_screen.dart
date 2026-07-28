@@ -106,15 +106,7 @@ class _SalesManagerDashboardScreenState
     ),
   ];
 
-  final List<double> _salesTrend = const [
-    42,
-    51,
-    47,
-    63,
-    58,
-    72,
-    84,
-  ];
+  final List<double> _salesTrend = const [42, 51, 47, 63, 58, 72, 84];
 
   final List<_PipelineSlice> _orderPipeline = const [
     _PipelineSlice('Draft', 8, AppColors.secondary),
@@ -240,7 +232,10 @@ class _SalesManagerDashboardScreenState
                             return Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Expanded(flex: 3, child: _buildPerformanceCard()),
+                                Expanded(
+                                  flex: 3,
+                                  child: _buildPerformanceCard(),
+                                ),
                                 const SizedBox(width: 14),
                                 Expanded(flex: 2, child: _buildPipelineCard()),
                               ],
@@ -365,10 +360,7 @@ class _SalesManagerDashboardScreenState
             spacing: 10,
             runSpacing: 10,
             children: [
-              _heroPill(
-                Icons.calendar_today_rounded,
-                _selectedRange.label,
-              ),
+              _heroPill(Icons.calendar_today_rounded, _selectedRange.label),
               _heroPill(Icons.group_rounded, '4 reps active'),
               _heroPill(Icons.route_rounded, '18 visits planned'),
               _heroPill(Icons.payments_rounded, 'Rs. 57,200 collected'),
@@ -464,8 +456,8 @@ class _SalesManagerDashboardScreenState
         final columns = constraints.maxWidth > 1000
             ? 4
             : constraints.maxWidth > 700
-                ? 3
-                : 2;
+            ? 3
+            : 2;
         return GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -561,19 +553,11 @@ class _SalesManagerDashboardScreenState
           Row(
             children: [
               Expanded(
-                child: _metricTile(
-                  'Target',
-                  'Rs. 16.0L',
-                  AppColors.secondary,
-                ),
+                child: _metricTile('Target', 'Rs. 16.0L', AppColors.secondary),
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: _metricTile(
-                  'Achieved',
-                  'Rs. 12.6L',
-                  AppColors.green,
-                ),
+                child: _metricTile('Achieved', 'Rs. 12.6L', AppColors.green),
               ),
             ],
           ),
@@ -631,8 +615,9 @@ class _SalesManagerDashboardScreenState
                               child: LinearProgressIndicator(
                                 value: 0.78,
                                 minHeight: 10,
-                                backgroundColor:
-                                    AppColors.secondary.withValues(alpha: 0.14),
+                                backgroundColor: AppColors.secondary.withValues(
+                                  alpha: 0.14,
+                                ),
                                 valueColor: const AlwaysStoppedAnimation<Color>(
                                   AppColors.secondary,
                                 ),
@@ -844,8 +829,10 @@ class _SalesManagerDashboardScreenState
                 ),
               ),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: member.color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(999),
@@ -914,8 +901,10 @@ class _SalesManagerDashboardScreenState
                 ),
               ),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: followUp.color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(999),
@@ -939,11 +928,7 @@ class _SalesManagerDashboardScreenState
           const SizedBox(height: 8),
           Row(
             children: [
-              Icon(
-                Icons.schedule_rounded,
-                size: 16,
-                color: followUp.color,
-              ),
+              Icon(Icons.schedule_rounded, size: 16, color: followUp.color),
               const SizedBox(width: 6),
               Text(
                 followUp.time,
@@ -1100,10 +1085,7 @@ class _SalesManagerDashboardScreenState
                 const SizedBox(height: 6),
                 Text(
                   opportunity.reason,
-                  style: const TextStyle(
-                    color: textSecondary,
-                    fontSize: 12.2,
-                  ),
+                  style: const TextStyle(color: textSecondary, fontSize: 12.2),
                 ),
                 const SizedBox(height: 8),
                 Align(

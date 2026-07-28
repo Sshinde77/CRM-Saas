@@ -9,7 +9,8 @@ class DeliveryDashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return const RoleWorkspaceScreen(
       title: 'Delivery',
-      subtitle: 'Role workspace for deliveries, vehicle stock, collections, and expenses.',
+      subtitle:
+          'Role workspace for deliveries, vehicle stock, collections, and expenses.',
       focusAreas: [
         'Assigned deliveries and status updates',
         'Vehicle load, returns, and stock variance',

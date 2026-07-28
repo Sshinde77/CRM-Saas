@@ -6,10 +6,10 @@ enum AppRole {
   unknown;
 
   static AppRole fromRaw(String? rawRole) {
-    final normalized = rawRole
-        ?.trim()
-        .toLowerCase()
-        .replaceAll(RegExp(r'[\s_-]+'), '');
+    final normalized = rawRole?.trim().toLowerCase().replaceAll(
+      RegExp(r'[\s_-]+'),
+      '',
+    );
 
     switch (normalized) {
       case 'admin':

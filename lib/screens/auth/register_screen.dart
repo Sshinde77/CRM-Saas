@@ -139,9 +139,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => _isSubmitting = true);
     try {
       final apiProvider = ApiProviderScope.of(context);
-      final response = await apiProvider.registerOrganization(
-        request: request,
-      );
+      final response = await apiProvider.registerOrganization(request: request);
 
       if (!mounted) return;
       _showSnackBar(response.message);
@@ -368,11 +366,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
           ),
           const SizedBox(height: 22),
-          _GradientButton(
-            label: 'Next',
-            isLoading: false,
-            onPressed: _goNext,
-          ),
+          _GradientButton(label: 'Next', isLoading: false, onPressed: _goNext),
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -557,10 +551,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
           ),
           const SizedBox(height: 22),
-          _buildStepButtons(
-            onNext: _goNext,
-            nextLabel: 'Next',
-          ),
+          _buildStepButtons(onNext: _goNext, nextLabel: 'Next'),
         ],
       ),
     );

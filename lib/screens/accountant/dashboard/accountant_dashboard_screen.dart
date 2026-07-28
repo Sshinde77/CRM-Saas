@@ -9,7 +9,8 @@ class AccountantDashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return const RoleWorkspaceScreen(
       title: 'Accountant',
-      subtitle: 'Role workspace for invoices, reconciliation, payables, and reports.',
+      subtitle:
+          'Role workspace for invoices, reconciliation, payables, and reports.',
       focusAreas: [
         'Purchase and sales invoice management',
         'Customer receipts, supplier payments, and reconciliation',

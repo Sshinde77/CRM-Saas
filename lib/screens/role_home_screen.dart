@@ -19,7 +19,8 @@ class RoleHomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final resolvedRole = role ?? ApiProviderScope.maybeOf(context)?.currentUser?.role;
+    final resolvedRole =
+        role ?? ApiProviderScope.maybeOf(context)?.currentUser?.role;
 
     switch (AppRole.fromRaw(resolvedRole)) {
       case AppRole.admin:
@@ -33,7 +34,8 @@ class RoleHomeScreen extends StatelessWidget {
       case AppRole.unknown:
         return RoleWorkspaceScreen(
           title: 'Workspace',
-          subtitle: 'Role-specific modules are now organized by folder. This role does not have a dedicated dashboard mapping yet.',
+          subtitle:
+              'Role-specific modules are now organized by folder. This role does not have a dedicated dashboard mapping yet.',
           focusAreas: [
             'Current role: ${resolvedRole?.trim().isEmpty ?? true ? 'Unknown' : resolvedRole!.trim()}',
             'Add a dedicated screen under lib/screens/<role>/',

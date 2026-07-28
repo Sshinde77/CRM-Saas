@@ -525,4 +525,3 @@ class _VehicleStock {
     required this.lines,
   });
 }
-

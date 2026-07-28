@@ -1094,4 +1094,3 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
     );
   }
 }
-

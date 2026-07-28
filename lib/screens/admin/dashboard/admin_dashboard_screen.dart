@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
+import '../settings/plans_screen.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
 import '../../../widgets/soft_action_button.dart';
@@ -428,7 +429,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       ),
                       const SizedBox(width: 12),
                       ElevatedButton.icon(
-                        onPressed: () => Navigator.of(context).pop(),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          Navigator.of(this.context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const PlansScreen(),
+                            ),
+                          );
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.secondary,
                           foregroundColor: AppColors.primary,
@@ -1503,4 +1511,3 @@ class _OrderItem {
 
   const _OrderItem(this.orderNo, this.customer, this.status);
 }
-
