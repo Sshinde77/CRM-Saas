@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../constants/app_colors.dart';
 import '../constants/app_constants.dart';
-import '../widgets/admin_top_bar.dart';
+import '../widgets/admin/admin_top_bar.dart';
 import '../widgets/section_title.dart';
 
 class HomeScreen extends StatelessWidget {

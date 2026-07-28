@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../constants/app_colors.dart';
 import '../../providers/api_provider.dart';
-import '../dashboard/admin_dashboard_screen.dart';
+import '../role_home_screen.dart';
 import '../../services/api_service.dart';
 import 'register_screen.dart';
 
@@ -114,7 +114,9 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
+        MaterialPageRoute(
+          builder: (_) => RoleHomeScreen.forRole(session.user?.role),
+        ),
       );
     } on ApiException catch (error) {
       if (!mounted) return;
