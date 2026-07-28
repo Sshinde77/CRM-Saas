@@ -60,9 +60,9 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
     await Future.delayed(const Duration(milliseconds: 700));
     if (!mounted) return;
     setState(() => _isSaving = false);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Company settings saved')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Company settings saved')));
   }
 
   @override
@@ -145,16 +145,12 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
                               controller: _addressController,
                             ),
                             rightLabel: 'City',
-                            rightField: _textField(
-                              controller: _cityController,
-                            ),
+                            rightField: _textField(controller: _cityController),
                           ),
                           const SizedBox(height: 20),
                           _buildFieldRow(
                             leftLabel: 'State',
-                            leftField: _textField(
-                              controller: _stateController,
-                            ),
+                            leftField: _textField(controller: _stateController),
                             rightLabel: 'Pincode',
                             rightField: _textField(
                               controller: _pincodeController,
@@ -213,20 +209,14 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _fieldLabel(leftLabel),
-                  leftField,
-                ],
+                children: [_fieldLabel(leftLabel), leftField],
               ),
             ),
             const SizedBox(width: 28),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _fieldLabel(rightLabel),
-                  rightField,
-                ],
+                children: [_fieldLabel(rightLabel), rightField],
               ),
             ),
           ],
@@ -277,10 +267,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
     return InputDecoration(
       filled: true,
       fillColor: AppColors.surfaceSoft,
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 16,
-      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
         borderSide: BorderSide(

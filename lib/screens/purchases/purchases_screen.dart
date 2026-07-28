@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 import '../../constants/app_colors.dart';
 import '../../widgets/admin_top_bar.dart';
@@ -578,7 +578,9 @@ class _PurchaseInvoiceFormDialogState
           : null;
     });
 
-    if (_supplierError != null || _poNumberError != null || _itemsError != null) {
+    if (_supplierError != null ||
+        _poNumberError != null ||
+        _itemsError != null) {
       return;
     }
 
@@ -994,5 +996,3 @@ class _PurchaseInvoiceFormDialogState
     );
   }
 }
-
-

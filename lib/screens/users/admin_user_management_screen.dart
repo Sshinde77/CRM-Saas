@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 import '../../constants/app_colors.dart';
 import '../../models/app_user.dart';
@@ -278,18 +278,11 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
     return Column(
       children: [
         const SizedBox(height: 8),
-        const Icon(
-          Icons.cloud_off_rounded,
-          color: textSecondary,
-          size: 40,
-        ),
+        const Icon(Icons.cloud_off_rounded, color: textSecondary, size: 40),
         const SizedBox(height: 10),
         const Text(
           'Could not load users',
-          style: TextStyle(
-            color: textPrimary,
-            fontWeight: FontWeight.w700,
-          ),
+          style: TextStyle(color: textPrimary, fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 6),
         Text(
@@ -298,10 +291,7 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
           style: const TextStyle(color: textSecondary, fontSize: 12),
         ),
         const SizedBox(height: 12),
-        OutlinedButton(
-          onPressed: _refreshUsers,
-          child: const Text('Retry'),
-        ),
+        OutlinedButton(onPressed: _refreshUsers, child: const Text('Retry')),
       ],
     );
   }
@@ -310,12 +300,12 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
     final initials = user.name.trim().isEmpty
         ? '?'
         : user.name
-            .trim()
-            .split(' ')
-            .where((part) => part.isNotEmpty)
-            .take(2)
-            .map((part) => part[0].toUpperCase())
-            .join();
+              .trim()
+              .split(' ')
+              .where((part) => part.isNotEmpty)
+              .take(2)
+              .map((part) => part[0].toUpperCase())
+              .join();
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -678,5 +668,3 @@ class _CreateRoleDialogState extends State<_CreateRoleDialog> {
     );
   }
 }
-
-

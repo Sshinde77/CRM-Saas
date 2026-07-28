@@ -117,14 +117,20 @@ class _PlansScreenState extends State<PlansScreen> {
                         SizedBox(
                           width: double.infinity,
                           child: OutlinedButton.icon(
-                            onPressed: () => _showMessage('Manage Billing clicked'),
-                            icon: const Icon(Icons.credit_card_outlined, size: 18),
+                            onPressed: () =>
+                                _showMessage('Manage Billing clicked'),
+                            icon: const Icon(
+                              Icons.credit_card_outlined,
+                              size: 18,
+                            ),
                             label: const Text('Manage Billing'),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppColors.textPrimary,
                               backgroundColor: AppColors.primary,
                               side: BorderSide(
-                                color: AppColors.secondary.withValues(alpha: 0.18),
+                                color: AppColors.secondary.withValues(
+                                  alpha: 0.18,
+                                ),
                               ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(18),
@@ -219,10 +225,7 @@ class _PlansScreenState extends State<PlansScreen> {
             currentPlan.isDefault
                 ? 'Default plan for new organizations'
                 : 'Active subscription plan',
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 14,
-            ),
+            style: const TextStyle(color: Colors.white70, fontSize: 14),
           ),
           const SizedBox(height: 18),
           Container(
@@ -451,17 +454,9 @@ class _PlansScreenState extends State<PlansScreen> {
             child: Column(
               children: [
                 if (plan.maxUsers != null)
-                  _metaRow(
-                    accentColor,
-                    'Users',
-                    '${plan.maxUsers}',
-                  ),
+                  _metaRow(accentColor, 'Users', '${plan.maxUsers}'),
                 if (plan.maxOrders != null)
-                  _metaRow(
-                    accentColor,
-                    'Orders',
-                    '${plan.maxOrders}',
-                  ),
+                  _metaRow(accentColor, 'Orders', '${plan.maxOrders}'),
                 ...plan.features.map(
                   (feature) => Padding(
                     padding: const EdgeInsets.only(bottom: 14),
@@ -554,11 +549,7 @@ class _PlansScreenState extends State<PlansScreen> {
               color: accentColor.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              Icons.tune_rounded,
-              color: accentColor,
-              size: 14,
-            ),
+            child: Icon(Icons.tune_rounded, color: accentColor, size: 14),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -630,10 +621,7 @@ class _PlansScreenState extends State<PlansScreen> {
     return const Center(
       child: Text(
         'No plans available right now.',
-        style: TextStyle(
-          color: AppColors.textSecondary,
-          fontSize: 15,
-        ),
+        style: TextStyle(color: AppColors.textSecondary, fontSize: 15),
       ),
     );
   }
@@ -643,7 +631,9 @@ class _PlansScreenState extends State<PlansScreen> {
   }
 
   String _displayOriginalPrice(PlanModel plan) {
-    final value = _isMonthly ? plan.originalPriceMonthly : plan.originalPriceYearly;
+    final value = _isMonthly
+        ? plan.originalPriceMonthly
+        : plan.originalPriceYearly;
     if (value == null || value <= 0) {
       return '';
     }

@@ -183,9 +183,7 @@ class _AppDrawerState extends State<AppDrawer> {
                   child: Text(
                     item.label,
                     style: TextStyle(
-                      color: isActive
-                          ? accent
-                          : AppDrawer.textSecondary,
+                      color: isActive ? accent : AppDrawer.textSecondary,
                       fontSize: 14,
                       fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
                     ),

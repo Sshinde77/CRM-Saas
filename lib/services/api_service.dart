@@ -162,8 +162,9 @@ class ApiService {
     return rawUsers
         .whereType<Map<String, dynamic>>()
         .map(AppUser.fromJson)
-        .where((user) =>
-            user.name.trim().isNotEmpty || user.email.trim().isNotEmpty)
+        .where(
+          (user) => user.name.trim().isNotEmpty || user.email.trim().isNotEmpty,
+        )
         .toList();
   }
 
@@ -272,11 +273,7 @@ class ApiService {
   }
 
   CurrentUserProfile? _extractUserProfile(Map<String, dynamic> decoded) {
-    final candidates = [
-      decoded['user'],
-      decoded['data'],
-      decoded,
-    ];
+    final candidates = [decoded['user'], decoded['data'], decoded];
 
     for (final candidate in candidates) {
       if (candidate is Map<String, dynamic>) {
@@ -298,10 +295,7 @@ class ApiService {
     return null;
   }
 
-  String _extractSuccessMessage(
-    Map<String, dynamic> decoded,
-    String fallback,
-  ) {
+  String _extractSuccessMessage(Map<String, dynamic> decoded, String fallback) {
     final candidates = [
       decoded['message'],
       decoded['detail'],
@@ -552,7 +546,3 @@ class ApiService {
     return body;
   }
 }
-
-
-
-

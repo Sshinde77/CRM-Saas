@@ -17,10 +17,7 @@ class ApiConstants {
   };
 
   static Map<String, String> authorizedHeaders(String token) {
-    return {
-      ...defaultHeaders,
-      authorizationHeader: '$bearerPrefix $token',
-    };
+    return {...defaultHeaders, authorizationHeader: '$bearerPrefix $token'};
   }
 }
 
@@ -49,5 +46,3 @@ class ApiEndpoints {
   static const String adminSettings = '/settings/admin';
   static const String auditLogs = '/audit-logs';
 }
-
-

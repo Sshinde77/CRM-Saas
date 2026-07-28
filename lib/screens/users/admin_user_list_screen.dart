@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 import '../../constants/app_colors.dart';
 import '../../models/app_user.dart';
@@ -164,7 +164,9 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
               ),
               _detailRow(
                 'Phone',
-                (user.phone ?? '').trim().isEmpty ? 'No phone' : user.phone!.trim(),
+                (user.phone ?? '').trim().isEmpty
+                    ? 'No phone'
+                    : user.phone!.trim(),
               ),
             ],
           ),
@@ -437,18 +439,11 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
       ),
       child: Column(
         children: [
-          const Icon(
-            Icons.cloud_off_rounded,
-            color: textSecondary,
-            size: 42,
-          ),
+          const Icon(Icons.cloud_off_rounded, color: textSecondary, size: 42),
           const SizedBox(height: 12),
           const Text(
             'Could not load users',
-            style: TextStyle(
-              color: textPrimary,
-              fontWeight: FontWeight.w700,
-            ),
+            style: TextStyle(color: textPrimary, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 8),
           Text(
@@ -770,9 +765,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
     _nameController.text = existing?.name ?? '';
     _emailController.text = existing?.email ?? '';
     _phoneController.text = existing?.phone ?? '';
-    _role = existing == null
-        ? _roles.first
-        : _formatDialogRole(existing.role);
+    _role = existing == null ? _roles.first : _formatDialogRole(existing.role);
     _status = existing?.isActive == false ? 'Inactive' : 'Active';
   }
 

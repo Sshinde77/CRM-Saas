@@ -5,7 +5,8 @@ import '../models/auth_models.dart';
 import '../services/api_service.dart';
 
 class ApiProvider extends ChangeNotifier {
-  ApiProvider({ApiService? apiService}) : _apiService = apiService ?? ApiService();
+  ApiProvider({ApiService? apiService})
+    : _apiService = apiService ?? ApiService();
 
   final ApiService _apiService;
 
@@ -64,7 +65,9 @@ class ApiProvider extends ChangeNotifier {
     }
   }
 
-  Future<CurrentUserProfile?> fetchCurrentUserProfile({bool force = false}) async {
+  Future<CurrentUserProfile?> fetchCurrentUserProfile({
+    bool force = false,
+  }) async {
     if (!force && _currentUser != null) {
       return _currentUser;
     }
@@ -127,8 +130,8 @@ class ApiProviderScope extends InheritedNotifier<ApiProvider> {
   }) : super(notifier: notifier);
 
   static ApiProvider of(BuildContext context) {
-    final scope =
-        context.dependOnInheritedWidgetOfExactType<ApiProviderScope>();
+    final scope = context
+        .dependOnInheritedWidgetOfExactType<ApiProviderScope>();
     assert(scope != null, 'ApiProviderScope not found in widget tree.');
     return scope!.notifier!;
   }
