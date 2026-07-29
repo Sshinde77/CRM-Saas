@@ -163,15 +163,23 @@ class _AppDrawerState extends State<AppDrawer> {
           borderRadius: BorderRadius.circular(16),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 160),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-              color: isActive
-                  ? AppDrawer.drawerSurface
-                  : Colors.white.withValues(alpha: 0.72),
+              color: isActive ? AppDrawer.drawerSurface : Colors.transparent,
             ),
             child: Row(
               children: [
+                if (isActive)
+                  Container(
+                    width: 4,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: accent,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                if (isActive) const SizedBox(width: 12),
                 Icon(
                   item.icon,
                   size: 20,
@@ -281,7 +289,7 @@ class _AppDrawerState extends State<AppDrawer> {
             ),
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
                 children: AppDrawer._navItems.map(_buildNavRow).toList(),
               ),
             ),
