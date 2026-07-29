@@ -758,5 +758,3 @@ class _InventoryItem {
     required this.unitCost,
   });
 }
-
-

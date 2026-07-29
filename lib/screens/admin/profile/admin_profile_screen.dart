@@ -281,5 +281,3 @@ class _CardContainer extends StatelessWidget {
     );
   }
 }
-
-

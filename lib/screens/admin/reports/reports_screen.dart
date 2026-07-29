@@ -481,4 +481,3 @@ class _ReportHighlight {
 
   const _ReportHighlight(this.label, this.value);
 }
-

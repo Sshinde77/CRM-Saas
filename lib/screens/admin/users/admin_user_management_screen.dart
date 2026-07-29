@@ -668,5 +668,3 @@ class _CreateRoleDialogState extends State<_CreateRoleDialog> {
     );
   }
 }
-
-

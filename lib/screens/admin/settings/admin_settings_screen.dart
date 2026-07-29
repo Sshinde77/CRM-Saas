@@ -389,5 +389,3 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
     );
   }
 }
-
-

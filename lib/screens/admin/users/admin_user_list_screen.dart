@@ -1011,5 +1011,3 @@ class _UserFormDialogState extends State<_UserFormDialog> {
     );
   }
 }
-
-

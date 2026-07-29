@@ -441,5 +441,3 @@ class _AuditLogEntry {
     required this.accent,
   });
 }
-
-

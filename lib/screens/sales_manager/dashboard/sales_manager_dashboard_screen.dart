@@ -1331,5 +1331,3 @@ class _CustomerOpportunity {
     required this.color,
   });
 }
-
-

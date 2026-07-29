@@ -74,18 +74,8 @@ class SuperAdminDashboardScreen extends StatelessWidget {
       color: _primaryAccent,
       shareLabel: '25%',
     ),
-    _PlanSlice(
-      label: 'Pro',
-      value: 2,
-      color: _ringDark,
-      shareLabel: '50%',
-    ),
-    _PlanSlice(
-      label: 'Free',
-      value: 1,
-      color: _ringGrey,
-      shareLabel: '25%',
-    ),
+    _PlanSlice(label: 'Pro', value: 2, color: _ringDark, shareLabel: '50%'),
+    _PlanSlice(label: 'Free', value: 1, color: _ringGrey, shareLabel: '25%'),
   ];
 
   static const List<_OrganizationEntry> _organizations = [
@@ -343,7 +333,9 @@ class SuperAdminDashboardScreen extends StatelessWidget {
       children: [
         for (var index = 0; index < _metrics.length; index += 2)
           Padding(
-            padding: EdgeInsets.only(bottom: index + 2 < _metrics.length ? 12 : 0),
+            padding: EdgeInsets.only(
+              bottom: index + 2 < _metrics.length ? 12 : 0,
+            ),
             child: Row(
               children: [
                 Expanded(child: _buildMetricCard(_metrics[index])),
@@ -606,7 +598,9 @@ class SuperAdminDashboardScreen extends StatelessWidget {
                               vertical: 6,
                             ),
                             decoration: BoxDecoration(
-                              color: _statusColor(org.status).withValues(alpha: 0.14),
+                              color: _statusColor(
+                                org.status,
+                              ).withValues(alpha: 0.14),
                               borderRadius: BorderRadius.circular(999),
                             ),
                             child: Text(
@@ -649,10 +643,17 @@ class SuperAdminDashboardScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: const [
-          _BottomNavItem(icon: Icons.dashboard_customize_rounded, label: 'Home', active: true),
+          _BottomNavItem(
+            icon: Icons.dashboard_customize_rounded,
+            label: 'Home',
+            active: true,
+          ),
           _BottomNavItem(icon: Icons.bar_chart_rounded, label: 'Analytics'),
           _BottomNavItem(icon: Icons.apartment_rounded, label: 'Orgs'),
-          _BottomNavItem(icon: Icons.workspace_premium_outlined, label: 'Plans'),
+          _BottomNavItem(
+            icon: Icons.workspace_premium_outlined,
+            label: 'Plans',
+          ),
         ],
       ),
     );
@@ -694,7 +695,9 @@ class _DashboardCard extends StatelessWidget {
         border: Border.all(color: SuperAdminDashboardScreen._borderColor),
         boxShadow: [
           BoxShadow(
-            color: SuperAdminDashboardScreen._shadowColor.withValues(alpha: 0.04),
+            color: SuperAdminDashboardScreen._shadowColor.withValues(
+              alpha: 0.04,
+            ),
             blurRadius: 18,
             offset: const Offset(0, 10),
           ),
@@ -828,7 +831,8 @@ class _GrowthChartPainter extends CustomPainter {
 
     for (var i = 0; i < points.length; i++) {
       final x = leftPadding + (stepX * i);
-      final y = topPadding + chartHeight - (points[i].value / maxValue * chartHeight);
+      final y =
+          topPadding + chartHeight - (points[i].value / maxValue * chartHeight);
       if (i == 0) {
         linePath.moveTo(x, y);
         fillPath.moveTo(x, topPadding + chartHeight);
@@ -840,7 +844,10 @@ class _GrowthChartPainter extends CustomPainter {
     }
 
     fillPath
-      ..lineTo(leftPadding + (stepX * (points.length - 1)), topPadding + chartHeight)
+      ..lineTo(
+        leftPadding + (stepX * (points.length - 1)),
+        topPadding + chartHeight,
+      )
       ..close();
 
     canvas.drawPath(fillPath, fillPaint);
@@ -851,16 +858,8 @@ class _GrowthChartPainter extends CustomPainter {
     final lastY =
         topPadding + chartHeight - (lastPoint.value / maxValue * chartHeight);
 
-    canvas.drawCircle(
-      Offset(lastX, lastY),
-      6,
-      Paint()..color = Colors.white,
-    );
-    canvas.drawCircle(
-      Offset(lastX, lastY),
-      4,
-      Paint()..color = lineColor,
-    );
+    canvas.drawCircle(Offset(lastX, lastY), 6, Paint()..color = Colors.white);
+    canvas.drawCircle(Offset(lastX, lastY), 4, Paint()..color = lineColor);
   }
 
   @override

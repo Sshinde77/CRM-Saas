@@ -121,9 +121,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildSettingsShell(),
-                  ],
+                  children: [_buildSettingsShell()],
                 ),
               ),
             ),
@@ -191,7 +189,9 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   OutlinedButton(
-                    onPressed: _isSaving ? null : () => Navigator.of(context).maybePop(),
+                    onPressed: _isSaving
+                        ? null
+                        : () => Navigator.of(context).maybePop(),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.primary,
                       side: const BorderSide(color: AppColors.borderStrong),
@@ -237,11 +237,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
               if (stacked) {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    header,
-                    const SizedBox(height: 14),
-                    actions,
-                  ],
+                  children: [header, const SizedBox(height: 14), actions],
                 );
               }
 
@@ -276,10 +272,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
               ),
-              _settingField(
-                label: 'GSTIN',
-                controller: _gstinController,
-              ),
+              _settingField(label: 'GSTIN', controller: _gstinController),
             ],
           ),
           const SizedBox(height: 18),
@@ -377,7 +370,9 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
                 ),
               ),
               OutlinedButton(
-                onPressed: _profilePhotoBytes == null ? null : _removeProfilePhoto,
+                onPressed: _profilePhotoBytes == null
+                    ? null
+                    : _removeProfilePhoto,
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.primary,
                   side: const BorderSide(color: AppColors.borderStrong),
@@ -494,15 +489,11 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(
-          color: AppColors.borderStrong,
-        ),
+        borderSide: BorderSide(color: AppColors.borderStrong),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(
-          color: AppColors.borderStrong,
-        ),
+        borderSide: BorderSide(color: AppColors.borderStrong),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),

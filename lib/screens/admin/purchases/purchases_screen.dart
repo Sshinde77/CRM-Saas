@@ -996,5 +996,3 @@ class _PurchaseInvoiceFormDialogState
     );
   }
 }
-
-

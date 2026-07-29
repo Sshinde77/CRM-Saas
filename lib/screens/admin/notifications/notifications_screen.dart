@@ -299,4 +299,3 @@ class _NotificationItem {
     required this.accent,
   });
 }
-

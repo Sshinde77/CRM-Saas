@@ -352,8 +352,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               child: Divider(color: borderStrong, thickness: 1),
                             ),
                             Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 10),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                              ),
                               child: Text(
                                 'or',
                                 style: TextStyle(
@@ -377,10 +378,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            _SocialCircleButton(
-                              label: 'G',
-                              onTap: () {},
-                            ),
+                            _SocialCircleButton(label: 'G', onTap: () {}),
                             const SizedBox(width: 15),
                             _SocialCircleButton(
                               icon: Icons.apple,
@@ -518,10 +516,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  InputDecoration _pillDecoration({
-    required String hint,
-    Widget? suffixIcon,
-  }) {
+  InputDecoration _pillDecoration({required String hint, Widget? suffixIcon}) {
     return InputDecoration(
       hintText: hint,
       hintStyle: const TextStyle(color: lightMutedText, fontSize: 14),

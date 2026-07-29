@@ -1511,5 +1511,3 @@ class _OrderItem {
 
   const _OrderItem(this.orderNo, this.customer, this.status);
 }
-
-
