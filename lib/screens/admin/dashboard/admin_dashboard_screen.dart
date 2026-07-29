@@ -250,7 +250,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           child: Container(
             constraints: const BoxConstraints(maxWidth: 560),
             decoration: BoxDecoration(
-              color: AppColors.primary,
+              color: AppColors.background,
               borderRadius: BorderRadius.circular(24),
             ),
             child: Column(
@@ -301,7 +301,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                               width: 64,
                               height: 64,
                               decoration: BoxDecoration(
-                                color: AppColors.primary,
+                                color: AppColors.background,
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: const Icon(
@@ -438,8 +438,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           );
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.secondary,
-                          foregroundColor: AppColors.primary,
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(
                             horizontal: 22,
                             vertical: 14,
@@ -541,7 +541,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: AppColors.primary,
+      backgroundColor: AppColors.background,
       drawer: const AppDrawer(activeItem: 'Dashboard'),
       body: SafeArea(
         child: Column(
@@ -1332,7 +1332,7 @@ class _CardContainer extends StatelessWidget {
     final card = Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: AppColors.secondary.withValues(alpha: 0.18)),
         boxShadow: [
@@ -1511,3 +1511,5 @@ class _OrderItem {
 
   const _OrderItem(this.orderNo, this.customer, this.status);
 }
+
+

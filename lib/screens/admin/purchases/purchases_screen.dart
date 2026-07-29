@@ -106,7 +106,7 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: AppColors.primary,
+        backgroundColor: AppColors.background,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text(
           'Delete invoice?',
@@ -156,7 +156,7 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: AppColors.primary,
+      backgroundColor: AppColors.background,
       drawer: const AppDrawer(activeItem: 'Purchases'),
       body: SafeArea(
         child: Column(
@@ -204,8 +204,8 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                           icon: const Icon(Icons.add_rounded, size: 18),
                           label: const Text('Add Invoice'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.secondary,
-                            foregroundColor: AppColors.primary,
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(
                               horizontal: 18,
@@ -257,7 +257,7 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.secondary.withValues(alpha: 0.18)),
         boxShadow: [
@@ -611,7 +611,7 @@ class _PurchaseInvoiceFormDialogState
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: AppColors.primary,
+      backgroundColor: AppColors.background,
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: ConstrainedBox(
@@ -857,7 +857,7 @@ class _PurchaseInvoiceFormDialogState
                     onPressed: _submit,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.purple,
-                      foregroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
                       elevation: 0,
                     ),
                     child: Text(_isEditing ? 'Update Invoice' : 'Add Invoice'),
@@ -996,3 +996,5 @@ class _PurchaseInvoiceFormDialogState
     );
   }
 }
+
+

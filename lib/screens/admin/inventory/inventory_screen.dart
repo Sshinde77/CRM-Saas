@@ -263,7 +263,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: AppColors.primary,
+      backgroundColor: AppColors.background,
       drawer: const AppDrawer(activeItem: 'Inventory'),
       body: SafeArea(
         child: Column(
@@ -399,7 +399,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.secondary.withValues(alpha: 0.18)),
         boxShadow: [
@@ -521,7 +521,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.secondary.withValues(alpha: 0.18)),
         boxShadow: [
@@ -593,7 +593,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: statusColor.withValues(
@@ -758,3 +758,5 @@ class _InventoryItem {
     required this.unitCost,
   });
 }
+
+

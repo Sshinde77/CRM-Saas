@@ -42,7 +42,7 @@ class _PlansScreenState extends State<PlansScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: const Color(0xFFF4F6FB),
+      backgroundColor: AppColors.background,
       drawer: const AppDrawer(activeItem: 'Plans'),
       body: SafeArea(
         child: Column(
@@ -59,7 +59,7 @@ class _PlansScreenState extends State<PlansScreen> {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(
                       child: CircularProgressIndicator(
-                        color: AppColors.secondary,
+                        color: AppColors.primary,
                       ),
                     );
                   }
@@ -126,9 +126,9 @@ class _PlansScreenState extends State<PlansScreen> {
                             label: const Text('Manage Billing'),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppColors.textPrimary,
-                              backgroundColor: AppColors.primary,
+                              backgroundColor: AppColors.surface,
                               side: BorderSide(
-                                color: AppColors.secondary.withValues(
+                                color: AppColors.borderStrong.withValues(
                                   alpha: 0.18,
                                 ),
                               ),
@@ -168,7 +168,7 @@ class _PlansScreenState extends State<PlansScreen> {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [AppColors.secondary, AppColors.blue],
+          colors: [AppColors.primary900, AppColors.primary, AppColors.blue],
         ),
         borderRadius: BorderRadius.circular(28),
       ),
@@ -269,7 +269,7 @@ class _PlansScreenState extends State<PlansScreen> {
                     minHeight: 10,
                     backgroundColor: Colors.white.withValues(alpha: 0.16),
                     valueColor: const AlwaysStoppedAnimation<Color>(
-                      Color(0xFFFFD166),
+                      AppColors.activeMenuBg,
                     ),
                   ),
                 ),
@@ -283,7 +283,7 @@ class _PlansScreenState extends State<PlansScreen> {
               onPressed: () => _showMessage('Upgrade Plan clicked'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
-                foregroundColor: AppColors.secondary,
+                foregroundColor: AppColors.primary,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(18),
@@ -305,7 +305,7 @@ class _PlansScreenState extends State<PlansScreen> {
     return Container(
       padding: const EdgeInsets.all(5),
       decoration: BoxDecoration(
-        color: const Color(0xFFE9EDF6),
+        color: AppColors.surfaceSoft,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Row(
@@ -337,13 +337,13 @@ class _PlansScreenState extends State<PlansScreen> {
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
         decoration: BoxDecoration(
-          color: isActive ? AppColors.primary : Colors.transparent,
+          color: isActive ? AppColors.activeMenuBg : Colors.transparent,
           borderRadius: BorderRadius.circular(999),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isActive ? AppColors.secondary : AppColors.textSecondary,
+            color: isActive ? AppColors.primary900 : AppColors.textSecondary,
             fontSize: 14,
             fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
           ),
@@ -353,18 +353,18 @@ class _PlansScreenState extends State<PlansScreen> {
   }
 
   Widget _buildPlanCard(PlanModel plan, {required bool isCurrent}) {
-    final accentColor = isCurrent ? AppColors.secondary : AppColors.blue;
+    final accentColor = isCurrent ? AppColors.primary : AppColors.blue;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(28),
         border: Border.all(
           color: isCurrent
-              ? AppColors.secondary.withValues(alpha: 0.22)
-              : AppColors.secondary.withValues(alpha: 0.10),
+              ? AppColors.primary.withValues(alpha: 0.22)
+              : AppColors.borderLight,
         ),
       ),
       child: Column(
@@ -389,13 +389,13 @@ class _PlansScreenState extends State<PlansScreen> {
                     vertical: 7,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.secondary.withValues(alpha: 0.08),
+                    color: AppColors.activeMenuBg,
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: const Text(
                     'Active',
                     style: TextStyle(
-                      color: AppColors.secondary,
+                      color: AppColors.primary,
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                     ),
@@ -448,7 +448,7 @@ class _PlansScreenState extends State<PlansScreen> {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFD),
+              color: AppColors.surfaceSoft,
               borderRadius: BorderRadius.circular(20),
             ),
             child: Column(
@@ -502,7 +502,7 @@ class _PlansScreenState extends State<PlansScreen> {
                     height: 54,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF2F4F8),
+                      color: AppColors.surfaceSoft,
                       borderRadius: BorderRadius.circular(18),
                     ),
                     child: const Text(
@@ -518,8 +518,8 @@ class _PlansScreenState extends State<PlansScreen> {
                     onPressed: () =>
                         _showMessage('Choose ${plan.name} plan clicked'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.secondary,
-                      foregroundColor: AppColors.primary,
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(

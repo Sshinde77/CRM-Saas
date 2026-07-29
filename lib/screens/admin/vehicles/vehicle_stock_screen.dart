@@ -77,7 +77,7 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
 
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: AppColors.primary,
+      backgroundColor: AppColors.background,
       drawer: const AppDrawer(activeItem: 'Vehicle Stock'),
       body: SafeArea(
         child: Column(
@@ -321,7 +321,7 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: AppColors.secondary.withValues(alpha: 0.18)),
         boxShadow: [
@@ -525,3 +525,5 @@ class _VehicleStock {
     required this.lines,
   });
 }
+
+

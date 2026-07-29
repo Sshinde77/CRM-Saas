@@ -31,13 +31,12 @@ class AppDrawer extends StatefulWidget {
 
   const AppDrawer({super.key, required this.activeItem, this.activeSubItem});
 
-  static const Color purple = AppColors.purple;
   static const Color blue = AppColors.blue;
-  static const Color accent = AppColors.secondary;
-  static const Color drawerBackground = Color(0xFFF7F1FF);
-  static const Color drawerSurface = Color(0xFFEFE4FF);
-  static const Color textPrimary = Color(0xFF2F1A4B);
-  static const Color textSecondary = Color(0xFF6F5A91);
+  static const Color accent = AppColors.primary;
+  static const Color drawerBackground = AppColors.adminSidebarBg;
+  static const Color drawerSurface = AppColors.activeMenuBg;
+  static const Color textPrimary = AppColors.textPrimary;
+  static const Color textSecondary = AppColors.textSecondary;
 
   static const List<_NavItem> _navItems = [
     _NavItem('Dashboard', Icons.dashboard_outlined),
@@ -168,8 +167,8 @@ class _AppDrawerState extends State<AppDrawer> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
               color: isActive
-                  ? accent.withValues(alpha: 0.18)
-                  : AppColors.primary.withValues(alpha: 0.72),
+                  ? AppDrawer.drawerSurface
+                  : Colors.white.withValues(alpha: 0.72),
             ),
             child: Row(
               children: [
@@ -185,7 +184,7 @@ class _AppDrawerState extends State<AppDrawer> {
                     style: TextStyle(
                       color: isActive ? accent : AppDrawer.textSecondary,
                       fontSize: 14,
-                      fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                      fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
                     ),
                   ),
                 ),
@@ -237,7 +236,7 @@ class _AppDrawerState extends State<AppDrawer> {
                     ),
                     child: const Icon(
                       Icons.water_drop_rounded,
-                      color: AppColors.primary,
+                      color: Colors.white,
                       size: 22,
                     ),
                   ),

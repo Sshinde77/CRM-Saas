@@ -97,7 +97,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: AppColors.primary,
+      backgroundColor: AppColors.background,
       drawer: const AppDrawer(activeItem: 'Reports'),
       body: SafeArea(
         child: Column(
@@ -145,8 +145,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
                           icon: const Icon(Icons.download_rounded, size: 18),
                           label: const Text('Download All'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.secondary,
-                            foregroundColor: AppColors.primary,
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(
                               horizontal: 18,
@@ -440,7 +440,7 @@ class _ReportCard extends StatelessWidget {
                 label: const Text('Download'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: data.accent,
-                  foregroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
                   elevation: 0,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -481,3 +481,4 @@ class _ReportHighlight {
 
   const _ReportHighlight(this.label, this.value);
 }
+

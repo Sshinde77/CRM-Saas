@@ -73,7 +73,7 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
 
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: AppColors.primary,
+      backgroundColor: AppColors.background,
       drawer: const AppDrawer(activeItem: 'Audit Logs'),
       body: SafeArea(
         child: Column(
@@ -214,7 +214,7 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: accent.withValues(alpha: 0.18)),
         boxShadow: [
@@ -291,7 +291,7 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(22),
         border: Border.all(color: entry.accent.withValues(alpha: 0.16)),
         boxShadow: [
@@ -441,3 +441,5 @@ class _AuditLogEntry {
     required this.accent,
   });
 }
+
+

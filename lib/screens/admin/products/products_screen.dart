@@ -260,7 +260,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: AppColors.primary,
+        backgroundColor: AppColors.background,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text(
           'Delete product?',
@@ -291,7 +291,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
   void _showProductDetails(_ProductItem product) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.primary,
+      backgroundColor: AppColors.background,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -360,7 +360,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: AppColors.primary,
+      backgroundColor: AppColors.background,
       drawer: const AppDrawer(activeItem: 'Products'),
       body: SafeArea(
         child: Column(
@@ -409,7 +409,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                           label: const Text('Add Product'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.purple,
-                            foregroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(
                               horizontal: 18,
@@ -461,7 +461,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: AppColors.secondary.withValues(alpha: 0.18)),
         boxShadow: [
@@ -594,7 +594,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.secondary.withValues(alpha: 0.18)),
         boxShadow: [
@@ -863,7 +863,7 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: AppColors.primary,
+      backgroundColor: AppColors.background,
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: ConstrainedBox(
@@ -1007,7 +1007,7 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
                     onPressed: _submit,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.purple,
-                      foregroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
                       elevation: 0,
                     ),
                     child: Text(_isEditing ? 'Save Changes' : 'Add Product'),
@@ -1094,3 +1094,5 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
     );
   }
 }
+
+

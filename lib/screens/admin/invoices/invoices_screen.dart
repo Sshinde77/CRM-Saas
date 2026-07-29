@@ -187,7 +187,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
 
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: AppColors.primary,
+      backgroundColor: AppColors.background,
       drawer: const AppDrawer(activeItem: 'Invoices'),
       body: SafeArea(
         child: Column(
@@ -251,7 +251,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(18),
                       decoration: BoxDecoration(
-                        color: AppColors.primary,
+                        color: AppColors.background,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
                           color: AppColors.secondary.withValues(alpha: 0.18),
@@ -451,7 +451,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.secondary.withValues(alpha: 0.14)),
         boxShadow: [
@@ -566,3 +566,5 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
     );
   }
 }
+
+

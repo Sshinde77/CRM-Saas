@@ -199,7 +199,7 @@ class _SalesManagerDashboardScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.primary,
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
           children: [
@@ -329,7 +329,7 @@ class _SalesManagerDashboardScreenState
                 ),
               ),
               const SizedBox(width: 14),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -345,7 +345,7 @@ class _SalesManagerDashboardScreenState
                     Text(
                       'Track targets, team performance, customer coverage, and collections in one place.',
                       style: TextStyle(
-                        color: Color(0xFFEDE7FF),
+                        color: Colors.white.withValues(alpha: 0.88),
                         fontSize: 13,
                         height: 1.35,
                       ),
@@ -480,7 +480,7 @@ class _SalesManagerDashboardScreenState
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.secondary.withValues(alpha: 0.16)),
         boxShadow: [
@@ -1135,7 +1135,7 @@ class _SectionCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: AppColors.secondary.withValues(alpha: 0.16)),
         boxShadow: [
@@ -1331,3 +1331,5 @@ class _CustomerOpportunity {
     required this.color,
   });
 }
+
+

@@ -1,4 +1,5 @@
 enum AppRole {
+  superAdmin,
   admin,
   salesManager,
   delivery,
@@ -12,6 +13,10 @@ enum AppRole {
     );
 
     switch (normalized) {
+      case 'superadmin':
+      case 'superadministrator':
+      case 'superuser':
+        return AppRole.superAdmin;
       case 'admin':
       case 'businessowner':
       case 'adminbusinessowner':

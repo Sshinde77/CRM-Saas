@@ -6,6 +6,7 @@ import 'accountant/dashboard/accountant_dashboard_screen.dart';
 import 'admin/dashboard/admin_dashboard_screen.dart';
 import 'delivery/dashboard/delivery_dashboard_screen.dart';
 import 'sales_manager/dashboard/sales_manager_dashboard_screen.dart';
+import 'super_admin/dashboard/super_admin_dashboard_screen.dart';
 import 'shared/role_workspace_screen.dart';
 
 class RoleHomeScreen extends StatelessWidget {
@@ -23,6 +24,8 @@ class RoleHomeScreen extends StatelessWidget {
         role ?? ApiProviderScope.maybeOf(context)?.currentUser?.role;
 
     switch (AppRole.fromRaw(resolvedRole)) {
+      case AppRole.superAdmin:
+        return const SuperAdminDashboardScreen();
       case AppRole.admin:
         return const AdminDashboardScreen();
       case AppRole.salesManager:

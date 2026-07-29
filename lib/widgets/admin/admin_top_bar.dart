@@ -65,7 +65,7 @@ class _AdminTopBarState extends State<AdminTopBar> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          backgroundColor: AppColors.primary,
+          backgroundColor: AppColors.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
           ),
@@ -132,8 +132,8 @@ class _AdminTopBarState extends State<AdminTopBar> {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       decoration: const BoxDecoration(
-        color: AppColors.primary,
-        border: Border(bottom: BorderSide(color: AppColors.accentGrey)),
+        color: AppColors.surface,
+        border: Border(bottom: BorderSide(color: AppColors.borderLight)),
       ),
       child: Row(
         children: [
@@ -145,8 +145,8 @@ class _AdminTopBarState extends State<AdminTopBar> {
               height: 40,
               child: Icon(
                 widget.leadingIcon,
-                color: AppColors.accentGrey,
-                size: 30,
+                color: AppColors.primary,
+                size: 26,
               ),
             ),
           ),
@@ -155,7 +155,7 @@ class _AdminTopBarState extends State<AdminTopBar> {
             child: Text(
               widget.title,
               style: const TextStyle(
-                color: AppColors.secondary,
+                color: AppColors.textPrimary,
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
               ),
@@ -222,8 +222,8 @@ class _DefaultAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     return PopupMenuButton<_ProfileMenuAction>(
       tooltip: 'Profile',
-      color: AppColors.primary,
-      surfaceTintColor: AppColors.primary,
+      color: AppColors.surface,
+      surfaceTintColor: AppColors.surface,
       shadowColor: Colors.black.withValues(alpha: 0.12),
       padding: EdgeInsets.zero,
       offset: const Offset(0, 46),
@@ -269,13 +269,13 @@ class _DefaultAvatar extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.surfaceSoft,
           shape: BoxShape.circle,
-          border: Border.all(color: AppColors.accentGrey),
+          border: Border.all(color: AppColors.border),
         ),
         alignment: Alignment.center,
         child: const Text(
           'AS',
           style: TextStyle(
-            color: AppColors.accentGrey,
+            color: AppColors.primary,
             fontWeight: FontWeight.w700,
             fontSize: 12,
           ),

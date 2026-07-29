@@ -180,7 +180,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
 
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: AppColors.primary,
+      backgroundColor: AppColors.background,
       drawer: const AppDrawer(activeItem: 'Expenses'),
       body: SafeArea(
         child: Column(
@@ -260,7 +260,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(18),
                       decoration: BoxDecoration(
-                        color: AppColors.primary,
+                        color: AppColors.background,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
                           color: AppColors.secondary.withValues(alpha: 0.18),
@@ -384,7 +384,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: color.withValues(alpha: 0.16)),
       ),
@@ -437,7 +437,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.secondary.withValues(alpha: 0.14)),
         boxShadow: [
@@ -554,3 +554,5 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
     );
   }
 }
+
+

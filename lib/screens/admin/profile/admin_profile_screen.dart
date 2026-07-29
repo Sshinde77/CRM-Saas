@@ -48,7 +48,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.primary,
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
           children: [
@@ -179,7 +179,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
               onPressed: _saving ? null : _handleSave,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.purple,
-                foregroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -266,7 +266,7 @@ class _CardContainer extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: AppColors.secondary.withValues(alpha: 0.18)),
         boxShadow: [
@@ -281,3 +281,5 @@ class _CardContainer extends StatelessWidget {
     );
   }
 }
+
+

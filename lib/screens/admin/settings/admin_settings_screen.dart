@@ -67,7 +67,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: AppColors.primary,
+      backgroundColor: AppColors.background,
       drawer: const AppDrawer(activeItem: 'Settings'),
       body: SafeArea(
         child: Column(
@@ -113,8 +113,8 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                         ElevatedButton(
                           onPressed: _saving ? null : _handleSave,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.secondary,
-                            foregroundColor: AppColors.primary,
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
@@ -350,7 +350,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: AppColors.secondary.withValues(alpha: 0.18)),
         boxShadow: [
@@ -389,3 +389,5 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
     );
   }
 }
+
+

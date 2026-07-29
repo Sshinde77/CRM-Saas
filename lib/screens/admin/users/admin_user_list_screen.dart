@@ -104,7 +104,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: AppColors.primary,
+        backgroundColor: AppColors.background,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text(
           'Delete user?',
@@ -136,7 +136,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
   void _showUserDetails(AppUser user) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.primary,
+      backgroundColor: AppColors.background,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -216,7 +216,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: AppColors.primary,
+      backgroundColor: AppColors.background,
       drawer: const AppDrawer(
         activeItem: 'User Management',
         activeSubItem: 'Users',
@@ -310,7 +310,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: AppColors.secondary.withValues(alpha: 0.18)),
         boxShadow: [
@@ -433,7 +433,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: AppColors.secondary.withValues(alpha: 0.18)),
       ),
@@ -798,7 +798,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: AppColors.primary,
+      backgroundColor: AppColors.background,
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: ConstrainedBox(
@@ -914,7 +914,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.purple,
-                      foregroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
                       elevation: 0,
                     ),
                     child: Text(
@@ -1011,3 +1011,5 @@ class _UserFormDialogState extends State<_UserFormDialog> {
     );
   }
 }
+
+

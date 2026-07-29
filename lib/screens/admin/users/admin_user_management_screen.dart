@@ -115,7 +115,7 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: AppColors.primary,
+      backgroundColor: AppColors.background,
       drawer: AppDrawer(
         activeItem: 'User Management',
         activeSubItem: _tabIndex == 0 ? 'Users' : 'Roles',
@@ -239,7 +239,7 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
                     label: const Text('Add User'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.purple,
-                      foregroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
                       elevation: 0,
                     ),
                   ),
@@ -398,7 +398,7 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Row(
@@ -550,7 +550,7 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: AppColors.activeMenuBg,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: AppColors.secondary.withValues(alpha: 0.18)),
         boxShadow: [
@@ -594,7 +594,7 @@ class _AddUserDialogState extends State<_AddUserDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: AppColors.primary,
+      backgroundColor: AppColors.background,
       title: const Text('Add User'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -648,7 +648,7 @@ class _CreateRoleDialogState extends State<_CreateRoleDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: AppColors.primary,
+      backgroundColor: AppColors.background,
       title: const Text('Create Role'),
       content: TextField(
         controller: _roleController,
@@ -668,3 +668,5 @@ class _CreateRoleDialogState extends State<_CreateRoleDialog> {
     );
   }
 }
+
+

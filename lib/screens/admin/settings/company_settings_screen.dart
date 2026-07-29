@@ -47,7 +47,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
   String? _profilePhotoName;
   bool _isSaving = false;
 
-  static const Color _pageBg = Color(0xFFF3EDF9);
+  static const Color _pageBg = AppColors.background;
 
   @override
   void dispose() {
@@ -155,9 +155,9 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.secondary.withValues(alpha: 0.08)),
+        border: Border.all(color: AppColors.borderLight),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -193,8 +193,8 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
                   OutlinedButton(
                     onPressed: _isSaving ? null : () => Navigator.of(context).maybePop(),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.secondary,
-                      side: const BorderSide(color: AppColors.secondary),
+                      foregroundColor: AppColors.primary,
+                      side: const BorderSide(color: AppColors.borderStrong),
                       padding: const EdgeInsets.symmetric(
                         horizontal: 20,
                         vertical: 14,
@@ -209,8 +209,8 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
                   ElevatedButton(
                     onPressed: _isSaving ? null : _handleSave,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.secondary,
-                      foregroundColor: AppColors.primary,
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 20,
@@ -226,7 +226,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
                             height: 16,
                             child: CircularProgressIndicator(
                               strokeWidth: 2.2,
-                              color: AppColors.primary,
+                              color: Colors.white,
                             ),
                           )
                         : const Text('Save Changes'),
@@ -310,7 +310,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
       decoration: BoxDecoration(
         color: AppColors.surfaceSoft,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.secondary.withValues(alpha: 0.12)),
+        border: Border.all(color: AppColors.borderLight),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -321,13 +321,13 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: AppColors.secondary.withValues(alpha: 0.12),
-              border: Border.all(color: AppColors.secondary.withValues(alpha: 0.25)),
+              border: Border.all(color: AppColors.border),
             ),
             clipBehavior: Clip.antiAlias,
             child: _profilePhotoBytes == null
                 ? const Icon(
                     Icons.person_rounded,
-                    color: AppColors.secondary,
+                    color: AppColors.primary,
                     size: 34,
                   )
                 : Image.memory(_profilePhotoBytes!, fit: BoxFit.cover),
@@ -364,8 +364,8 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
                 icon: const Icon(Icons.upload_rounded, size: 18),
                 label: const Text('Upload New Photo'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.secondary,
-                  foregroundColor: AppColors.primary,
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
                   elevation: 0,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -379,8 +379,8 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
               OutlinedButton(
                 onPressed: _profilePhotoBytes == null ? null : _removeProfilePhoto,
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.secondary,
-                  side: const BorderSide(color: AppColors.secondary),
+                  foregroundColor: AppColors.primary,
+                  side: const BorderSide(color: AppColors.borderStrong),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 18,
                     vertical: 14,
@@ -495,18 +495,18 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
         borderSide: BorderSide(
-          color: AppColors.secondary.withValues(alpha: 0.16),
+          color: AppColors.borderStrong,
         ),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
         borderSide: BorderSide(
-          color: AppColors.secondary.withValues(alpha: 0.16),
+          color: AppColors.borderStrong,
         ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: AppColors.secondary),
+        borderSide: const BorderSide(color: AppColors.primary),
       ),
     );
   }

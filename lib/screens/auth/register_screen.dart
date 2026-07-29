@@ -7,18 +7,6 @@ import '../../providers/api_provider.dart';
 import '../../services/api_service.dart';
 import 'login_screen.dart';
 
-// Place this file at: lib/screens/auth/register_screen.dart
-//
-// 3-step organization registration wizard:
-//   1. Admin Registration   (name, email, password, phone)
-//   2. Organization Details (company name, logo, business type, GST, PAN, FY)
-//   3. Business Details     (billing/shipping address, website, invoice prefix)
-//
-// Restyled to match the gradient-card look used in login_screen.dart v4
-// (Uiverse.io-inspired): rounded 40px card, pill-shaped inputs with a soft
-// cyan glow, and a blue-to-cyan gradient primary button. All fields, steps,
-// and validation logic are unchanged from the original.
-
 const List<String> _businessTypes = [
   'Manufacturer',
   'Distributor',
@@ -44,14 +32,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _step2Key = GlobalKey<FormState>();
   final _step3Key = GlobalKey<FormState>();
 
-  // Step 1
   final _adminNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _phoneController = TextEditingController();
   bool _obscurePassword = true;
 
-  // Step 2
   final _companyNameController = TextEditingController();
   final _gstController = TextEditingController();
   final _panController = TextEditingController();
@@ -59,22 +45,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String? _financialYear;
   XFile? _logoFile;
 
-  // Step 3
   final _billingAddressController = TextEditingController();
   final _shippingAddressController = TextEditingController();
   final _websiteController = TextEditingController();
   final _invoicePrefixController = TextEditingController();
   bool _shippingSameAsBilling = false;
 
-  // Gradient-card palette (Uiverse-inspired) — matches login_screen.dart
-  static const Color cardTopColor = Color(0xFFFFFFFF);
-  static const Color cardBottomColor = Color(0xFFF4F7FB);
-  static const Color brandBlue = AppColors.secondary;
-  static const Color brandCyan = Color(0xFFA855F7);
-  static const Color darkText = Color(0xFF111827);
-  static const Color greyText = Color(0xFFAAAAAA);
-  static const Color shadowBlue = Color(0xFF85BDD7);
-  static const Color inputShadow = Color(0xFFCFF0FF);
+  static const Color pageBg = AppColors.adminSidebarBg;
+  static const Color cardBg = AppColors.surfaceOverlay;
+  static const Color primary = AppColors.primary;
+  static const Color headingText = AppColors.textPrimary;
+  static const Color bodyText = AppColors.textSecondary;
+  static const Color mutedText = AppColors.textMuted;
+  static const Color lightMutedText = AppColors.textLightMuted;
+  static const Color borderLight = AppColors.borderLight;
+  static const Color border = AppColors.border;
+  static const Color borderStrong = AppColors.borderStrong;
+  static const Color shadowColor = Color(0x14063B00);
 
   @override
   void initState() {
@@ -197,7 +184,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEEF3F8),
+      backgroundColor: pageBg,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -210,19 +197,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   vertical: 30,
                 ),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [cardTopColor, cardBottomColor],
-                  ),
-                  borderRadius: BorderRadius.circular(40),
-                  border: Border.all(color: Colors.white, width: 5),
-                  boxShadow: [
+                  color: cardBg,
+                  borderRadius: BorderRadius.circular(36),
+                  border: Border.all(color: borderLight),
+                  boxShadow: const [
                     BoxShadow(
-                      color: shadowBlue.withValues(alpha: 0.55),
-                      blurRadius: 30,
-                      spreadRadius: -20,
-                      offset: const Offset(0, 30),
+                      color: shadowColor,
+                      blurRadius: 28,
+                      offset: Offset(0, 18),
                     ),
                   ],
                 ),
@@ -235,14 +217,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       style: TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.w900,
-                        color: brandBlue,
+                        color: headingText,
                       ),
                     ),
                     const SizedBox(height: 6),
                     const Text(
                       'Set up your SAAS CRM workspace',
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 13, color: greyText),
+                      style: TextStyle(fontSize: 13, color: bodyText),
                     ),
                     const SizedBox(height: 10),
                     Text(
@@ -251,13 +233,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: greyText,
+                        color: mutedText,
                       ),
                     ),
                     const SizedBox(height: 18),
                     _buildStepDots(),
                     const SizedBox(height: 22),
-
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 200),
                       child: _currentStep == 0
@@ -289,10 +270,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             height: 8,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(4),
-              gradient: isActive
-                  ? const LinearGradient(colors: [brandBlue, brandCyan])
-                  : null,
-              color: isActive ? null : const Color(0xFFE3E9F0),
+              color: isActive ? primary : border,
             ),
           ),
         );
@@ -300,9 +278,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  // ---------------------------------------------------------------------
-  // Step 1: Admin Registration
-  // ---------------------------------------------------------------------
   Widget _buildStep1() {
     return Form(
       key: _step1Key,
@@ -317,7 +292,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               label: 'Admin Name',
               child: TextFormField(
                 controller: _adminNameController,
-                style: const TextStyle(color: darkText, fontSize: 14),
+                style: const TextStyle(color: headingText, fontSize: 14),
                 decoration: _pillDecoration(hint: 'e.g. Rohit Sharma'),
               ),
             ),
@@ -326,7 +301,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               child: TextFormField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
-                style: const TextStyle(color: darkText, fontSize: 14),
+                style: const TextStyle(color: headingText, fontSize: 14),
                 decoration: _pillDecoration(hint: 'e.g. rohit@company.com'),
               ),
             ),
@@ -338,7 +313,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               child: TextFormField(
                 controller: _passwordController,
                 obscureText: _obscurePassword,
-                style: const TextStyle(color: darkText, fontSize: 14),
+                style: const TextStyle(color: headingText, fontSize: 14),
                 decoration: _pillDecoration(
                   hint: 'e.g. Minimum 6 characters',
                   suffixIcon: IconButton(
@@ -346,7 +321,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       _obscurePassword
                           ? Icons.visibility_outlined
                           : Icons.visibility_off_outlined,
-                      color: greyText,
+                      color: mutedText,
                       size: 20,
                     ),
                     onPressed: () =>
@@ -360,20 +335,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
               child: TextFormField(
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
-                style: const TextStyle(color: darkText, fontSize: 14),
+                style: const TextStyle(color: headingText, fontSize: 14),
                 decoration: _pillDecoration(hint: 'e.g. 98450 11223'),
               ),
             ),
           ),
           const SizedBox(height: 22),
-          _GradientButton(label: 'Next', isLoading: false, onPressed: _goNext),
+          _PrimaryButton(label: 'Next', isLoading: false, onPressed: _goNext),
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Text(
                 'Already have an account? ',
-                style: TextStyle(color: greyText, fontSize: 12),
+                style: TextStyle(color: mutedText, fontSize: 12),
               ),
               GestureDetector(
                 onTap: () {
@@ -385,7 +360,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 child: const Text(
                   'Sign in',
                   style: TextStyle(
-                    color: Color(0xFF0099FF),
+                    color: primary,
                     fontWeight: FontWeight.w700,
                     fontSize: 12,
                   ),
@@ -398,9 +373,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  // ---------------------------------------------------------------------
-  // Step 2: Organization Details
-  // ---------------------------------------------------------------------
   Widget _buildStep2() {
     return Form(
       key: _step2Key,
@@ -415,7 +387,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               label: 'Company/Firm/Shop Name',
               child: TextFormField(
                 controller: _companyNameController,
-                style: const TextStyle(color: darkText, fontSize: 14),
+                style: const TextStyle(color: headingText, fontSize: 14),
                 decoration: _pillDecoration(hint: 'e.g. Sharma Distributors'),
               ),
             ),
@@ -433,20 +405,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(20),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: inputShadow,
-                            blurRadius: 10,
-                            spreadRadius: -5,
-                            offset: Offset(0, 10),
-                          ),
-                        ],
+                        border: Border.all(color: borderLight),
                       ),
                       child: Row(
                         children: [
                           const Icon(
                             Icons.image_outlined,
-                            color: brandBlue,
+                            color: primary,
                             size: 20,
                           ),
                           const SizedBox(width: 8),
@@ -455,7 +420,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               _logoFile?.name ?? 'Select company logo',
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                color: _logoFile != null ? darkText : greyText,
+                                color: _logoFile != null
+                                    ? headingText
+                                    : lightMutedText,
                                 fontSize: 13,
                               ),
                             ),
@@ -464,7 +431,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             onPressed: _pickLogo,
                             style: OutlinedButton.styleFrom(
                               backgroundColor: Colors.white,
-                              side: const BorderSide(color: Color(0xFFE5E7EB)),
+                              side: const BorderSide(color: border),
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 14,
                                 vertical: 8,
@@ -475,7 +442,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ),
                             child: const Text(
                               'Browse',
-                              style: TextStyle(color: darkText, fontSize: 12),
+                              style: TextStyle(
+                                color: headingText,
+                                fontSize: 12,
+                              ),
                             ),
                           ),
                         ],
@@ -485,7 +455,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(height: 6),
                   const Text(
                     'Logo selection stays local until a media upload API is added.',
-                    style: TextStyle(color: greyText, fontSize: 11),
+                    style: TextStyle(color: mutedText, fontSize: 11),
                   ),
                 ],
               ),
@@ -497,11 +467,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
               label: 'Business Type',
               child: DropdownButtonFormField<String>(
                 initialValue: _businessType,
-                style: const TextStyle(color: darkText, fontSize: 14),
+                style: const TextStyle(color: headingText, fontSize: 14),
                 decoration: _pillDecoration(hint: 'Select business type'),
                 icon: const Icon(
                   Icons.keyboard_arrow_down_rounded,
-                  color: greyText,
+                  color: mutedText,
                 ),
                 items: _businessTypes
                     .map(
@@ -517,7 +487,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               child: TextFormField(
                 controller: _gstController,
                 textCapitalization: TextCapitalization.characters,
-                style: const TextStyle(color: darkText, fontSize: 14),
+                style: const TextStyle(color: headingText, fontSize: 14),
                 decoration: _pillDecoration(hint: 'e.g. 27ABCDE1234F1Z5'),
               ),
             ),
@@ -529,7 +499,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               child: TextFormField(
                 controller: _panController,
                 textCapitalization: TextCapitalization.characters,
-                style: const TextStyle(color: darkText, fontSize: 14),
+                style: const TextStyle(color: headingText, fontSize: 14),
                 decoration: _pillDecoration(hint: 'e.g. ABCDE1234F'),
               ),
             ),
@@ -537,11 +507,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
               label: 'Financial Year',
               child: DropdownButtonFormField<String>(
                 initialValue: _financialYear,
-                style: const TextStyle(color: darkText, fontSize: 14),
+                style: const TextStyle(color: headingText, fontSize: 14),
                 decoration: _pillDecoration(hint: 'Select financial year'),
                 icon: const Icon(
                   Icons.keyboard_arrow_down_rounded,
-                  color: greyText,
+                  color: mutedText,
                 ),
                 items: _financialYears
                     .map((fy) => DropdownMenuItem(value: fy, child: Text(fy)))
@@ -557,9 +527,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  // ---------------------------------------------------------------------
-  // Step 3: Business Details
-  // ---------------------------------------------------------------------
   Widget _buildStep3() {
     return Form(
       key: _step3Key,
@@ -574,7 +541,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: TextFormField(
               controller: _billingAddressController,
               maxLines: 4,
-              style: const TextStyle(color: darkText, fontSize: 14),
+              style: const TextStyle(color: headingText, fontSize: 14),
               decoration: _pillDecoration(
                 hint: 'e.g. 12, MG Road, Andheri East, Mumbai, MH 400069',
               ),
@@ -588,7 +555,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 height: 22,
                 child: Checkbox(
                   value: _shippingSameAsBilling,
-                  activeColor: brandBlue,
+                  activeColor: primary,
+                  side: const BorderSide(color: borderStrong),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(6),
                   ),
@@ -607,7 +575,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const Expanded(
                 child: Text(
                   'Shipping/Warehouse address same as billing address',
-                  style: TextStyle(color: darkText, fontSize: 13),
+                  style: TextStyle(color: headingText, fontSize: 13),
                 ),
               ),
             ],
@@ -619,7 +587,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               controller: _shippingAddressController,
               maxLines: 4,
               enabled: !_shippingSameAsBilling,
-              style: const TextStyle(color: darkText, fontSize: 14),
+              style: const TextStyle(color: headingText, fontSize: 14),
               decoration: _pillDecoration(
                 hint: 'e.g. Plot 45, MIDC Industrial Area, Pune, MH 411019',
               ),
@@ -632,7 +600,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               child: TextFormField(
                 controller: _websiteController,
                 keyboardType: TextInputType.url,
-                style: const TextStyle(color: darkText, fontSize: 14),
+                style: const TextStyle(color: headingText, fontSize: 14),
                 decoration: _pillDecoration(hint: 'e.g. www.sharmadist.com'),
               ),
             ),
@@ -641,7 +609,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               child: TextFormField(
                 controller: _invoicePrefixController,
                 textCapitalization: TextCapitalization.characters,
-                style: const TextStyle(color: darkText, fontSize: 14),
+                style: const TextStyle(color: headingText, fontSize: 14),
                 decoration: _pillDecoration(hint: 'e.g. INV'),
               ),
             ),
@@ -657,9 +625,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  // ---------------------------------------------------------------------
-  // Shared helpers
-  // ---------------------------------------------------------------------
   Widget _buildStepButtons({
     required VoidCallback onNext,
     required String nextLabel,
@@ -673,7 +638,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: OutlinedButton(
             onPressed: _currentStep == 0 || isLoading ? null : _goBack,
             style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: Color(0xFFE5E7EB)),
+              side: const BorderSide(color: border),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
@@ -681,7 +646,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: const Text(
               'Back',
               style: TextStyle(
-                color: darkText,
+                color: headingText,
                 fontWeight: FontWeight.w700,
                 fontSize: 14,
               ),
@@ -690,7 +655,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: _GradientButton(
+          child: _PrimaryButton(
             label: nextLabel,
             isLoading: isLoading,
             onPressed: onNext,
@@ -728,7 +693,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         Text(
           label,
           style: const TextStyle(
-            color: darkText,
+            color: headingText,
             fontWeight: FontWeight.w700,
             fontSize: 12,
           ),
@@ -739,31 +704,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  // Pill-shaped input decoration matching the Uiverse card's soft cyan glow
-  // and rounded corners, with a colored inline border only while focused.
   InputDecoration _pillDecoration({String? hint, Widget? suffixIcon}) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(color: greyText, fontSize: 14),
+      hintStyle: const TextStyle(color: lightMutedText, fontSize: 14),
       suffixIcon: suffixIcon,
       filled: true,
       fillColor: Colors.white,
       contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(20),
-        borderSide: BorderSide.none,
+        borderSide: const BorderSide(color: borderLight),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(20),
-        borderSide: BorderSide.none,
+        borderSide: const BorderSide(color: borderLight),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(20),
-        borderSide: const BorderSide(color: brandCyan, width: 2),
+        borderSide: const BorderSide(color: primary, width: 1.6),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(20),
-        borderSide: const BorderSide(color: Colors.redAccent),
+        borderSide: const BorderSide(color: AppColors.statusInactiveText),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(20),
+        borderSide: const BorderSide(color: AppColors.statusInactiveText),
       ),
     );
   }
@@ -784,14 +751,7 @@ class _StepHeader extends StatelessWidget {
           height: 28,
           alignment: Alignment.center,
           decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                _RegisterScreenState.brandBlue,
-                _RegisterScreenState.brandCyan,
-              ],
-            ),
+            color: _RegisterScreenState.primary,
             shape: BoxShape.circle,
           ),
           child: Text(
@@ -807,7 +767,7 @@ class _StepHeader extends StatelessWidget {
         Text(
           title,
           style: const TextStyle(
-            color: _RegisterScreenState.darkText,
+            color: _RegisterScreenState.headingText,
             fontWeight: FontWeight.w800,
             fontSize: 17,
           ),
@@ -817,12 +777,12 @@ class _StepHeader extends StatelessWidget {
   }
 }
 
-class _GradientButton extends StatelessWidget {
+class _PrimaryButton extends StatelessWidget {
   final String label;
   final bool isLoading;
   final VoidCallback onPressed;
 
-  const _GradientButton({
+  const _PrimaryButton({
     required this.label,
     required this.isLoading,
     required this.onPressed,
@@ -835,54 +795,30 @@ class _GradientButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
-          padding: EdgeInsets.zero,
+          backgroundColor: _RegisterScreenState.primary,
+          foregroundColor: Colors.white,
+          elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
         ),
-        child: Ink(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                _RegisterScreenState.brandBlue,
-                _RegisterScreenState.brandCyan,
-              ],
-            ),
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: _RegisterScreenState.shadowBlue.withValues(alpha: 0.55),
-                blurRadius: 10,
-                spreadRadius: -8,
-                offset: const Offset(0, 20),
+        child: isLoading
+            ? const SizedBox(
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.4,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              )
+            : Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                ),
               ),
-            ],
-          ),
-          child: Container(
-            alignment: Alignment.center,
-            child: isLoading
-                ? const SizedBox(
-                    width: 22,
-                    height: 22,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.4,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
-                : Text(
-                    label,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 15,
-                    ),
-                  ),
-          ),
-        ),
       ),
     );
   }

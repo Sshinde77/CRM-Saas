@@ -45,7 +45,7 @@ class RoleWorkspaceScreen extends StatelessWidget {
                     return Container(
                       padding: const EdgeInsets.all(18),
                       decoration: BoxDecoration(
-                        color: AppColors.primary,
+                        color: AppColors.background,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
                           color: AppColors.accentGrey.withValues(alpha: 0.8),
@@ -77,3 +77,4 @@ class RoleWorkspaceScreen extends StatelessWidget {
     );
   }
 }
+

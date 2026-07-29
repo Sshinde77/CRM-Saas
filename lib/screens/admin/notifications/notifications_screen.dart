@@ -67,7 +67,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: AppColors.primary,
+      backgroundColor: AppColors.background,
       drawer: const AppDrawer(activeItem: 'Notifications'),
       body: SafeArea(
         child: Column(
@@ -299,3 +299,4 @@ class _NotificationItem {
     required this.accent,
   });
 }
+
