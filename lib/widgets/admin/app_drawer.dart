@@ -289,7 +289,10 @@ class _AppDrawerState extends State<AppDrawer> {
             ),
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 10,
+                  horizontal: 10,
+                ),
                 children: AppDrawer._navItems.map(_buildNavRow).toList(),
               ),
             ),

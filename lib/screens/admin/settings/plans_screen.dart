@@ -16,18 +16,23 @@ class PlansScreen extends StatefulWidget {
 class _PlansScreenState extends State<PlansScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late final ApiService _apiService;
+  late final PageController _pageController;
   late Future<List<PlanModel>> _plansFuture;
+
   bool _isMonthly = true;
+  int _currentPage = 0;
 
   @override
   void initState() {
     super.initState();
     _apiService = ApiService();
+    _pageController = PageController(viewportFraction: 0.9);
     _plansFuture = _apiService.fetchPlans();
   }
 
   @override
   void dispose() {
+    _pageController.dispose();
     _apiService.close();
     super.dispose();
   }
@@ -74,68 +79,77 @@ class _PlansScreenState extends State<PlansScreen> {
                   }
 
                   final currentPlan = _resolveCurrentPlan(plans);
+                  final orderedPlans = _sortPlans(plans);
+                  if (_currentPage >= orderedPlans.length) {
+                    _currentPage = 0;
+                  }
 
                   return SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(16, 10, 16, 18),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Plans',
-                          style: TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 28,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        const Text(
-                          'Review your subscription and compare available plans',
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(height: 18),
+                        _buildHeroSection(),
+                        const SizedBox(height: 12),
                         _buildCurrentPlanCard(currentPlan),
-                        const SizedBox(height: 16),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: _buildBillingToggle(),
-                        ),
-                        const SizedBox(height: 18),
-                        ...plans.map(
-                          (plan) => Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: _buildPlanCard(
-                              plan,
-                              isCurrent: currentPlan.id == plan.id,
-                            ),
+                        const SizedBox(height: 24),
+                        _buildBillingToggle(),
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          height: 360,
+                          child: PageView.builder(
+                            controller: _pageController,
+                            itemCount: orderedPlans.length,
+                            onPageChanged: (index) {
+                              setState(() => _currentPage = index);
+                            },
+                            itemBuilder: (context, index) {
+                              final plan = orderedPlans[index];
+                              final isCurrent = currentPlan.id == plan.id;
+                              final isTopPlan = index == 0;
+
+                              return Padding(
+                                padding: EdgeInsets.only(
+                                  right: index == orderedPlans.length - 1
+                                      ? 0
+                                      : 10,
+                                ),
+                                child: _buildSliderCard(
+                                  plan,
+                                  isCurrent: isCurrent,
+                                  isTopPlan: isTopPlan,
+                                ),
+                              );
+                            },
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 20),
+                        _buildDots(orderedPlans.length),
+                        const SizedBox(height: 20),
                         SizedBox(
                           width: double.infinity,
-                          child: OutlinedButton.icon(
-                            onPressed: () =>
-                                _showMessage('Manage Billing clicked'),
-                            icon: const Icon(
-                              Icons.credit_card_outlined,
-                              size: 18,
-                            ),
-                            label: const Text('Manage Billing'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: AppColors.textPrimary,
-                              backgroundColor: AppColors.surface,
-                              side: BorderSide(
-                                color: AppColors.borderStrong.withValues(
-                                  alpha: 0.18,
-                                ),
-                              ),
+                          child: ElevatedButton(
+                            onPressed: () {
+                              final selectedPlan = orderedPlans[_currentPage];
+                              _showMessage(
+                                'Upgrade to ${selectedPlan.name} clicked',
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(vertical: 13),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(18),
+                                borderRadius: BorderRadius.circular(999),
                               ),
-                              padding: const EdgeInsets.symmetric(vertical: 16),
+                            ),
+                            child: const Text(
+                              'Upgrade Plan',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                              ),
                             ),
                           ),
                         ),
@@ -157,143 +171,197 @@ class _PlansScreenState extends State<PlansScreen> {
         return plan;
       }
     }
+    for (final plan in plans) {
+      if (plan.isActive) {
+        return plan;
+      }
+    }
     return plans.first;
   }
 
-  Widget _buildCurrentPlanCard(PlanModel currentPlan) {
+  List<PlanModel> _sortPlans(List<PlanModel> plans) {
+    final sorted = List<PlanModel>.from(plans);
+    sorted.sort((a, b) {
+      final priceA = _selectedPrice(a);
+      final priceB = _selectedPrice(b);
+      final compared = priceB.compareTo(priceA);
+      if (compared != 0) {
+        return compared;
+      }
+      return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+    });
+    return sorted;
+  }
+
+  num _selectedPrice(PlanModel plan) {
+    return _isMonthly ? plan.priceMonthly : plan.priceYearly;
+  }
+
+  Widget _buildHeroSection() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
       decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [AppColors.primary900, AppColors.primary, AppColors.blue],
+          colors: [Color(0xFFFFFFFF), Color(0xFFF4FBF1), Color(0xFFFFFFFF)],
         ),
-        borderRadius: BorderRadius.circular(28),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.18),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Icon(
-                  Icons.workspace_premium_outlined,
-                  color: Colors.white,
-                  size: 28,
-                ),
-              ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 7,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.18),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: const Text(
-                  'Current Plan',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 18),
-          Text(
-            currentPlan.name,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            currentPlan.isDefault
-                ? 'Default plan for new organizations'
-                : 'Active subscription plan',
-            style: const TextStyle(color: Colors.white70, fontSize: 14),
-          ),
-          const SizedBox(height: 18),
           Container(
-            padding: const EdgeInsets.all(14),
+            width: 0,
+            height: 0,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(18),
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  AppColors.activeMenuBg.withValues(alpha: 0.65),
+                  Colors.white.withValues(alpha: 0.0),
+                ],
+              ),
             ),
+            alignment: Alignment.center,
+            child: Icon(
+              Icons.workspace_premium_rounded,
+              size: 0,
+              color: AppColors.green.withValues(alpha: 0.8),
+            ),
+          ),
+          const SizedBox(height: 0),
+          const Text(
+            'Upgrade Your Plan',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 21,
+              fontWeight: FontWeight.w800,
+              height: 1.1,
+            ),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'No commitment. Cancel anytime.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: AppColors.statusActiveText,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCurrentPlanCard(PlanModel currentPlan) {
+    final subtitle = currentPlan.isDefault
+        ? 'Current default plan'
+        : 'Currently selected subscription';
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFBFEFA),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.activeMenuBg),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.05),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.activeMenuBg.withValues(alpha: 0.34),
+                  AppColors.surface,
+                ],
+              ),
+            ),
+            child: const Icon(
+              Icons.workspace_premium_outlined,
+              size: 22,
+              color: AppColors.primary,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    const Expanded(
-                      child: Text(
-                        'Plan pricing',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                        ),
+                    Text(
+                      currentPlan.name,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
-                    Text(
-                      _isMonthly
-                          ? _formatPrice(currentPlan.priceMonthly)
-                          : _formatPrice(currentPlan.priceYearly),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.circle, color: Colors.white, size: 7),
+                          SizedBox(width: 6),
+                          Text(
+                            'Current plan',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(999),
-                  child: LinearProgressIndicator(
-                    value: currentPlan.isDefault ? 0.35 : 0.8,
-                    minHeight: 10,
-                    backgroundColor: Colors.white.withValues(alpha: 0.16),
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                      AppColors.activeMenuBg,
+                const SizedBox(height: 6),
+                RichText(
+                  text: TextSpan(
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
                     ),
+                    children: [
+                      TextSpan(
+                        text: _formatCyclePrice(currentPlan),
+                        style: const TextStyle(
+                          color: AppColors.statusActiveText,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 14,
+                        ),
+                      ),
+                      TextSpan(text: '  $subtitle'),
+                    ],
                   ),
                 ),
               ],
-            ),
-          ),
-          const SizedBox(height: 18),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () => _showMessage('Upgrade Plan clicked'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: AppColors.primary,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
-              child: const Text(
-                'Upgrade Plan',
-                style: TextStyle(fontWeight: FontWeight.w800),
-              ),
             ),
           ),
         ],
@@ -303,7 +371,7 @@ class _PlansScreenState extends State<PlansScreen> {
 
   Widget _buildBillingToggle() {
     return Container(
-      padding: const EdgeInsets.all(5),
+      padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: AppColors.surfaceSoft,
         borderRadius: BorderRadius.circular(999),
@@ -314,12 +382,24 @@ class _PlansScreenState extends State<PlansScreen> {
           _toggleButton(
             label: 'Monthly',
             isActive: _isMonthly,
-            onTap: () => setState(() => _isMonthly = true),
+            onTap: () {
+              setState(() {
+                _isMonthly = true;
+                _currentPage = 0;
+              });
+              _pageController.jumpToPage(0);
+            },
           ),
           _toggleButton(
             label: 'Yearly',
             isActive: !_isMonthly,
-            onTap: () => setState(() => _isMonthly = false),
+            onTap: () {
+              setState(() {
+                _isMonthly = false;
+                _currentPage = 0;
+              });
+              _pageController.jumpToPage(0);
+            },
           ),
         ],
       ),
@@ -335,243 +415,264 @@ class _PlansScreenState extends State<PlansScreen> {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isActive ? AppColors.activeMenuBg : Colors.transparent,
+          color: isActive ? AppColors.primary : Colors.transparent,
           borderRadius: BorderRadius.circular(999),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isActive ? AppColors.primary900 : AppColors.textSecondary,
-            fontSize: 14,
-            fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
+            color: isActive ? Colors.white : AppColors.textSecondary,
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
     );
   }
 
-  Widget _buildPlanCard(PlanModel plan, {required bool isCurrent}) {
-    final accentColor = isCurrent ? AppColors.primary : AppColors.blue;
+  Widget _buildSliderCard(
+    PlanModel plan, {
+    required bool isCurrent,
+    required bool isTopPlan,
+  }) {
+    final savings = _savingsPercentage(plan);
+    final price = _selectedPrice(plan);
+    final originalPrice = _isMonthly
+        ? plan.originalPriceMonthly
+        : plan.originalPriceYearly;
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(28),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(
           color: isCurrent
-              ? AppColors.primary.withValues(alpha: 0.22)
-              : AppColors.borderLight,
+              ? AppColors.activeMenuBg
+              : AppColors.borderLight.withValues(alpha: 0.9),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.textPrimary.withValues(alpha: 0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  plan.name,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
+          Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.statusActiveBg,
+                borderRadius: BorderRadius.circular(999),
               ),
-              if (isCurrent)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 7,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.activeMenuBg,
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: const Text(
-                    'Active',
-                    style: TextStyle(
-                      color: AppColors.primary,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                _isMonthly
-                    ? _formatPrice(plan.priceMonthly)
-                    : _formatPrice(plan.priceYearly),
+              child: Text(
+                isCurrent
+                    ? 'Current Plan'
+                    : (isTopPlan ? 'Top Plan' : plan.name),
                 style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 34,
+                  color: AppColors.statusActiveText,
+                  fontSize: 12,
                   fontWeight: FontWeight.w800,
-                  height: 1,
                 ),
               ),
-              if (_displayOriginalPrice(plan).isNotEmpty) ...[
-                const SizedBox(width: 10),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 4),
-                  child: Text(
-                    _displayOriginalPrice(plan),
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      decoration: TextDecoration.lineThrough,
-                    ),
-                  ),
-                ),
-              ],
-            ],
+            ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Text(
-            _isMonthly ? 'per month' : 'per year',
+            plan.name,
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 19,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            _planSubtitle(plan),
             style: const TextStyle(
               color: AppColors.textSecondary,
-              fontSize: 14,
+              fontSize: 12,
+              height: 1.3,
             ),
           ),
-          const SizedBox(height: 18),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceSoft,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Column(
-              children: [
-                if (plan.maxUsers != null)
-                  _metaRow(accentColor, 'Users', '${plan.maxUsers}'),
-                if (plan.maxOrders != null)
-                  _metaRow(accentColor, 'Orders', '${plan.maxOrders}'),
-                ...plan.features.map(
-                  (feature) => Padding(
-                    padding: const EdgeInsets.only(bottom: 14),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: 22,
-                          height: 22,
-                          decoration: BoxDecoration(
-                            color: accentColor.withValues(alpha: 0.12),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.check_rounded,
-                            color: accentColor,
-                            size: 16,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            feature,
-                            style: const TextStyle(
-                              color: AppColors.textPrimary,
-                              fontSize: 15,
-                              height: 1.35,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+          const SizedBox(height: 12),
+          ..._buildFeatureRows(plan),
+          const Spacer(),
+          Divider(
+            height: 1,
+            color: AppColors.borderStrong.withValues(alpha: 0.45),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.end,
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              Text(
+                _formatPrice(price),
+                style: const TextStyle(
+                  color: AppColors.statusActiveText,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              Text(
+                _isMonthly ? '/month' : '/year',
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              if (originalPrice != null && originalPrice > price)
+                Text(
+                  _formatPrice(originalPrice),
+                  style: const TextStyle(
+                    color: AppColors.textLightMuted,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    decoration: TextDecoration.lineThrough,
                   ),
                 ),
-              ],
+            ],
+          ),
+          const SizedBox(height: 10),
+          if (savings != null)
+            Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.statusActiveBg,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.sell_outlined,
+                      size: 16,
+                      color: AppColors.statusActiveIcon,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Save $savings%',
+                      style: const TextStyle(
+                        color: AppColors.statusActiveText,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            Center(
+              child: Text(
+                isTopPlan
+                    ? 'Best value across available plans'
+                    : 'Flexible upgrade option',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
-          ),
-          const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            child: isCurrent
-                ? Container(
-                    height: 54,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceSoft,
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    child: const Text(
-                      'Current Plan',
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  )
-                : ElevatedButton(
-                    onPressed: () =>
-                        _showMessage('Choose ${plan.name} plan clicked'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                    ),
-                    child: const Text(
-                      'Choose Plan',
-                      style: TextStyle(fontWeight: FontWeight.w700),
-                    ),
-                  ),
-          ),
         ],
       ),
     );
   }
 
-  Widget _metaRow(Color accentColor, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
-      child: Row(
-        children: [
-          Container(
-            width: 22,
-            height: 22,
-            decoration: BoxDecoration(
-              color: accentColor.withValues(alpha: 0.12),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(Icons.tune_rounded, color: accentColor, size: 14),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
+  List<Widget> _buildFeatureRows(PlanModel plan) {
+    final rows = <Widget>[];
+    final accentIcons = <IconData>[
+      Icons.view_list_rounded,
+      Icons.all_inclusive_rounded,
+      Icons.block_rounded,
+      Icons.people_alt_outlined,
+      Icons.shopping_bag_outlined,
+    ];
+
+    if (plan.maxUsers != null) {
+      rows.add(
+        _featureRow(Icons.people_alt_outlined, '${plan.maxUsers} users'),
+      );
+    }
+    if (plan.maxOrders != null) {
+      rows.add(
+        _featureRow(Icons.inventory_2_outlined, '${plan.maxOrders} orders'),
+      );
+    }
+
+    for (var i = 0; i < plan.features.length; i++) {
+      rows.add(
+        _featureRow(accentIcons[i % accentIcons.length], plan.features[i]),
+      );
+    }
+
+    if (rows.isEmpty) {
+      rows.add(_featureRow(Icons.verified_outlined, 'Access included'));
+    }
+
+    return rows
+        .map(
+          (row) =>
+              Padding(padding: const EdgeInsets.only(bottom: 10), child: row),
+        )
+        .toList();
+  }
+
+  Widget _featureRow(IconData icon, String text) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 18, color: AppColors.statusActiveIcon),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 1),
             child: Text(
-              label,
+              text,
               style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+                fontSize: 12,
+                height: 1.3,
               ),
             ),
           ),
-          Text(
-            value,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDots(int count) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(count, (index) {
+        final isActive = index == _currentPage;
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          width: isActive ? 10 : 8,
+          height: isActive ? 10 : 8,
+          decoration: BoxDecoration(
+            color: isActive ? AppColors.primary : AppColors.borderStrong,
+            shape: BoxShape.circle,
           ),
-        ],
-      ),
+        );
+      }),
     );
   }
 
@@ -626,17 +727,38 @@ class _PlansScreenState extends State<PlansScreen> {
     );
   }
 
+  String _planSubtitle(PlanModel plan) {
+    if (plan.isDefault) {
+      return 'Best starting option for new organizations.';
+    }
+    if (plan.isActive) {
+      return 'This plan is active and ready for use.';
+    }
+    return 'Unlock more capacity and features with this tier.';
+  }
+
+  String _formatCyclePrice(PlanModel plan) {
+    final price = _selectedPrice(plan);
+    return '${_formatPrice(price)} ${_isMonthly ? '/month' : '/year'}';
+  }
+
   String _formatPrice(num value) {
     return 'Rs. ${value.toStringAsFixed(value % 1 == 0 ? 0 : 2)}';
   }
 
-  String _displayOriginalPrice(PlanModel plan) {
-    final value = _isMonthly
+  String? _savingsPercentage(PlanModel plan) {
+    final original = _isMonthly
         ? plan.originalPriceMonthly
         : plan.originalPriceYearly;
-    if (value == null || value <= 0) {
-      return '';
+    final current = _selectedPrice(plan);
+    if (original == null || original <= current || original <= 0) {
+      return null;
     }
-    return _formatPrice(value);
+
+    final savings = (((original - current) / original) * 100).round();
+    if (savings <= 0) {
+      return null;
+    }
+    return '$savings';
   }
 }

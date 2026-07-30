@@ -1,21 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../../constants/app_colors.dart';
 import '../../models/auth_models.dart';
 import '../../providers/api_provider.dart';
 import '../../services/api_service.dart';
 import 'login_screen.dart';
-
-const List<String> _businessTypes = [
-  'Manufacturer',
-  'Distributor',
-  'Wholesaler',
-  'Retailer',
-  'Service Provider',
-];
-
-const List<String> _financialYears = ['2024-2025', '2025-2026', '2026-2027'];
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -25,12 +14,9 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  int _currentStep = 0;
   bool _isSubmitting = false;
 
-  final _step1Key = GlobalKey<FormState>();
-  final _step2Key = GlobalKey<FormState>();
-  final _step3Key = GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>();
 
   final _adminNameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -38,40 +24,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _phoneController = TextEditingController();
   bool _obscurePassword = true;
 
-  final _companyNameController = TextEditingController();
-  final _gstController = TextEditingController();
-  final _panController = TextEditingController();
-  String? _businessType;
-  String? _financialYear;
-  XFile? _logoFile;
-
-  final _billingAddressController = TextEditingController();
-  final _shippingAddressController = TextEditingController();
-  final _websiteController = TextEditingController();
-  final _invoicePrefixController = TextEditingController();
-  bool _shippingSameAsBilling = false;
-
   static const Color pageBg = AppColors.adminSidebarBg;
   static const Color cardBg = AppColors.surfaceOverlay;
   static const Color primary = AppColors.primary;
   static const Color headingText = AppColors.textPrimary;
   static const Color bodyText = AppColors.textSecondary;
   static const Color mutedText = AppColors.textMuted;
-  static const Color lightMutedText = AppColors.textLightMuted;
   static const Color borderLight = AppColors.borderLight;
   static const Color border = AppColors.border;
-  static const Color borderStrong = AppColors.borderStrong;
   static const Color shadowColor = Color(0x14063B00);
-
-  @override
-  void initState() {
-    super.initState();
-    _billingAddressController.addListener(() {
-      if (_shippingSameAsBilling) {
-        _shippingAddressController.text = _billingAddressController.text;
-      }
-    });
-  }
 
   @override
   void dispose() {
@@ -79,42 +40,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     _phoneController.dispose();
-    _companyNameController.dispose();
-    _gstController.dispose();
-    _panController.dispose();
-    _billingAddressController.dispose();
-    _shippingAddressController.dispose();
-    _websiteController.dispose();
-    _invoicePrefixController.dispose();
     super.dispose();
-  }
-
-  Future<void> _pickLogo() async {
-    try {
-      final picker = ImagePicker();
-      final picked = await picker.pickImage(source: ImageSource.gallery);
-      if (!mounted) return;
-      if (picked != null) setState(() => _logoFile = picked);
-    } catch (error) {
-      if (!mounted) return;
-      _showSnackBar('Unable to open image picker: $error');
-    }
-  }
-
-  void _goNext() {
-    if (_isSubmitting) return;
-    if (_currentStep >= 2) {
-      _submit();
-      return;
-    }
-    FocusScope.of(context).unfocus();
-    setState(() => _currentStep += 1);
-  }
-
-  void _goBack() {
-    if (_isSubmitting || _currentStep == 0) return;
-    FocusScope.of(context).unfocus();
-    setState(() => _currentStep -= 1);
   }
 
   Future<void> _submit() async {
@@ -149,30 +75,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
+  // API contract kept exactly the same (RegisterOrganizationRequest).
+  // Only the admin-related fields are collected from the UI now; the
+  // organization/business fields are sent as empty strings since there
+  // is no longer a step to collect them.
   RegisterOrganizationRequest _buildRegisterRequest() {
     return RegisterOrganizationRequest(
-      organizationName: _companyNameController.text.trim(),
-      businessType: (_businessType ?? '').trim(),
-      gstNumber: _gstController.text.trim().toUpperCase(),
-      panNumber: _panController.text.trim().toUpperCase(),
-      address: _billingAddressController.text.trim(),
-      shippingAddress: _effectiveShippingAddress,
-      website: _websiteController.text.trim(),
-      invoicePrefix: _invoicePrefixController.text.trim().toUpperCase(),
+      organizationName: '',
+      businessType: '',
+      gstNumber: '',
+      panNumber: '',
+      address: '',
+      shippingAddress: '',
+      website: '',
+      invoicePrefix: '',
       phone: _phoneController.text.trim(),
       email: _emailController.text.trim(),
-      financialYear: (_financialYear ?? '').trim(),
+      financialYear: '',
       adminName: _adminNameController.text.trim(),
       password: _passwordController.text,
       role: 'admin',
     );
-  }
-
-  String get _effectiveShippingAddress {
-    if (_shippingSameAsBilling) {
-      return _billingAddressController.text.trim();
-    }
-    return _shippingAddressController.text.trim();
   }
 
   void _showSnackBar(String message) {
@@ -226,27 +149,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 13, color: bodyText),
                     ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Step ${_currentStep + 1} of 3',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: mutedText,
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-                    _buildStepDots(),
                     const SizedBox(height: 22),
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 200),
-                      child: _currentStep == 0
-                          ? _buildStep1()
-                          : _currentStep == 1
-                          ? _buildStep2()
-                          : _buildStep3(),
-                    ),
+                    _buildForm(),
                   ],
                 ),
               ),
@@ -257,35 +161,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget _buildStepDots() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(3, (index) {
-        final isActive = index <= _currentStep;
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            width: index == _currentStep ? 22 : 8,
-            height: 8,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(4),
-              color: isActive ? primary : border,
-            ),
-          ),
-        );
-      }),
-    );
-  }
-
-  Widget _buildStep1() {
+  Widget _buildForm() {
     return Form(
-      key: _step1Key,
+      key: _formKey,
       child: Column(
-        key: const ValueKey('step1'),
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const _StepHeader(number: 1, title: 'Admin Registration'),
+          const _StepHeader(title: 'Admin Registration'),
           const SizedBox(height: 18),
           _fieldRow(
             left: _labeledField(
@@ -341,7 +223,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
           ),
           const SizedBox(height: 22),
-          _PrimaryButton(label: 'Next', isLoading: false, onPressed: _goNext),
+          _PrimaryButton(
+            label: 'Create organization',
+            isLoading: _isSubmitting,
+            onPressed: _submit,
+          ),
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -370,298 +256,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildStep2() {
-    return Form(
-      key: _step2Key,
-      child: Column(
-        key: const ValueKey('step2'),
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const _StepHeader(number: 2, title: 'Organization Details'),
-          const SizedBox(height: 18),
-          _fieldRow(
-            left: _labeledField(
-              label: 'Company/Firm/Shop Name',
-              child: TextFormField(
-                controller: _companyNameController,
-                style: const TextStyle(color: headingText, fontSize: 14),
-                decoration: _pillDecoration(hint: 'e.g. Sharma Distributors'),
-              ),
-            ),
-            right: _labeledField(
-              label: 'Company Logo',
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  InkWell(
-                    onTap: _pickLogo,
-                    borderRadius: BorderRadius.circular(20),
-                    child: Container(
-                      height: 52,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: borderLight),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.image_outlined,
-                            color: primary,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              _logoFile?.name ?? 'Select company logo',
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: _logoFile != null
-                                    ? headingText
-                                    : lightMutedText,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ),
-                          OutlinedButton(
-                            onPressed: _pickLogo,
-                            style: OutlinedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              side: const BorderSide(color: border),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 8,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                            ),
-                            child: const Text(
-                              'Browse',
-                              style: TextStyle(
-                                color: headingText,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    'Logo selection stays local until a media upload API is added.',
-                    style: TextStyle(color: mutedText, fontSize: 11),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          _fieldRow(
-            left: _labeledField(
-              label: 'Business Type',
-              child: DropdownButtonFormField<String>(
-                initialValue: _businessType,
-                style: const TextStyle(color: headingText, fontSize: 14),
-                decoration: _pillDecoration(hint: 'Select business type'),
-                icon: const Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  color: mutedText,
-                ),
-                items: _businessTypes
-                    .map(
-                      (type) =>
-                          DropdownMenuItem(value: type, child: Text(type)),
-                    )
-                    .toList(),
-                onChanged: (value) => setState(() => _businessType = value),
-              ),
-            ),
-            right: _labeledField(
-              label: 'GST Number',
-              child: TextFormField(
-                controller: _gstController,
-                textCapitalization: TextCapitalization.characters,
-                style: const TextStyle(color: headingText, fontSize: 14),
-                decoration: _pillDecoration(hint: 'e.g. 27ABCDE1234F1Z5'),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          _fieldRow(
-            left: _labeledField(
-              label: 'PAN Number (if applicable)',
-              child: TextFormField(
-                controller: _panController,
-                textCapitalization: TextCapitalization.characters,
-                style: const TextStyle(color: headingText, fontSize: 14),
-                decoration: _pillDecoration(hint: 'e.g. ABCDE1234F'),
-              ),
-            ),
-            right: _labeledField(
-              label: 'Financial Year',
-              child: DropdownButtonFormField<String>(
-                initialValue: _financialYear,
-                style: const TextStyle(color: headingText, fontSize: 14),
-                decoration: _pillDecoration(hint: 'Select financial year'),
-                icon: const Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  color: mutedText,
-                ),
-                items: _financialYears
-                    .map((fy) => DropdownMenuItem(value: fy, child: Text(fy)))
-                    .toList(),
-                onChanged: (value) => setState(() => _financialYear = value),
-              ),
-            ),
-          ),
-          const SizedBox(height: 22),
-          _buildStepButtons(onNext: _goNext, nextLabel: 'Next'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStep3() {
-    return Form(
-      key: _step3Key,
-      child: Column(
-        key: const ValueKey('step3'),
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const _StepHeader(number: 3, title: 'Business Details'),
-          const SizedBox(height: 18),
-          _labeledField(
-            label: 'Billing Address',
-            child: TextFormField(
-              controller: _billingAddressController,
-              maxLines: 4,
-              style: const TextStyle(color: headingText, fontSize: 14),
-              decoration: _pillDecoration(
-                hint: 'e.g. 12, MG Road, Andheri East, Mumbai, MH 400069',
-              ),
-            ),
-          ),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              SizedBox(
-                width: 22,
-                height: 22,
-                child: Checkbox(
-                  value: _shippingSameAsBilling,
-                  activeColor: primary,
-                  side: const BorderSide(color: borderStrong),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  onChanged: (value) {
-                    setState(() {
-                      _shippingSameAsBilling = value ?? false;
-                      if (_shippingSameAsBilling) {
-                        _shippingAddressController.text =
-                            _billingAddressController.text;
-                      }
-                    });
-                  },
-                ),
-              ),
-              const SizedBox(width: 10),
-              const Expanded(
-                child: Text(
-                  'Shipping/Warehouse address same as billing address',
-                  style: TextStyle(color: headingText, fontSize: 13),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          _labeledField(
-            label: 'Shipping/Warehouse Address',
-            child: TextFormField(
-              controller: _shippingAddressController,
-              maxLines: 4,
-              enabled: !_shippingSameAsBilling,
-              style: const TextStyle(color: headingText, fontSize: 14),
-              decoration: _pillDecoration(
-                hint: 'e.g. Plot 45, MIDC Industrial Area, Pune, MH 411019',
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          _fieldRow(
-            left: _labeledField(
-              label: 'Website (if applicable)',
-              child: TextFormField(
-                controller: _websiteController,
-                keyboardType: TextInputType.url,
-                style: const TextStyle(color: headingText, fontSize: 14),
-                decoration: _pillDecoration(hint: 'e.g. www.sharmadist.com'),
-              ),
-            ),
-            right: _labeledField(
-              label: 'Invoice Prefix',
-              child: TextFormField(
-                controller: _invoicePrefixController,
-                textCapitalization: TextCapitalization.characters,
-                style: const TextStyle(color: headingText, fontSize: 14),
-                decoration: _pillDecoration(hint: 'e.g. INV'),
-              ),
-            ),
-          ),
-          const SizedBox(height: 22),
-          _buildStepButtons(
-            onNext: _submit,
-            nextLabel: 'Create organization',
-            isLoading: _isSubmitting,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStepButtons({
-    required VoidCallback onNext,
-    required String nextLabel,
-    bool isLoading = false,
-  }) {
-    return Row(
-      children: [
-        SizedBox(
-          width: 100,
-          height: 52,
-          child: OutlinedButton(
-            onPressed: _currentStep == 0 || isLoading ? null : _goBack,
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: border),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-            ),
-            child: const Text(
-              'Back',
-              style: TextStyle(
-                color: headingText,
-                fontWeight: FontWeight.w700,
-                fontSize: 14,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _PrimaryButton(
-            label: nextLabel,
-            isLoading: isLoading,
-            onPressed: onNext,
-          ),
-        ),
-      ],
     );
   }
 
@@ -707,7 +301,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   InputDecoration _pillDecoration({String? hint, Widget? suffixIcon}) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(color: lightMutedText, fontSize: 14),
+      hintStyle: const TextStyle(color: AppColors.textLightMuted, fontSize: 14),
       suffixIcon: suffixIcon,
       filled: true,
       fillColor: Colors.white,
@@ -737,10 +331,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 }
 
 class _StepHeader extends StatelessWidget {
-  final int number;
   final String title;
 
-  const _StepHeader({required this.number, required this.title});
+  const _StepHeader({required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -754,9 +347,9 @@ class _StepHeader extends StatelessWidget {
             color: _RegisterScreenState.primary,
             shape: BoxShape.circle,
           ),
-          child: Text(
-            '$number',
-            style: const TextStyle(
+          child: const Text(
+            '1',
+            style: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w800,
               fontSize: 14,
