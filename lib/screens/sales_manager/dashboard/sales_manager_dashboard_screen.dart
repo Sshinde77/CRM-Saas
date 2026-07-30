@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
-import '../../../widgets/admin/admin_top_bar.dart';
-import '../../../widgets/soft_action_button.dart';
+import '../customers/sales_manager_customers_screen.dart';
 
 class SalesManagerDashboardScreen extends StatefulWidget {
   const SalesManagerDashboardScreen({super.key});
@@ -14,180 +13,264 @@ class SalesManagerDashboardScreen extends StatefulWidget {
 
 class _SalesManagerDashboardScreenState
     extends State<SalesManagerDashboardScreen> {
-  static const Color textPrimary = AppColors.textPrimary;
-  static const Color textSecondary = AppColors.textSecondary;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  SalesRange _selectedRange = SalesRange.today;
-
-  final List<_SalesSummary> _summaries = const [
-    _SalesSummary(
-      label: "Today's Sales",
-      value: 'Rs. 84,600',
-      delta: '+12.8%',
-      icon: Icons.currency_rupee,
-      color: AppColors.green,
-    ),
-    _SalesSummary(
-      label: 'Monthly Sales',
-      value: 'Rs. 12.6L',
-      delta: '+18.4%',
-      icon: Icons.calendar_month_rounded,
-      color: AppColors.secondary,
-    ),
-    _SalesSummary(
-      label: 'Target Achievement',
-      value: '78%',
-      delta: 'Target: 16L',
-      icon: Icons.flag_rounded,
+  final List<_MetricCardData> _metrics = const [
+    _MetricCardData(
+      label: 'Assigned Customers',
+      value: '12',
+      icon: Icons.groups_rounded,
       color: AppColors.blue,
     ),
-    _SalesSummary(
-      label: 'Assigned Customers',
-      value: '146',
-      delta: '24 active today',
-      icon: Icons.groups_rounded,
-      color: AppColors.orange,
-    ),
-    _SalesSummary(
+    _MetricCardData(
       label: 'Planned Visits',
-      value: '18',
-      delta: '11 completed',
-      icon: Icons.route_rounded,
-      color: AppColors.teal,
+      value: '6',
+      icon: Icons.event_available_rounded,
+      color: AppColors.green,
     ),
-    _SalesSummary(
-      label: 'Pending Follow-ups',
-      value: '9',
-      delta: '3 overdue',
-      icon: Icons.alarm_rounded,
-      color: AppColors.red,
-    ),
-    _SalesSummary(
-      label: 'Orders Created',
-      value: '32',
-      delta: '5 awaiting approval',
-      icon: Icons.receipt_long_rounded,
+    _MetricCardData(
+      label: 'Completed Visits',
+      value: '4',
+      icon: Icons.verified_rounded,
       color: AppColors.purple,
     ),
-    _SalesSummary(
-      label: 'New Customers',
-      value: '7',
-      delta: 'Added today',
-      icon: Icons.person_add_alt_rounded,
-      color: AppColors.amber,
+    _MetricCardData(
+      label: 'Pending Follow-ups',
+      value: '3',
+      icon: Icons.notifications_active_rounded,
+      color: AppColors.orange,
     ),
-    _SalesSummary(
-      label: 'Outstanding Follow-ups',
-      value: 'Rs. 1.42L',
-      delta: '12 accounts',
-      icon: Icons.call_received_rounded,
-      color: AppColors.red,
+    _MetricCardData(
+      label: 'Orders Created',
+      value: '8',
+      icon: Icons.receipt_long_rounded,
+      color: AppColors.blue,
     ),
-    _SalesSummary(
-      label: 'Cash Collected',
-      value: 'Rs. 57,200',
-      delta: '61% collected',
-      icon: Icons.payments_rounded,
+    _MetricCardData(
+      label: "Today's Sales Value",
+      value: 'Rs. 1,25,450',
+      icon: Icons.currency_rupee_rounded,
       color: AppColors.green,
     ),
-    _SalesSummary(
-      label: 'Attendance Status',
-      value: 'Checked-in',
-      delta: '09:12 AM',
-      icon: Icons.fingerprint_rounded,
-      color: AppColors.secondary,
+  ];
+
+  final List<_CustomerItem> _customers = const [
+    _CustomerItem(
+      name: 'Shree Ganesh Traders',
+      location: 'Dadar, Mumbai',
+      value: 'Rs. 45,000',
+      status: 'Active',
+      icon: Icons.storefront_rounded,
+      color: AppColors.green,
     ),
-    _SalesSummary(
-      label: 'Team Performance',
-      value: '92%',
-      delta: '3 reps above target',
-      icon: Icons.leaderboard_rounded,
+    _CustomerItem(
+      name: 'Maa Durga Stores',
+      location: 'Matunga, Mumbai',
+      value: 'Rs. 12,500',
+      status: 'Active',
+      icon: Icons.store_rounded,
+      color: AppColors.blue,
+    ),
+    _CustomerItem(
+      name: 'Patel Retailers',
+      location: 'Sion, Mumbai',
+      value: 'Rs. 0',
+      status: 'Active',
+      icon: Icons.shopping_bag_rounded,
+      color: AppColors.purple,
+    ),
+    _CustomerItem(
+      name: 'S.K. Enterprises',
+      location: 'Ghatkopar, Mumbai',
+      value: 'Rs. 78,300',
+      status: 'Overdue',
+      icon: Icons.apartment_rounded,
+      color: AppColors.red,
+    ),
+    _CustomerItem(
+      name: 'New A One Traders',
+      location: 'Kurla, Mumbai',
+      value: 'Rs. 18,700',
+      status: 'Active',
+      icon: Icons.store_mall_directory_rounded,
+      color: AppColors.green,
+    ),
+  ];
+
+  final List<_OrderItem> _orders = const [
+    _OrderItem(
+      number: 'SO-1023',
+      customer: 'Shree Ganesh Traders',
+      date: '18 May 2024',
+      amount: 'Rs. 25,600',
+      status: 'Confirmed',
+      color: AppColors.green,
+    ),
+    _OrderItem(
+      number: 'SO-1022',
+      customer: 'Maa Durga Stores',
+      date: '18 May 2024',
+      amount: 'Rs. 18,450',
+      status: 'Pending',
+      color: AppColors.orange,
+    ),
+    _OrderItem(
+      number: 'SO-1021',
+      customer: 'Patel Retailers',
+      date: '17 May 2024',
+      amount: 'Rs. 22,300',
+      status: 'Confirmed',
+      color: AppColors.green,
+    ),
+    _OrderItem(
+      number: 'SO-1020',
+      customer: 'S.K. Enterprises',
+      date: '16 May 2024',
+      amount: 'Rs. 15,600',
+      status: 'Pending',
+      color: AppColors.orange,
+    ),
+    _OrderItem(
+      number: 'SO-1019',
+      customer: 'New A One Traders',
+      date: '15 May 2024',
+      amount: 'Rs. 28,500',
+      status: 'Confirmed',
+      color: AppColors.green,
+    ),
+  ];
+
+  final List<_VisitItem> _visits = const [
+    _VisitItem(
+      customer: 'Shree Ganesh Traders',
+      location: 'Dadar, Mumbai',
+      time: '10:00 AM - 10:45 AM',
+      status: 'Completed',
+      color: AppColors.green,
+    ),
+    _VisitItem(
+      customer: 'Maa Durga Stores',
+      location: 'Matunga, Mumbai',
+      time: '12:00 PM - 12:45 PM',
+      status: 'In Progress',
+      color: AppColors.orange,
+    ),
+    _VisitItem(
+      customer: 'Patel Retailers',
+      location: 'Sion, Mumbai',
+      time: '03:00 PM - 03:45 PM',
+      status: 'Planned',
+      color: AppColors.blue,
+    ),
+    _VisitItem(
+      customer: 'S.K. Enterprises',
+      location: 'Ghatkopar, Mumbai',
+      time: '05:00 PM - 05:30 PM',
+      status: 'Planned',
       color: AppColors.blue,
     ),
   ];
 
-  final List<double> _salesTrend = const [42, 51, 47, 63, 58, 72, 84];
-
-  final List<_PipelineSlice> _orderPipeline = const [
-    _PipelineSlice('Draft', 8, AppColors.secondary),
-    _PipelineSlice('Confirmed', 11, AppColors.blue),
-    _PipelineSlice('Processing', 6, AppColors.orange),
-    _PipelineSlice('Out for Delivery', 4, AppColors.green),
-    _PipelineSlice('Overdue', 3, AppColors.red),
-  ];
-
-  final List<_TeamMember> _team = const [
-    _TeamMember('Ravi Kumar', 'Rs. 3.2L', 96, AppColors.secondary),
-    _TeamMember('Ananya Singh', 'Rs. 2.8L', 88, AppColors.blue),
-    _TeamMember('Mohit Sharma', 'Rs. 2.1L', 81, AppColors.teal),
-    _TeamMember('Pooja Verma', 'Rs. 1.7L', 74, AppColors.orange),
-  ];
-
-  final List<_FollowUpTask> _followUps = const [
-    _FollowUpTask(
-      customer: 'Silver Oak Apartments',
-      note: 'Payment commitment due today',
-      time: '11:30 AM',
-      status: 'High priority',
-      color: AppColors.red,
+  final List<_ProductItem> _products = const [
+    _ProductItem(
+      name: 'Premium Basmati Rice 25kg',
+      price: 'Rs. 1,650',
+      stock: 'Stock: 120',
+      icon: Icons.shopping_bag_rounded,
     ),
-    _FollowUpTask(
-      customer: 'Cloud Nine Cafe',
-      note: 'Repeat order and upsell meeting',
-      time: '01:15 PM',
-      status: 'Visit planned',
-      color: AppColors.secondary,
+    _ProductItem(
+      name: 'Sunflower Oil 1L',
+      price: 'Rs. 1,350',
+      stock: 'Stock: 80',
+      icon: Icons.water_drop_rounded,
     ),
-    _FollowUpTask(
-      customer: 'Prime Legal Associates',
-      note: 'Pending quotation approval',
-      time: '04:00 PM',
-      status: 'Waiting',
-      color: AppColors.amber,
+    _ProductItem(
+      name: 'Toor Dal 5kg',
+      price: 'Rs. 650',
+      stock: 'Stock: 45',
+      icon: Icons.inventory_2_rounded,
+    ),
+    _ProductItem(
+      name: 'Wheat Atta 10kg',
+      price: 'Rs. 380',
+      stock: 'Stock: 60',
+      icon: Icons.flatware_rounded,
+    ),
+    _ProductItem(
+      name: 'Sugar 25kg',
+      price: 'Rs. 1,200',
+      stock: 'Stock: 200',
+      icon: Icons.coffee_rounded,
     ),
   ];
 
-  final List<_VisitPlan> _visitPlan = const [
-    _VisitPlan('Morning route', '6 scheduled', '4 completed', AppColors.green),
-    _VisitPlan('Midday route', '7 scheduled', '3 completed', AppColors.blue),
-    _VisitPlan('Evening route', '5 scheduled', '4 pending', AppColors.orange),
-  ];
-
-  final List<_CustomerOpportunity> _opportunities = const [
-    _CustomerOpportunity(
-      customer: 'Rajdhani Sweets & Snacks',
-      value: 'Rs. 28,400',
-      reason: 'Reorder due tomorrow',
-      status: 'Hot lead',
-      color: AppColors.secondary,
+  final List<_FollowUpItem> _followUps = const [
+    _FollowUpItem(
+      title: 'Payment follow up',
+      subtitle: 'Shree Ganesh Traders',
+      date: 'Today',
+      color: AppColors.green,
     ),
-    _CustomerOpportunity(
-      customer: 'TechNova Solutions Pvt Ltd',
-      value: 'Rs. 19,850',
-      reason: 'Outstanding follow-up',
-      status: 'Payment due',
-      color: AppColors.red,
-    ),
-    _CustomerOpportunity(
-      customer: 'Nexus Mart',
-      value: 'Rs. 15,700',
-      reason: 'New onboarding requested',
-      status: 'New customer',
+    _FollowUpItem(
+      title: 'Order follow up',
+      subtitle: 'Maa Durga Stores',
+      date: 'Today',
       color: AppColors.blue,
+    ),
+    _FollowUpItem(
+      title: 'New product discussion',
+      subtitle: 'New A One Traders',
+      date: '19 May 2024',
+      color: AppColors.purple,
+    ),
+    _FollowUpItem(
+      title: 'Payment reminder',
+      subtitle: 'S.K. Enterprises',
+      date: '18 May 2024',
+      color: AppColors.orange,
+    ),
+    _FollowUpItem(
+      title: 'Order follow up',
+      subtitle: 'Patel Retailers',
+      date: '22 May 2024',
+      color: AppColors.red,
+    ),
+  ];
+
+  final List<_NotificationItem> _notifications = const [
+    _NotificationItem(
+      title: 'New order SO-1023 has been confirmed.',
+      time: '10:30 AM',
+      color: AppColors.green,
+    ),
+    _NotificationItem(
+      title: 'Payment reminder for S.K. Enterprises.',
+      time: '09:15 AM',
+      color: AppColors.orange,
+    ),
+    _NotificationItem(
+      title: 'Follow-up for Maa Durga Stores is due tomorrow.',
+      time: 'Yesterday',
+      color: AppColors.blue,
+    ),
+    _NotificationItem(
+      title: 'Low stock alert for Sunflower Oil 1L.',
+      time: 'Yesterday',
+      color: AppColors.red,
+    ),
+    _NotificationItem(
+      title: 'Your daily target progress is 55%.',
+      time: '2 Days Ago',
+      color: AppColors.purple,
     ),
   ];
 
   Future<void> _refresh() async {
     await Future<void>.delayed(const Duration(milliseconds: 350));
-    if (!mounted) return;
-    setState(() {});
+    if (mounted) setState(() {});
   }
 
-  void _changeRange(SalesRange range) {
-    setState(() => _selectedRange = range);
-  }
-
-  void _showActionSnack(String action) {
+  void _showSnack(String action) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('$action is not wired yet'),
@@ -196,87 +279,44 @@ class _SalesManagerDashboardScreenState
     );
   }
 
+  void _handleSidebarSelection(String action) {
+    Navigator.of(context).pop();
+    if (action == 'Customers') {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const SalesManagerCustomersScreen(),
+        ),
+      );
+      return;
+    }
+
+    _showSnack(action);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: AppColors.background,
+      drawer: _SalesManagerDrawer(onSelect: _handleSidebarSelection),
       body: SafeArea(
         child: Column(
           children: [
-            AdminTopBar(
-              title: 'Sales Manager',
-              leadingIcon: Icons.menu_rounded,
-              onLeadingTap: () => _showActionSnack('Navigation drawer'),
-            ),
+            _buildTopBar(context),
             Expanded(
               child: RefreshIndicator(
                 onRefresh: _refresh,
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildHeroCard(),
+                      _buildHeader(context),
                       const SizedBox(height: 14),
-                      _buildQuickActions(),
-                      const SizedBox(height: 18),
-                      _buildRangeChips(),
+                      _buildMetricGrid(),
                       const SizedBox(height: 14),
-                      _buildSummaryGrid(),
-                      const SizedBox(height: 18),
-                      LayoutBuilder(
-                        builder: (context, constraints) {
-                          final wide = constraints.maxWidth > 900;
-                          if (wide) {
-                            return Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  flex: 3,
-                                  child: _buildPerformanceCard(),
-                                ),
-                                const SizedBox(width: 14),
-                                Expanded(flex: 2, child: _buildPipelineCard()),
-                              ],
-                            );
-                          }
-
-                          return Column(
-                            children: [
-                              _buildPerformanceCard(),
-                              const SizedBox(height: 14),
-                              _buildPipelineCard(),
-                            ],
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 14),
-                      LayoutBuilder(
-                        builder: (context, constraints) {
-                          final wide = constraints.maxWidth > 900;
-                          if (wide) {
-                            return Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(child: _buildTeamCard()),
-                                const SizedBox(width: 14),
-                                Expanded(child: _buildFollowUpCard()),
-                              ],
-                            );
-                          }
-
-                          return Column(
-                            children: [
-                              _buildTeamCard(),
-                              const SizedBox(height: 14),
-                              _buildFollowUpCard(),
-                            ],
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 14),
-                      _buildVisitAndOpportunityCard(),
+                      _buildMainGrid(context),
                     ],
                   ),
                 ),
@@ -288,82 +328,64 @@ class _SalesManagerDashboardScreenState
     );
   }
 
-  Widget _buildHeroCard() {
+  Widget _buildTopBar(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(26),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.secondary.withValues(alpha: 0.96),
-            AppColors.blue.withValues(alpha: 0.88),
-          ],
+        color: AppColors.background,
+        border: Border(
+          bottom: BorderSide(color: AppColors.border.withValues(alpha: 0.8)),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.secondary.withValues(alpha: 0.16),
-            blurRadius: 24,
-            offset: const Offset(0, 10),
-          ),
-        ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            children: [
-              Container(
-                width: 54,
-                height: 54,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.14),
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: const Icon(
-                  Icons.campaign_rounded,
-                  color: AppColors.primary,
-                  size: 28,
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Sales Manager Overview',
-                      style: TextStyle(
-                        color: AppColors.primary,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      'Track targets, team performance, customer coverage, and collections in one place.',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.88),
-                        fontSize: 13,
-                        height: 1.35,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          IconButton(
+            onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+            icon: const Icon(Icons.menu_rounded, color: AppColors.textPrimary),
           ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
+          const Expanded(
+            child: Text(
+              'Dashboard',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 16.5,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+          Stack(
+            clipBehavior: Clip.none,
             children: [
-              _heroPill(Icons.calendar_today_rounded, _selectedRange.label),
-              _heroPill(Icons.group_rounded, '4 reps active'),
-              _heroPill(Icons.route_rounded, '18 visits planned'),
-              _heroPill(Icons.payments_rounded, 'Rs. 57,200 collected'),
+              IconButton(
+                onPressed: () => _showSnack('Notifications'),
+                icon: const Icon(
+                  Icons.notifications_none_rounded,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              Positioned(
+                right: 8,
+                top: 8,
+                child: Container(
+                  width: 11,
+                  height: 11,
+                  decoration: const BoxDecoration(
+                    color: AppColors.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: const Text(
+                    '5',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 7,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ],
@@ -371,23 +393,938 @@ class _SalesManagerDashboardScreenState
     );
   }
 
-  Widget _heroPill(IconData icon, String label) {
+  Widget _buildHeader(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.16)),
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.75)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.textPrimary.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Good Morning, Arjun! \u{1F44B}',
+            style: TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            "Here's what's happening today.",
+            style: TextStyle(
+              color: AppColors.textSecondary.withValues(alpha: 0.95),
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 12),
+          _HeaderDatePill(
+            icon: Icons.calendar_month_rounded,
+            label: '20 May 2024, Monday',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMetricGrid() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const columns = 3;
+
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: _metrics.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columns,
+            mainAxisSpacing: 10,
+            crossAxisSpacing: 10,
+            childAspectRatio: constraints.maxWidth > 700 ? 1.12 : 0.82,
+          ),
+          itemBuilder: (context, index) {
+            return _MetricCard(data: _metrics[index]);
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildMainGrid(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final wide = constraints.maxWidth > 900;
+
+        if (!wide) {
+          return Column(
+            children: [
+              _buildSalesTargetCard(),
+              const SizedBox(height: 14),
+              _buildTodayScheduleCard(),
+              const SizedBox(height: 14),
+              _buildRecentOrdersCard(),
+              const SizedBox(height: 14),
+              _buildOutstandingSummaryCard(),
+            ],
+          );
+        }
+
+        return Column(
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: _buildSalesTargetCard()),
+                const SizedBox(width: 14),
+                Expanded(child: _buildTodayScheduleCard()),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: _buildRecentOrdersCard()),
+                const SizedBox(width: 14),
+                Expanded(child: _buildOutstandingSummaryCard()),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildSalesTargetCard() {
+    final target = 500000.0;
+    final achieved = 275000.0;
+    final progress = achieved / target;
+
+    return _PanelCard(
+      title: 'Sales Target',
+      subtitle: 'May 2024',
+      trailing: TextButton(
+        onPressed: () => _showSnack('View details'),
+        style: TextButton.styleFrom(
+          padding: EdgeInsets.zero,
+          minimumSize: Size.zero,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          foregroundColor: AppColors.primary,
+        ),
+        child: const Text(
+          'View Details',
+          style: TextStyle(
+            color: AppColors.primary,
+            fontSize: 12.5,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Expanded(
+                child: Text(
+                  'Rs. 2,75,000 / Rs. 5,00,000',
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              Text(
+                '${(progress * 100).round()}%',
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 10,
+              backgroundColor: AppColors.surfaceSoft,
+              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.green),
+            ),
+          ),
+          const SizedBox(height: 10),
+          const Text(
+            'Remaining: Rs. 2,25,000',
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTodayScheduleCard() {
+    return _PanelCard(
+      title: "Today's Schedule",
+      subtitle: '',
+      trailing: TextButton(
+        onPressed: () => _showSnack('View all'),
+        style: TextButton.styleFrom(
+          padding: EdgeInsets.zero,
+          minimumSize: Size.zero,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          foregroundColor: AppColors.primary,
+        ),
+        child: const Text(
+          'View all',
+          style: TextStyle(
+            color: AppColors.primary,
+            fontSize: 12.5,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+      child: Column(
+        children: [
+          _timelineRow(
+            '10:00 AM',
+            'Visit',
+            'Shree Ganesh Traders',
+            'Dadar, Mumbai',
+            AppColors.green,
+            'Completed',
+          ),
+          const SizedBox(height: 14),
+          _timelineRow(
+            '12:00 PM',
+            'Visit',
+            'Maa Durga Stores',
+            'Matunga, Mumbai',
+            AppColors.orange,
+            'In Progress',
+          ),
+          const SizedBox(height: 14),
+          _timelineRow(
+            '03:00 PM',
+            'Visit',
+            'Patel Retailers',
+            'Sion, Mumbai',
+            AppColors.blue,
+            'Planned',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _timelineRow(
+    String time,
+    String type,
+    String title,
+    String subtitle,
+    Color color,
+    String status,
+  ) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 58,
+          child: Text(
+            time,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 11.5,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        Container(
+          width: 38,
+          height: 38,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(
+            type == 'Visit' ? Icons.place_rounded : Icons.event_rounded,
+            color: color,
+            size: 20,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 10),
+        _StatusPill(label: status, color: color),
+      ],
+    );
+  }
+
+  Widget _buildRecentOrdersCard() {
+    return _PanelCard(
+      title: 'Recent Orders',
+      subtitle: 'Latest sales orders',
+      trailing: TextButton(
+        onPressed: () => _showSnack('View all orders'),
+        child: const Text('View All'),
+      ),
+      child: Column(
+        children: [
+          for (final order in _orders) ...[
+            _orderRow(order),
+            if (order != _orders.last) const SizedBox(height: 10),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _orderRow(_OrderItem order) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceSoft,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.85)),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: AppColors.primary),
-          const SizedBox(width: 8),
-          Text(
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: order.color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(Icons.receipt_long_rounded, color: order.color, size: 20),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  order.number,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  order.customer,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  order.date,
+                  style: const TextStyle(
+                    color: AppColors.textLightMuted,
+                    fontSize: 11.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                order.amount,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              _StatusPill(label: order.status, color: order.color),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOutstandingSummaryCard() {
+    return _PanelCard(
+      title: 'Outstanding Summary',
+      subtitle: 'Outstanding by aging bucket',
+      child: Column(
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.red.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Row(
+              children: [
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Total Outstanding',
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Rs. 1,86,350',
+                        style: TextStyle(
+                          color: AppColors.red,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: const Icon(Icons.timelapse_rounded, color: AppColors.red),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          _amountLine('0 - 30 Days', 'Rs. 45,600', AppColors.green),
+          const SizedBox(height: 10),
+          _amountLine('31 - 60 Days', 'Rs. 68,750', AppColors.orange),
+          const SizedBox(height: 10),
+          _amountLine('61 - 90 Days', 'Rs. 48,000', AppColors.red),
+          const SizedBox(height: 10),
+          _amountLine('90+ Days', 'Rs. 24,000', AppColors.purple),
+          const SizedBox(height: 12),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: () => _showSnack('Outstanding details'),
+              child: const Text('View Customer Outstanding'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _amountLine(String label, String amount, Color color) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
             label,
             style: const TextStyle(
-              color: AppColors.primary,
+              color: AppColors.textPrimary,
+              fontSize: 12.5,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        Text(
+          amount,
+          style: TextStyle(
+            color: color,
+            fontSize: 12.5,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFollowUpsCard() {
+    return _PanelCard(
+      title: 'Follow-Ups',
+      subtitle: 'Pending follow-up items and reminders',
+      child: Column(
+        children: [
+          for (final item in _followUps) ...[
+            _compactRow(
+              icon: Icons.call_made_rounded,
+              iconColor: item.color,
+              title: item.title,
+              subtitle: item.subtitle,
+              trailing: item.date,
+            ),
+            if (item != _followUps.last) const SizedBox(height: 10),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReportsCard() {
+    const items = [
+      ('Sales Report', Icons.bar_chart_rounded),
+      ('Customer Report', Icons.groups_rounded),
+      ('Order Report', Icons.receipt_long_rounded),
+      ('Visit Report', Icons.place_rounded),
+      ('Performance Report', Icons.insights_rounded),
+      ('Outstanding Report', Icons.currency_rupee_rounded),
+    ];
+
+    return _PanelCard(
+      title: 'Reports',
+      subtitle: 'Quick access to operational reports',
+      child: Column(
+        children: [
+          for (final item in items) ...[
+            _arrowRow(item.$1, item.$2),
+            if (item != items.last) const SizedBox(height: 10),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNotificationsCard() {
+    return _PanelCard(
+      title: 'Notifications',
+      subtitle: 'Recent alerts and activity',
+      trailing: const _CounterBadge('5'),
+      child: Column(
+        children: [
+          for (final item in _notifications) ...[
+            _compactRow(
+              icon: Icons.notifications_none_rounded,
+              iconColor: item.color,
+              title: item.title,
+              subtitle: item.time,
+              trailing: '',
+            ),
+            if (item != _notifications.last) const SizedBox(height: 10),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSettingsCard() {
+    const items = [
+      ('Profile', Icons.person_rounded),
+      ('Change Password', Icons.lock_rounded),
+      ('App Preferences', Icons.settings_rounded),
+      ('Notification Settings', Icons.notifications_rounded),
+      ('About App', Icons.info_outline_rounded),
+    ];
+
+    return _PanelCard(
+      title: 'Settings',
+      subtitle: 'Profile and application preferences',
+      child: Column(
+        children: [
+          for (final item in items) ...[
+            _arrowRow(item.$1, item.$2, trailingColor: AppColors.textSecondary),
+            if (item != items.last) const SizedBox(height: 10),
+          ],
+          const SizedBox(height: 4),
+          _logoutTile(),
+        ],
+      ),
+    );
+  }
+
+  Widget _logoutTile() {
+    return Material(
+      color: AppColors.red.withValues(alpha: 0.08),
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: () => _showSnack('Logout'),
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Row(
+            children: const [
+              Icon(Icons.logout_rounded, color: AppColors.red, size: 18),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Logout',
+                  style: TextStyle(
+                    color: AppColors.red,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCustomersCard() {
+    return _PanelCard(
+      title: 'Customers',
+      subtitle: 'Assigned accounts and visit coverage',
+      trailing: const _CounterBadge('5'),
+      child: Column(
+        children: [
+          _searchBar('Search customers...'),
+          const SizedBox(height: 14),
+          for (final customer in _customers) ...[
+            _customerRow(customer),
+            if (customer != _customers.last) const SizedBox(height: 10),
+          ],
+          const SizedBox(height: 12),
+          _footerButton('Add New Customer'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSalesOrdersCard() {
+    return _PanelCard(
+      title: 'Sales Orders',
+      subtitle: 'Confirmed, pending, and draft orders',
+      trailing: const _CounterBadge('8'),
+      child: Column(
+        children: [
+          _searchBar('Search orders...'),
+          const SizedBox(height: 14),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: const [
+              _FilterPill('All'),
+              _FilterPill('Draft'),
+              _FilterPill('Pending'),
+              _FilterPill('Confirmed'),
+              _FilterPill('Cancelled'),
+            ],
+          ),
+          const SizedBox(height: 14),
+          for (final order in _orders) ...[
+            _simpleOrderRow(order),
+            if (order != _orders.last) const SizedBox(height: 10),
+          ],
+          const SizedBox(height: 12),
+          _footerButton('View All Orders'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVisitsCard() {
+    return _PanelCard(
+      title: 'Visits',
+      subtitle: 'Today, this week, and this month',
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const _CounterBadge('Today'),
+          const SizedBox(width: 8),
+          IconButton(
+            onPressed: () => _showSnack('Add visit'),
+            icon: const Icon(Icons.add_rounded),
+            style: IconButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              minimumSize: const Size(34, 34),
+            ),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: const [
+              _FilterPill('Today'),
+              _FilterPill('This Week'),
+              _FilterPill('This Month'),
+              _FilterPill('Custom'),
+            ],
+          ),
+          const SizedBox(height: 14),
+          for (final visit in _visits) ...[
+            _visitRow(visit),
+            if (visit != _visits.last) const SizedBox(height: 10),
+          ],
+          const SizedBox(height: 12),
+          _footerButton('View All Visits'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProductsCard() {
+    return _PanelCard(
+      title: 'Products',
+      subtitle: 'Frequently sold and stock-aware items',
+      child: Column(
+        children: [
+          _searchBar('Search products...'),
+          const SizedBox(height: 14),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: const [
+              _FilterPill('All Products'),
+              _FilterPill('Low Stock'),
+              _FilterPill('Out of Stock'),
+            ],
+          ),
+          const SizedBox(height: 14),
+          for (final product in _products) ...[
+            _productRow(product),
+            if (product != _products.last) const SizedBox(height: 10),
+          ],
+          const SizedBox(height: 12),
+          _footerButton('View Product Stock Board'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTargetsCard() {
+    return _PanelCard(
+      title: 'Targets & Performance',
+      subtitle: 'Monthly target and KPI snapshot',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Align(
+            alignment: Alignment.centerRight,
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: 'May 2024',
+                items: const [
+                  DropdownMenuItem(value: 'May 2024', child: Text('May 2024')),
+                  DropdownMenuItem(value: 'Jun 2024', child: Text('Jun 2024')),
+                  DropdownMenuItem(value: 'Jul 2024', child: Text('Jul 2024')),
+                ],
+                onChanged: (_) {},
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Monthly Target',
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Rs. 2,75,000',
+            style: TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 24,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: const [
+              Text(
+                'Remaining: Rs. 2,25,000',
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 12,
+                ),
+              ),
+              Text(
+                '55%',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              value: 0.55,
+              minHeight: 12,
+              backgroundColor: AppColors.surfaceSoft,
+              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.green),
+            ),
+          ),
+          const SizedBox(height: 16),
+          _performanceLine('Orders Created', '23'),
+          const SizedBox(height: 12),
+          _performanceLine('Total Sales Value', 'Rs. 2,75,000'),
+          const SizedBox(height: 12),
+          _performanceLine('New Customers Added', '7'),
+          const SizedBox(height: 12),
+          _performanceLine('Customers Visited', '18'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPaymentsCard() {
+    return _PanelCard(
+      title: 'Outstanding & Payments',
+      subtitle: 'Track dues and payment actions',
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _FilterPill(
+                  'Outstanding',
+                  selected: true,
+                  onTap: () {},
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _FilterPill(
+                  'Payments',
+                  onTap: () {},
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.red.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Row(
+              children: [
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Total Outstanding',
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Rs. 1,86,350',
+                        style: TextStyle(
+                          color: AppColors.red,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.85),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: const Icon(Icons.payments_rounded, color: AppColors.red),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          _amountLine('0 - 30 Days', 'Rs. 45,600', AppColors.green),
+          const SizedBox(height: 10),
+          _amountLine('31 - 60 Days', 'Rs. 68,750', AppColors.orange),
+          const SizedBox(height: 10),
+          _amountLine('61 - 90 Days', 'Rs. 48,000', AppColors.red),
+          const SizedBox(height: 10),
+          _amountLine('90+ Days', 'Rs. 24,000', AppColors.purple),
+          const SizedBox(height: 12),
+          _footerButton('View Customer Outstanding'),
+        ],
+      ),
+    );
+  }
+
+  Widget _performanceLine(String label, String value) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceSoft,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.chevron_right_rounded, size: 18, color: AppColors.green),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          Text(
+            value,
+            style: const TextStyle(
+              color: AppColors.textPrimary,
               fontSize: 12.5,
               fontWeight: FontWeight.w700,
             ),
@@ -397,92 +1334,363 @@ class _SalesManagerDashboardScreenState
     );
   }
 
-  Widget _buildQuickActions() {
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      children: [
-        SoftActionButton(
-          label: 'Assign Customer',
-          icon: Icons.person_add_alt_1_rounded,
-          onPressed: () => _showActionSnack('Assign Customer'),
+  Widget _searchBar(String hintText) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.85)),
+      ),
+      child: TextField(
+        decoration: InputDecoration(
+          border: InputBorder.none,
+          prefixIcon: const Icon(Icons.search, size: 20),
+          hintText: hintText,
+          hintStyle: const TextStyle(
+            color: AppColors.textLightMuted,
+            fontSize: 13,
+          ),
         ),
-        SoftActionButton(
-          label: 'New Order',
-          icon: Icons.add_shopping_cart_rounded,
-          onPressed: () => _showActionSnack('New Order'),
-        ),
-        SoftActionButton(
-          label: 'Plan Visits',
-          icon: Icons.route_rounded,
-          onPressed: () => _showActionSnack('Plan Visits'),
-        ),
-      ],
+      ),
     );
   }
 
-  Widget _buildRangeChips() {
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: SalesRange.values.map((range) {
-        final selected = range == _selectedRange;
-        return ChoiceChip(
-          label: Text(range.label),
-          selected: selected,
-          onSelected: (_) => _changeRange(range),
-          selectedColor: AppColors.secondary.withValues(alpha: 0.16),
-          backgroundColor: AppColors.surfaceSoft,
-          labelStyle: TextStyle(
-            color: selected ? AppColors.secondary : textPrimary,
-            fontWeight: FontWeight.w700,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(999),
-            side: BorderSide(
-              color: selected
-                  ? AppColors.secondary
-                  : AppColors.secondary.withValues(alpha: 0.18),
+  Widget _customerRow(_CustomerItem item) {
+    return _itemCard(
+      icon: item.icon,
+      iconColor: item.color,
+      title: item.name,
+      subtitle: item.location,
+      leadingNote: item.value,
+      trailing: _StatusPill(label: item.status, color: item.color),
+    );
+  }
+
+  Widget _simpleOrderRow(_OrderItem item) {
+    return _itemCard(
+      icon: Icons.receipt_long_rounded,
+      iconColor: item.color,
+      title: item.number,
+      subtitle: item.customer,
+      leadingNote: item.date,
+      trailing: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(
+            item.amount,
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 12.5,
+              fontWeight: FontWeight.w700,
             ),
           ),
-        );
-      }).toList(),
+          const SizedBox(height: 8),
+          _StatusPill(label: item.status, color: item.color),
+        ],
+      ),
     );
   }
 
-  Widget _buildSummaryGrid() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final columns = constraints.maxWidth > 1000
-            ? 4
-            : constraints.maxWidth > 700
-            ? 3
-            : 2;
-        return GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: _summaries.length,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: columns,
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            childAspectRatio: 1.38,
+  Widget _visitRow(_VisitItem item) {
+    return _itemCard(
+      icon: Icons.place_rounded,
+      iconColor: item.color,
+      title: item.customer,
+      subtitle: item.location,
+      leadingNote: item.time,
+      trailing: _StatusPill(label: item.status, color: item.color),
+    );
+  }
+
+  Widget _productRow(_ProductItem item) {
+    return _itemCard(
+      icon: item.icon,
+      iconColor: AppColors.primary,
+      title: item.name,
+      subtitle: item.price,
+      leadingNote: item.stock,
+      trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
+    );
+  }
+
+  Widget _itemCard({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+    required String leadingNote,
+    required Widget trailing,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceSoft,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.75)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: iconColor, size: 20),
           ),
-          itemBuilder: (context, index) {
-            return _summaryCard(_summaries[index]);
-          },
-        );
-      },
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  leadingNote,
+                  style: const TextStyle(
+                    color: AppColors.textLightMuted,
+                    fontSize: 11.5,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          trailing,
+        ],
+      ),
     );
   }
 
-  Widget _summaryCard(_SalesSummary summary) {
+  Widget _arrowRow(
+    String title,
+    IconData icon, {
+    Color trailingColor = AppColors.textSecondary,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceSoft,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: AppColors.primary, size: 18),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              title,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          Icon(Icons.chevron_right_rounded, color: trailingColor, size: 18),
+        ],
+      ),
+    );
+  }
+
+  Widget _compactRow({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+    required String trailing,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceSoft,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.75)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: iconColor, size: 18),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (trailing.isNotEmpty)
+                Text(
+                  trailing,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              const SizedBox(height: 4),
+              const Icon(Icons.chevron_right_rounded, color: AppColors.textLightMuted),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _footerButton(String label) {
+    return SizedBox(
+      width: double.infinity,
+      child: TextButton(
+        onPressed: () => _showSnack(label),
+        style: TextButton.styleFrom(
+          backgroundColor: AppColors.surfaceSoft,
+          foregroundColor: AppColors.primary,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(fontWeight: FontWeight.w700),
+        ),
+      ),
+    );
+  }
+}
+
+class _PanelCard extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final Widget child;
+  final Widget? trailing;
+
+  const _PanelCard({
+    required this.title,
+    required this.subtitle,
+    required this.child,
+    this.trailing,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.85)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.textPrimary.withValues(alpha: 0.06),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (trailing != null) trailing!,
+            ],
+          ),
+          if (subtitle.trim().isNotEmpty) ...[
+            const SizedBox(height: 16),
+          ],
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+class _MetricCard extends StatelessWidget {
+  final _MetricCardData data;
+
+  const _MetricCard({required this.data});
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.background,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.secondary.withValues(alpha: 0.16)),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.8)),
         boxShadow: [
           BoxShadow(
             color: AppColors.textPrimary.withValues(alpha: 0.05),
@@ -500,10 +1708,10 @@ class _SalesManagerDashboardScreenState
             children: [
               Expanded(
                 child: Text(
-                  summary.label,
+                  data.label,
                   style: const TextStyle(
-                    color: textSecondary,
-                    fontSize: 12.2,
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
                     fontWeight: FontWeight.w600,
                   ),
                   maxLines: 2,
@@ -514,27 +1722,160 @@ class _SalesManagerDashboardScreenState
                 width: 34,
                 height: 34,
                 decoration: BoxDecoration(
-                  color: summary.color.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(10),
+                  color: data.color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(11),
                 ),
-                child: Icon(summary.icon, color: summary.color, size: 18),
+                child: Icon(data.icon, color: data.color, size: 18),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           Text(
-            summary.value,
+            data.value,
             style: const TextStyle(
-              color: textPrimary,
+              color: AppColors.textPrimary,
               fontSize: 20,
               fontWeight: FontWeight.w800,
             ),
           ),
-          const SizedBox(height: 4),
+        ],
+      ),
+    );
+  }
+}
+
+class _ActionCard extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _ActionCard({
+    required this.title,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.background,
+      borderRadius: BorderRadius.circular(18),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: AppColors.border.withValues(alpha: 0.8)),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(13),
+                ),
+                child: Icon(icon, color: color, size: 20),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _StatusPill extends StatelessWidget {
+  final String label;
+  final Color color;
+
+  const _StatusPill({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+class _CounterBadge extends StatelessWidget {
+  final String label;
+
+  const _CounterBadge(this.label);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: AppColors.green.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: AppColors.primary,
+          fontSize: 11.5,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+class _HeaderPill extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _HeaderPill({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: Colors.white),
+          const SizedBox(width: 8),
           Text(
-            summary.delta,
-            style: TextStyle(
-              color: summary.color,
+            label,
+            style: const TextStyle(
+              color: Colors.white,
               fontSize: 12,
               fontWeight: FontWeight.w700,
             ),
@@ -543,704 +1884,407 @@ class _SalesManagerDashboardScreenState
       ),
     );
   }
+}
 
-  Widget _buildPerformanceCard() {
-    return _SectionCard(
-      title: 'Sales Performance',
-      subtitle: 'Trend and target progress for the selected range',
-      child: Column(
+class _HeaderDatePill extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _HeaderDatePill({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceSoft,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.85)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: _metricTile('Target', 'Rs. 16.0L', AppColors.secondary),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _metricTile('Achieved', 'Rs. 12.6L', AppColors.green),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(18),
-            child: SizedBox(
-              height: 150,
-              width: double.infinity,
-              child: CustomPaint(
-                painter: _LineSparklinePainter(
-                  values: _salesTrend,
-                  lineColor: AppColors.secondary,
-                  fillColor: AppColors.secondary.withValues(alpha: 0.12),
-                ),
-              ),
+          Icon(icon, size: 16, color: AppColors.primary),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: const TextStyle(
+              color: AppColors.primary,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: AppColors.secondary.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(16),
+        ],
+      ),
+    );
+  }
+}
+
+class _FilterPill extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback? onTap;
+
+  const _FilterPill(this.label, {this.selected = false, this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: selected ? AppColors.primary : AppColors.surfaceSoft,
+      borderRadius: BorderRadius.circular(999),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(999),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(
+              color: selected
+                  ? AppColors.primary
+                  : AppColors.border.withValues(alpha: 0.85),
+            ),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: selected ? Colors.white : AppColors.textPrimary,
+              fontSize: 11.5,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SalesManagerSidebar extends StatelessWidget {
+  final ValueChanged<String> onSelect;
+
+  const _SalesManagerSidebar({required this.onSelect});
+
+  @override
+  Widget build(BuildContext context) {
+    final items = <_SidebarItem>[
+      const _SidebarItem('Dashboard', Icons.dashboard_rounded),
+      const _SidebarItem('Customers', Icons.groups_rounded),
+      const _SidebarItem('Sales Orders', Icons.receipt_long_rounded),
+      const _SidebarItem('Visits', Icons.place_rounded),
+      const _SidebarItem('Follow-Ups', Icons.notifications_active_rounded),
+      const _SidebarItem('Products', Icons.inventory_2_rounded),
+      const _SidebarItem('Targets & Performance', Icons.show_chart_rounded),
+      const _SidebarItem('Outstanding & Payments', Icons.payments_rounded),
+      const _SidebarItem('Reports', Icons.bar_chart_rounded),
+      const _SidebarItem('Settings', Icons.settings_rounded),
+    ];
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.adminSidebarBg.withValues(alpha: 0.72),
+        border: Border(
+          right: BorderSide(color: AppColors.border.withValues(alpha: 0.65)),
+        ),
+      ),
+      child: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+              child: Row(
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Icon(
+                      Icons.water_drop_rounded,
+                      color: Colors.white,
+                      size: 26,
+                    ),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Target Completion',
-                        style: TextStyle(
-                          color: textSecondary,
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          const Text(
-                            '78%',
-                            style: TextStyle(
-                              color: textPrimary,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                            ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'SAAS CRM',
+                          style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
                           ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(999),
-                              child: LinearProgressIndicator(
-                                value: 0.78,
-                                minHeight: 10,
-                                backgroundColor: AppColors.secondary.withValues(
-                                  alpha: 0.14,
-                                ),
-                                valueColor: const AlwaysStoppedAnimation<Color>(
-                                  AppColors.secondary,
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          'Sales Manager',
+                          style: TextStyle(
+                            color: AppColors.primary,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.of(context).maybePop(),
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Divider(
+              height: 1,
+              color: AppColors.border.withValues(alpha: 0.75),
+            ),
+            Expanded(
+              child: ListView.separated(
+                padding: const EdgeInsets.fromLTRB(12, 14, 12, 14),
+                itemCount: items.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                itemBuilder: (context, index) {
+                  final item = items[index];
+                  final selected = index == 0;
+                  return Material(
+                    color: selected
+                        ? AppColors.activeMenuBg
+                        : AppColors.background,
+                    borderRadius: BorderRadius.circular(20),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20),
+                      onTap: () => onSelect(item.label),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 14,
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: selected
+                                ? AppColors.activeMenuBg
+                                : AppColors.border.withValues(alpha: 0.7),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              item.icon,
+                              color: selected
+                                  ? AppColors.primary
+                                  : AppColors.textSecondary,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                item.label,
+                                style: TextStyle(
+                                  color: selected
+                                      ? AppColors.primary
+                                      : AppColors.textSecondary,
+                                  fontSize: 13.5,
+                                  fontWeight: selected
+                                      ? FontWeight.w800
+                                      : FontWeight.w700,
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                            if (!selected)
+                              const Icon(
+                                Icons.chevron_right_rounded,
+                                color: AppColors.textLightMuted,
+                                size: 18,
+                              ),
+                          ],
+                        ),
                       ),
-                    ],
-                  ),
-                ),
+                    ),
+                  );
+                },
               ),
-              const SizedBox(width: 10),
-              Container(
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+              child: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 14,
                   vertical: 14,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceSoft,
-                  borderRadius: BorderRadius.circular(16),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(18),
                   border: Border.all(
-                    color: AppColors.secondary.withValues(alpha: 0.18),
+                    color: AppColors.border.withValues(alpha: 0.8),
                   ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
-                      'Coverage',
-                      style: TextStyle(
-                        color: textSecondary,
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    SizedBox(height: 6),
-                    Text(
-                      '86%',
-                      style: TextStyle(
-                        color: textPrimary,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _metricTile(String label, String value, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceSoft,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: textSecondary,
-              fontSize: 11.5,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            value,
-            style: TextStyle(
-              color: color,
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPipelineCard() {
-    return _SectionCard(
-      title: 'Order Pipeline',
-      subtitle: 'Status distribution for sales orders',
-      child: Column(
-        children: [
-          for (final slice in _orderPipeline) ...[
-            _barRow(slice.label, slice.count, slice.color),
-            if (slice != _orderPipeline.last) const SizedBox(height: 12),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _barRow(String label, int count, Color color) {
-    final maxCount = _orderPipeline
-        .map((e) => e.count)
-        .reduce((a, b) => a > b ? a : b);
-    final width = (count / maxCount).clamp(0.1, 1.0);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              label,
-              style: const TextStyle(
-                color: textPrimary,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            Text(
-              '$count',
-              style: const TextStyle(
-                color: textPrimary,
-                fontSize: 13,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(999),
-          child: LinearProgressIndicator(
-            value: width,
-            minHeight: 10,
-            backgroundColor: AppColors.secondary.withValues(alpha: 0.12),
-            valueColor: AlwaysStoppedAnimation<Color>(color),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTeamCard() {
-    return _SectionCard(
-      title: 'Team Performance',
-      subtitle: 'Sales officers and achievement against target',
-      child: Column(
-        children: [
-          for (final member in _team) ...[
-            _teamRow(member),
-            if (member != _team.last) const SizedBox(height: 12),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _teamRow(_TeamMember member) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceSoft,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: member.color.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.person_rounded,
-                  color: member.color,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
                   children: [
-                    Text(
-                      member.name,
-                      style: const TextStyle(
-                        color: textPrimary,
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    const Icon(
+                      Icons.logout_rounded,
+                      color: AppColors.red,
+                      size: 20,
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      member.sales,
-                      style: const TextStyle(
-                        color: textSecondary,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 5,
-                ),
-                decoration: BoxDecoration(
-                  color: member.color.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Text(
-                  '${member.targetPercent}%',
-                  style: TextStyle(
-                    color: member.color,
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(999),
-            child: LinearProgressIndicator(
-              value: member.targetPercent / 100,
-              minHeight: 9,
-              backgroundColor: AppColors.secondary.withValues(alpha: 0.12),
-              valueColor: AlwaysStoppedAnimation<Color>(member.color),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFollowUpCard() {
-    return _SectionCard(
-      title: 'Follow-ups',
-      subtitle: 'Pending customer commitments and visit reminders',
-      child: Column(
-        children: [
-          for (final followUp in _followUps) ...[
-            _followUpTile(followUp),
-            if (followUp != _followUps.last) const SizedBox(height: 12),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _followUpTile(_FollowUpTask followUp) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceSoft,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  followUp.customer,
-                  style: const TextStyle(
-                    color: textPrimary,
-                    fontSize: 13.5,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 5,
-                ),
-                decoration: BoxDecoration(
-                  color: followUp.color.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Text(
-                  followUp.status,
-                  style: TextStyle(
-                    color: followUp.color,
-                    fontSize: 11.2,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            followUp.note,
-            style: const TextStyle(color: textSecondary, fontSize: 12.2),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Icon(Icons.schedule_rounded, size: 16, color: followUp.color),
-              const SizedBox(width: 6),
-              Text(
-                followUp.time,
-                style: TextStyle(
-                  color: followUp.color,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildVisitAndOpportunityCard() {
-    return _SectionCard(
-      title: 'Visits and Opportunities',
-      subtitle: 'Route progress and high-value customer actions',
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final wide = constraints.maxWidth > 800;
-          final content = [
-            Expanded(child: _buildVisitPlanCard()),
-            const SizedBox(width: 14),
-            Expanded(child: _buildOpportunityCard()),
-          ];
-
-          if (wide) {
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: content,
-            );
-          }
-
-          return Column(
-            children: [
-              _buildVisitPlanCard(),
-              const SizedBox(height: 14),
-              _buildOpportunityCard(),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildVisitPlanCard() {
-    return Column(
-      children: [
-        for (final plan in _visitPlan) ...[
-          Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceSoft,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: plan.color.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    Icons.location_on_rounded,
-                    color: plan.color,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        plan.title,
-                        style: const TextStyle(
-                          color: textPrimary,
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${plan.total} planned - ${plan.completed} completed',
-                        style: const TextStyle(
-                          color: textSecondary,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Text(
-                  plan.completed,
-                  style: TextStyle(
-                    color: plan.color,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildOpportunityCard() {
-    return Column(
-      children: [
-        for (final opportunity in _opportunities) ...[
-          Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceSoft,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: opportunity.color.withValues(alpha: 0.18),
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
+                    const SizedBox(width: 10),
+                    const Expanded(
                       child: Text(
-                        opportunity.customer,
-                        style: const TextStyle(
-                          color: textPrimary,
+                        'Check-Out',
+                        style: TextStyle(
+                          color: AppColors.red,
                           fontSize: 13.5,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
-                    Text(
-                      opportunity.value,
-                      style: TextStyle(
-                        color: opportunity.color,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w800,
-                      ),
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      color: AppColors.textLightMuted,
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  opportunity.reason,
-                  style: const TextStyle(color: textSecondary, fontSize: 12.2),
-                ),
-                const SizedBox(height: 8),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 5,
-                    ),
-                    decoration: BoxDecoration(
-                      color: opportunity.color.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Text(
-                      opportunity.status,
-                      style: TextStyle(
-                        color: opportunity.color,
-                        fontSize: 11.3,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-        ],
-      ],
+          ],
+        ),
+      ),
     );
   }
 }
 
-class _SectionCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final Widget child;
+class _SalesManagerDrawer extends StatelessWidget {
+  final ValueChanged<String> onSelect;
 
-  const _SectionCard({
-    required this.title,
-    required this.subtitle,
-    required this.child,
-  });
+  const _SalesManagerDrawer({required this.onSelect});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.secondary.withValues(alpha: 0.16)),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.textPrimary.withValues(alpha: 0.05),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            subtitle,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 12.3,
-            ),
-          ),
-          const SizedBox(height: 16),
-          child,
-        ],
-      ),
+    return Drawer(
+      backgroundColor: AppColors.adminSidebarBg,
+      child: _SalesManagerSidebar(onSelect: onSelect),
     );
   }
 }
 
-class _LineSparklinePainter extends CustomPainter {
-  final List<double> values;
-  final Color lineColor;
-  final Color fillColor;
+class _SidebarItem {
+  final String label;
+  final IconData icon;
 
-  _LineSparklinePainter({
-    required this.values,
-    required this.lineColor,
-    required this.fillColor,
+  const _SidebarItem(this.label, this.icon);
+}
+
+class _MetricCardData {
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color color;
+
+  const _MetricCardData({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.color,
   });
+}
 
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (values.isEmpty) return;
+class _CustomerItem {
+  final String name;
+  final String location;
+  final String value;
+  final String status;
+  final IconData icon;
+  final Color color;
 
-    final paint = Paint()
-      ..color = lineColor
-      ..strokeWidth = 3
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
+  const _CustomerItem({
+    required this.name,
+    required this.location,
+    required this.value,
+    required this.status,
+    required this.icon,
+    required this.color,
+  });
+}
 
-    final fillPaint = Paint()
-      ..color = fillColor
-      ..style = PaintingStyle.fill;
+class _OrderItem {
+  final String number;
+  final String customer;
+  final String date;
+  final String amount;
+  final String status;
+  final Color color;
 
-    final minVal = values.reduce((a, b) => a < b ? a : b);
-    final maxVal = values.reduce((a, b) => a > b ? a : b);
-    final range = (maxVal - minVal).abs() < 0.0001 ? 1.0 : maxVal - minVal;
-    final horizontalStep = values.length == 1
-        ? size.width
-        : size.width / (values.length - 1);
+  const _OrderItem({
+    required this.number,
+    required this.customer,
+    required this.date,
+    required this.amount,
+    required this.status,
+    required this.color,
+  });
+}
 
-    final points = <Offset>[];
-    for (var i = 0; i < values.length; i++) {
-      final x = i * horizontalStep;
-      final normalized = (values[i] - minVal) / range;
-      final y = size.height - (normalized * (size.height - 24)) - 12;
-      points.add(Offset(x, y));
-    }
+class _VisitItem {
+  final String customer;
+  final String location;
+  final String time;
+  final String status;
+  final Color color;
 
-    final areaPath = Path()
-      ..moveTo(points.first.dx, size.height)
-      ..lineTo(points.first.dx, points.first.dy);
+  const _VisitItem({
+    required this.customer,
+    required this.location,
+    required this.time,
+    required this.status,
+    required this.color,
+  });
+}
 
-    for (var i = 1; i < points.length; i++) {
-      areaPath.lineTo(points[i].dx, points[i].dy);
-    }
+class _ProductItem {
+  final String name;
+  final String price;
+  final String stock;
+  final IconData icon;
 
-    areaPath
-      ..lineTo(points.last.dx, size.height)
-      ..close();
+  const _ProductItem({
+    required this.name,
+    required this.price,
+    required this.stock,
+    required this.icon,
+  });
+}
 
-    final linePath = Path()..moveTo(points.first.dx, points.first.dy);
-    for (var i = 1; i < points.length; i++) {
-      linePath.lineTo(points[i].dx, points[i].dy);
-    }
+class _FollowUpItem {
+  final String title;
+  final String subtitle;
+  final String date;
+  final Color color;
 
-    canvas.drawPath(areaPath, fillPaint);
-    canvas.drawPath(linePath, paint);
-  }
+  const _FollowUpItem({
+    required this.title,
+    required this.subtitle,
+    required this.date,
+    required this.color,
+  });
+}
 
-  @override
-  bool shouldRepaint(covariant _LineSparklinePainter oldDelegate) {
-    return oldDelegate.values != values ||
-        oldDelegate.lineColor != lineColor ||
-        oldDelegate.fillColor != fillColor;
-  }
+class _NotificationItem {
+  final String title;
+  final String time;
+  final Color color;
+
+  const _NotificationItem({
+    required this.title,
+    required this.time,
+    required this.color,
+  });
 }
 
 enum SalesRange { today, thisWeek, thisMonth }
@@ -1256,78 +2300,4 @@ extension on SalesRange {
         return 'This Month';
     }
   }
-}
-
-class _SalesSummary {
-  final String label;
-  final String value;
-  final String delta;
-  final IconData icon;
-  final Color color;
-
-  const _SalesSummary({
-    required this.label,
-    required this.value,
-    required this.delta,
-    required this.icon,
-    required this.color,
-  });
-}
-
-class _PipelineSlice {
-  final String label;
-  final int count;
-  final Color color;
-
-  const _PipelineSlice(this.label, this.count, this.color);
-}
-
-class _TeamMember {
-  final String name;
-  final String sales;
-  final int targetPercent;
-  final Color color;
-
-  const _TeamMember(this.name, this.sales, this.targetPercent, this.color);
-}
-
-class _FollowUpTask {
-  final String customer;
-  final String note;
-  final String time;
-  final String status;
-  final Color color;
-
-  const _FollowUpTask({
-    required this.customer,
-    required this.note,
-    required this.time,
-    required this.status,
-    required this.color,
-  });
-}
-
-class _VisitPlan {
-  final String title;
-  final String total;
-  final String completed;
-  final Color color;
-
-  const _VisitPlan(this.title, this.total, this.completed, this.color);
-}
-
-class _CustomerOpportunity {
-  final String customer;
-  final String value;
-  final String reason;
-  final String status;
-  final Color color;
-
-  const _CustomerOpportunity({
-    required this.customer,
-    required this.value,
-    required this.reason,
-    required this.status,
-    required this.color,
-  });
 }
