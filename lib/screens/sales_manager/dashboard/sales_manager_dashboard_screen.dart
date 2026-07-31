@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
 import '../customers/sales_manager_customers_screen.dart';
+import '../orders/sales_manager_orders_screen.dart';
 
 class SalesManagerDashboardScreen extends StatefulWidget {
   const SalesManagerDashboardScreen({super.key});
@@ -287,6 +288,11 @@ class _SalesManagerDashboardScreenState
           builder: (_) => const SalesManagerCustomersScreen(),
         ),
       );
+      return;
+    }
+
+    if (action == 'Sales Orders') {
+      _openSalesOrdersScreen();
       return;
     }
 
@@ -703,7 +709,7 @@ class _SalesManagerDashboardScreenState
       title: 'Recent Orders',
       subtitle: 'Latest sales orders',
       trailing: TextButton(
-        onPressed: () => _showSnack('View all orders'),
+        onPressed: _openSalesOrdersScreen,
         child: const Text('View All'),
       ),
       child: Column(
@@ -1053,7 +1059,7 @@ class _SalesManagerDashboardScreenState
             if (order != _orders.last) const SizedBox(height: 10),
           ],
           const SizedBox(height: 12),
-          _footerButton('View All Orders'),
+          _footerButton('Create Order', onPressed: _openSalesOrdersScreen),
         ],
       ),
     );
@@ -1587,11 +1593,19 @@ class _SalesManagerDashboardScreenState
     );
   }
 
-  Widget _footerButton(String label) {
+  void _openSalesOrdersScreen() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const SalesManagerOrdersScreen(),
+      ),
+    );
+  }
+
+  Widget _footerButton(String label, {VoidCallback? onPressed}) {
     return SizedBox(
       width: double.infinity,
       child: TextButton(
-        onPressed: () => _showSnack(label),
+        onPressed: onPressed ?? () => _showSnack(label),
         style: TextButton.styleFrom(
           backgroundColor: AppColors.surfaceSoft,
           foregroundColor: AppColors.primary,

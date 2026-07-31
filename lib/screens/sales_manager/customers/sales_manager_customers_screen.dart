@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
+import '../dashboard/sales_manager_dashboard_screen.dart';
+import '../orders/sales_manager_orders_screen.dart';
 
 class SalesManagerCustomersScreen extends StatefulWidget {
   const SalesManagerCustomersScreen({super.key});
@@ -12,12 +14,14 @@ class SalesManagerCustomersScreen extends StatefulWidget {
 
 class _SalesManagerCustomersScreenState
     extends State<SalesManagerCustomersScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
 
   final List<String> _tabs = const [
     'All (56)',
-    'Assigned (24)',
-    'Recently Visited (16)',
+    'Active (48)',
+    'Inactive (6)',
+    'Blocked (2)',
   ];
 
   final List<_CustomerRecord> _allCustomers = const [
@@ -27,34 +31,98 @@ class _SalesManagerCustomersScreenState
       outstanding: 'Rs. 45,000',
       status: 'Active',
       color: AppColors.primary,
+      category: 'Retailer',
+      since: '12 Jan 2023',
+      customerCode: 'CUST-1001',
+      contactPerson: 'Ramesh Kumar',
+      mobileNumber: '98765 43210',
+      email: 'ramesh@sgtraders.in',
+      gstNumber: '27ABCDE1234F1Z5',
+      address:
+          'Shop No. 12, Main Road, Dadar (West), Mumbai, Maharashtra - 400028',
+      totalOrders: '24',
+      totalSales: 'Rs. 2,45,600',
+      recentOrders: const [
+        _CustomerRecentOrder(
+          number: 'SO-1023',
+          date: '18 May 2024',
+          amount: 'Rs. 25,600',
+          status: 'Confirmed',
+        ),
+      ],
     ),
     _CustomerRecord(
       name: 'Maa Durga Stores',
       location: 'Matunga, Mumbai',
       outstanding: 'Rs. 12,500',
       status: 'Active',
-      color: AppColors.primary,
+      color: AppColors.orange,
+      category: 'Retailer',
+      since: '05 Feb 2023',
+      customerCode: 'CUST-1002',
+      contactPerson: 'Madan Shah',
+      mobileNumber: '98765 12345',
+      email: 'hello@maadurgastores.in',
+      gstNumber: '27ABCDE1234F1Z6',
+      address:
+          'Lal Bahadur Shastri Rd, Matunga, Mumbai, Maharashtra - 400019',
+      totalOrders: '16',
+      totalSales: 'Rs. 1,18,200',
+      recentOrders: const [],
     ),
     _CustomerRecord(
       name: 'Patel Retailers',
       location: 'Sion, Mumbai',
       outstanding: 'Rs. 0',
       status: 'Active',
-      color: AppColors.primary,
+      color: AppColors.green,
+      category: 'Wholesale',
+      since: '22 Mar 2023',
+      customerCode: 'CUST-1003',
+      contactPerson: 'Ketan Patel',
+      mobileNumber: '98989 98989',
+      email: 'patel@retailers.in',
+      gstNumber: '27ABCDE1234F1Z7',
+      address: 'Sion Circle, Sion, Mumbai, Maharashtra - 400022',
+      totalOrders: '9',
+      totalSales: 'Rs. 86,100',
+      recentOrders: const [],
     ),
     _CustomerRecord(
       name: 'S.K. Enterprises',
       location: 'Ghatkopar, Mumbai',
       outstanding: 'Rs. 78,300',
-      status: 'Overdue',
-      color: AppColors.primary,
+      status: 'Inactive',
+      color: AppColors.purple,
+      category: 'Distributor',
+      since: '18 Dec 2022',
+      customerCode: 'CUST-1004',
+      contactPerson: 'Sanjay Kumar',
+      mobileNumber: '99887 77665',
+      email: 'info@skenterprises.in',
+      gstNumber: '27ABCDE1234F1Z8',
+      address: 'Ghatkopar East, Mumbai, Maharashtra - 400075',
+      totalOrders: '31',
+      totalSales: 'Rs. 4,12,800',
+      recentOrders: const [],
     ),
     _CustomerRecord(
       name: 'New A One Traders',
       location: 'Kurla, Mumbai',
       outstanding: 'Rs. 18,700',
-      status: 'Active',
+      status: 'Blocked',
       color: AppColors.primary,
+      category: 'Retailer',
+      since: '15 May 2023',
+      customerCode: 'CUST-1005',
+      contactPerson: 'Amit Shah',
+      mobileNumber: '97654 32109',
+      email: 'sales@aonetraders.in',
+      gstNumber: '27ABCDE1234F1Z9',
+      address: 'Kurla West, Mumbai, Maharashtra - 400070',
+      totalOrders: '12',
+      totalSales: 'Rs. 1,34,700',
+      recentOrders: const [],
     ),
   ];
 
@@ -77,6 +145,27 @@ class _SalesManagerCustomersScreenState
         );
       },
     );
+  }
+
+  void _handleSidebarSelection(String action) {
+    Navigator.of(context).maybePop();
+    if (action == 'Customers') return;
+    if (action == 'Dashboard') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const SalesManagerDashboardScreen(),
+        ),
+      );
+      return;
+    }
+    if (action == 'Sales Orders') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const SalesManagerOrdersScreen(),
+        ),
+      );
+      return;
+    }
   }
 
   Future<void> _showCustomerAddedSuccessfullyPopup(
@@ -305,7 +394,9 @@ class _SalesManagerCustomersScreenState
     }).toList();
 
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: AppColors.background,
+      drawer: _SalesManagerSidebar(onSelect: _handleSidebarSelection),
       body: SafeArea(
         child: Column(
           children: [
@@ -340,9 +431,17 @@ class _SalesManagerCustomersScreenState
   List<_CustomerRecord> _visibleCustomers() {
     switch (_selectedTab) {
       case 1:
-        return _allCustomers.take(4).toList();
+        return _allCustomers
+            .where((customer) => customer.status == 'Active')
+            .toList();
       case 2:
-        return _allCustomers.skip(2).toList();
+        return _allCustomers
+            .where((customer) => customer.status == 'Inactive')
+            .toList();
+      case 3:
+        return _allCustomers
+            .where((customer) => customer.status == 'Blocked')
+            .toList();
       default:
         return _allCustomers;
     }
@@ -360,7 +459,7 @@ class _SalesManagerCustomersScreenState
       child: Row(
         children: [
           IconButton(
-            onPressed: () => Navigator.of(context).maybePop(),
+            onPressed: () => _scaffoldKey.currentState?.openDrawer(),
             icon: const Icon(Icons.menu_rounded, color: AppColors.textPrimary),
           ),
           const SizedBox(width: 2),
@@ -528,14 +627,706 @@ class _CustomerTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isOverdue = customer.status == 'Overdue';
+    final statusColor = _customerStatusColor(customer.status);
+    final statusBackground = _customerStatusBackground(customer.status);
 
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => _CustomerDetailsScreen(customer: customer),
+            ),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.border.withValues(alpha: 0.7)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: AppColors.adminSidebarBg,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.storefront_rounded,
+                  color: customer.color,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      customer.name,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      customer.location,
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 11.5,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Outstanding : ${customer.outstanding}',
+                      style: const TextStyle(
+                        color: AppColors.red,
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: statusBackground,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  customer.status,
+                  style: TextStyle(
+                    color: statusColor,
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 6),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: AppColors.textLightMuted,
+                size: 18,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CustomerDetailsScreen extends StatelessWidget {
+  final _CustomerRecord customer;
+
+  const _CustomerDetailsScreen({required this.customer});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: Column(
+          children: [
+            _CustomerDetailsTopBar(
+              title: 'Customer Details',
+              onBack: () => Navigator.of(context).maybePop(),
+              onEdit: () => _openActions(context),
+              onMore: () => _openActions(context),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(12, 10, 12, 18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _CustomerHeaderCard(customer: customer),
+                    const SizedBox(height: 12),
+                    _CustomerInfoCard(customer: customer),
+                    const SizedBox(height: 12),
+                    _CustomerStatsCard(customer: customer),
+                    const SizedBox(height: 12),
+                    _CustomerRecentOrdersCard(customer: customer),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openActions(BuildContext context) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        return _CustomerActionsSheet(
+          customer: customer,
+          onAction: (action) {
+            Navigator.of(sheetContext).pop();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('$action for ${customer.name}'),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class _CustomerDetailsTopBar extends StatelessWidget {
+  final String title;
+  final VoidCallback onBack;
+  final VoidCallback onEdit;
+  final VoidCallback onMore;
+
+  const _CustomerDetailsTopBar({
+    required this.title,
+    required this.onBack,
+    required this.onEdit,
+    required this.onMore,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      padding: const EdgeInsets.fromLTRB(6, 6, 10, 6),
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        border: Border(
+          bottom: BorderSide(color: AppColors.border.withValues(alpha: 0.7)),
+        ),
+      ),
+      child: Row(
+        children: [
+          IconButton(
+            onPressed: onBack,
+            icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
+          ),
+          const SizedBox(width: 2),
+          Expanded(
+            child: Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: AppColors.primary,
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+          IconButton(
+            onPressed: onEdit,
+            icon: const Icon(Icons.edit_outlined, color: AppColors.textPrimary),
+          ),
+          IconButton(
+            onPressed: onMore,
+            icon: const Icon(Icons.more_vert_rounded, color: AppColors.textPrimary),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CustomerHeaderCard extends StatelessWidget {
+  final _CustomerRecord customer;
+
+  const _CustomerHeaderCard({required this.customer});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border.withValues(alpha: 0.7)),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.72)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 54,
+            height: 54,
+            decoration: BoxDecoration(
+              color: AppColors.adminSidebarBg,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.storefront_rounded, color: customer.color, size: 26),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  customer.name,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${customer.category} | Since ${customer.since}',
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Customer Code: ${customer.customerCode}',
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          _StatusPill(
+            label: customer.status,
+            color: _customerStatusColor(customer.status),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CustomerInfoCard extends StatelessWidget {
+  final _CustomerRecord customer;
+
+  const _CustomerInfoCard({required this.customer});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.72)),
+      ),
+      child: Column(
+        children: [
+          _InfoRow(icon: Icons.person_outline_rounded, label: 'Contact Person', value: customer.contactPerson),
+          const SizedBox(height: 12),
+          _InfoRow(icon: Icons.call_outlined, label: 'Mobile Number', value: customer.mobileNumber),
+          const SizedBox(height: 12),
+          _InfoRow(icon: Icons.email_outlined, label: 'Email', value: customer.email),
+          const SizedBox(height: 12),
+          _InfoRow(icon: Icons.receipt_long_outlined, label: 'GST Number', value: customer.gstNumber),
+          const SizedBox(height: 12),
+          _InfoRow(
+            icon: Icons.location_on_outlined,
+            label: 'Address',
+            value: customer.address,
+            valueAlignRight: false,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CustomerStatsCard extends StatelessWidget {
+  final _CustomerRecord customer;
+
+  const _CustomerStatsCard({required this.customer});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(child: _StatBox(label: 'Total Orders', value: customer.totalOrders)),
+        const SizedBox(width: 10),
+        Expanded(child: _StatBox(label: 'Total Sales', value: customer.totalSales)),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _StatBox(
+            label: 'Outstanding',
+            value: customer.outstanding,
+            valueColor: AppColors.red,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _CustomerRecentOrdersCard extends StatelessWidget {
+  final _CustomerRecord customer;
+
+  const _CustomerRecentOrdersCard({required this.customer});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.72)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Recent Orders',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              TextButton(
+                onPressed: () {},
+                child: const Text('View All'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (customer.recentOrders.isEmpty)
+            const Text(
+              'No recent orders available.',
+              style: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 12,
+              ),
+            )
+          else
+            for (final order in customer.recentOrders) ...[
+              _RecentOrderRow(order: order),
+              if (order != customer.recentOrders.last) const SizedBox(height: 10),
+            ],
+        ],
+      ),
+    );
+  }
+}
+
+class _CustomerActionsSheet extends StatelessWidget {
+  final _CustomerRecord customer;
+  final ValueChanged<String> onAction;
+
+  const _CustomerActionsSheet({
+    required this.customer,
+    required this.onAction,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.48,
+      minChildSize: 0.38,
+      maxChildSize: 0.68,
+      expand: false,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: AppColors.background,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 42,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppColors.border,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'What would you like to do?',
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Expanded(
+                    child: ListView(
+                      controller: scrollController,
+                      children: [
+                        _ActionTile(
+                          icon: Icons.shopping_cart_outlined,
+                          color: AppColors.primary,
+                          title: 'Create Order',
+                          subtitle: 'Create a new sales order for this customer',
+                          onTap: () => onAction('Create Order'),
+                        ),
+                        _ActionTile(
+                          icon: Icons.event_available_outlined,
+                          color: AppColors.blue,
+                          title: 'Record Visit',
+                          subtitle: 'Record details of your customer visit',
+                          onTap: () => onAction('Record Visit'),
+                        ),
+                        _ActionTile(
+                          icon: Icons.currency_rupee_rounded,
+                          color: AppColors.orange,
+                          title: 'Outstanding',
+                          subtitle: 'View outstanding balance and payment history',
+                          onTap: () => onAction('Outstanding'),
+                        ),
+                        _ActionTile(
+                          icon: Icons.edit_outlined,
+                          color: AppColors.purple,
+                          title: 'Edit Customer',
+                          subtitle: 'Update customer information',
+                          onTap: () => onAction('Edit Customer'),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 44,
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.primary,
+                        side: const BorderSide(color: AppColors.primary),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Cancel',
+                        style: TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _ActionTile extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  const _ActionTile({
+    required this.icon,
+    required this.color,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Material(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.border.withValues(alpha: 0.72)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, color: color, size: 22),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        subtitle,
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.chevron_right_rounded, color: AppColors.textLightMuted),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final bool valueAlignRight;
+
+  const _InfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.valueAlignRight = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: AppColors.textSecondary, size: 18),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            label,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 12,
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          flex: 2,
+          child: Text(
+            value,
+            textAlign: valueAlignRight ? TextAlign.right : TextAlign.left,
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StatBox extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color? valueColor;
+
+  const _StatBox({
+    required this.label,
+    required this.value,
+    this.valueColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 82,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.72)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 11.5,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              color: valueColor ?? AppColors.textPrimary,
+              fontSize: 13.5,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RecentOrderRow extends StatelessWidget {
+  final _CustomerRecentOrder order;
+
+  const _RecentOrderRow({required this.order});
+
+  @override
+  Widget build(BuildContext context) {
+    final statusColor =
+        order.status == 'Confirmed' ? AppColors.primary : AppColors.orange;
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceSoft,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.72)),
       ),
       child: Row(
         children: [
@@ -546,11 +1337,7 @@ class _CustomerTile extends StatelessWidget {
               color: AppColors.adminSidebarBg,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              Icons.storefront_rounded,
-              color: customer.color,
-              size: 20,
-            ),
+            child: Icon(Icons.receipt_long_rounded, color: statusColor, size: 20),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -558,28 +1345,19 @@ class _CustomerTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  customer.name,
+                  order.number,
                   style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 13,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 3),
                 Text(
-                  customer.location,
+                  order.date,
                   style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 11.5,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Outstanding : ${customer.outstanding}',
-                  style: TextStyle(
-                    color: isOverdue ? AppColors.red : AppColors.red,
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -589,32 +1367,201 @@ class _CustomerTile extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: isOverdue
-                  ? AppColors.statusInactiveBg
-                  : AppColors.statusActiveBg,
+              color: statusColor.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(999),
             ),
             child: Text(
-              customer.status,
+              order.status,
               style: TextStyle(
-                color: isOverdue
-                    ? AppColors.statusInactiveText
-                    : AppColors.statusActiveText,
+                color: statusColor,
                 fontSize: 10.5,
                 fontWeight: FontWeight.w700,
               ),
             ),
           ),
-          const SizedBox(width: 6),
-          const Icon(
-            Icons.chevron_right_rounded,
-            color: AppColors.textLightMuted,
-            size: 18,
+          const SizedBox(width: 10),
+          Text(
+            order.amount,
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ],
       ),
     );
   }
+}
+
+class _SalesManagerSidebar extends StatelessWidget {
+  final ValueChanged<String> onSelect;
+
+  const _SalesManagerSidebar({required this.onSelect});
+
+  @override
+  Widget build(BuildContext context) {
+    final items = <_SidebarItem>[
+      const _SidebarItem('Dashboard', Icons.dashboard_rounded),
+      const _SidebarItem('Customers', Icons.groups_rounded),
+      const _SidebarItem('Sales Orders', Icons.receipt_long_rounded),
+      const _SidebarItem('Visits', Icons.place_rounded),
+      const _SidebarItem('Follow-Ups', Icons.notifications_active_rounded),
+      const _SidebarItem('Products', Icons.inventory_2_rounded),
+      const _SidebarItem('Targets & Performance', Icons.show_chart_rounded),
+      const _SidebarItem('Outstanding & Payments', Icons.payments_rounded),
+      const _SidebarItem('Reports', Icons.bar_chart_rounded),
+      const _SidebarItem('Check-Out', Icons.logout_rounded),
+    ];
+
+    return Drawer(
+      backgroundColor: AppColors.adminSidebarBg,
+      child: Container(
+        color: AppColors.adminSidebarBg,
+        child: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 62,
+                      height: 62,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: const Icon(
+                        Icons.water_drop_rounded,
+                        color: Colors.white,
+                        size: 30,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'SAAS CRM',
+                            style: TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          SizedBox(height: 5),
+                          Text(
+                            'Sales Manager',
+                            style: TextStyle(
+                              color: AppColors.primary,
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.of(context).maybePop(),
+                      icon: const Icon(
+                        Icons.close_rounded,
+                        color: AppColors.textSecondary,
+                        size: 30,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Divider(
+                height: 1,
+                color: AppColors.border.withValues(alpha: 0.6),
+              ),
+              const SizedBox(height: 12),
+              Expanded(
+                child: ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                  itemCount: items.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 10),
+                  itemBuilder: (context, index) {
+                    final item = items[index];
+                    final selected = item.label == 'Dashboard';
+                    final isCheckout = item.label == 'Check-Out';
+                    return Material(
+                      color: selected
+                          ? AppColors.activeMenuBg
+                          : Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(20),
+                        onTap: () => onSelect(item.label),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: selected
+                                  ? AppColors.activeMenuBg
+                                  : AppColors.border.withValues(alpha: 0.8),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                item.icon,
+                                color: isCheckout
+                                    ? AppColors.red
+                                    : selected
+                                        ? AppColors.primary
+                                        : AppColors.textSecondary,
+                                size: 21,
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Text(
+                                  item.label,
+                                  style: TextStyle(
+                                    color: isCheckout
+                                        ? AppColors.red
+                                        : selected
+                                            ? AppColors.primary
+                                            : AppColors.textSecondary,
+                                    fontSize: 15,
+                                    fontWeight: selected || isCheckout
+                                        ? FontWeight.w800
+                                        : FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                              if (!selected)
+                                const Icon(
+                                  Icons.chevron_right_rounded,
+                                  color: AppColors.textLightMuted,
+                                  size: 18,
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SidebarItem {
+  final String label;
+  final IconData icon;
+
+  const _SidebarItem(this.label, this.icon);
 }
 
 class _AddCustomerSheet extends StatefulWidget {
@@ -781,7 +1728,7 @@ class _AddCustomerSheetState extends State<_AddCustomerSheet> {
                               Expanded(
                                 child: _FieldCard(
                                   controller: _creditLimitController,
-                                  label: 'Credit Limit (₹)',
+                                  label: 'Credit Limit (â‚¹)',
                                   hintText: 'Enter credit limit',
                                   icon: Icons.account_balance_wallet_outlined,
                                   keyboardType: TextInputType.number,
@@ -791,7 +1738,7 @@ class _AddCustomerSheetState extends State<_AddCustomerSheet> {
                               Expanded(
                                 child: _FieldCard(
                                   controller: _openingBalanceController,
-                                  label: 'Opening Balance (₹)',
+                                  label: 'Opening Balance (â‚¹)',
                                   hintText: 'Enter opening balance',
                                   icon: Icons.payments_outlined,
                                   keyboardType: TextInputType.number,
@@ -1065,6 +2012,17 @@ class _CustomerRecord {
   final String outstanding;
   final String status;
   final Color color;
+  final String category;
+  final String since;
+  final String customerCode;
+  final String contactPerson;
+  final String mobileNumber;
+  final String email;
+  final String gstNumber;
+  final String address;
+  final String totalOrders;
+  final String totalSales;
+  final List<_CustomerRecentOrder> recentOrders;
 
   const _CustomerRecord({
     required this.name,
@@ -1072,5 +2030,56 @@ class _CustomerRecord {
     required this.outstanding,
     required this.status,
     required this.color,
+    required this.category,
+    required this.since,
+    required this.customerCode,
+    required this.contactPerson,
+    required this.mobileNumber,
+    required this.email,
+    required this.gstNumber,
+    required this.address,
+    required this.totalOrders,
+    required this.totalSales,
+    required this.recentOrders,
   });
+}
+
+class _CustomerRecentOrder {
+  final String number;
+  final String date;
+  final String amount;
+  final String status;
+
+  const _CustomerRecentOrder({
+    required this.number,
+    required this.date,
+    required this.amount,
+    required this.status,
+  });
+}
+
+Color _customerStatusColor(String status) {
+  switch (status) {
+    case 'Active':
+      return AppColors.statusActiveText;
+    case 'Inactive':
+      return AppColors.statusInactiveText;
+    case 'Blocked':
+      return AppColors.red;
+    default:
+      return AppColors.primary;
+  }
+}
+
+Color _customerStatusBackground(String status) {
+  switch (status) {
+    case 'Active':
+      return AppColors.statusActiveBg;
+    case 'Inactive':
+      return AppColors.statusInactiveBg;
+    case 'Blocked':
+      return AppColors.red.withValues(alpha: 0.12);
+    default:
+      return AppColors.adminSidebarBg;
+  }
 }
