@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
+import '../customers/sales_manager_customers_screen.dart';
+import '../dashboard/sales_manager_dashboard_screen.dart';
+import '../visits/sales_manager_visits_screen.dart';
 
 class SalesManagerOrdersScreen extends StatefulWidget {
   const SalesManagerOrdersScreen({super.key});
@@ -11,6 +15,7 @@ class SalesManagerOrdersScreen extends StatefulWidget {
 }
 
 class _SalesManagerOrdersScreenState extends State<SalesManagerOrdersScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
 
   final List<String> _tabs = const [
@@ -70,20 +75,96 @@ class _SalesManagerOrdersScreenState extends State<SalesManagerOrdersScreen> {
     ),
   ];
 
+  final List<_OrderCustomer> _customers = const [
+    _OrderCustomer(name: 'Shree Ganesh Traders', location: 'Dadar, Mumbai'),
+    _OrderCustomer(name: 'Maa Durga Stores', location: 'Matunga, Mumbai'),
+    _OrderCustomer(name: 'Patel Retailers', location: 'Sion, Mumbai'),
+    _OrderCustomer(name: 'S.K. Enterprises', location: 'Ghatkopar, Mumbai'),
+    _OrderCustomer(name: 'New A One Traders', location: 'Kurla, Mumbai'),
+  ];
+
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
   }
 
-  Future<void> _openCreateSalesOrderSheet() async {
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return const _CreateSalesOrderSheet();
-      },
+  Future<void> _openCreateSalesOrderPage() async {
+    if (_customers.isEmpty) return;
+
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => _CreateSalesOrderPage(
+          customer: _customers.first,
+          customers: _customers,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openCreateSalesOrderPageForCustomerName(String customerName) async {
+    _OrderCustomer? selectedCustomer;
+    for (final customer in _customers) {
+      if (customer.name == customerName) {
+        selectedCustomer = customer;
+        break;
+      }
+    }
+
+    if (!mounted) return;
+
+    final customer = selectedCustomer;
+    if (customer == null) {
+      await _openCreateSalesOrderPage();
+      return;
+    }
+
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => _CreateSalesOrderPage(
+          customer: customer,
+          customers: _customers,
+        ),
+      ),
+    );
+  }
+
+  void _handleSidebarSelection(String action) {
+    Navigator.of(context).maybePop();
+    if (action == 'Sales Orders') return;
+    if (action == 'Dashboard') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const SalesManagerDashboardScreen(),
+        ),
+      );
+      return;
+    }
+    if (action == 'Customers') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const SalesManagerCustomersScreen(),
+        ),
+      );
+      return;
+    }
+    if (action == 'Visits') {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const SalesManagerVisitsScreen(),
+        ),
+      );
+      return;
+    }
+    _showSnack(action);
+  }
+
+  void _showSnack(String action) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$action is not wired yet'),
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 
@@ -98,7 +179,12 @@ class _SalesManagerOrdersScreenState extends State<SalesManagerOrdersScreen> {
     }).toList();
 
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: AppColors.background,
+      drawer: SalesManagerSidebarDrawer(
+        onSelect: _handleSidebarSelection,
+        currentPage: 'Sales Orders',
+      ),
       body: SafeArea(
         child: Column(
           children: [
@@ -153,9 +239,9 @@ class _SalesManagerOrdersScreenState extends State<SalesManagerOrdersScreen> {
         ),
       ),
       child: Row(
-        children: [
+          children: [
           IconButton(
-            onPressed: () => Navigator.of(context).maybePop(),
+            onPressed: () => _scaffoldKey.currentState?.openDrawer(),
             icon: const Icon(Icons.menu_rounded, color: AppColors.textPrimary),
           ),
           const SizedBox(width: 2),
@@ -173,7 +259,7 @@ class _SalesManagerOrdersScreenState extends State<SalesManagerOrdersScreen> {
             borderRadius: BorderRadius.circular(8),
             child: InkWell(
               borderRadius: BorderRadius.circular(8),
-              onTap: _openCreateSalesOrderSheet,
+              onTap: _openCreateSalesOrderPage,
               child: const SizedBox(
                 width: 28,
                 height: 28,
@@ -298,7 +384,7 @@ class _SalesManagerOrdersScreenState extends State<SalesManagerOrdersScreen> {
       width: double.infinity,
       height: 40,
       child: TextButton(
-        onPressed: _openCreateSalesOrderSheet,
+        onPressed: _openCreateSalesOrderPage,
         style: TextButton.styleFrom(
           backgroundColor: AppColors.adminSidebarBg,
           foregroundColor: AppColors.primary,
@@ -313,6 +399,233 @@ class _SalesManagerOrdersScreenState extends State<SalesManagerOrdersScreen> {
       ),
     );
   }
+}
+
+class _SalesManagerDrawer extends StatelessWidget {
+  final ValueChanged<String> onSelect;
+
+  const _SalesManagerDrawer({required this.onSelect});
+
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      backgroundColor: AppColors.adminSidebarBg,
+      child: _SalesManagerSidebar(
+        onSelect: onSelect,
+        currentPage: 'Sales Orders',
+      ),
+    );
+  }
+}
+
+class _SalesManagerSidebar extends StatelessWidget {
+  final ValueChanged<String> onSelect;
+  final String currentPage;
+
+  const _SalesManagerSidebar({
+    required this.onSelect,
+    required this.currentPage,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final items = <_SidebarItem>[
+      const _SidebarItem('Dashboard', Icons.dashboard_rounded),
+      const _SidebarItem('Customers', Icons.groups_rounded),
+      const _SidebarItem('Sales Orders', Icons.receipt_long_rounded),
+      const _SidebarItem('Visits', Icons.place_rounded),
+      const _SidebarItem('Follow-Ups', Icons.notifications_active_rounded),
+      const _SidebarItem('Products', Icons.inventory_2_rounded),
+      const _SidebarItem('Targets & Performance', Icons.show_chart_rounded),
+      const _SidebarItem('Outstanding & Payments', Icons.payments_rounded),
+      const _SidebarItem('Reports', Icons.bar_chart_rounded),
+      const _SidebarItem('Check-Out', Icons.logout_rounded),
+      const _SidebarItem('Settings', Icons.settings_rounded),
+    ];
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.adminSidebarBg.withValues(alpha: 0.72),
+        border: Border(
+          right: BorderSide(color: AppColors.border.withValues(alpha: 0.65)),
+        ),
+      ),
+      child: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+              child: Row(
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Icon(
+                      Icons.water_drop_rounded,
+                      color: Colors.white,
+                      size: 26,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'SAAS CRM',
+                          style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        SizedBox(height: 5),
+                        Text(
+                          'Sales Manager',
+                          style: TextStyle(
+                            color: AppColors.primary,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.of(context).maybePop(),
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Divider(
+              height: 1,
+              color: AppColors.border.withValues(alpha: 0.75),
+            ),
+            Expanded(
+              child: ListView.separated(
+                padding: const EdgeInsets.fromLTRB(12, 14, 12, 14),
+                itemCount: items.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                itemBuilder: (context, index) {
+                  final item = items[index];
+                  final selected = item.label == currentPage;
+                  final isCheckout = item.label == 'Check-Out';
+                  return Material(
+                    color: selected ? AppColors.activeMenuBg : Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20),
+                      onTap: () => onSelect(item.label),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: selected
+                                ? AppColors.activeMenuBg
+                                : AppColors.border.withValues(alpha: 0.7),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              item.icon,
+                              color: isCheckout
+                                  ? AppColors.red
+                                  : selected
+                                  ? AppColors.primary
+                                  : AppColors.textSecondary,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                item.label,
+                                style: TextStyle(
+                                  color: isCheckout
+                                      ? AppColors.red
+                                      : selected
+                                      ? AppColors.primary
+                                      : AppColors.textSecondary,
+                                  fontSize: 13.5,
+                                  fontWeight: selected || isCheckout
+                                      ? FontWeight.w800
+                                      : FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                            if (!selected)
+                              const Icon(
+                                Icons.chevron_right_rounded,
+                                color: AppColors.textLightMuted,
+                                size: 18,
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                    color: AppColors.border.withValues(alpha: 0.8),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.logout_rounded,
+                      color: AppColors.red,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 10),
+                    const Expanded(
+                      child: Text(
+                        'Check-Out',
+                        style: TextStyle(
+                          color: AppColors.red,
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      color: AppColors.textLightMuted,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SidebarItem {
+  final String label;
+  final IconData icon;
+
+  const _SidebarItem(this.label, this.icon);
 }
 
 class _OrderTile extends StatelessWidget {
@@ -330,11 +643,6 @@ class _OrderTile extends StatelessWidget {
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          final state =
-              context.findAncestorStateOfType<_SalesManagerOrdersScreenState>();
-          state?._openCreateSalesOrderSheet();
-        },
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           decoration: BoxDecoration(
@@ -422,10 +730,20 @@ class _OrderTile extends StatelessWidget {
                 ],
               ),
               const SizedBox(width: 6),
-              const Icon(
-                Icons.chevron_right_rounded,
-                color: AppColors.textLightMuted,
-                size: 18,
+              IconButton(
+                onPressed: () {
+                  final state = context
+                      .findAncestorStateOfType<_SalesManagerOrdersScreenState>();
+                  state?._openCreateSalesOrderPageForCustomerName(
+                    order.customer,
+                  );
+                },
+                icon: const Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.textLightMuted,
+                  size: 18,
+                ),
+                splashRadius: 18,
               ),
             ],
           ),
@@ -455,15 +773,22 @@ class _OrderRecord {
   });
 }
 
-class _CreateSalesOrderSheet extends StatefulWidget {
-  const _CreateSalesOrderSheet();
+class _CreateSalesOrderPage extends StatefulWidget {
+  final _OrderCustomer customer;
+  final List<_OrderCustomer> customers;
+
+  const _CreateSalesOrderPage({
+    required this.customer,
+    required this.customers,
+  });
 
   @override
-  State<_CreateSalesOrderSheet> createState() => _CreateSalesOrderSheetState();
+  State<_CreateSalesOrderPage> createState() => _CreateSalesOrderPageState();
 }
 
-class _CreateSalesOrderSheetState extends State<_CreateSalesOrderSheet> {
+class _CreateSalesOrderPageState extends State<_CreateSalesOrderPage> {
   final TextEditingController _searchController = TextEditingController();
+  late _OrderCustomer _selectedCustomer;
 
   final List<_OrderProduct> _products = [
     _OrderProduct(
@@ -497,6 +822,12 @@ class _CreateSalesOrderSheetState extends State<_CreateSalesOrderSheet> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _selectedCustomer = widget.customer;
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
@@ -515,290 +846,345 @@ class _CreateSalesOrderSheetState extends State<_CreateSalesOrderSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-
-    return DraggableScrollableSheet(
-      initialChildSize: 0.96,
-      minChildSize: 0.86,
-      maxChildSize: 0.98,
-      expand: false,
-      builder: (context, scrollController) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: AppColors.background,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
-          ),
-          child: SafeArea(
-            top: false,
-            child: Padding(
-              padding: EdgeInsets.only(bottom: bottomInset),
-              child: Column(
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
+              child: Row(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
-                    child: Row(
-                      children: [
-                        IconButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          icon: const Icon(
-                            Icons.arrow_back_rounded,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                        const Expanded(
-                          child: Text(
-                            'Create Sales Order',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: AppColors.textPrimary,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 44),
-                      ],
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(
+                      Icons.arrow_back_rounded,
+                      color: AppColors.primary,
                     ),
                   ),
-                  Divider(
-                    height: 1,
-                    color: AppColors.border.withValues(alpha: 0.75),
+                  const Expanded(
+                    child: Text(
+                      'Create Sales Order',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
                   ),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      controller: scrollController,
-                      padding: const EdgeInsets.fromLTRB(12, 14, 12, 18),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Customer',
-                            style: TextStyle(
-                              color: AppColors.textPrimary,
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.w800,
-                            ),
+                  const SizedBox(width: 44),
+                ],
+              ),
+            ),
+            Divider(
+              height: 1,
+              color: AppColors.border.withValues(alpha: 0.75),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(12, 14, 12, 18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Customer',
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: AppColors.border.withValues(alpha: 0.75),
+                        ),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<_OrderCustomer>(
+                          value: _selectedCustomer,
+                          isExpanded: true,
+                          icon: const Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            color: AppColors.textLightMuted,
                           ),
-                          const SizedBox(height: 10),
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(
-                                color: AppColors.border.withValues(alpha: 0.75),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 42,
-                                  height: 42,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.adminSidebarBg,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: const Icon(
-                                    Icons.storefront_rounded,
-                                    color: AppColors.primary,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                const Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                          borderRadius: BorderRadius.circular(14),
+                          dropdownColor: Colors.white,
+                          items: widget.customers
+                              .map(
+                                (customer) => DropdownMenuItem<_OrderCustomer>(
+                                  value: customer,
+                                  child: Row(
                                     children: [
-                                      Text(
-                                        'Shree Ganesh Traders',
-                                        style: TextStyle(
-                                          color: AppColors.textPrimary,
-                                          fontSize: 13.5,
-                                          fontWeight: FontWeight.w800,
+                                      Container(
+                                        width: 42,
+                                        height: 42,
+                                        decoration: BoxDecoration(
+                                          color: AppColors.adminSidebarBg,
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                        ),
+                                        child: const Icon(
+                                          Icons.storefront_rounded,
+                                          color: AppColors.primary,
+                                          size: 20,
                                         ),
                                       ),
-                                      SizedBox(height: 3),
-                                      Text(
-                                        'Dadar, Mumbai',
-                                        style: TextStyle(
-                                          color: AppColors.textSecondary,
-                                          fontSize: 12,
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(
+                                              customer.name,
+                                              style: const TextStyle(
+                                                color: AppColors.textPrimary,
+                                                fontSize: 13.5,
+                                                fontWeight: FontWeight.w800,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 3),
+                                            Text(
+                                              customer.location,
+                                              style: const TextStyle(
+                                                color: AppColors.textSecondary,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
-                                const Icon(
-                                  Icons.chevron_right_rounded,
-                                  color: AppColors.textLightMuted,
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 14),
-                          const Text(
-                            'Add Products',
-                            style: TextStyle(
-                              color: AppColors.textPrimary,
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Container(
-                            height: 46,
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(
-                                color: AppColors.border.withValues(alpha: 0.72),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 28,
-                                  height: 28,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.adminSidebarBg,
-                                    borderRadius: BorderRadius.circular(9),
-                                  ),
-                                  child: const Icon(
-                                    Icons.search_rounded,
-                                    color: AppColors.primary,
-                                    size: 18,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: TextField(
-                                    controller: _searchController,
-                                    onChanged: (_) => setState(() {}),
-                                    decoration: const InputDecoration(
-                                      border: InputBorder.none,
-                                      isDense: true,
-                                      hintText: 'Search products...',
-                                      hintStyle: TextStyle(
-                                        color: AppColors.textLightMuted,
-                                        fontSize: 12.5,
-                                      ),
+                              )
+                              .toList(),
+                          selectedItemBuilder: (context) {
+                            return widget.customers.map((customer) {
+                              return Row(
+                                children: [
+                                  Container(
+                                    width: 42,
+                                    height: 42,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.adminSidebarBg,
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          for (final product in _products) ...[
-                            _ProductRow(
-                              product: product,
-                              onMinus: () {
-                                setState(() {
-                                  if (product.quantity > 0) {
-                                    product.quantity -= 1;
-                                  }
-                                });
-                              },
-                              onPlus: () {
-                                setState(() {
-                                  product.quantity += 1;
-                                });
-                              },
-                            ),
-                            const SizedBox(height: 10),
-                          ],
-                          const SizedBox(height: 6),
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(
-                                color: AppColors.border.withValues(alpha: 0.72),
-                              ),
-                            ),
-                            child: Column(
-                              children: [
-                                _SummaryRow(
-                                  label: 'Items (${_products.length})',
-                                  value: 'Rs. $_itemsTotal',
-                                ),
-                                const SizedBox(height: 8),
-                                _SummaryRow(
-                                  label: 'Discount',
-                                  value: '- Rs. $_discount',
-                                  valueColor: AppColors.red,
-                                ),
-                                const Divider(height: 18),
-                                _SummaryRow(
-                                  label: 'Total Amount',
-                                  value: 'Rs. $_grandTotal',
-                                  emphasize: true,
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: OutlinedButton(
-                                  onPressed: () => Navigator.of(context).pop(),
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: AppColors.primary,
-                                    side: const BorderSide(
+                                    child: const Icon(
+                                      Icons.storefront_rounded,
                                       color: AppColors.primary,
-                                    ),
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 14,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
+                                      size: 20,
                                     ),
                                   ),
-                                  child: const Text(
-                                    'Save Draft',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w700,
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          customer.name,
+                                          style: const TextStyle(
+                                            color: AppColors.textPrimary,
+                                            fontSize: 13.5,
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 3),
+                                        Text(
+                                          customer.location,
+                                          style: const TextStyle(
+                                            color: AppColors.textSecondary,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
+                                ],
+                              );
+                            }).toList();
+                          },
+                          onChanged: (customer) {
+                            if (customer == null) return;
+                            setState(() => _selectedCustomer = customer);
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    const Text(
+                      'Add Products',
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Container(
+                      height: 46,
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: AppColors.border.withValues(alpha: 0.72),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 28,
+                            height: 28,
+                            decoration: BoxDecoration(
+                              color: AppColors.adminSidebarBg,
+                              borderRadius: BorderRadius.circular(9),
+                            ),
+                            child: const Icon(
+                              Icons.search_rounded,
+                              color: AppColors.primary,
+                              size: 18,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: TextField(
+                              controller: _searchController,
+                              onChanged: (_) => setState(() {}),
+                              decoration: const InputDecoration(
+                                filled: true,
+                                fillColor: Colors.white,
+                                border: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                isDense: true,
+                                hintText: 'Search products...',
+                                hintStyle: TextStyle(
+                                  color: AppColors.textLightMuted,
+                                  fontSize: 12.5,
                                 ),
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: ElevatedButton(
-                                  onPressed: () => Navigator.of(context).pop(),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.primary,
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 14,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                  ),
-                                  child: const Text(
-                                    'Submit Order',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         ],
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 12),
+                    for (final product in _products) ...[
+                      _ProductRow(
+                        product: product,
+                        onMinus: () {
+                          setState(() {
+                            if (product.quantity > 0) {
+                              product.quantity -= 1;
+                            }
+                          });
+                        },
+                        onPlus: () {
+                          setState(() {
+                            product.quantity += 1;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 10),
+                    ],
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: AppColors.border.withValues(alpha: 0.72),
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          _SummaryRow(
+                            label: 'Items (${_products.length})',
+                            value: 'Rs. $_itemsTotal',
+                          ),
+                          const SizedBox(height: 8),
+                          _SummaryRow(
+                            label: 'Discount',
+                            value: '- Rs. $_discount',
+                            valueColor: AppColors.red,
+                          ),
+                          const Divider(height: 18),
+                          _SummaryRow(
+                            label: 'Total Amount',
+                            value: 'Rs. $_grandTotal',
+                            emphasize: true,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.primary,
+                              side: const BorderSide(
+                                color: AppColors.primary,
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 14,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: const Text(
+                              'Save Draft',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 14,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: const Text(
+                              'Submit Order',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        );
-      },
+          ],
+        ),
+      ),
     );
   }
 }
@@ -966,5 +1352,15 @@ class _OrderProduct {
     required this.stock,
     required this.icon,
     required this.quantity,
+  });
+}
+
+class _OrderCustomer {
+  final String name;
+  final String location;
+
+  const _OrderCustomer({
+    required this.name,
+    required this.location,
   });
 }

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../dashboard/sales_manager_dashboard_screen.dart';
 import '../orders/sales_manager_orders_screen.dart';
+import '../visits/sales_manager_visits_screen.dart';
 
 class SalesManagerCustomersScreen extends StatefulWidget {
   const SalesManagerCustomersScreen({super.key});
@@ -166,6 +168,24 @@ class _SalesManagerCustomersScreenState
       );
       return;
     }
+    if (action == 'Visits') {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const SalesManagerVisitsScreen(),
+        ),
+      );
+      return;
+    }
+    _showSnack(action);
+  }
+
+  void _showSnack(String action) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$action is not wired yet'),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   Future<void> _showCustomerAddedSuccessfullyPopup(
@@ -396,7 +416,10 @@ class _SalesManagerCustomersScreenState
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
-      drawer: _SalesManagerSidebar(onSelect: _handleSidebarSelection),
+      drawer: SalesManagerSidebarDrawer(
+        onSelect: _handleSidebarSelection,
+        currentPage: 'Customers',
+      ),
       body: SafeArea(
         child: Column(
           children: [
@@ -1396,8 +1419,12 @@ class _RecentOrderRow extends StatelessWidget {
 
 class _SalesManagerSidebar extends StatelessWidget {
   final ValueChanged<String> onSelect;
+  final String currentPage;
 
-  const _SalesManagerSidebar({required this.onSelect});
+  const _SalesManagerSidebar({
+    required this.onSelect,
+    required this.currentPage,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1414,144 +1441,168 @@ class _SalesManagerSidebar extends StatelessWidget {
       const _SidebarItem('Check-Out', Icons.logout_rounded),
     ];
 
-    return Drawer(
-      backgroundColor: AppColors.adminSidebarBg,
-      child: Container(
-        color: AppColors.adminSidebarBg,
-        child: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 62,
-                      height: 62,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                      child: const Icon(
-                        Icons.water_drop_rounded,
-                        color: Colors.white,
-                        size: 30,
-                      ),
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.adminSidebarBg.withValues(alpha: 0.72),
+        border: Border(
+          right: BorderSide(color: AppColors.border.withValues(alpha: 0.65)),
+        ),
+      ),
+      child: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+              child: Row(
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    const SizedBox(width: 12),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'SAAS CRM',
-                            style: TextStyle(
-                              color: AppColors.textPrimary,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          SizedBox(height: 5),
-                          Text(
-                            'Sales Manager',
-                            style: TextStyle(
-                              color: AppColors.primary,
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
-                      ),
+                    child: const Icon(
+                      Icons.water_drop_rounded,
+                      color: Colors.white,
+                      size: 26,
                     ),
-                    IconButton(
-                      onPressed: () => Navigator.of(context).maybePop(),
-                      icon: const Icon(
-                        Icons.close_rounded,
-                        color: AppColors.textSecondary,
-                        size: 30,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Divider(
-                height: 1,
-                color: AppColors.border.withValues(alpha: 0.6),
-              ),
-              const SizedBox(height: 12),
-              Expanded(
-                child: ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                  itemCount: items.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 10),
-                  itemBuilder: (context, index) {
-                    final item = items[index];
-                    final selected = item.label == 'Dashboard';
-                    final isCheckout = item.label == 'Check-Out';
-                    return Material(
-                      color: selected
-                          ? AppColors.activeMenuBg
-                          : Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(20),
-                        onTap: () => onSelect(item.label),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: selected
-                                  ? AppColors.activeMenuBg
-                                  : AppColors.border.withValues(alpha: 0.8),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                item.icon,
-                                color: isCheckout
-                                    ? AppColors.red
-                                    : selected
-                                        ? AppColors.primary
-                                        : AppColors.textSecondary,
-                                size: 21,
-                              ),
-                              const SizedBox(width: 14),
-                              Expanded(
-                                child: Text(
-                                  item.label,
-                                  style: TextStyle(
-                                    color: isCheckout
-                                        ? AppColors.red
-                                        : selected
-                                            ? AppColors.primary
-                                            : AppColors.textSecondary,
-                                    fontSize: 15,
-                                    fontWeight: selected || isCheckout
-                                        ? FontWeight.w800
-                                        : FontWeight.w700,
-                                  ),
-                                ),
-                              ),
-                              if (!selected)
-                                const Icon(
-                                  Icons.chevron_right_rounded,
-                                  color: AppColors.textLightMuted,
-                                  size: 18,
-                                ),
-                            ],
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'SAAS CRM',
+                          style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
                           ),
                         ),
-                      ),
-                    );
-                  },
-                ),
+                        SizedBox(height: 5),
+                        Text(
+                          'Sales Manager',
+                          style: TextStyle(
+                            color: AppColors.primary,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.of(context).maybePop(),
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+            Divider(
+              height: 1,
+              color: AppColors.border.withValues(alpha: 0.75),
+            ),
+            Expanded(
+              child: ListView.separated(
+                padding: const EdgeInsets.fromLTRB(12, 14, 12, 14),
+                itemCount: items.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                itemBuilder: (context, index) {
+                  final item = items[index];
+                  final selected = item.label == currentPage;
+                  final isCheckout = item.label == 'Check-Out';
+                  return Material(
+                    color: selected
+                        ? AppColors.activeMenuBg
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20),
+                      onTap: () => onSelect(item.label),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 14,
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: selected
+                                ? AppColors.activeMenuBg
+                                : AppColors.border.withValues(alpha: 0.7),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              item.icon,
+                              color: isCheckout
+                                  ? AppColors.red
+                                  : selected
+                                      ? AppColors.primary
+                                      : AppColors.textSecondary,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Text(
+                                item.label,
+                                style: TextStyle(
+                                  color: isCheckout
+                                      ? AppColors.red
+                                      : selected
+                                          ? AppColors.primary
+                                          : AppColors.textSecondary,
+                                  fontSize: 13.5,
+                                  fontWeight: selected || isCheckout
+                                      ? FontWeight.w800
+                                      : FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                            if (!selected)
+                              const Icon(
+                                Icons.chevron_right_rounded,
+                                color: AppColors.textLightMuted,
+                                size: 18,
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
         ),
+      ),
+    );
+  }
+}
+
+class _SalesManagerDrawer extends StatelessWidget {
+  final ValueChanged<String> onSelect;
+  final String currentPage;
+
+  const _SalesManagerDrawer({
+    required this.onSelect,
+    required this.currentPage,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      backgroundColor: AppColors.adminSidebarBg,
+      child: _SalesManagerSidebar(
+        onSelect: onSelect,
+        currentPage: currentPage,
       ),
     );
   }
