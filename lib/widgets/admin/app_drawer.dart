@@ -42,7 +42,7 @@ class AppDrawer extends StatefulWidget {
     _NavItem('Dashboard', Icons.dashboard_outlined),
     _NavItem('Company Settings', Icons.storefront_outlined),
     _NavItem('Plans', Icons.workspace_premium_outlined),
-    _NavItem('User Management', Icons.people_outline_rounded),
+    _NavItem('Staff', Icons.people_outline_rounded),
     _NavItem('Products', Icons.inventory_2_outlined),
     _NavItem('Inventory', Icons.warehouse_outlined),
     _NavItem('Vehicle Stock', Icons.local_shipping_outlined),

@@ -54,10 +54,6 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
     }).toList();
   }
 
-  int _activeUserCount(List<AppUser> users) {
-    return users.where((user) => user.isActive == true).length;
-  }
-
   void _refreshUsers() {
     setState(() {
       _usersFuture = _apiService.fetchUsers();
@@ -237,55 +233,44 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
                   final users = _filteredUsers(allUsers);
 
                   return SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             const Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'User Directory',
-                                    style: TextStyle(
-                                      color: textPrimary,
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                                  ),
-                                  SizedBox(height: 4),
-                                  Text(
-                                    'Search, add, and manage user accounts',
-                                    style: TextStyle(
-                                      color: textSecondary,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ],
+                              child: Text(
+                                'Users',
+                                style: TextStyle(
+                                  color: textPrimary,
+                                  fontSize: 24,
+                                  height: 1,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0,
+                                ),
                               ),
                             ),
                             const SizedBox(width: 12),
-                            SoftActionButton(
-                              label: 'Add User',
-                              icon: Icons.person_add_alt_1_rounded,
-                              onPressed: () => _openUserDialog(),
-                            ),
+                            _addUserButton(),
                           ],
                         ),
-                        const SizedBox(height: 20),
-                        _buildSummaryCard(allUsers),
-                        const SizedBox(height: 16),
-                        _buildSearchField(),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 18),
+                        Row(
+                          children: [
+                            Expanded(child: _buildSearchField()),
+                            const SizedBox(width: 12),
+                            _filterButton(),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
                         if (snapshot.connectionState == ConnectionState.waiting)
                           const Padding(
                             padding: EdgeInsets.symmetric(vertical: 40),
                             child: Center(
                               child: CircularProgressIndicator(
-                                color: AppColors.purple,
+                                color: AppColors.primary,
                               ),
                             ),
                           )
@@ -305,124 +290,96 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
     );
   }
 
-  Widget _buildSummaryCard(List<AppUser> users) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.secondary.withValues(alpha: 0.18)),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.textPrimary.withValues(alpha: 0.05),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _statTile(
-              label: 'Total Users',
-              value: '${users.length}',
-              icon: Icons.people_alt_outlined,
-              color: AppColors.purple,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: _statTile(
-              label: 'Active Users',
-              value: '${_activeUserCount(users)}',
-              icon: Icons.verified_user_outlined,
-              color: AppColors.green,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _statTile({
-    required String label,
-    required String value,
-    required IconData icon,
-    required Color color,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: color.withValues(alpha: 0.18)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Icon(icon, color: color),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    color: textSecondary,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    color: textPrimary,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+  Widget _addUserButton() {
+    return ElevatedButton.icon(
+      onPressed: () => _openUserDialog(),
+      icon: const Icon(Icons.add_rounded, size: 18),
+      label: const Text('Add User'),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        minimumSize: const Size(0, 40),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        textStyle: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0,
+        ),
       ),
     );
   }
 
   Widget _buildSearchField() {
-    return TextField(
-      controller: _searchController,
-      onChanged: (value) => setState(() => _query = value),
-      decoration: InputDecoration(
-        hintText: 'Search users by name, role, email or phone',
-        prefixIcon: const Icon(Icons.search, color: textSecondary),
-        filled: true,
-        fillColor: AppColors.surfaceSoft,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(
-            color: AppColors.secondary.withValues(alpha: 0.24),
+    return SizedBox(
+      height: 46,
+      child: TextField(
+        controller: _searchController,
+        onChanged: (value) => setState(() => _query = value),
+        style: const TextStyle(
+          color: textPrimary,
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
+        decoration: InputDecoration(
+          hintText: 'Search users...',
+          hintStyle: const TextStyle(
+            color: textSecondary,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+          prefixIcon: const Padding(
+            padding: EdgeInsets.only(left: 8, right: 4),
+            child: Icon(Icons.search_rounded, color: textPrimary, size: 22),
+          ),
+          prefixIconConstraints: const BoxConstraints(
+            minWidth: 42,
+            minHeight: 46,
+          ),
+          filled: true,
+          fillColor: AppColors.background,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 10,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: AppColors.borderStrong),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: AppColors.borderStrong),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: AppColors.primary, width: 1.2),
           ),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(
-            color: AppColors.secondary.withValues(alpha: 0.24),
+      ),
+    );
+  }
+
+  Widget _filterButton() {
+    return Tooltip(
+      message: 'Refresh users',
+      child: InkWell(
+        onTap: _refreshUsers,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          width: 46,
+          height: 46,
+          decoration: BoxDecoration(
+            color: AppColors.background,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.borderStrong),
           ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.purple),
+          alignment: Alignment.center,
+          child: const Icon(
+            Icons.filter_list_rounded,
+            color: textPrimary,
+            size: 22,
+          ),
         ),
       ),
     );
@@ -466,175 +423,168 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Text(
-              'Users (${allUsers.length})',
-              style: const TextStyle(
-                color: textPrimary,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const Spacer(),
-            IconButton(
-              onPressed: _refreshUsers,
-              icon: const Icon(Icons.refresh_rounded),
-              color: AppColors.purple,
-              tooltip: 'Refresh users',
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
         if (allUsers.isEmpty)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 24),
-            child: Center(
-              child: Text(
-                'No users available.',
-                style: TextStyle(color: textSecondary),
-              ),
-            ),
-          )
+          _emptyUsers('No users available.')
         else if (users.isEmpty)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 24),
-            child: Center(
-              child: Text(
-                'No users match your search.',
-                style: TextStyle(color: textSecondary),
-              ),
-            ),
-          )
+          _emptyUsers('No users match your search.')
         else
           ...users.asMap().entries.map((entry) {
             final index = allUsers.indexOf(entry.value);
             return Padding(
-              padding: const EdgeInsets.only(bottom: 14),
+              padding: const EdgeInsets.only(bottom: 12),
               child: _userCard(entry.value, index),
             );
           }),
+        const SizedBox(height: 8),
+        Text.rich(
+          TextSpan(
+            text: 'Total Users: ',
+            children: [
+              TextSpan(
+                text: '${users.length}',
+                style: const TextStyle(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ],
+          ),
+          style: const TextStyle(
+            color: textPrimary,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ],
     );
   }
 
+  Widget _emptyUsers(String message) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 24),
+      child: Center(
+        child: Text(
+          message,
+          style: const TextStyle(color: textSecondary, fontSize: 15),
+        ),
+      ),
+    );
+  }
+
   Widget _userCard(AppUser user, int index) {
-    final statusColor = user.isActive == true
-        ? AppColors.green
-        : AppColors.textSecondary;
     final displayName = user.name.trim().isEmpty ? 'Unnamed user' : user.name;
     final displayEmail = user.email.trim().isEmpty ? 'No email' : user.email;
     final displayPhone = (user.phone ?? '').trim().isEmpty
         ? 'No phone'
         : user.phone!.trim();
-    final roleLabel = _formatRole(user.role);
-    final statusLabel = _statusLabel(user);
     final initials = displayName
         .split(' ')
         .where((part) => part.isNotEmpty)
         .take(2)
         .map((part) => part[0].toUpperCase())
         .join();
+    final avatarAsset = 'assets/avatar${(index % 3) + 1}.png';
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surfaceSoft,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.secondary.withValues(alpha: 0.18)),
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.borderStrong),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.textPrimary.withValues(alpha: 0.035),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: AppColors.purple.withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
-                ),
-                alignment: Alignment.center,
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: AppColors.surfaceSoft,
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.borderLight),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Image.asset(
+              avatarAsset,
+              width: 56,
+              height: 56,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => Center(
                 child: Text(
                   initials.isEmpty ? '?' : initials,
                   style: const TextStyle(
-                    color: AppColors.purple,
-                    fontWeight: FontWeight.w800,
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w900,
                     fontSize: 16,
+                    letterSpacing: 0,
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      displayName,
-                      style: const TextStyle(
-                        color: textPrimary,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      displayEmail,
-                      style: const TextStyle(
-                        color: textSecondary,
-                        fontSize: 12.5,
-                      ),
-                    ),
-                  ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  displayName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: textPrimary,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0,
+                  ),
                 ),
-              ),
-              _statusChip(statusLabel, statusColor),
-            ],
+                const SizedBox(height: 8),
+                _contactLine(Icons.phone_outlined, displayPhone),
+                const SizedBox(height: 6),
+                _contactLine(Icons.mail_outline_rounded, displayEmail),
+              ],
+            ),
           ),
-          const SizedBox(height: 16),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Expanded(child: _infoText('Role', roleLabel)),
-              const SizedBox(width: 12),
-              Expanded(child: _infoText('Phone', displayPhone)),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(child: _infoText('Email', displayEmail)),
-              const SizedBox(width: 12),
-              Expanded(child: _infoText('Status', statusLabel)),
-            ],
-          ),
-          const SizedBox(height: 14),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              _actionButton(
-                icon: Icons.visibility_outlined,
-                label: 'View',
-                color: AppColors.blue,
-                onTap: () => _showUserDetails(user),
-              ),
-              const SizedBox(width: 8),
-              _actionButton(
-                icon: Icons.edit_outlined,
-                label: 'Edit',
-                color: AppColors.purple,
-                onTap: () => _openUserDialog(existing: user, index: index),
-              ),
-              const SizedBox(width: 8),
-              _actionButton(
-                icon: Icons.delete_outline_rounded,
-                label: 'Delete',
-                color: AppColors.red,
-                onTap: () => _confirmDelete(user, index),
+              _dateChip(user.createdAt),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  _actionButton(
+                    icon: Icons.visibility_rounded,
+                    label: 'View',
+                    color: AppColors.primary,
+                    backgroundColor: AppColors.statusActiveBg,
+                    onTap: () => _showUserDetails(user),
+                  ),
+                  const SizedBox(width: 6),
+                  _actionButton(
+                    icon: Icons.edit_outlined,
+                    label: 'Edit',
+                    color: textPrimary,
+                    backgroundColor: const Color(0xFFF3F5F8),
+                    onTap: () => _openUserDialog(existing: user, index: index),
+                  ),
+                  const SizedBox(width: 6),
+                  _actionButton(
+                    icon: Icons.delete_outline_rounded,
+                    label: 'Delete',
+                    color: AppColors.red,
+                    backgroundColor: const Color(0xFFFFEBEB),
+                    onTap: () => _confirmDelete(user, index),
+                  ),
+                ],
               ),
             ],
           ),
@@ -643,56 +593,81 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
     );
   }
 
-  Widget _statusChip(String label, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: color,
-          fontSize: 11.5,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-    );
-  }
-
-  Widget _infoText(String label, String value) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _contactLine(IconData icon, String value) {
+    return Row(
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: textSecondary,
-            fontSize: 11.5,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: textPrimary,
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
+        Icon(icon, size: 16, color: textPrimary),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: textPrimary,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0,
+            ),
           ),
         ),
       ],
     );
   }
 
+  Widget _dateChip(DateTime? date) {
+    final label = date == null ? 'No date' : _formatShortDate(date);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.statusActiveBg,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.calendar_month_outlined,
+            size: 14,
+            color: AppColors.primary,
+          ),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: const TextStyle(
+              color: AppColors.primary,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatShortDate(DateTime date) {
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return '${months[date.month - 1]} ${date.day}, ${date.year}';
+  }
+
   Widget _actionButton({
     required IconData icon,
     required String label,
     required Color color,
+    required Color backgroundColor,
     required VoidCallback onTap,
   }) {
     return Tooltip(
@@ -701,13 +676,12 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Container(
-          width: 40,
-          height: 40,
+          width: 36,
+          height: 36,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.08),
+            color: backgroundColor,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: color.withValues(alpha: 0.24)),
           ),
           child: Icon(icon, size: 18, color: color),
         ),
