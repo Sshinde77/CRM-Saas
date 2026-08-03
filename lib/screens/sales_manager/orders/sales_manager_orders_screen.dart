@@ -102,7 +102,9 @@ class _SalesManagerOrdersScreenState extends State<SalesManagerOrdersScreen> {
     );
   }
 
-  Future<void> _openCreateSalesOrderPageForCustomerName(String customerName) async {
+  Future<void> _openCreateSalesOrderPageForCustomerName(
+    String customerName,
+  ) async {
     _OrderCustomer? selectedCustomer;
     for (final customer in _customers) {
       if (customer.name == customerName) {
@@ -121,10 +123,8 @@ class _SalesManagerOrdersScreenState extends State<SalesManagerOrdersScreen> {
 
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => _CreateSalesOrderPage(
-          customer: customer,
-          customers: _customers,
-        ),
+        builder: (_) =>
+            _CreateSalesOrderPage(customer: customer, customers: _customers),
       ),
     );
   }
@@ -134,25 +134,19 @@ class _SalesManagerOrdersScreenState extends State<SalesManagerOrdersScreen> {
     if (action == 'Sales Orders') return;
     if (action == 'Dashboard') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const SalesManagerDashboardScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const SalesManagerDashboardScreen()),
       );
       return;
     }
     if (action == 'Customers') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const SalesManagerCustomersScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const SalesManagerCustomersScreen()),
       );
       return;
     }
     if (action == 'Visits') {
       Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => const SalesManagerVisitsScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const SalesManagerVisitsScreen()),
       );
       return;
     }
@@ -239,7 +233,7 @@ class _SalesManagerOrdersScreenState extends State<SalesManagerOrdersScreen> {
         ),
       ),
       child: Row(
-          children: [
+        children: [
           IconButton(
             onPressed: () => _scaffoldKey.currentState?.openDrawer(),
             icon: const Icon(Icons.menu_rounded, color: AppColors.textPrimary),
@@ -388,9 +382,7 @@ class _SalesManagerOrdersScreenState extends State<SalesManagerOrdersScreen> {
         style: TextButton.styleFrom(
           backgroundColor: AppColors.adminSidebarBg,
           foregroundColor: AppColors.primary,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
         child: const Text(
           'Create Order',
@@ -401,6 +393,7 @@ class _SalesManagerOrdersScreenState extends State<SalesManagerOrdersScreen> {
   }
 }
 
+// ignore: unused_element
 class _SalesManagerDrawer extends StatelessWidget {
   final ValueChanged<String> onSelect;
 
@@ -506,15 +499,12 @@ class _SalesManagerSidebar extends StatelessWidget {
                 ],
               ),
             ),
-            Divider(
-              height: 1,
-              color: AppColors.border.withValues(alpha: 0.75),
-            ),
+            Divider(height: 1, color: AppColors.border.withValues(alpha: 0.75)),
             Expanded(
               child: ListView.separated(
                 padding: const EdgeInsets.fromLTRB(12, 14, 12, 14),
                 itemCount: items.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                separatorBuilder: (_, _) => const SizedBox(height: 10),
                 itemBuilder: (context, index) {
                   final item = items[index];
                   final selected = item.label == currentPage;
@@ -526,7 +516,10 @@ class _SalesManagerSidebar extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                       onTap: () => onSelect(item.label),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 14,
+                        ),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
@@ -580,7 +573,10 @@ class _SalesManagerSidebar extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 14,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(18),
@@ -659,11 +655,7 @@ class _OrderTile extends StatelessWidget {
                   color: AppColors.adminSidebarBg,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  order.icon,
-                  color: order.color,
-                  size: 20,
-                ),
+                child: Icon(order.icon, color: order.color, size: 20),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -712,8 +704,10 @@ class _OrderTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: statusColor.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(999),
@@ -733,7 +727,9 @@ class _OrderTile extends StatelessWidget {
               IconButton(
                 onPressed: () {
                   final state = context
-                      .findAncestorStateOfType<_SalesManagerOrdersScreenState>();
+                      .findAncestorStateOfType<
+                        _SalesManagerOrdersScreenState
+                      >();
                   state?._openCreateSalesOrderPageForCustomerName(
                     order.customer,
                   );
@@ -877,10 +873,7 @@ class _CreateSalesOrderPageState extends State<_CreateSalesOrderPage> {
                 ],
               ),
             ),
-            Divider(
-              height: 1,
-              color: AppColors.border.withValues(alpha: 0.75),
-            ),
+            Divider(height: 1, color: AppColors.border.withValues(alpha: 0.75)),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(12, 14, 12, 18),
@@ -926,8 +919,9 @@ class _CreateSalesOrderPageState extends State<_CreateSalesOrderPage> {
                                         height: 42,
                                         decoration: BoxDecoration(
                                           color: AppColors.adminSidebarBg,
-                                          borderRadius:
-                                              BorderRadius.circular(12),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
                                         ),
                                         child: const Icon(
                                           Icons.storefront_rounded,
@@ -1136,21 +1130,15 @@ class _CreateSalesOrderPageState extends State<_CreateSalesOrderPage> {
                             onPressed: () => Navigator.of(context).pop(),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppColors.primary,
-                              side: const BorderSide(
-                                color: AppColors.primary,
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 14,
-                              ),
+                              side: const BorderSide(color: AppColors.primary),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
                             child: const Text(
                               'Save Draft',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w700,
-                              ),
+                              style: TextStyle(fontWeight: FontWeight.w700),
                             ),
                           ),
                         ),
@@ -1161,18 +1149,14 @@ class _CreateSalesOrderPageState extends State<_CreateSalesOrderPage> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.primary,
                               foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 14,
-                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
                             child: const Text(
                               'Submit Order',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w700,
-                              ),
+                              style: TextStyle(fontWeight: FontWeight.w700),
                             ),
                           ),
                         ),
@@ -1328,10 +1312,7 @@ class _SummaryRow extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 12.5,
-          ),
+          style: const TextStyle(color: AppColors.textPrimary, fontSize: 12.5),
         ),
         Text(value, style: textStyle),
       ],
@@ -1359,8 +1340,5 @@ class _OrderCustomer {
   final String name;
   final String location;
 
-  const _OrderCustomer({
-    required this.name,
-    required this.location,
-  });
+  const _OrderCustomer({required this.name, required this.location});
 }

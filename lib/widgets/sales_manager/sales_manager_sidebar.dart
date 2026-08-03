@@ -16,10 +16,7 @@ class SalesManagerSidebarDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Drawer(
       backgroundColor: AppColors.adminSidebarBg,
-      child: SalesManagerSidebar(
-        onSelect: onSelect,
-        currentPage: currentPage,
-      ),
+      child: SalesManagerSidebar(onSelect: onSelect, currentPage: currentPage),
     );
   }
 }
@@ -113,15 +110,12 @@ class SalesManagerSidebar extends StatelessWidget {
                 ],
               ),
             ),
-            Divider(
-              height: 1,
-              color: AppColors.border.withValues(alpha: 0.75),
-            ),
+            Divider(height: 1, color: AppColors.border.withValues(alpha: 0.75)),
             Expanded(
               child: ListView.separated(
                 padding: const EdgeInsets.fromLTRB(12, 14, 12, 14),
                 itemCount: items.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                separatorBuilder: (_, _) => const SizedBox(height: 10),
                 itemBuilder: (context, index) {
                   final item = items[index];
                   final selected = item.label == currentPage;

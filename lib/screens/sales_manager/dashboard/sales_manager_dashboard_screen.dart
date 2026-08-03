@@ -286,9 +286,7 @@ class _SalesManagerDashboardScreenState
     Navigator.of(context).pop();
     if (action == 'Customers') {
       Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => const SalesManagerCustomersScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const SalesManagerCustomersScreen()),
       );
       return;
     }
@@ -300,9 +298,7 @@ class _SalesManagerDashboardScreenState
 
     if (action == 'Visits') {
       Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => const SalesManagerVisitsScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const SalesManagerVisitsScreen()),
       );
       return;
     }
@@ -589,10 +585,7 @@ class _SalesManagerDashboardScreenState
           const SizedBox(height: 10),
           const Text(
             'Remaining: Rs. 2,25,000',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 12,
-            ),
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
           ),
         ],
       ),
@@ -754,7 +747,11 @@ class _SalesManagerDashboardScreenState
               color: order.color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(Icons.receipt_long_rounded, color: order.color, size: 20),
+            child: Icon(
+              Icons.receipt_long_rounded,
+              color: order.color,
+              size: 20,
+            ),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -854,7 +851,10 @@ class _SalesManagerDashboardScreenState
                     color: Colors.white.withValues(alpha: 0.8),
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: const Icon(Icons.timelapse_rounded, color: AppColors.red),
+                  child: const Icon(
+                    Icons.timelapse_rounded,
+                    color: AppColors.red,
+                  ),
                 ),
               ],
             ),
@@ -905,6 +905,7 @@ class _SalesManagerDashboardScreenState
     );
   }
 
+  // ignore: unused_element
   Widget _buildFollowUpsCard() {
     return _PanelCard(
       title: 'Follow-Ups',
@@ -926,6 +927,7 @@ class _SalesManagerDashboardScreenState
     );
   }
 
+  // ignore: unused_element
   Widget _buildReportsCard() {
     const items = [
       ('Sales Report', Icons.bar_chart_rounded),
@@ -950,6 +952,7 @@ class _SalesManagerDashboardScreenState
     );
   }
 
+  // ignore: unused_element
   Widget _buildNotificationsCard() {
     return _PanelCard(
       title: 'Notifications',
@@ -972,6 +975,7 @@ class _SalesManagerDashboardScreenState
     );
   }
 
+  // ignore: unused_element
   Widget _buildSettingsCard() {
     const items = [
       ('Profile', Icons.person_rounded),
@@ -1027,6 +1031,7 @@ class _SalesManagerDashboardScreenState
     );
   }
 
+  // ignore: unused_element
   Widget _buildCustomersCard() {
     return _PanelCard(
       title: 'Customers',
@@ -1047,6 +1052,7 @@ class _SalesManagerDashboardScreenState
     );
   }
 
+  // ignore: unused_element
   Widget _buildSalesOrdersCard() {
     return _PanelCard(
       title: 'Sales Orders',
@@ -1079,6 +1085,7 @@ class _SalesManagerDashboardScreenState
     );
   }
 
+  // ignore: unused_element
   Widget _buildVisitsCard() {
     return _PanelCard(
       title: 'Visits',
@@ -1123,6 +1130,7 @@ class _SalesManagerDashboardScreenState
     );
   }
 
+  // ignore: unused_element
   Widget _buildProductsCard() {
     return _PanelCard(
       title: 'Products',
@@ -1152,6 +1160,7 @@ class _SalesManagerDashboardScreenState
     );
   }
 
+  // ignore: unused_element
   Widget _buildTargetsCard() {
     return _PanelCard(
       title: 'Targets & Performance',
@@ -1197,10 +1206,7 @@ class _SalesManagerDashboardScreenState
             children: const [
               Text(
                 'Remaining: Rs. 2,25,000',
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 12,
-                ),
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
               ),
               Text(
                 '55%',
@@ -1235,6 +1241,7 @@ class _SalesManagerDashboardScreenState
     );
   }
 
+  // ignore: unused_element
   Widget _buildPaymentsCard() {
     return _PanelCard(
       title: 'Outstanding & Payments',
@@ -1244,19 +1251,10 @@ class _SalesManagerDashboardScreenState
           Row(
             children: [
               Expanded(
-                child: _FilterPill(
-                  'Outstanding',
-                  selected: true,
-                  onTap: () {},
-                ),
+                child: _FilterPill('Outstanding', selected: true, onTap: () {}),
               ),
               const SizedBox(width: 8),
-              Expanded(
-                child: _FilterPill(
-                  'Payments',
-                  onTap: () {},
-                ),
-              ),
+              Expanded(child: _FilterPill('Payments', onTap: () {})),
             ],
           ),
           const SizedBox(height: 14),
@@ -1300,7 +1298,10 @@ class _SalesManagerDashboardScreenState
                     color: Colors.white.withValues(alpha: 0.85),
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: const Icon(Icons.payments_rounded, color: AppColors.red),
+                  child: const Icon(
+                    Icons.payments_rounded,
+                    color: AppColors.red,
+                  ),
                 ),
               ],
             ),
@@ -1329,7 +1330,11 @@ class _SalesManagerDashboardScreenState
       ),
       child: Row(
         children: [
-          const Icon(Icons.chevron_right_rounded, size: 18, color: AppColors.green),
+          const Icon(
+            Icons.chevron_right_rounded,
+            size: 18,
+            color: AppColors.green,
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -1430,7 +1435,10 @@ class _SalesManagerDashboardScreenState
       title: item.name,
       subtitle: item.price,
       leadingNote: item.stock,
-      trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
+      trailing: const Icon(
+        Icons.chevron_right_rounded,
+        color: AppColors.textSecondary,
+      ),
     );
   }
 
@@ -1599,7 +1607,10 @@ class _SalesManagerDashboardScreenState
                   ),
                 ),
               const SizedBox(height: 4),
-              const Icon(Icons.chevron_right_rounded, color: AppColors.textLightMuted),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: AppColors.textLightMuted,
+              ),
             ],
           ),
         ],
@@ -1608,11 +1619,9 @@ class _SalesManagerDashboardScreenState
   }
 
   void _openSalesOrdersScreen() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const SalesManagerOrdersScreen(),
-      ),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const SalesManagerOrdersScreen()));
   }
 
   Widget _footerButton(String label, {VoidCallback? onPressed}) {
@@ -1624,12 +1633,11 @@ class _SalesManagerDashboardScreenState
           backgroundColor: AppColors.surfaceSoft,
           foregroundColor: AppColors.primary,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
         ),
-        child: Text(
-          label,
-          style: const TextStyle(fontWeight: FontWeight.w700),
-        ),
+        child: Text(label, style: const TextStyle(fontWeight: FontWeight.w700)),
       ),
     );
   }
@@ -1693,12 +1701,10 @@ class _PanelCard extends StatelessWidget {
                   ],
                 ),
               ),
-              if (trailing != null) trailing!,
+              ?trailing,
             ],
           ),
-          if (subtitle.trim().isNotEmpty) ...[
-            const SizedBox(height: 16),
-          ],
+          if (subtitle.trim().isNotEmpty) ...[const SizedBox(height: 16)],
           child,
         ],
       ),
@@ -1772,6 +1778,7 @@ class _MetricCard extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _ActionCard extends StatelessWidget {
   final String title;
   final IconData icon;
@@ -1880,6 +1887,7 @@ class _CounterBadge extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _HeaderPill extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -2096,6 +2104,7 @@ class _NotificationItem {
 enum SalesRange { today, thisWeek, thisMonth }
 
 extension on SalesRange {
+  // ignore: unused_element
   String get label {
     switch (this) {
       case SalesRange.today:

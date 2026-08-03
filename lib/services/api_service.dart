@@ -410,13 +410,15 @@ class ApiService {
     bool retryOnTimeout = false,
   }) async {
     final uri = Uri.parse('$baseUrl$endpoint');
-    final headers = _buildHeaders(requiresAuth: requiresAuth);
     final encodedBody = body == null ? null : jsonEncode(body);
 
     final attempts = retryOnTimeout ? 2 : 1;
     final effectiveTimeout = timeout ?? ApiConstants.requestTimeout;
+    var headers = _buildHeaders(requiresAuth: requiresAuth);
+    var unauthorizedRetryUsed = false;
 
-    for (var attempt = 1; attempt <= attempts; attempt++) {
+    var attempt = 1;
+    while (attempt <= attempts) {
       _logRequest(
         method: method,
         uri: uri,
@@ -443,6 +445,20 @@ class ApiService {
         );
 
         if (response.statusCode < 200 || response.statusCode >= 300) {
+          if (response.statusCode == 401 &&
+              requiresAuth &&
+              !unauthorizedRetryUsed) {
+            unauthorizedRetryUsed = true;
+            final refreshed = await _refreshAccessToken();
+            if (refreshed) {
+              headers = _buildHeaders(requiresAuth: requiresAuth);
+              debugPrint(
+                '[API RETRY] $method $uri -> retrying after token refresh',
+              );
+              continue;
+            }
+          }
+
           throw ApiException(
             statusCode: response.statusCode,
             message: _extractErrorMessage(response.body.trim()),
@@ -460,6 +476,7 @@ class ApiService {
 
         if (attempt < attempts) {
           debugPrint('[API RETRY] $method $uri -> retrying after timeout');
+          attempt++;
           continue;
         }
 
@@ -479,9 +496,78 @@ class ApiService {
         }
         throw ApiException(message: 'Network request failed: $error');
       }
+
+      attempt++;
     }
 
     throw const ApiException(message: 'API request failed.');
+  }
+
+  Future<bool> _refreshAccessToken() async {
+    final refreshToken = _refreshToken?.trim();
+    if (refreshToken == null || refreshToken.isEmpty) {
+      _clearTokens();
+      return false;
+    }
+
+    final uri = Uri.parse('$baseUrl${ApiEndpoints.authRefresh}');
+    final headers = Map<String, String>.from(ApiConstants.defaultHeaders);
+    final body = jsonEncode(<String, dynamic>{'refresh_token': refreshToken});
+
+    _logRequest(
+      method: 'POST',
+      uri: uri,
+      headers: headers,
+      body: body,
+      attempt: 1,
+      timeout: ApiConstants.requestTimeout,
+    );
+
+    try {
+      final response = await _dispatch(
+        method: 'POST',
+        uri: uri,
+        headers: headers,
+        body: body,
+      ).timeout(ApiConstants.requestTimeout);
+
+      _logResponse(
+        method: 'POST',
+        uri: uri,
+        statusCode: response.statusCode,
+        body: response.body,
+        attempt: 1,
+      );
+
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        _clearTokens();
+        return false;
+      }
+
+      final decoded = _requireDecodedMap(
+        response.body.trim(),
+        fallbackMessage: 'Invalid refresh token response.',
+      );
+      final newAccessToken = _extractToken(decoded);
+      if (newAccessToken == null || newAccessToken.isEmpty) {
+        _clearTokens();
+        return false;
+      }
+
+      final newRefreshToken = _extractRefreshToken(decoded);
+      _accessToken = newAccessToken;
+      _refreshToken = (newRefreshToken ?? refreshToken).trim();
+      return true;
+    } on TimeoutException catch (error) {
+      _logTransportError(method: 'POST', uri: uri, error: error, attempt: 1);
+      return false;
+    } catch (error) {
+      _logTransportError(method: 'POST', uri: uri, error: error, attempt: 1);
+      if (error is ApiException) {
+        return false;
+      }
+      return false;
+    }
   }
 
   Map<String, String> _buildHeaders({required bool requiresAuth}) {

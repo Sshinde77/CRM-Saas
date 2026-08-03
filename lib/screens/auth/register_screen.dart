@@ -31,6 +31,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   static const Color bodyText = AppColors.textSecondary;
   static const Color mutedText = AppColors.textMuted;
   static const Color borderLight = AppColors.borderLight;
+  // ignore: unused_field
   static const Color border = AppColors.border;
   static const Color shadowColor = Color(0x14063B00);
 

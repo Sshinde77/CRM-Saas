@@ -44,7 +44,7 @@ class _SalesManagerCustomersScreenState
           'Shop No. 12, Main Road, Dadar (West), Mumbai, Maharashtra - 400028',
       totalOrders: '24',
       totalSales: 'Rs. 2,45,600',
-      recentOrders: const [
+      recentOrders: [
         _CustomerRecentOrder(
           number: 'SO-1023',
           date: '18 May 2024',
@@ -66,11 +66,10 @@ class _SalesManagerCustomersScreenState
       mobileNumber: '98765 12345',
       email: 'hello@maadurgastores.in',
       gstNumber: '27ABCDE1234F1Z6',
-      address:
-          'Lal Bahadur Shastri Rd, Matunga, Mumbai, Maharashtra - 400019',
+      address: 'Lal Bahadur Shastri Rd, Matunga, Mumbai, Maharashtra - 400019',
       totalOrders: '16',
       totalSales: 'Rs. 1,18,200',
-      recentOrders: const [],
+      recentOrders: [],
     ),
     _CustomerRecord(
       name: 'Patel Retailers',
@@ -88,7 +87,7 @@ class _SalesManagerCustomersScreenState
       address: 'Sion Circle, Sion, Mumbai, Maharashtra - 400022',
       totalOrders: '9',
       totalSales: 'Rs. 86,100',
-      recentOrders: const [],
+      recentOrders: [],
     ),
     _CustomerRecord(
       name: 'S.K. Enterprises',
@@ -106,7 +105,7 @@ class _SalesManagerCustomersScreenState
       address: 'Ghatkopar East, Mumbai, Maharashtra - 400075',
       totalOrders: '31',
       totalSales: 'Rs. 4,12,800',
-      recentOrders: const [],
+      recentOrders: [],
     ),
     _CustomerRecord(
       name: 'New A One Traders',
@@ -124,7 +123,7 @@ class _SalesManagerCustomersScreenState
       address: 'Kurla West, Mumbai, Maharashtra - 400070',
       totalOrders: '12',
       totalSales: 'Rs. 1,34,700',
-      recentOrders: const [],
+      recentOrders: [],
     ),
   ];
 
@@ -142,9 +141,7 @@ class _SalesManagerCustomersScreenState
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
-        return _AddCustomerSheet(
-          onSaved: _showCustomerAddedSuccessfullyPopup,
-        );
+        return _AddCustomerSheet(onSaved: _showCustomerAddedSuccessfullyPopup);
       },
     );
   }
@@ -154,25 +151,19 @@ class _SalesManagerCustomersScreenState
     if (action == 'Customers') return;
     if (action == 'Dashboard') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const SalesManagerDashboardScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const SalesManagerDashboardScreen()),
       );
       return;
     }
     if (action == 'Sales Orders') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const SalesManagerOrdersScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const SalesManagerOrdersScreen()),
       );
       return;
     }
     if (action == 'Visits') {
       Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => const SalesManagerVisitsScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const SalesManagerVisitsScreen()),
       );
       return;
     }
@@ -385,9 +376,7 @@ class _SalesManagerCustomersScreenState
                             ),
                             child: const Text(
                               'Done',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w700,
-                              ),
+                              style: TextStyle(fontWeight: FontWeight.w700),
                             ),
                           ),
                         ),
@@ -634,9 +623,7 @@ class _SalesManagerCustomersScreenState
         style: TextButton.styleFrom(
           backgroundColor: AppColors.adminSidebarBg,
           foregroundColor: AppColors.primary,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       ),
     );
@@ -841,7 +828,10 @@ class _CustomerDetailsTopBar extends StatelessWidget {
         children: [
           IconButton(
             onPressed: onBack,
-            icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
+            icon: const Icon(
+              Icons.arrow_back_rounded,
+              color: AppColors.textPrimary,
+            ),
           ),
           const SizedBox(width: 2),
           Expanded(
@@ -861,7 +851,10 @@ class _CustomerDetailsTopBar extends StatelessWidget {
           ),
           IconButton(
             onPressed: onMore,
-            icon: const Icon(Icons.more_vert_rounded, color: AppColors.textPrimary),
+            icon: const Icon(
+              Icons.more_vert_rounded,
+              color: AppColors.textPrimary,
+            ),
           ),
         ],
       ),
@@ -892,7 +885,11 @@ class _CustomerHeaderCard extends StatelessWidget {
               color: AppColors.adminSidebarBg,
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.storefront_rounded, color: customer.color, size: 26),
+            child: Icon(
+              Icons.storefront_rounded,
+              color: customer.color,
+              size: 26,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -952,13 +949,29 @@ class _CustomerInfoCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          _InfoRow(icon: Icons.person_outline_rounded, label: 'Contact Person', value: customer.contactPerson),
+          _InfoRow(
+            icon: Icons.person_outline_rounded,
+            label: 'Contact Person',
+            value: customer.contactPerson,
+          ),
           const SizedBox(height: 12),
-          _InfoRow(icon: Icons.call_outlined, label: 'Mobile Number', value: customer.mobileNumber),
+          _InfoRow(
+            icon: Icons.call_outlined,
+            label: 'Mobile Number',
+            value: customer.mobileNumber,
+          ),
           const SizedBox(height: 12),
-          _InfoRow(icon: Icons.email_outlined, label: 'Email', value: customer.email),
+          _InfoRow(
+            icon: Icons.email_outlined,
+            label: 'Email',
+            value: customer.email,
+          ),
           const SizedBox(height: 12),
-          _InfoRow(icon: Icons.receipt_long_outlined, label: 'GST Number', value: customer.gstNumber),
+          _InfoRow(
+            icon: Icons.receipt_long_outlined,
+            label: 'GST Number',
+            value: customer.gstNumber,
+          ),
           const SizedBox(height: 12),
           _InfoRow(
             icon: Icons.location_on_outlined,
@@ -981,9 +994,13 @@ class _CustomerStatsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(child: _StatBox(label: 'Total Orders', value: customer.totalOrders)),
+        Expanded(
+          child: _StatBox(label: 'Total Orders', value: customer.totalOrders),
+        ),
         const SizedBox(width: 10),
-        Expanded(child: _StatBox(label: 'Total Sales', value: customer.totalSales)),
+        Expanded(
+          child: _StatBox(label: 'Total Sales', value: customer.totalSales),
+        ),
         const SizedBox(width: 10),
         Expanded(
           child: _StatBox(
@@ -1025,25 +1042,20 @@ class _CustomerRecentOrdersCard extends StatelessWidget {
                   fontWeight: FontWeight.w800,
                 ),
               ),
-              TextButton(
-                onPressed: () {},
-                child: const Text('View All'),
-              ),
+              TextButton(onPressed: () {}, child: const Text('View All')),
             ],
           ),
           const SizedBox(height: 8),
           if (customer.recentOrders.isEmpty)
             const Text(
               'No recent orders available.',
-              style: TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 12,
-              ),
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
             )
           else
             for (final order in customer.recentOrders) ...[
               _RecentOrderRow(order: order),
-              if (order != customer.recentOrders.last) const SizedBox(height: 10),
+              if (order != customer.recentOrders.last)
+                const SizedBox(height: 10),
             ],
         ],
       ),
@@ -1055,10 +1067,7 @@ class _CustomerActionsSheet extends StatelessWidget {
   final _CustomerRecord customer;
   final ValueChanged<String> onAction;
 
-  const _CustomerActionsSheet({
-    required this.customer,
-    required this.onAction,
-  });
+  const _CustomerActionsSheet({required this.customer, required this.onAction});
 
   @override
   Widget build(BuildContext context) {
@@ -1108,7 +1117,8 @@ class _CustomerActionsSheet extends StatelessWidget {
                           icon: Icons.shopping_cart_outlined,
                           color: AppColors.primary,
                           title: 'Create Order',
-                          subtitle: 'Create a new sales order for this customer',
+                          subtitle:
+                              'Create a new sales order for this customer',
                           onTap: () => onAction('Create Order'),
                         ),
                         _ActionTile(
@@ -1122,7 +1132,8 @@ class _CustomerActionsSheet extends StatelessWidget {
                           icon: Icons.currency_rupee_rounded,
                           color: AppColors.orange,
                           title: 'Outstanding',
-                          subtitle: 'View outstanding balance and payment history',
+                          subtitle:
+                              'View outstanding balance and payment history',
                           onTap: () => onAction('Outstanding'),
                         ),
                         _ActionTile(
@@ -1193,7 +1204,9 @@ class _ActionTile extends StatelessWidget {
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.border.withValues(alpha: 0.72)),
+              border: Border.all(
+                color: AppColors.border.withValues(alpha: 0.72),
+              ),
             ),
             child: Row(
               children: [
@@ -1230,7 +1243,10 @@ class _ActionTile extends StatelessWidget {
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_right_rounded, color: AppColors.textLightMuted),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.textLightMuted,
+                ),
               ],
             ),
           ),
@@ -1292,11 +1308,7 @@ class _StatBox extends StatelessWidget {
   final String value;
   final Color? valueColor;
 
-  const _StatBox({
-    required this.label,
-    required this.value,
-    this.valueColor,
-  });
+  const _StatBox({required this.label, required this.value, this.valueColor});
 
   @override
   Widget build(BuildContext context) {
@@ -1341,8 +1353,9 @@ class _RecentOrderRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final statusColor =
-        order.status == 'Confirmed' ? AppColors.primary : AppColors.orange;
+    final statusColor = order.status == 'Confirmed'
+        ? AppColors.primary
+        : AppColors.orange;
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -1360,7 +1373,11 @@ class _RecentOrderRow extends StatelessWidget {
               color: AppColors.adminSidebarBg,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(Icons.receipt_long_rounded, color: statusColor, size: 20),
+            child: Icon(
+              Icons.receipt_long_rounded,
+              color: statusColor,
+              size: 20,
+            ),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -1504,23 +1521,18 @@ class _SalesManagerSidebar extends StatelessWidget {
                 ],
               ),
             ),
-            Divider(
-              height: 1,
-              color: AppColors.border.withValues(alpha: 0.75),
-            ),
+            Divider(height: 1, color: AppColors.border.withValues(alpha: 0.75)),
             Expanded(
               child: ListView.separated(
                 padding: const EdgeInsets.fromLTRB(12, 14, 12, 14),
                 itemCount: items.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                separatorBuilder: (_, _) => const SizedBox(height: 10),
                 itemBuilder: (context, index) {
                   final item = items[index];
                   final selected = item.label == currentPage;
                   final isCheckout = item.label == 'Check-Out';
                   return Material(
-                    color: selected
-                        ? AppColors.activeMenuBg
-                        : Colors.white,
+                    color: selected ? AppColors.activeMenuBg : Colors.white,
                     borderRadius: BorderRadius.circular(20),
                     child: InkWell(
                       borderRadius: BorderRadius.circular(20),
@@ -1545,8 +1557,8 @@ class _SalesManagerSidebar extends StatelessWidget {
                               color: isCheckout
                                   ? AppColors.red
                                   : selected
-                                      ? AppColors.primary
-                                      : AppColors.textSecondary,
+                                  ? AppColors.primary
+                                  : AppColors.textSecondary,
                               size: 20,
                             ),
                             const SizedBox(width: 14),
@@ -1557,8 +1569,8 @@ class _SalesManagerSidebar extends StatelessWidget {
                                   color: isCheckout
                                       ? AppColors.red
                                       : selected
-                                          ? AppColors.primary
-                                          : AppColors.textSecondary,
+                                      ? AppColors.primary
+                                      : AppColors.textSecondary,
                                   fontSize: 13.5,
                                   fontWeight: selected || isCheckout
                                       ? FontWeight.w800
@@ -1587,6 +1599,7 @@ class _SalesManagerSidebar extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _SalesManagerDrawer extends StatelessWidget {
   final ValueChanged<String> onSelect;
   final String currentPage;
@@ -1600,10 +1613,7 @@ class _SalesManagerDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Drawer(
       backgroundColor: AppColors.adminSidebarBg,
-      child: _SalesManagerSidebar(
-        onSelect: onSelect,
-        currentPage: currentPage,
-      ),
+      child: _SalesManagerSidebar(onSelect: onSelect, currentPage: currentPage),
     );
   }
 }

@@ -4,9 +4,6 @@ import '../../../constants/app_colors.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
 
-/// Products screen — mobile version of the "Product Catalog" web page.
-/// Redesigned as a card list: each product shows Product Name, Brand,
-/// Category, HSN, Selling Price, Stock, Status, and View/Edit/Delete actions.
 class ProductsScreen extends StatefulWidget {
   const ProductsScreen({super.key});
 
@@ -24,6 +21,8 @@ class _ProductsScreenState extends State<ProductsScreen> {
   String _query = '';
   String _selectedCategory = 'All Categories';
   String _selectedBrand = 'All Brands';
+  String _sortBy = 'Latest';
+  int _currentPage = 1;
 
   final List<String> _categories = const [
     'All Categories',
@@ -32,7 +31,6 @@ class _ProductsScreenState extends State<ProductsScreen> {
     'Sparkling Water',
     'Water Jar',
     'Flavored Water',
-    'Alkaline Water',
     'Dispenser',
     'Accessories',
   ];
@@ -45,7 +43,8 @@ class _ProductsScreenState extends State<ProductsScreen> {
     'PureFlow',
   ];
 
-  // Mock catalog — replace with your providers / API calls.
+  final List<String> _sortOptions = const ['Latest', 'Name', 'Price', 'Stock'];
+
   final List<_ProductItem> _products = [
     _ProductItem(
       name: 'Packaged Drinking Water (250ml)',
@@ -55,6 +54,8 @@ class _ProductsScreenState extends State<ProductsScreen> {
       price: 10,
       stock: 500,
       status: 'Active',
+      icon: Icons.water_drop_rounded,
+      accent: AppColors.primary,
     ),
     _ProductItem(
       name: 'Packaged Drinking Water (500ml)',
@@ -64,15 +65,8 @@ class _ProductsScreenState extends State<ProductsScreen> {
       price: 15,
       stock: 420,
       status: 'Active',
-    ),
-    _ProductItem(
-      name: 'Packaged Drinking Water (1L)',
-      brand: 'AquaPure',
-      category: 'Packaged Water',
-      hsn: '2201',
-      price: 20,
-      stock: 300,
-      status: 'Active',
+      icon: Icons.local_drink_rounded,
+      accent: AppColors.blue,
     ),
     _ProductItem(
       name: 'Mineral Water Bottle (1L)',
@@ -82,15 +76,8 @@ class _ProductsScreenState extends State<ProductsScreen> {
       price: 25,
       stock: 180,
       status: 'Active',
-    ),
-    _ProductItem(
-      name: 'Mineral Water Bottle (2L)',
-      brand: 'CrystalClear',
-      category: 'Mineral Water',
-      hsn: '2201',
-      price: 40,
-      stock: 90,
-      status: 'Active',
+      icon: Icons.local_drink_outlined,
+      accent: AppColors.teal,
     ),
     _ProductItem(
       name: 'Sparkling Water Can (330ml)',
@@ -98,8 +85,10 @@ class _ProductsScreenState extends State<ProductsScreen> {
       category: 'Sparkling Water',
       hsn: '2202',
       price: 35,
-      stock: 60,
+      stock: 8,
       status: 'Active',
+      icon: Icons.bubble_chart_rounded,
+      accent: AppColors.orange,
     ),
     _ProductItem(
       name: 'Water Jar Refill (20L)',
@@ -109,24 +98,8 @@ class _ProductsScreenState extends State<ProductsScreen> {
       price: 45,
       stock: 25,
       status: 'Active',
-    ),
-    _ProductItem(
-      name: 'Water Jar Refill (10L)',
-      brand: 'PureFlow',
-      category: 'Water Jar',
-      hsn: '2201',
-      price: 30,
-      stock: 15,
-      status: 'Active',
-    ),
-    _ProductItem(
-      name: 'Flavored Water - Lemon (500ml)',
-      brand: 'AquaPure',
-      category: 'Flavored Water',
-      hsn: '2202',
-      price: 22,
-      stock: 70,
-      status: 'Active',
+      icon: Icons.inventory_2_rounded,
+      accent: AppColors.green,
     ),
     _ProductItem(
       name: 'Flavored Water - Mint (500ml)',
@@ -136,69 +109,19 @@ class _ProductsScreenState extends State<ProductsScreen> {
       price: 22,
       stock: 0,
       status: 'Inactive',
+      icon: Icons.eco_rounded,
+      accent: AppColors.red,
     ),
     _ProductItem(
-      name: 'Alkaline Water Bottle (1L)',
-      brand: 'CrystalClear',
-      category: 'Alkaline Water',
-      hsn: '2201',
-      price: 28,
-      stock: 40,
-      status: 'Active',
-    ),
-    _ProductItem(
-      name: 'Water Dispenser - Normal (Standard)',
-      brand: 'HydroMax',
-      category: 'Dispenser',
-      hsn: '8418',
-      price: 3500,
-      stock: 8,
-      status: 'Active',
-    ),
-    _ProductItem(
-      name: 'Water Dispenser - Hot & Cold (Standard)',
+      name: 'Water Dispenser - Hot & Cold',
       brand: 'HydroMax',
       category: 'Dispenser',
       hsn: '8418',
       price: 6200,
       stock: 5,
       status: 'Active',
-    ),
-    _ProductItem(
-      name: 'Dispenser Stand',
-      brand: 'PureFlow',
-      category: 'Accessories',
-      hsn: '9403',
-      price: 1200,
-      stock: 12,
-      status: 'Active',
-    ),
-    _ProductItem(
-      name: 'Jar Cap (Pack of 10)',
-      brand: 'PureFlow',
-      category: 'Accessories',
-      hsn: '3923',
-      price: 150,
-      stock: 200,
-      status: 'Active',
-    ),
-    _ProductItem(
-      name: 'Bottle Crate (24-slot)',
-      brand: 'AquaPure',
-      category: 'Accessories',
-      hsn: '3923',
-      price: 350,
-      stock: 60,
-      status: 'Active',
-    ),
-    _ProductItem(
-      name: 'Dispenser Tap Kit',
-      brand: 'HydroMax',
-      category: 'Accessories',
-      hsn: '3923',
-      price: 250,
-      stock: 30,
-      status: 'Inactive',
+      icon: Icons.kitchen_rounded,
+      accent: AppColors.orange,
     ),
     _ProductItem(
       name: 'Water Testing Kit',
@@ -208,6 +131,8 @@ class _ProductsScreenState extends State<ProductsScreen> {
       price: 899,
       stock: 18,
       status: 'Active',
+      icon: Icons.fact_check_rounded,
+      accent: AppColors.purple,
     ),
   ];
 
@@ -218,20 +143,34 @@ class _ProductsScreenState extends State<ProductsScreen> {
   }
 
   List<_ProductItem> get _filteredProducts {
-    return _products.where((p) {
+    final results = _products.where((p) {
       final matchesCategory =
           _selectedCategory == 'All Categories' ||
           p.category == _selectedCategory;
       final matchesBrand =
           _selectedBrand == 'All Brands' || p.brand == _selectedBrand;
+      final normalizedQuery = _query.toLowerCase();
       final matchesQuery =
-          _query.isEmpty ||
-          p.name.toLowerCase().contains(_query.toLowerCase()) ||
-          p.brand.toLowerCase().contains(_query.toLowerCase()) ||
-          p.category.toLowerCase().contains(_query.toLowerCase()) ||
-          p.hsn.toLowerCase().contains(_query.toLowerCase());
+          normalizedQuery.isEmpty ||
+          p.name.toLowerCase().contains(normalizedQuery) ||
+          p.brand.toLowerCase().contains(normalizedQuery) ||
+          p.category.toLowerCase().contains(normalizedQuery) ||
+          p.hsn.toLowerCase().contains(normalizedQuery);
       return matchesCategory && matchesBrand && matchesQuery;
     }).toList();
+
+    switch (_sortBy) {
+      case 'Name':
+        results.sort((a, b) => a.name.compareTo(b.name));
+      case 'Price':
+        results.sort((a, b) => b.price.compareTo(a.price));
+      case 'Stock':
+        results.sort((a, b) => b.stock.compareTo(a.stock));
+      default:
+        break;
+    }
+
+    return results;
   }
 
   Future<void> _openProductFormDialog({
@@ -251,7 +190,8 @@ class _ProductsScreenState extends State<ProductsScreen> {
       if (index != null) {
         _products[index] = result;
       } else {
-        _products.add(result);
+        _products.insert(0, result);
+        _currentPage = 1;
       }
     });
   }
@@ -260,8 +200,8 @@ class _ProductsScreenState extends State<ProductsScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: AppColors.background,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         title: const Text(
           'Delete product?',
           style: TextStyle(color: textPrimary, fontWeight: FontWeight.w700),
@@ -283,43 +223,49 @@ class _ProductsScreenState extends State<ProductsScreen> {
         ],
       ),
     );
-    if (confirmed == true) {
-      setState(() => _products.removeAt(index));
-    }
+    if (confirmed == true) setState(() => _products.removeAt(index));
   }
 
   void _showProductDetails(_ProductItem product) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
       ),
       builder: (_) {
         return Padding(
-          padding: const EdgeInsets.fromLTRB(22, 22, 22, 32),
+          padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                product.name,
-                style: const TextStyle(
-                  color: textPrimary,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                ),
+              Row(
+                children: [
+                  _productVisual(product, size: 58),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      product.name,
+                      style: const TextStyle(
+                        color: textPrimary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 18),
               _detailRow('Brand', product.brand),
               _detailRow('Category', product.category),
               _detailRow('HSN', product.hsn),
               _detailRow(
                 'Selling Price',
-                '₹${product.price.toStringAsFixed(2)}',
+                'Rs. ${product.price.toStringAsFixed(2)}',
               ),
               _detailRow('Stock', '${product.stock} units'),
-              _detailRow('Status', product.status),
+              _detailRow('Status', _stockLabel(product)),
             ],
           ),
         );
@@ -366,86 +312,36 @@ class _ProductsScreenState extends State<ProductsScreen> {
         child: Column(
           children: [
             AdminTopBar(
-              title: 'Products',
+              title: 'Product List',
               leadingIcon: Icons.menu_rounded,
               onLeadingTap: () => _scaffoldKey.currentState?.openDrawer(),
             ),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Products',
-                                style: TextStyle(
-                                  color: textPrimary,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                              SizedBox(height: 4),
-                              Text(
-                                'Manage your product catalog and variants',
-                                style: TextStyle(
-                                  color: textSecondary,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        ElevatedButton.icon(
-                          onPressed: () => _openProductFormDialog(),
-                          icon: const Icon(Icons.add_rounded, size: 18),
-                          label: const Text('Add Product'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.purple,
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 18,
-                              vertical: 14,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(18),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    _buildFiltersCard(filtered.length),
+                    _buildCommandRow(),
+                    const SizedBox(height: 18),
+                    _buildSearchRow(),
+                    const SizedBox(height: 18),
+                    _buildCountAndSortRow(filtered.length),
                     const SizedBox(height: 16),
                     if (filtered.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 40),
-                        child: Center(
-                          child: Text(
-                            'No products match your filters.',
-                            style: const TextStyle(
-                              color: textSecondary,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ),
-                      )
+                      _emptyState()
                     else
-                      ...filtered.map((p) {
-                        final index = _products.indexOf(p);
+                      ...filtered.map((product) {
+                        final index = _products.indexOf(product);
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 14),
-                          child: _productCard(p, index),
+                          child: _productCard(product, index),
                         );
                       }),
+                    if (filtered.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      _buildPagination(),
+                    ],
                   ],
                 ),
               ),
@@ -456,86 +352,156 @@ class _ProductsScreenState extends State<ProductsScreen> {
     );
   }
 
-  Widget _buildFiltersCard(int resultCount) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.secondary.withValues(alpha: 0.18)),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.textPrimary.withValues(alpha: 0.05),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
+  Widget _buildCommandRow() {
+    return Row(
+      children: [
+        const Expanded(
+          child: Text(
+            'Manage products, pricing, and stock from one catalog.',
+            style: TextStyle(color: textSecondary, fontSize: 13),
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Product Catalog',
-            style: TextStyle(
-              color: textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
+        ),
+        const SizedBox(width: 12),
+        ElevatedButton.icon(
+          onPressed: () => _openProductFormDialog(),
+          icon: const Icon(Icons.add_rounded, size: 21),
+          label: const Text('Add Product'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            textStyle: const TextStyle(
+              fontSize: 13.5,
+              fontWeight: FontWeight.w800,
             ),
           ),
-          const SizedBox(height: 16),
-          Row(
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSearchRow() {
+    return Row(
+      children: [
+        Expanded(
+          child: TextField(
+            controller: _searchController,
+            onChanged: (value) => setState(() {
+              _query = value;
+              _currentPage = 1;
+            }),
+            style: const TextStyle(color: textPrimary, fontSize: 14),
+            decoration: InputDecoration(
+              hintText: 'Search products...',
+              hintStyle: const TextStyle(color: AppColors.textLightMuted),
+              prefixIcon: const Icon(
+                Icons.search_rounded,
+                color: AppColors.textMuted,
+              ),
+              filled: true,
+              fillColor: AppColors.surface,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 14,
+              ),
+              border: _outlineBorder(AppColors.border),
+              enabledBorder: _outlineBorder(AppColors.border),
+              focusedBorder: _outlineBorder(AppColors.primary),
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        _squareIconButton(
+          icon: Icons.filter_alt_outlined,
+          tooltip: 'Filter',
+          onTap: _openFiltersSheet,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCountAndSortRow(int count) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: _filterDropdown(
-                  _selectedCategory,
-                  _categories,
-                  (v) => setState(() => _selectedCategory = v),
+              const Text(
+                'Total Products',
+                style: TextStyle(
+                  color: textSecondary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _filterDropdown(
-                  _selectedBrand,
-                  _brands,
-                  (v) => setState(() => _selectedBrand = v),
+              const SizedBox(height: 4),
+              Text(
+                '$count',
+                style: const TextStyle(
+                  color: AppColors.primary,
+                  fontSize: 32,
+                  height: 1,
+                  fontWeight: FontWeight.w900,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 14),
-          TextField(
-            controller: _searchController,
-            onChanged: (v) => setState(() => _query = v),
-            decoration: InputDecoration(
-              hintText: 'Search products...',
-              prefixIcon: const Icon(Icons.search, color: textSecondary),
-              filled: true,
-              fillColor: AppColors.surfaceSoft,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(
-                  color: AppColors.secondary.withValues(alpha: 0.24),
-                ),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(
-                  color: AppColors.secondary.withValues(alpha: 0.24),
-                ),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: const BorderSide(color: AppColors.purple),
-              ),
-            ),
+        ),
+        const SizedBox(width: 14),
+        _sortControl(),
+      ],
+    );
+  }
+
+  Widget _sortControl() {
+    return Container(
+      height: 48,
+      padding: const EdgeInsets.only(left: 12, right: 8),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.sort_rounded, size: 20, color: AppColors.textMuted),
+          const SizedBox(width: 8),
+          const Text(
+            'Sort by:',
+            style: TextStyle(color: textSecondary, fontSize: 13),
           ),
-          const SizedBox(height: 10),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Text(
-              '$resultCount results',
-              style: const TextStyle(color: textSecondary, fontSize: 12.5),
+          const SizedBox(width: 5),
+          DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: _sortBy,
+              icon: const Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: textPrimary,
+              ),
+              dropdownColor: AppColors.surface,
+              borderRadius: BorderRadius.circular(8),
+              style: const TextStyle(
+                color: textPrimary,
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+              ),
+              items: _sortOptions
+                  .map(
+                    (option) =>
+                        DropdownMenuItem(value: option, child: Text(option)),
+                  )
+                  .toList(),
+              onChanged: (value) {
+                if (value == null) return;
+                setState(() => _sortBy = value);
+              },
             ),
           ),
         ],
@@ -543,219 +509,495 @@ class _ProductsScreenState extends State<ProductsScreen> {
     );
   }
 
-  Widget _filterDropdown(
-    String value,
-    List<String> options,
-    ValueChanged<String> onChanged,
-  ) {
+  Widget _productCard(_ProductItem product, int index) {
+    final statusColor = _stockColor(product);
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14),
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.borderLight),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.textPrimary.withValues(alpha: 0.07),
+            blurRadius: 22,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final compact = constraints.maxWidth < 390;
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _productVisual(product, size: compact ? 82 : 96),
+              const SizedBox(width: 14),
+              Expanded(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: 116),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              product.name,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: textPrimary,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          _statusChip(_stockLabel(product), statusColor),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Rs. ${_formatPrice(product.price)}',
+                        style: const TextStyle(
+                          color: AppColors.primary,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      const SizedBox(height: 9),
+                      Text(
+                        '${product.brand} - ${product.category}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: textSecondary,
+                          fontSize: 12.5,
+                        ),
+                      ),
+                      const SizedBox(height: 7),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Stock',
+                                  style: TextStyle(
+                                    color: textSecondary,
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                Text(
+                                  '${product.stock}',
+                                  style: TextStyle(
+                                    color: statusColor,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          _cardActions(product, index),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _productVisual(_ProductItem product, {required double size}) {
+    return Container(
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         color: AppColors.surfaceSoft,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.secondary.withValues(alpha: 0.24)),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.borderLight),
       ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: value,
-          isExpanded: true,
-          icon: const Icon(
-            Icons.keyboard_arrow_down_rounded,
-            color: textSecondary,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: size * 0.62,
+            height: size * 0.62,
+            decoration: BoxDecoration(
+              color: product.accent.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
           ),
-          style: const TextStyle(
-            color: textPrimary,
-            fontSize: 13.5,
-            fontWeight: FontWeight.w600,
-          ),
-          dropdownColor: AppColors.primary,
-          borderRadius: BorderRadius.circular(14),
-          items: options
-              .map(
-                (o) => DropdownMenuItem(
-                  value: o,
-                  child: Text(o, overflow: TextOverflow.ellipsis),
-                ),
-              )
-              .toList(),
-          onChanged: (v) {
-            if (v != null) onChanged(v);
-          },
+          Icon(product.icon, size: size * 0.42, color: product.accent),
+        ],
+      ),
+    );
+  }
+
+  Widget _cardActions(_ProductItem product, int index) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _plainActionIcon(
+          icon: Icons.visibility_outlined,
+          color: AppColors.primary,
+          tooltip: 'View',
+          onTap: () => _showProductDetails(product),
+        ),
+        _verticalDivider(),
+        _plainActionIcon(
+          icon: Icons.edit_outlined,
+          color: AppColors.blue,
+          tooltip: 'Edit',
+          onTap: () => _openProductFormDialog(existing: product, index: index),
+        ),
+        _verticalDivider(),
+        _plainActionIcon(
+          icon: Icons.delete_outline_rounded,
+          color: AppColors.red,
+          tooltip: 'Delete',
+          onTap: () => _confirmDelete(product, index),
+        ),
+      ],
+    );
+  }
+
+  Widget _plainActionIcon({
+    required IconData icon,
+    required Color color,
+    required String tooltip,
+    required VoidCallback onTap,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: SizedBox(
+          width: 34,
+          height: 34,
+          child: Icon(icon, color: color, size: 21),
         ),
       ),
     );
   }
 
-  // ---------------- Product card ----------------
-  Widget _productCard(_ProductItem product, int index) {
-    final statusColor = _statusColor(product.status);
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.secondary.withValues(alpha: 0.18)),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.textPrimary.withValues(alpha: 0.05),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _statusChip(product.status, statusColor),
-              const Spacer(),
-              _iconActionButton(
-                icon: Icons.visibility_outlined,
-                color: AppColors.blue,
-                tooltip: 'View',
-                onTap: () => _showProductDetails(product),
-              ),
-              const SizedBox(width: 8),
-              _iconActionButton(
-                icon: Icons.edit_outlined,
-                color: AppColors.purple,
-                tooltip: 'Edit',
-                onTap: () =>
-                    _openProductFormDialog(existing: product, index: index),
-              ),
-              const SizedBox(width: 8),
-              _iconActionButton(
-                icon: Icons.delete_outline_rounded,
-                color: AppColors.red,
-                tooltip: 'Delete',
-                onTap: () => _confirmDelete(product, index),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          GestureDetector(
-            onTap: () => _showProductDetails(product),
-            child: Text(
-              product.name,
-              style: const TextStyle(
-                color: AppColors.purple,
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-          const SizedBox(height: 14),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(child: _infoItem('Brand', product.brand)),
-              Expanded(child: _infoItem('Category', product.category)),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(child: _infoItem('HSN', product.hsn)),
-              Expanded(
-                child: _infoItem(
-                  'Selling Price',
-                  '₹${product.price.toStringAsFixed(2)}',
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(child: _infoItem('Stock', '${product.stock} units')),
-              Expanded(child: _infoItem('Status', product.status)),
-            ],
-          ),
-        ],
-      ),
-    );
+  Widget _verticalDivider() {
+    return Container(width: 1, height: 24, color: AppColors.border);
   }
 
   Widget _statusChip(String label, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: color.withValues(alpha: 0.35)),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.25)),
       ),
       child: Text(
         label,
         style: TextStyle(
           color: color,
           fontSize: 11.5,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w800,
         ),
       ),
     );
   }
 
-  Widget _infoItem(String label, String value) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: textSecondary,
-            fontSize: 11.5,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 3),
-        Text(
-          value,
-          style: const TextStyle(
-            color: textPrimary,
-            fontSize: 13.5,
-            fontWeight: FontWeight.w600,
-          ),
-          overflow: TextOverflow.ellipsis,
-        ),
-      ],
-    );
-  }
-
-  Widget _iconActionButton({
+  Widget _squareIconButton({
     required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
     required String tooltip,
+    required VoidCallback onTap,
   }) {
     return Tooltip(
       message: tooltip,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
         child: Container(
-          width: 36,
-          height: 36,
+          width: 52,
+          height: 52,
           decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: color.withValues(alpha: 0.28)),
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppColors.border),
           ),
-          child: Icon(icon, size: 18, color: color),
+          child: Icon(icon, color: textPrimary, size: 25),
         ),
       ),
     );
   }
 
-  Color _statusColor(String status) {
-    if (status == 'Active') return AppColors.green;
-    if (status == 'Inactive') return AppColors.textSecondary;
-    return AppColors.blue;
+  Widget _emptyState() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 36),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.borderLight),
+      ),
+      child: const Column(
+        children: [
+          Icon(
+            Icons.inventory_2_outlined,
+            color: AppColors.textLightMuted,
+            size: 42,
+          ),
+          SizedBox(height: 12),
+          Text(
+            'No products match your filters.',
+            style: TextStyle(
+              color: textSecondary,
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPagination() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _pageButton(
+          Icons.chevron_left_rounded,
+          onTap: () => _setPage(_currentPage - 1),
+        ),
+        const SizedBox(width: 10),
+        _pageNumber(1),
+        const SizedBox(width: 10),
+        _pageNumber(2),
+        const SizedBox(width: 10),
+        _pageNumber(3),
+        const SizedBox(width: 14),
+        const Text(
+          '...',
+          style: TextStyle(color: textPrimary, fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(width: 14),
+        _pageNumber(5),
+        const SizedBox(width: 10),
+        _pageButton(
+          Icons.chevron_right_rounded,
+          onTap: () => _setPage(_currentPage + 1),
+        ),
+      ],
+    );
+  }
+
+  Widget _pageNumber(int page) {
+    final selected = _currentPage == page;
+    return InkWell(
+      onTap: () => _setPage(page),
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        width: 40,
+        height: 40,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: selected ? AppColors.primary : AppColors.surface,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: selected ? AppColors.primary : AppColors.border,
+          ),
+        ),
+        child: Text(
+          '$page',
+          style: TextStyle(
+            color: selected ? Colors.white : textPrimary,
+            fontSize: 14,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _pageButton(IconData icon, {required VoidCallback onTap}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        width: 40,
+        height: 40,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Icon(icon, color: textPrimary, size: 22),
+      ),
+    );
+  }
+
+  void _setPage(int page) {
+    if (page < 1 || page > 5) return;
+    setState(() => _currentPage = page);
+  }
+
+  void _openFiltersSheet() {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+      ),
+      builder: (_) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(18, 18, 18, 26),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Filter Products',
+                    style: TextStyle(
+                      color: textPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  _sheetDropdown(
+                    label: 'Category',
+                    value: _selectedCategory,
+                    options: _categories,
+                    onChanged: (value) {
+                      setState(() => _selectedCategory = value);
+                      setSheetState(() {});
+                    },
+                  ),
+                  const SizedBox(height: 14),
+                  _sheetDropdown(
+                    label: 'Brand',
+                    value: _selectedBrand,
+                    options: _brands,
+                    onChanged: (value) {
+                      setState(() => _selectedBrand = value);
+                      setSheetState(() {});
+                    },
+                  ),
+                  const SizedBox(height: 18),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text('Apply Filters'),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _sheetDropdown({
+    required String label,
+    required String value,
+    required List<String> options,
+    required ValueChanged<String> onChanged,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(color: textSecondary, fontSize: 13)),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceSoft,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: value,
+              isExpanded: true,
+              dropdownColor: AppColors.surface,
+              borderRadius: BorderRadius.circular(8),
+              icon: const Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: textPrimary,
+              ),
+              items: options
+                  .map(
+                    (option) =>
+                        DropdownMenuItem(value: option, child: Text(option)),
+                  )
+                  .toList(),
+              onChanged: (selected) {
+                if (selected != null) onChanged(selected);
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  OutlineInputBorder _outlineBorder(Color color) {
+    return OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: BorderSide(color: color),
+    );
+  }
+
+  String _stockLabel(_ProductItem product) {
+    if (product.stock == 0 || product.status == 'Inactive') {
+      return 'Out of Stock';
+    }
+    if (product.stock <= 10) return 'Low Stock';
+    return 'In Stock';
+  }
+
+  Color _stockColor(_ProductItem product) {
+    if (product.stock == 0 || product.status == 'Inactive') {
+      return AppColors.red;
+    }
+    if (product.stock <= 10) return AppColors.orange;
+    return AppColors.statusActiveText;
+  }
+
+  String _formatPrice(double value) {
+    final raw = value.round().toString();
+    final buffer = StringBuffer();
+    for (var i = 0; i < raw.length; i++) {
+      final fromEnd = raw.length - i;
+      buffer.write(raw[i]);
+      if (fromEnd > 1 && fromEnd % 3 == 1) buffer.write(',');
+    }
+    return buffer.toString();
   }
 }
 
@@ -767,6 +1009,9 @@ class _ProductItem {
   final double price;
   final int stock;
   final String status;
+  final IconData icon;
+  final Color accent;
+
   const _ProductItem({
     required this.name,
     required this.brand,
@@ -775,10 +1020,11 @@ class _ProductItem {
     required this.price,
     required this.stock,
     required this.status,
+    required this.icon,
+    required this.accent,
   });
 }
 
-// ---------------- Add / Edit Product dialog ----------------
 class _ProductFormDialog extends StatefulWidget {
   final List<String> categories;
   final List<String> brands;
@@ -856,23 +1102,57 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
         price: price,
         stock: stock,
         status: _status,
+        icon: _iconForCategory(_category),
+        accent: _accentForCategory(_category),
       ),
     );
+  }
+
+  IconData _iconForCategory(String category) {
+    switch (category) {
+      case 'Dispenser':
+        return Icons.kitchen_rounded;
+      case 'Accessories':
+        return Icons.inventory_2_rounded;
+      case 'Water Jar':
+        return Icons.inventory_rounded;
+      case 'Sparkling Water':
+        return Icons.bubble_chart_rounded;
+      case 'Flavored Water':
+        return Icons.eco_rounded;
+      default:
+        return Icons.local_drink_rounded;
+    }
+  }
+
+  Color _accentForCategory(String category) {
+    switch (category) {
+      case 'Dispenser':
+        return AppColors.orange;
+      case 'Accessories':
+        return AppColors.teal;
+      case 'Water Jar':
+        return AppColors.blue;
+      case 'Flavored Water':
+        return AppColors.green;
+      default:
+        return AppColors.primary;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: AppColors.background,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      backgroundColor: AppColors.surface,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxHeight: 640),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(22, 20, 14, 16),
+              padding: const EdgeInsets.fromLTRB(20, 18, 12, 14),
               child: Row(
                 children: [
                   Expanded(
@@ -885,29 +1165,17 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
                       ),
                     ),
                   ),
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).pop(),
-                    child: Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceSoft,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.close_rounded,
-                        size: 18,
-                        color: textSecondary,
-                      ),
-                    ),
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close_rounded, color: textSecondary),
                   ),
                 ],
               ),
             ),
-            const Divider(color: AppColors.secondary, height: 1),
+            const Divider(color: AppColors.borderLight, height: 1),
             Flexible(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(22, 20, 22, 6),
+                padding: const EdgeInsets.fromLTRB(20, 18, 20, 6),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -925,27 +1193,27 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
                         errorText: _nameError,
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 14),
                     _fieldLabel('Brand'),
                     _dropdownField(
                       _brand,
                       widget.brands,
                       (v) => setState(() => _brand = v),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 14),
                     _fieldLabel('Category'),
                     _dropdownField(
                       _category,
                       widget.categories,
                       (v) => setState(() => _category = v),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 14),
                     _fieldLabel('HSN Code'),
                     TextField(
                       controller: _hsnController,
                       decoration: _decoration(hint: 'e.g. 2201'),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 14),
                     Row(
                       children: [
                         Expanded(
@@ -959,7 +1227,7 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
                                     const TextInputType.numberWithOptions(
                                       decimal: true,
                                     ),
-                                decoration: _decoration(hint: '₹0.00'),
+                                decoration: _decoration(hint: 'Rs. 0.00'),
                               ),
                             ],
                           ),
@@ -980,35 +1248,45 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 14),
                     _fieldLabel('Status'),
                     _dropdownField(
                       _status,
                       _statuses,
                       (v) => setState(() => _status = v),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
                   ],
                 ),
               ),
             ),
-            const Divider(color: AppColors.secondary, height: 1),
+            const Divider(color: AppColors.borderLight, height: 1),
             Padding(
-              padding: const EdgeInsets.all(18),
+              padding: const EdgeInsets.all(16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   OutlinedButton(
                     onPressed: () => Navigator.of(context).pop(),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: textSecondary,
+                      side: const BorderSide(color: AppColors.border),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
                     child: const Text('Cancel'),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 10),
                   ElevatedButton(
                     onPressed: _submit,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.purple,
+                      backgroundColor: AppColors.primary,
                       foregroundColor: Colors.white,
                       elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                     child: Text(_isEditing ? 'Save Changes' : 'Add Product'),
                   ),
@@ -1041,22 +1319,10 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
       errorText: errorText,
       filled: true,
       fillColor: AppColors.surfaceSoft,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(
-          color: AppColors.secondary.withValues(alpha: 0.24),
-        ),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(
-          color: AppColors.secondary.withValues(alpha: 0.24),
-        ),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: AppColors.purple),
-      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 13, vertical: 13),
+      border: _outlineBorder(AppColors.border),
+      enabledBorder: _outlineBorder(AppColors.border),
+      focusedBorder: _outlineBorder(AppColors.primary),
     );
   }
 
@@ -1066,11 +1332,11 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
     ValueChanged<String> onChanged,
   ) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 13),
       decoration: BoxDecoration(
         color: AppColors.surfaceSoft,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.secondary.withValues(alpha: 0.24)),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.border),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
@@ -1081,8 +1347,8 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
             color: textSecondary,
           ),
           style: const TextStyle(color: textPrimary, fontSize: 14),
-          dropdownColor: AppColors.primary,
-          borderRadius: BorderRadius.circular(14),
+          dropdownColor: AppColors.surface,
+          borderRadius: BorderRadius.circular(8),
           items: options
               .map((o) => DropdownMenuItem(value: o, child: Text(o)))
               .toList(),
@@ -1091,6 +1357,13 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
           },
         ),
       ),
+    );
+  }
+
+  OutlineInputBorder _outlineBorder(Color color) {
+    return OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: BorderSide(color: color),
     );
   }
 }

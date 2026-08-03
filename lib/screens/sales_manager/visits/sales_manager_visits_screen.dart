@@ -73,25 +73,19 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
     if (action == 'Visits') return;
     if (action == 'Dashboard') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const SalesManagerDashboardScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const SalesManagerDashboardScreen()),
       );
       return;
     }
     if (action == 'Customers') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const SalesManagerCustomersScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const SalesManagerCustomersScreen()),
       );
       return;
     }
     if (action == 'Sales Orders') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const SalesManagerOrdersScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const SalesManagerOrdersScreen()),
       );
       return;
     }
@@ -208,8 +202,11 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
                   child: const SizedBox(
                     width: 28,
                     height: 28,
-                    child: Icon(Icons.add_rounded,
-                        color: Colors.white, size: 18),
+                    child: Icon(
+                      Icons.add_rounded,
+                      color: Colors.white,
+                      size: 18,
+                    ),
                   ),
                 ),
               ),
@@ -513,11 +510,13 @@ class _RecordVisitPage extends StatefulWidget {
 class _RecordVisitPageState extends State<_RecordVisitPage> {
   late _VisitCustomer _selectedCustomer;
   String _selectedPurpose = 'Regular Visit';
-  String _selectedOutcome = 'Interested in new offers and\nwill place order next week.';
+  String _selectedOutcome =
+      'Interested in new offers and\nwill place order next week.';
   final TextEditingController _notesController = TextEditingController();
   final TextEditingController _feedbackController = TextEditingController();
-  final TextEditingController _checkoutTimeController =
-      TextEditingController(text: '20 May 2024, 10:45 AM');
+  final TextEditingController _checkoutTimeController = TextEditingController(
+    text: '20 May 2024, 10:45 AM',
+  );
 
   final List<String> _purposes = const [
     'Regular Visit',
@@ -582,10 +581,7 @@ class _RecordVisitPageState extends State<_RecordVisitPage> {
                 ],
               ),
             ),
-            Divider(
-              height: 1,
-              color: AppColors.border.withValues(alpha: 0.75),
-            ),
+            Divider(height: 1, color: AppColors.border.withValues(alpha: 0.75)),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(12, 14, 12, 18),
@@ -779,8 +775,8 @@ class _DropdownCard<T> extends StatelessWidget {
     final displayLabel = label == null
         ? null
         : requiredMark
-            ? '$label *'
-            : label;
+        ? '$label *'
+        : label;
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -882,11 +878,7 @@ class _InfoCard extends StatelessWidget {
   final String value;
   final Widget? trailing;
 
-  const _InfoCard({
-    required this.label,
-    required this.value,
-    this.trailing,
-  });
+  const _InfoCard({required this.label, required this.value, this.trailing});
 
   @override
   Widget build(BuildContext context) {
@@ -923,7 +915,7 @@ class _InfoCard extends StatelessWidget {
               ],
             ),
           ),
-          if (trailing != null) trailing!,
+          ?trailing,
         ],
       ),
     );
@@ -993,8 +985,5 @@ class _VisitCustomer {
   final String name;
   final String location;
 
-  const _VisitCustomer({
-    required this.name,
-    required this.location,
-  });
+  const _VisitCustomer({required this.name, required this.location});
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../constants/app_colors.dart';
 import '../../screens/admin/audit_logs/audit_logs_screen.dart';
+import '../../screens/admin/customers/customers_screen.dart';
 import '../../screens/admin/dashboard/admin_dashboard_screen.dart';
 import '../../screens/admin/inventory/inventory_screen.dart';
 import '../../screens/admin/notifications/notifications_screen.dart';
@@ -43,6 +44,7 @@ class AppDrawer extends StatefulWidget {
     _NavItem('Company Settings', Icons.storefront_outlined),
     _NavItem('Plans', Icons.workspace_premium_outlined),
     _NavItem('Staff', Icons.people_outline_rounded),
+    _NavItem('Customers', Icons.groups_2_outlined),
     _NavItem('Products', Icons.inventory_2_outlined),
     _NavItem('Inventory', Icons.warehouse_outlined),
     _NavItem('Vehicle Stock', Icons.local_shipping_outlined),
@@ -88,9 +90,14 @@ class _AppDrawerState extends State<AppDrawer> {
           MaterialPageRoute(builder: (_) => const AdminSettingsScreen()),
         );
         break;
-      case 'User Management':
+      case 'Staff':
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const AdminUserListScreen()),
+        );
+        break;
+      case 'Customers':
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const CustomersScreen()),
         );
         break;
       case 'Products':
@@ -151,8 +158,7 @@ class _AppDrawerState extends State<AppDrawer> {
 
   Widget _buildNavRow(_NavItem item) {
     final isActive = item.label == widget.activeItem;
-    final isUserManagementActive =
-        item.label == 'User Management' && widget.activeSubItem != null;
+    final isStaffActive = item.label == 'Staff' && widget.activeSubItem != null;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -196,7 +202,7 @@ class _AppDrawerState extends State<AppDrawer> {
                     ),
                   ),
                 ),
-                if (isUserManagementActive)
+                if (isStaffActive)
                   Text(
                     widget.activeSubItem!,
                     style: const TextStyle(

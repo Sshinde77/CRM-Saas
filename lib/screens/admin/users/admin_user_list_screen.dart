@@ -214,7 +214,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       drawer: const AppDrawer(
-        activeItem: 'User Management',
+        activeItem: 'Staff',
         activeSubItem: 'Users',
       ),
       body: SafeArea(
