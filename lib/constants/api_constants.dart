@@ -31,19 +31,15 @@ class ApiEndpoints {
   static const String authMe = '/auth/me';
   static const String authRefresh = '/auth/refresh';
   static const String authLogout = '/auth/logout';
-  static const String plans = '/plans';
+  static const String plansList = '/plans';
+  static const String rolesList = '/roles';
 
-  static const String dashboard = '/dashboard';
-  static const String users = '/users';
-  static const String products = '/products';
-  static const String inventory = '/inventory';
-  static const String invoices = '/invoices';
-  static const String purchases = '/purchases';
-  static const String expenses = '/expenses';
-  static const String deliveries = '/deliveries';
-  static const String reports = '/reports';
-  static const String notifications = '/notifications';
-  static const String companySettings = '/settings/company';
-  static const String adminSettings = '/settings/admin';
-  static const String auditLogs = '/audit-logs';
+  static const String usersList = '/users';
+  static const String usersCreate = '/users';
+  static const String usersDetail = '/users';
+  static const String usersUpdate = '/users';
+
+  static const String plans = plansList;
+  static const String roles = rolesList;
+  static const String users = usersList;
 }

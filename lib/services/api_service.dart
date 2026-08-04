@@ -3,12 +3,14 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../constants/api_constants.dart';
 import '../models/api_response.dart';
 import '../models/auth_models.dart';
 import '../models/app_user.dart';
 import '../models/plan_model.dart';
+import '../models/role_model.dart';
 
 class ApiException implements Exception {
   final int? statusCode;
@@ -26,6 +28,11 @@ class ApiException implements Exception {
 class ApiService {
   static String? _accessToken;
   static String? _refreshToken;
+  static String? _savedRole;
+
+  static const String _prefsAccessTokenKey = 'auth.access_token';
+  static const String _prefsRefreshTokenKey = 'auth.refresh_token';
+  static const String _prefsRoleKey = 'auth.role';
 
   final http.Client _client;
   final String baseUrl;
@@ -79,6 +86,15 @@ class ApiService {
 
     _accessToken = token;
     _refreshToken = refreshToken?.trim();
+    _savedRole = _extractSavedRole(
+      decoded: decoded,
+      fallback: _extractUserRole(decoded),
+    );
+    await _persistAuthState(
+      accessToken: token,
+      refreshToken: refreshToken,
+      role: _savedRole,
+    );
     return AuthSession(
       accessToken: token,
       refreshToken: refreshToken,
@@ -164,10 +180,46 @@ class ApiService {
     return profile;
   }
 
+  Future<TrialStatus> fetchTrialStatus() async {
+    final token = _accessToken;
+    if (token == null || token.trim().isEmpty) {
+      throw const ApiException(message: 'Missing access token.');
+    }
+
+    final response = await _send(
+      method: 'GET',
+      endpoint: ApiEndpoints.authMe,
+      requiresAuth: true,
+    );
+    final decoded = _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid trial status response.',
+    );
+    return TrialStatus.fromAuthMeJson(decoded);
+  }
+
+  Future<AuthMeResponse> fetchAuthMeDetails() async {
+    final token = _accessToken;
+    if (token == null || token.trim().isEmpty) {
+      throw const ApiException(message: 'Missing access token.');
+    }
+
+    final response = await _send(
+      method: 'GET',
+      endpoint: ApiEndpoints.authMe,
+      requiresAuth: true,
+    );
+    final decoded = _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid profile response.',
+    );
+    return AuthMeResponse.fromJson(decoded);
+  }
+
   Future<List<PlanModel>> fetchPlans() async {
     final response = await _send(
       method: 'GET',
-      endpoint: ApiEndpoints.plans,
+      endpoint: ApiEndpoints.plansList,
       requiresAuth: true,
     );
 
@@ -182,10 +234,29 @@ class ApiService {
         .toList();
   }
 
+  Future<List<RoleModel>> fetchRoles() async {
+    final response = await _send(
+      method: 'GET',
+      endpoint: ApiEndpoints.rolesList,
+      requiresAuth: true,
+    );
+
+    final decoded = _tryDecodeBody(response.body.trim());
+    if (decoded is! List) {
+      throw const ApiException(message: 'Invalid roles response.');
+    }
+
+    return decoded
+        .whereType<Map<String, dynamic>>()
+        .map(RoleModel.fromJson)
+        .where((role) => role.id.trim().isNotEmpty && role.name.trim().isNotEmpty)
+        .toList();
+  }
+
   Future<List<AppUser>> fetchUsers() async {
     final response = await _send(
       method: 'GET',
-      endpoint: ApiEndpoints.users,
+      endpoint: ApiEndpoints.usersList,
       requiresAuth: true,
     );
 
@@ -199,6 +270,66 @@ class ApiService {
           (user) => user.name.trim().isNotEmpty || user.email.trim().isNotEmpty,
         )
         .toList();
+  }
+
+  Future<AppUser> fetchUserById(String userId) async {
+    final id = userId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing user id.');
+    }
+
+    final response = await _send(
+      method: 'GET',
+      endpoint: '${ApiEndpoints.usersDetail}/$id',
+      requiresAuth: true,
+    );
+
+    final decoded = _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid user response.',
+    );
+
+    return AppUser.fromJson(decoded);
+  }
+
+  Future<AppUser> createUser({required CreateUserRequest request}) async {
+    final response = await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.usersCreate,
+      requiresAuth: true,
+      body: request.toJson(),
+    );
+
+    final decoded = _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid create user response.',
+    );
+
+    return AppUser.fromJson(decoded);
+  }
+
+  Future<AppUser> updateUser({
+    required String userId,
+    required UpdateUserRequest request,
+  }) async {
+    final id = userId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing user id.');
+    }
+
+    final response = await _send(
+      method: 'PATCH',
+      endpoint: '${ApiEndpoints.usersUpdate}/$id',
+      requiresAuth: true,
+      body: request.toJson(),
+    );
+
+    final decoded = _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid update user response.',
+    );
+
+    return AppUser.fromJson(decoded);
   }
 
   Future<void> logout() async {
@@ -219,17 +350,65 @@ class ApiService {
       },
     );
     _clearTokens();
+    await _clearPersistedAuthState();
   }
 
   static String? get accessToken => _accessToken;
   static String? get refreshToken => _refreshToken;
+  static String? get savedRole => _savedRole;
   static void clearAccessToken() => _clearTokens();
   static void setAccessToken(String? token) => _accessToken = token?.trim();
   static void setRefreshToken(String? token) => _refreshToken = token?.trim();
 
+  static Future<bool> restorePersistedAuthState() async {
+    final prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString(_prefsAccessTokenKey)?.trim();
+    final refreshToken = prefs.getString(_prefsRefreshTokenKey)?.trim();
+    final role = prefs.getString(_prefsRoleKey)?.trim();
+
+    _accessToken = accessToken?.isEmpty == true ? null : accessToken;
+    _refreshToken = refreshToken?.isEmpty == true ? null : refreshToken;
+    _savedRole = role?.isEmpty == true ? null : role;
+    return (_accessToken ?? '').isNotEmpty;
+  }
+
   static void _clearTokens() {
     _accessToken = null;
     _refreshToken = null;
+    _savedRole = null;
+  }
+
+  static Future<void> _persistAuthState({
+    required String accessToken,
+    String? refreshToken,
+    String? role,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final tokenValue = accessToken.trim();
+    if (tokenValue.isEmpty) {
+      await _clearPersistedAuthState();
+      return;
+    }
+
+    await prefs.setString(_prefsAccessTokenKey, tokenValue);
+    if (refreshToken != null && refreshToken.trim().isNotEmpty) {
+      await prefs.setString(_prefsRefreshTokenKey, refreshToken.trim());
+    } else {
+      await prefs.remove(_prefsRefreshTokenKey);
+    }
+
+    if (role != null && role.trim().isNotEmpty) {
+      await prefs.setString(_prefsRoleKey, role.trim());
+    } else {
+      await prefs.remove(_prefsRoleKey);
+    }
+  }
+
+  static Future<void> _clearPersistedAuthState() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_prefsAccessTokenKey);
+    await prefs.remove(_prefsRefreshTokenKey);
+    await prefs.remove(_prefsRoleKey);
   }
 
   static String? _extractToken(Map<String, dynamic> decoded) {
@@ -315,6 +494,41 @@ class ApiService {
     }
 
     return null;
+  }
+
+  static String? _extractUserRole(Map<String, dynamic> decoded) {
+    final candidates = [decoded['user'], decoded['data'], decoded];
+
+    for (final candidate in candidates) {
+      if (candidate is Map<String, dynamic>) {
+        final nestedUser = candidate['user'];
+        if (nestedUser is Map<String, dynamic>) {
+          final role = nestedUser['role']?.toString().trim();
+          if (role != null && role.isNotEmpty) {
+            return role;
+          }
+        }
+
+        final role = candidate['role']?.toString().trim();
+        if (role != null && role.isNotEmpty) {
+          return role;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  static String? _extractSavedRole({
+    required Map<String, dynamic> decoded,
+    String? fallback,
+  }) {
+    final direct = _extractUserRole(decoded);
+    if (direct != null && direct.trim().isNotEmpty) {
+      return direct.trim();
+    }
+    final fallbackValue = fallback?.trim();
+    return fallbackValue == null || fallbackValue.isEmpty ? null : fallbackValue;
   }
 
   CurrentUserProfile? _extractUserProfile(Map<String, dynamic> decoded) {
@@ -496,8 +710,6 @@ class ApiService {
         }
         throw ApiException(message: 'Network request failed: $error');
       }
-
-      attempt++;
     }
 
     throw const ApiException(message: 'API request failed.');

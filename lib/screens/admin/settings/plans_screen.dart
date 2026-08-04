@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../models/auth_models.dart';
 import '../../../models/plan_model.dart';
 import '../../../services/api_service.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
@@ -17,7 +18,7 @@ class _PlansScreenState extends State<PlansScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late final ApiService _apiService;
   late final PageController _pageController;
-  late Future<List<PlanModel>> _plansFuture;
+  late Future<_PlansPageData> _plansFuture;
 
   bool _isMonthly = true;
   int _currentPage = 0;
@@ -27,7 +28,7 @@ class _PlansScreenState extends State<PlansScreen> {
     super.initState();
     _apiService = ApiService();
     _pageController = PageController(viewportFraction: 0.9);
-    _plansFuture = _apiService.fetchPlans();
+    _plansFuture = _loadPlansPageData();
   }
 
   @override
@@ -41,6 +42,18 @@ class _PlansScreenState extends State<PlansScreen> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<_PlansPageData> _loadPlansPageData() async {
+    final results = await Future.wait([
+      _apiService.fetchPlans(),
+      _apiService.fetchAuthMeDetails(),
+    ]);
+
+    return _PlansPageData(
+      plans: results[0] as List<PlanModel>,
+      authMe: results[1] as AuthMeResponse,
+    );
   }
 
   @override
@@ -58,7 +71,7 @@ class _PlansScreenState extends State<PlansScreen> {
               onLeadingTap: () => _scaffoldKey.currentState?.openDrawer(),
             ),
             Expanded(
-              child: FutureBuilder<List<PlanModel>>(
+              child: FutureBuilder<_PlansPageData>(
                 future: _plansFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
@@ -73,12 +86,13 @@ class _PlansScreenState extends State<PlansScreen> {
                     return _buildErrorState(snapshot.error.toString());
                   }
 
-                  final plans = snapshot.data ?? const <PlanModel>[];
+                  final data = snapshot.data;
+                  final plans = data?.plans ?? const <PlanModel>[];
                   if (plans.isEmpty) {
                     return _buildEmptyState();
                   }
 
-                  final currentPlan = _resolveCurrentPlan(plans);
+                  final currentPlan = _resolveCurrentPlan(plans, data?.authMe);
                   final orderedPlans = _sortPlans(plans);
                   if (_currentPage >= orderedPlans.length) {
                     _currentPage = 0;
@@ -89,9 +103,12 @@ class _PlansScreenState extends State<PlansScreen> {
                     padding: const EdgeInsets.fromLTRB(16, 10, 16, 18),
                     child: Column(
                       children: [
-                        _buildHeroSection(),
+                        _buildHeroSection(
+                          selectedPlan: orderedPlans[_currentPage],
+                          topPlan: orderedPlans.first,
+                        ),
                         const SizedBox(height: 12),
-                        _buildCurrentPlanCard(currentPlan),
+                        _buildCurrentPlanCard(currentPlan, data?.authMe),
                         const SizedBox(height: 24),
                         _buildBillingToggle(),
                         const SizedBox(height: 12),
@@ -165,7 +182,31 @@ class _PlansScreenState extends State<PlansScreen> {
     );
   }
 
-  PlanModel _resolveCurrentPlan(List<PlanModel> plans) {
+  PlanModel _resolveCurrentPlan(List<PlanModel> plans, AuthMeResponse? authMe) {
+    final organization = authMe?.organization;
+    final currentPlanId = organization?.planId?.trim();
+    if (currentPlanId != null && currentPlanId.isNotEmpty) {
+      for (final plan in plans) {
+        if (plan.id == currentPlanId) {
+          return plan;
+        }
+      }
+      final apiPlan = organization?.plan;
+      if (apiPlan != null && apiPlan.id.trim().isNotEmpty) {
+        return apiPlan;
+      }
+    }
+
+    if (organization?.plan != null) {
+      final apiPlan = organization!.plan!;
+      for (final plan in plans) {
+        if (plan.id == apiPlan.id) {
+          return plan;
+        }
+      }
+      return apiPlan;
+    }
+
     for (final plan in plans) {
       if (plan.isDefault) {
         return plan;
@@ -197,7 +238,16 @@ class _PlansScreenState extends State<PlansScreen> {
     return _isMonthly ? plan.priceMonthly : plan.priceYearly;
   }
 
-  Widget _buildHeroSection() {
+  Widget _buildHeroSection({
+    required PlanModel selectedPlan,
+    required PlanModel topPlan,
+  }) {
+    final isTopPlanSelected = selectedPlan.id == topPlan.id;
+    final title = isTopPlanSelected ? 'Upgrade Your Plan' : 'Choose Your Plan';
+    final subtitle = isTopPlanSelected
+        ? 'Unlock more capacity, more control, and the strongest plan for growing teams.'
+        : 'Pick the plan that gives your team the room to grow without hitting limits.';
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
@@ -231,10 +281,10 @@ class _PlansScreenState extends State<PlansScreen> {
             ),
           ),
           const SizedBox(height: 0),
-          const Text(
-            'Upgrade Your Plan',
+          Text(
+            title,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
               color: AppColors.textPrimary,
               fontSize: 21,
               fontWeight: FontWeight.w800,
@@ -242,10 +292,10 @@ class _PlansScreenState extends State<PlansScreen> {
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
-            'No commitment. Cancel anytime.',
+          Text(
+            subtitle,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
               color: AppColors.statusActiveText,
               fontSize: 13,
               fontWeight: FontWeight.w600,
@@ -256,10 +306,10 @@ class _PlansScreenState extends State<PlansScreen> {
     );
   }
 
-  Widget _buildCurrentPlanCard(PlanModel currentPlan) {
-    final subtitle = currentPlan.isDefault
-        ? 'Current default plan'
-        : 'Currently selected subscription';
+  Widget _buildCurrentPlanCard(PlanModel currentPlan, AuthMeResponse? authMe) {
+    final organization = authMe?.organization;
+    final subtitle = _currentPlanSubtitle(currentPlan, organization);
+    final statusLabel = _currentPlanStatusLabel(organization);
 
     return Container(
       width: double.infinity,
@@ -323,14 +373,18 @@ class _PlansScreenState extends State<PlansScreen> {
                         color: AppColors.primary,
                         borderRadius: BorderRadius.circular(999),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.circle, color: Colors.white, size: 7),
-                          SizedBox(width: 6),
+                          const Icon(
+                            Icons.circle,
+                            color: Colors.white,
+                            size: 7,
+                          ),
+                          const SizedBox(width: 6),
                           Text(
-                            'Current plan',
-                            style: TextStyle(
+                            statusLabel,
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 10,
                               fontWeight: FontWeight.w700,
@@ -367,6 +421,37 @@ class _PlansScreenState extends State<PlansScreen> {
         ],
       ),
     );
+  }
+
+  String _currentPlanSubtitle(
+    PlanModel currentPlan,
+    AuthMeOrganization? organization,
+  ) {
+    if (organization?.status == 'trial') {
+      final trialDaysLeft = organization?.trialDaysLeft;
+      if (trialDaysLeft != null) {
+        return trialDaysLeft <= 0
+            ? 'Your trial has expired. Upgrade to continue.'
+            : 'Trial active with $trialDaysLeft days left.';
+      }
+      return 'Trial active for this organization.';
+    }
+
+    if (currentPlan.isDefault) {
+      return 'Current default plan';
+    }
+    return 'Currently selected subscription';
+  }
+
+  String _currentPlanStatusLabel(AuthMeOrganization? organization) {
+    if (organization?.status == 'trial') {
+      final trialDaysLeft = organization?.trialDaysLeft;
+      if (trialDaysLeft != null && trialDaysLeft <= 0) {
+        return 'Trial expired';
+      }
+      return 'Trial active';
+    }
+    return 'Current plan';
   }
 
   Widget _buildBillingToggle() {
@@ -475,7 +560,7 @@ class _PlansScreenState extends State<PlansScreen> {
               child: Text(
                 isCurrent
                     ? 'Current Plan'
-                    : (isTopPlan ? 'Top Plan' : plan.name),
+                    : (isTopPlan ? 'Upgrade Your Plan' : plan.name),
                 style: const TextStyle(
                   color: AppColors.statusActiveText,
                   fontSize: 12,
@@ -707,7 +792,7 @@ class _PlansScreenState extends State<PlansScreen> {
             ElevatedButton(
               onPressed: () {
                 setState(() {
-                  _plansFuture = _apiService.fetchPlans();
+                  _plansFuture = _loadPlansPageData();
                 });
               },
               child: const Text('Retry'),
@@ -761,4 +846,11 @@ class _PlansScreenState extends State<PlansScreen> {
     }
     return '$savings';
   }
+}
+
+class _PlansPageData {
+  final List<PlanModel> plans;
+  final AuthMeResponse authMe;
+
+  const _PlansPageData({required this.plans, required this.authMe});
 }

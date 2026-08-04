@@ -4,7 +4,10 @@ class AppUser {
     this.organizationId,
     required this.name,
     required this.email,
+    this.username,
     this.role,
+    this.roleId,
+    this.roleDetail,
     this.phone,
     this.isActive,
     this.createdAt,
@@ -14,7 +17,10 @@ class AppUser {
   final String? organizationId;
   final String name;
   final String email;
+  final String? username;
   final String? role;
+  final String? roleId;
+  final UserRoleDetail? roleDetail;
   final String? phone;
   final bool? isActive;
   final DateTime? createdAt;
@@ -26,10 +32,35 @@ class AppUser {
       name: (json['name'] ?? json['full_name'] ?? json['admin_name'] ?? '')
           .toString(),
       email: (json['email'] ?? '').toString(),
+      username: json['username']?.toString(),
       role: json['role']?.toString(),
+      roleId: json['role_id']?.toString(),
+      roleDetail: json['role_detail'] is Map<String, dynamic>
+          ? UserRoleDetail.fromJson(json['role_detail'] as Map<String, dynamic>)
+          : null,
       phone: json['phone']?.toString(),
       isActive: json['is_active'] as bool?,
       createdAt: DateTime.tryParse(json['created_at']?.toString() ?? ''),
+    );
+  }
+}
+
+class UserRoleDetail {
+  const UserRoleDetail({
+    required this.id,
+    required this.name,
+    required this.isDefault,
+  });
+
+  final String id;
+  final String name;
+  final bool isDefault;
+
+  factory UserRoleDetail.fromJson(Map<String, dynamic> json) {
+    return UserRoleDetail(
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      isDefault: json['is_default'] == true,
     );
   }
 }

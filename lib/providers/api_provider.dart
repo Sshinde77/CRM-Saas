@@ -1,8 +1,10 @@
 import 'package:flutter/widgets.dart';
 
 import '../models/api_response.dart';
+import '../models/app_user.dart';
 import '../models/auth_models.dart';
 import '../services/api_service.dart';
+import '../models/role_model.dart';
 
 class ApiProvider extends ChangeNotifier {
   ApiProvider({ApiService? apiService})
@@ -14,11 +16,13 @@ class ApiProvider extends ChangeNotifier {
   String? _errorMessage;
   AuthSession? _session;
   CurrentUserProfile? _currentUser;
+  List<RoleModel>? _roles;
 
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   AuthSession? get session => _session;
   CurrentUserProfile? get currentUser => _currentUser;
+  List<RoleModel>? get roles => _roles;
   bool get isAuthenticated => (_session?.accessToken ?? '').trim().isNotEmpty;
   ApiService get service => _apiService;
 
@@ -80,6 +84,68 @@ class ApiProvider extends ChangeNotifier {
       _currentUser = profile;
       notifyListeners();
       return profile;
+    } catch (error) {
+      _errorMessage = error.toString();
+      notifyListeners();
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<List<RoleModel>> fetchRoles({bool force = false}) async {
+    if (!force && _roles != null) {
+      return _roles!;
+    }
+
+    _setLoading(true);
+    _errorMessage = null;
+
+    try {
+      final roles = await _apiService.fetchRoles();
+      _roles = roles;
+      notifyListeners();
+      return roles;
+    } catch (error) {
+      _errorMessage = error.toString();
+      notifyListeners();
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<AppUser> fetchUserById(String userId) async {
+    _setLoading(true);
+    _errorMessage = null;
+
+    try {
+      final user = await _apiService.fetchUserById(userId);
+      notifyListeners();
+      return user;
+    } catch (error) {
+      _errorMessage = error.toString();
+      notifyListeners();
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<AppUser> updateUser({
+    required String userId,
+    required UpdateUserRequest request,
+  }) async {
+    _setLoading(true);
+    _errorMessage = null;
+
+    try {
+      final user = await _apiService.updateUser(
+        userId: userId,
+        request: request,
+      );
+      notifyListeners();
+      return user;
     } catch (error) {
       _errorMessage = error.toString();
       notifyListeners();

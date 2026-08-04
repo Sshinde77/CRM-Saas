@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../screens/auth/login_screen.dart';
 import '../screens/admin/reports/reports_screen.dart';
 import '../screens/admin/notifications/notifications_screen.dart';
 import '../screens/admin/audit_logs/audit_logs_screen.dart';
@@ -21,7 +20,6 @@ class AppRouter {
 
   static Map<String, WidgetBuilder> get routes {
     return {
-      AppRoutes.login: (_) => const LoginScreen(),
       AppRoutes.home: (_) => const RoleHomeScreen(),
       AppRoutes.reports: (_) => const ReportsScreen(),
       AppRoutes.notifications: (_) => const NotificationsScreen(),
