@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import '../models/api_response.dart';
+import '../models/customer_model.dart';
 import '../models/app_user.dart';
 import '../models/auth_models.dart';
 import '../services/api_service.dart';
@@ -106,6 +107,109 @@ class ApiProvider extends ChangeNotifier {
       _roles = roles;
       notifyListeners();
       return roles;
+    } catch (error) {
+      _errorMessage = error.toString();
+      notifyListeners();
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<List<AppUser>> fetchAssignableUsers() async {
+    _setLoading(true);
+    _errorMessage = null;
+
+    try {
+      final users = await _apiService.fetchAssignableUsers();
+      notifyListeners();
+      return users;
+    } catch (error) {
+      _errorMessage = error.toString();
+      notifyListeners();
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<List<CustomerModel>> fetchCustomers({
+    String? search,
+    String? category,
+    bool? isActive,
+    String? assignedSalesOfficerId,
+  }) async {
+    _setLoading(true);
+    _errorMessage = null;
+
+    try {
+      final customers = await _apiService.fetchCustomers(
+        search: search,
+        category: category,
+        isActive: isActive,
+        assignedSalesOfficerId: assignedSalesOfficerId,
+      );
+      notifyListeners();
+      return customers;
+    } catch (error) {
+      _errorMessage = error.toString();
+      notifyListeners();
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<CustomerModel> fetchCustomerById(String customerId) async {
+    _setLoading(true);
+    _errorMessage = null;
+
+    try {
+      final customer = await _apiService.fetchCustomerById(customerId);
+      notifyListeners();
+      return customer;
+    } catch (error) {
+      _errorMessage = error.toString();
+      notifyListeners();
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<CustomerModel> createCustomer({
+    required CustomerCreateRequest request,
+  }) async {
+    _setLoading(true);
+    _errorMessage = null;
+
+    try {
+      final customer = await _apiService.createCustomer(request: request);
+      notifyListeners();
+      return customer;
+    } catch (error) {
+      _errorMessage = error.toString();
+      notifyListeners();
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<CustomerModel> updateCustomer({
+    required String customerId,
+    required CustomerUpdateRequest request,
+  }) async {
+    _setLoading(true);
+    _errorMessage = null;
+
+    try {
+      final customer = await _apiService.updateCustomer(
+        customerId: customerId,
+        request: request,
+      );
+      notifyListeners();
+      return customer;
     } catch (error) {
       _errorMessage = error.toString();
       notifyListeners();

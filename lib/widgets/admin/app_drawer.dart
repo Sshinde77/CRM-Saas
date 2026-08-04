@@ -1,10 +1,17 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../constants/app_colors.dart';
+import '../../models/auth_models.dart';
+import '../../models/plan_model.dart';
 import '../../screens/admin/audit_logs/audit_logs_screen.dart';
 import '../../screens/admin/customers/customers_screen.dart';
 import '../../screens/admin/dashboard/admin_dashboard_screen.dart';
+import '../../screens/admin/deliveries/deliveries_screen.dart';
+import '../../screens/admin/expenses/expenses_screen.dart';
 import '../../screens/admin/inventory/inventory_screen.dart';
+import '../../screens/admin/invoices/invoices_screen.dart';
 import '../../screens/admin/notifications/notifications_screen.dart';
 import '../../screens/admin/products/products_screen.dart';
 import '../../screens/admin/purchases/purchases_screen.dart';
@@ -13,16 +20,77 @@ import '../../screens/admin/settings/admin_settings_screen.dart';
 import '../../screens/admin/settings/company_settings_screen.dart';
 import '../../screens/admin/settings/plans_screen.dart';
 import '../../screens/admin/users/admin_user_list_screen.dart';
-import '../../screens/admin/invoices/invoices_screen.dart';
-import '../../screens/admin/deliveries/deliveries_screen.dart';
-import '../../screens/admin/expenses/expenses_screen.dart';
 import '../../screens/admin/vehicles/vehicle_stock_screen.dart';
+import '../../services/api_service.dart';
 
 class _NavItem {
   final String label;
   final IconData icon;
+  final bool enabled;
 
-  const _NavItem(this.label, this.icon);
+  const _NavItem(this.label, this.icon, {this.enabled = true});
+}
+
+class _NavSection {
+  final String title;
+  final List<_NavItem> items;
+
+  const _NavSection(this.title, this.items);
+}
+
+class _DrawerMeta {
+  final AuthMeResponse? authMe;
+  final List<PlanModel> plans;
+
+  const _DrawerMeta({
+    required this.authMe,
+    required this.plans,
+  });
+
+  bool get shouldShowUpgradeCard {
+    final organization = authMe?.organization;
+    final currentPlan = organization?.plan;
+    final currentPlanId = organization?.planId?.trim();
+    if (organization == null || currentPlan == null) {
+      return false;
+    }
+
+    if (currentPlanId == null || currentPlanId.isEmpty) {
+      return false;
+    }
+
+    final matchedCurrentPlan = plans.any((plan) => plan.id == currentPlanId);
+    if (!matchedCurrentPlan) {
+      return false;
+    }
+
+    final topPlan = _topPlan(plans);
+    if (topPlan == null) {
+      return false;
+    }
+
+    return currentPlan.id != topPlan.id;
+  }
+
+  CurrentUserProfile? get user => authMe?.user;
+
+  static PlanModel? _topPlan(List<PlanModel> plans) {
+    if (plans.isEmpty) {
+      return null;
+    }
+
+    final sorted = List<PlanModel>.from(plans);
+    sorted.sort((a, b) {
+      final priceA = math.max(a.priceMonthly, a.priceYearly).toDouble();
+      final priceB = math.max(b.priceMonthly, b.priceYearly).toDouble();
+      final compared = priceB.compareTo(priceA);
+      if (compared != 0) {
+        return compared;
+      }
+      return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+    });
+    return sorted.first;
+  }
 }
 
 /// Shared nav drawer used across every admin screen.
@@ -39,23 +107,38 @@ class AppDrawer extends StatefulWidget {
   static const Color textPrimary = AppColors.textPrimary;
   static const Color textSecondary = AppColors.textSecondary;
 
-  static const List<_NavItem> _navItems = [
-    _NavItem('Dashboard', Icons.dashboard_outlined),
-    _NavItem('Company Settings', Icons.storefront_outlined),
-    _NavItem('Plans', Icons.workspace_premium_outlined),
-    _NavItem('Staff', Icons.people_outline_rounded),
-    _NavItem('Customers', Icons.groups_2_outlined),
-    _NavItem('Products', Icons.inventory_2_outlined),
-    _NavItem('Inventory', Icons.warehouse_outlined),
-    _NavItem('Vehicle Stock', Icons.local_shipping_outlined),
-    _NavItem('Purchases', Icons.inventory_2_outlined),
-    _NavItem('Deliveries', Icons.local_shipping_outlined),
-    _NavItem('Expenses', Icons.receipt_long_outlined),
-    _NavItem('Invoices', Icons.description_outlined),
-    _NavItem('Reports', Icons.bar_chart_outlined),
-    _NavItem('Notifications', Icons.notifications_none_rounded),
-    _NavItem('Audit Logs', Icons.history_rounded),
-    _NavItem('Settings', Icons.settings_outlined),
+  static const List<_NavSection> _sections = [
+    _NavSection('Overview', [
+      _NavItem('Dashboard', Icons.dashboard_outlined),
+    ]),
+    _NavSection('Sales & Catalog', [
+      _NavItem('Customers', Icons.groups_2_outlined),
+      _NavItem('Suppliers', Icons.local_shipping_outlined, enabled: false),
+      _NavItem('Categories', Icons.category_outlined, enabled: false),
+      _NavItem('Products', Icons.inventory_2_outlined),
+    ]),
+    _NavSection('Operations', [
+      _NavItem('Inventory', Icons.warehouse_outlined),
+      _NavItem('Orders', Icons.shopping_cart_outlined, enabled: false),
+      _NavItem('Vehicle Stock', Icons.local_shipping_outlined),
+      _NavItem('Purchases', Icons.inventory_2_outlined),
+      _NavItem('Deliveries', Icons.local_shipping_outlined),
+    ]),
+    _NavSection('Finance', [
+      _NavItem('Invoices', Icons.description_outlined),
+      _NavItem('Expenses', Icons.receipt_long_outlined),
+      _NavItem('Reports', Icons.bar_chart_outlined),
+    ]),
+    _NavSection('Administration', [
+      _NavItem('Company Settings', Icons.storefront_outlined),
+      _NavItem('Plans', Icons.workspace_premium_outlined),
+      _NavItem('Staff', Icons.people_outline_rounded),
+      _NavItem('Roles & Permissions', Icons.admin_panel_settings_outlined, enabled: false),
+      _NavItem('Attendance', Icons.fact_check_outlined, enabled: false),
+      _NavItem('Notifications', Icons.notifications_none_rounded),
+      _NavItem('Audit Logs', Icons.history_rounded),
+      _NavItem('Settings', Icons.settings_outlined),
+    ]),
   ];
 
   @override
@@ -64,8 +147,49 @@ class AppDrawer extends StatefulWidget {
 
 class _AppDrawerState extends State<AppDrawer> {
   static const Color accent = AppDrawer.accent;
+  late final ApiService _apiService;
+  late final Future<_DrawerMeta> _drawerMetaFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _apiService = ApiService();
+    _drawerMetaFuture = _loadDrawerMeta();
+  }
+
+  @override
+  void dispose() {
+    _apiService.close();
+    super.dispose();
+  }
+
+  Future<_DrawerMeta> _loadDrawerMeta() async {
+    AuthMeResponse? authMe;
+    try {
+      authMe = await _apiService.fetchAuthMeDetails();
+    } catch (_) {
+      authMe = null;
+    }
+
+    List<PlanModel> plans = const [];
+    try {
+      plans = await _apiService.fetchPlans();
+    } catch (_) {
+      plans = const [];
+    }
+
+    return _DrawerMeta(authMe: authMe, plans: plans);
+  }
 
   void _handleTap(_NavItem item) {
+    if (!item.enabled) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${item.label} is coming soon.')),
+      );
+      return;
+    }
+
     Navigator.of(context).pop();
     if (item.label == widget.activeItem) return;
 
@@ -151,7 +275,6 @@ class _AppDrawerState extends State<AppDrawer> {
         );
         break;
       default:
-        // TODO: wire up the remaining nav items to their screens.
         break;
     }
   }
@@ -215,6 +338,202 @@ class _AppDrawerState extends State<AppDrawer> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildSection(_NavSection section) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
+            child: Text(
+              section.title.toUpperCase(),
+              style: const TextStyle(
+                color: Color(0xFF9AA0B1),
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.1,
+              ),
+            ),
+          ),
+          ...section.items.map(_buildNavRow),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUpgradeCard(_DrawerMeta meta) {
+    if (!meta.shouldShowUpgradeCard) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0D3B07),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.16),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.auto_awesome_rounded,
+                  color: Colors.white,
+                  size: 18,
+                ),
+              ),
+              const SizedBox(width: 10),
+              const Expanded(
+                child: Text(
+                  'Upgrade Pro',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          const Text(
+            'Higher productivity with better organization',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              height: 1.35,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (_) => const PlansScreen()),
+                );
+              },
+              icon: const Icon(Icons.workspace_premium_outlined, size: 18),
+              label: const Text('Upgrade'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: AppColors.primary,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                textStyle: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomArea(_DrawerMeta meta) {
+    final user = meta.user;
+    final organization = meta.authMe?.organization;
+    final displayName =
+        user?.name.trim().isNotEmpty == true ? user!.name.trim() : 'Admin';
+    final email = user?.email?.trim().isNotEmpty == true
+        ? user!.email!.trim()
+        : 'admin@demo.com';
+    final initials = _initials(displayName);
+    final planLabel = organization?.plan?.name ?? 'Plan';
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  initials,
+                  style: const TextStyle(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      displayName,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      email,
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
+                      ),
+                    ),
+                    if (planLabel.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        planLabel,
+                        style: const TextStyle(
+                          color: AppColors.primary,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          _buildUpgradeCard(meta),
+        ],
       ),
     );
   }
@@ -295,67 +614,43 @@ class _AppDrawerState extends State<AppDrawer> {
             ),
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 10,
-                  horizontal: 10,
-                ),
-                children: AppDrawer._navItems.map(_buildNavRow).toList(),
+                padding: const EdgeInsets.fromLTRB(10, 10, 10, 12),
+                children: AppDrawer._sections.map(_buildSection).toList(),
               ),
             ),
             Divider(
               color: AppDrawer.textPrimary.withValues(alpha: 0.08),
               height: 1,
             ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Container(
-                    width: 38,
-                    height: 38,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppDrawer.accent.withValues(alpha: 0.14),
-                    ),
-                    alignment: Alignment.center,
-                    child: const Text(
-                      'AS',
-                      style: TextStyle(
-                        color: accent,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Anita Sharma',
-                          style: TextStyle(
-                            color: AppDrawer.textPrimary,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        Text(
-                          'admin@demo.com',
-                          style: TextStyle(
-                            color: AppDrawer.textSecondary,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+            FutureBuilder<_DrawerMeta>(
+              future: _drawerMetaFuture,
+              builder: (context, snapshot) {
+                final meta = snapshot.data ??
+                    const _DrawerMeta(authMe: null, plans: []);
+                return _buildBottomArea(meta);
+              },
             ),
           ],
         ),
       ),
     );
+  }
+
+  String _initials(String value) {
+    final parts = value
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((part) => part.isNotEmpty)
+        .toList();
+    if (parts.isEmpty) {
+      return 'AD';
+    }
+    if (parts.length == 1) {
+      final text = parts.first;
+      return text.length >= 2
+          ? text.substring(0, 2).toUpperCase()
+          : text.toUpperCase();
+    }
+    return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
   }
 }

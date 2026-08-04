@@ -139,7 +139,6 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
   Future<void> _changeStatus(AppUser user) async {
     final isCurrentlyActive = user.isActive == true;
     final nextIsActive = !isCurrentlyActive;
-    final targetStatus = nextIsActive ? 'active' : 'inactive';
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
@@ -359,33 +358,6 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(message)));
-  }
-
-  Widget _detailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 100,
-            child: Text(
-              label,
-              style: const TextStyle(color: textSecondary, fontSize: 13),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(
-                color: textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   @override

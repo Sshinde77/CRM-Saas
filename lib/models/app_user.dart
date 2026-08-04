@@ -6,6 +6,7 @@ class AppUser {
     required this.email,
     this.username,
     this.role,
+    this.systemRole,
     this.roleId,
     this.roleDetail,
     this.phone,
@@ -19,6 +20,7 @@ class AppUser {
   final String email;
   final String? username;
   final String? role;
+  final String? systemRole;
   final String? roleId;
   final UserRoleDetail? roleDetail;
   final String? phone;
@@ -34,6 +36,7 @@ class AppUser {
       email: (json['email'] ?? '').toString(),
       username: json['username']?.toString(),
       role: json['role']?.toString(),
+      systemRole: json['system_role']?.toString(),
       roleId: json['role_id']?.toString(),
       roleDetail: json['role_detail'] is Map<String, dynamic>
           ? UserRoleDetail.fromJson(json['role_detail'] as Map<String, dynamic>)

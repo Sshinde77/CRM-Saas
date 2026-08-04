@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../constants/api_constants.dart';
 import '../models/api_response.dart';
+import '../models/customer_model.dart';
 import '../models/auth_models.dart';
 import '../models/app_user.dart';
 import '../models/plan_model.dart';
@@ -253,6 +254,113 @@ class ApiService {
           (role) => role.id.trim().isNotEmpty && role.name.trim().isNotEmpty,
         )
         .toList();
+  }
+
+  Future<List<AppUser>> fetchAssignableUsers() async {
+    final users = await fetchUsers();
+    return users
+        .where((user) {
+          final role = (user.role ?? '').trim().toLowerCase();
+          final systemRole = (user.systemRole ?? '').trim().toLowerCase();
+          final roleName = user.roleDetail?.name.trim().toLowerCase();
+          return role == 'sales_officer' ||
+              systemRole == 'staff' ||
+              roleName == 'sales officer' ||
+              roleName == 'staff';
+        })
+        .toList();
+  }
+
+  Future<List<CustomerModel>> fetchCustomers({
+    String? search,
+    String? category,
+    bool? isActive,
+    String? assignedSalesOfficerId,
+  }) async {
+    final query = CustomerListQuery(
+      search: search,
+      category: category,
+      isActive: isActive,
+      assignedSalesOfficerId: assignedSalesOfficerId,
+    ).toQueryParameters();
+
+    final response = await _send(
+      method: 'GET',
+      endpoint: ApiEndpoints.customersList,
+      requiresAuth: true,
+      queryParameters: query.isEmpty ? null : query,
+    );
+
+    final decoded = _tryDecodeBody(response.body.trim());
+    final rawCustomers = _extractCustomersList(decoded);
+
+    return rawCustomers
+        .whereType<Map<String, dynamic>>()
+        .map(CustomerModel.fromJson)
+        .where((customer) => customer.name.trim().isNotEmpty)
+        .toList();
+  }
+
+  Future<CustomerModel> fetchCustomerById(String customerId) async {
+    final id = customerId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing customer id.');
+    }
+
+    final response = await _send(
+      method: 'GET',
+      endpoint: ApiEndpoints.customersDetail(id),
+      requiresAuth: true,
+    );
+
+    final decoded = _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid customer response.',
+    );
+
+    return CustomerModel.fromJson(decoded);
+  }
+
+  Future<CustomerModel> createCustomer({
+    required CustomerCreateRequest request,
+  }) async {
+    final response = await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.customersCreate,
+      requiresAuth: true,
+      body: request.toJson(),
+    );
+
+    final decoded = _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid customer create response.',
+    );
+
+    return CustomerModel.fromJson(decoded);
+  }
+
+  Future<CustomerModel> updateCustomer({
+    required String customerId,
+    required CustomerUpdateRequest request,
+  }) async {
+    final id = customerId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing customer id.');
+    }
+
+    final response = await _send(
+      method: 'PATCH',
+      endpoint: ApiEndpoints.customersUpdate(id),
+      requiresAuth: true,
+      body: request.toJson(),
+    );
+
+    final decoded = _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid customer update response.',
+    );
+
+    return CustomerModel.fromJson(decoded);
   }
 
   Future<List<AppUser>> fetchUsers() async {
@@ -647,6 +755,28 @@ class ApiService {
     throw const ApiException(message: 'Invalid users response.');
   }
 
+  List<dynamic> _extractCustomersList(dynamic decoded) {
+    if (decoded is List) {
+      return decoded;
+    }
+
+    if (decoded is Map<String, dynamic>) {
+      final candidates = [
+        decoded['customers'],
+        decoded['data'],
+        decoded['results'],
+        decoded['items'],
+      ];
+      for (final candidate in candidates) {
+        if (candidate is List) {
+          return candidate;
+        }
+      }
+    }
+
+    throw const ApiException(message: 'Invalid customers response.');
+  }
+
   Map<String, dynamic> _requireDecodedMap(
     String body, {
     required String fallbackMessage,
@@ -675,10 +805,15 @@ class ApiService {
     required String endpoint,
     bool requiresAuth = false,
     Map<String, dynamic>? body,
+    Map<String, String>? queryParameters,
     Duration? timeout,
     bool retryOnTimeout = false,
   }) async {
-    final uri = Uri.parse('$baseUrl$endpoint');
+    final uri = Uri.parse('$baseUrl$endpoint').replace(
+      queryParameters: queryParameters == null || queryParameters.isEmpty
+          ? null
+          : queryParameters,
+    );
     final encodedBody = body == null ? null : jsonEncode(body);
 
     final attempts = retryOnTimeout ? 2 : 1;

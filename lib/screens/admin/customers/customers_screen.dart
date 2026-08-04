@@ -1,6 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../models/customer_model.dart';
+import '../../../providers/api_provider.dart';
+import 'add_customer_screen.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
 
@@ -15,57 +20,75 @@ class _CustomersScreenState extends State<CustomersScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
 
+  late ApiProvider _apiProvider;
+  Timer? _searchDebounce;
+
+  bool _providerReady = false;
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  String _search = '';
+  String? _category;
+  bool? _isActive;
+  String? _assignedSalesOfficerId;
+
+  List<CustomerModel> _customers = const [];
+
   static const Color textPrimary = AppColors.textPrimary;
   static const Color textSecondary = AppColors.textSecondary;
 
-  String _query = '';
-
-  final List<_CustomerItem> _customers = const [
-    _CustomerItem(
-      name: 'Rahul Sharma',
-      phone: '9876543210',
-      salesOfficer: 'Amit Patil',
-      creditLimit: 100000,
-      outstanding: 35500,
-      isActive: true,
-      avatarAsset: 'assets/avatar1.png',
-    ),
-    _CustomerItem(
-      name: 'Priya Mehta',
-      phone: '9123456780',
-      salesOfficer: 'Neha Gupta',
-      creditLimit: 75000,
-      outstanding: 18750,
-      isActive: true,
-      avatarAsset: 'assets/avatar2.png',
-    ),
-    _CustomerItem(
-      name: 'Vikram Singh',
-      phone: '9988776655',
-      salesOfficer: 'Amit Patil',
-      creditLimit: 50000,
-      outstanding: 7200,
-      isActive: false,
-      avatarAsset: 'assets/avatar3.png',
-    ),
-  ];
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_providerReady) return;
+    _apiProvider = ApiProviderScope.of(context);
+    _providerReady = true;
+    _loadCustomers();
+  }
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
 
-  List<_CustomerItem> get _filteredCustomers {
-    final query = _query.trim().toLowerCase();
-    if (query.isEmpty) return _customers;
+  Future<void> _loadCustomers() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
-    return _customers.where((customer) {
-      return customer.name.toLowerCase().contains(query) ||
-          customer.phone.toLowerCase().contains(query) ||
-          customer.salesOfficer.toLowerCase().contains(query) ||
-          customer.statusLabel.toLowerCase().contains(query);
-    }).toList();
+    try {
+      final customers = await _apiProvider.fetchCustomers(
+        search: _search,
+        category: _category,
+        isActive: _isActive,
+        assignedSalesOfficerId: _assignedSalesOfficerId,
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _customers = customers;
+        _isLoading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _customers = const [];
+        _isLoading = false;
+        _errorMessage = error.toString();
+      });
+    }
+  }
+
+  void _scheduleSearchReload(String value) {
+    _search = value.trim();
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 350), () {
+      if (!mounted) return;
+      _loadCustomers();
+    });
   }
 
   void _showMessage(String message) {
@@ -74,7 +97,159 @@ class _CustomersScreenState extends State<CustomersScreen> {
       ..showSnackBar(SnackBar(content: Text(message)));
   }
 
-  void _showCustomerDetails(_CustomerItem customer) {
+  Future<void> _openFilterSheet() async {
+    final categoryController = TextEditingController(text: _category ?? '');
+    final assignedSalesOfficerController = TextEditingController(
+      text: _assignedSalesOfficerId ?? '',
+    );
+    bool? selectedIsActive = _isActive;
+
+    final result = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+                left: 18,
+                right: 18,
+                top: 18,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        const Expanded(
+                          child: Text(
+                            'Customer Filters',
+                            style: TextStyle(
+                              color: textPrimary,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.of(sheetContext).pop(false),
+                          icon: const Icon(Icons.close_rounded),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    _filterField(
+                      label: 'Category',
+                      hint: 'category',
+                      controller: categoryController,
+                    ),
+                    const SizedBox(height: 14),
+                    _filterField(
+                      label: 'Assigned Sales Officer ID',
+                      hint: 'assigned_sales_officer_id',
+                      controller: assignedSalesOfficerController,
+                    ),
+                    const SizedBox(height: 14),
+                    DropdownButtonFormField<bool?>(
+                      key: ValueKey<bool?>(selectedIsActive),
+                      initialValue: selectedIsActive,
+                      items: const [
+                        DropdownMenuItem<bool?>(
+                          value: null,
+                          child: Text('All Status'),
+                        ),
+                        DropdownMenuItem<bool?>(
+                          value: true,
+                          child: Text('Active'),
+                        ),
+                        DropdownMenuItem<bool?>(
+                          value: false,
+                          child: Text('Inactive'),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        setSheetState(() => selectedIsActive = value);
+                      },
+                      decoration: _inputDecoration('Status', 'is_active'),
+                    ),
+                    const SizedBox(height: 18),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () {
+                              setSheetState(() {
+                                categoryController.clear();
+                                assignedSalesOfficerController.clear();
+                                selectedIsActive = null;
+                              });
+                            },
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.red,
+                              side: const BorderSide(color: AppColors.red),
+                              padding: const EdgeInsets.symmetric(vertical: 13),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: const Text('Clear'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.of(sheetContext).pop(true);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(vertical: 13),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: const Text('Apply'),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    if (result != true || !mounted) {
+      return;
+    }
+
+    setState(() {
+      _category = categoryController.text.trim().isEmpty
+          ? null
+          : categoryController.text.trim();
+      _assignedSalesOfficerId = assignedSalesOfficerController.text.trim().isEmpty
+          ? null
+          : assignedSalesOfficerController.text.trim();
+      _isActive = selectedIsActive;
+    });
+
+    await _loadCustomers();
+  }
+
+  void _showCustomerDetails(CustomerModel customer) {
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: AppColors.surface,
@@ -90,7 +265,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
             children: [
               Row(
                 children: [
-                  _avatar(customer, 58),
+                  _avatar(customer.initials, 58),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
@@ -106,8 +281,16 @@ class _CustomersScreenState extends State<CustomersScreen> {
                 ],
               ),
               const SizedBox(height: 18),
-              _detailRow('Phone', customer.phone),
-              _detailRow('Sales Officer', customer.salesOfficer),
+              _detailRow('Business', customer.businessName ?? '--'),
+              _detailRow('Category', customer.category ?? '--'),
+              _detailRow('Phone', customer.phone ?? '--'),
+              _detailRow('Email', customer.email ?? '--'),
+              _detailRow(
+                'Sales Officer',
+                customer.assignedSalesOfficerName ??
+                    customer.assignedSalesOfficerId ??
+                    '--',
+              ),
               _detailRow('Credit Limit', _formatCurrency(customer.creditLimit)),
               _detailRow('Outstanding', _formatCurrency(customer.outstanding)),
             ],
@@ -121,6 +304,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
             width: 120,
@@ -146,8 +330,6 @@ class _CustomersScreenState extends State<CustomersScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final customers = _filteredCustomers;
-
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
@@ -161,45 +343,62 @@ class _CustomersScreenState extends State<CustomersScreen> {
               onLeadingTap: () => _scaffoldKey.currentState?.openDrawer(),
             ),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(14, 16, 14, 22),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _titleRow(),
-                    const SizedBox(height: 14),
-                    _searchRow(),
-                    const SizedBox(height: 14),
-                    if (customers.isEmpty)
-                      _emptyState()
-                    else
-                      ...customers.map(
-                        (customer) => Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: _customerCard(customer),
-                        ),
-                      ),
-                    const SizedBox(height: 8),
-                    Text.rich(
-                      TextSpan(
-                        text: 'Total Customers: ',
-                        children: [
-                          TextSpan(
-                            text: '${customers.length}',
-                            style: const TextStyle(
+              child: RefreshIndicator(
+                onRefresh: _loadCustomers,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(14, 16, 14, 22),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _titleRow(),
+                      const SizedBox(height: 14),
+                      _searchRow(),
+                      const SizedBox(height: 12),
+                      _filterChips(),
+                      const SizedBox(height: 14),
+                      if (_isLoading)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 80),
+                          child: Center(
+                            child: CircularProgressIndicator(
                               color: AppColors.primary,
-                              fontWeight: FontWeight.w900,
                             ),
                           ),
-                        ],
+                        )
+                      else if (_errorMessage != null)
+                        _errorState(_errorMessage!)
+                      else if (_customers.isEmpty)
+                        _emptyState()
+                      else
+                        ..._customers.map(
+                          (customer) => Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: _customerCard(customer),
+                          ),
+                        ),
+                      const SizedBox(height: 8),
+                      Text.rich(
+                        TextSpan(
+                          text: 'Total Customers: ',
+                          children: [
+                            TextSpan(
+                              text: '${_customers.length}',
+                              style: const TextStyle(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ],
+                        ),
+                        style: const TextStyle(
+                          color: textPrimary,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                      style: const TextStyle(
-                        color: textPrimary,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -226,7 +425,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
         ),
         const SizedBox(width: 10),
         ElevatedButton.icon(
-          onPressed: () => _showMessage('Add customer is not connected yet.'),
+          onPressed: _openAddCustomerScreen,
           icon: const Icon(Icons.add_rounded, size: 18),
           label: const Text('Add Customer'),
           style: ElevatedButton.styleFrom(
@@ -257,14 +456,14 @@ class _CustomersScreenState extends State<CustomersScreen> {
             height: 42,
             child: TextField(
               controller: _searchController,
-              onChanged: (value) => setState(() => _query = value),
+              onChanged: _scheduleSearchReload,
               style: const TextStyle(
                 color: textPrimary,
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),
               decoration: InputDecoration(
-                hintText: 'Search customers...',
+                hintText: 'Search name, business, phone, email...',
                 hintStyle: const TextStyle(
                   color: textSecondary,
                   fontSize: 13,
@@ -299,8 +498,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
         Tooltip(
           message: 'Filter customers',
           child: InkWell(
-            onTap: () =>
-                _showMessage('Customer filters are not connected yet.'),
+            onTap: _openFilterSheet,
             borderRadius: BorderRadius.circular(12),
             child: Container(
               width: 42,
@@ -323,7 +521,65 @@ class _CustomersScreenState extends State<CustomersScreen> {
     );
   }
 
-  Widget _customerCard(_CustomerItem customer) {
+  Widget _filterChips() {
+    final chips = <Widget>[];
+
+    if (_category != null && _category!.isNotEmpty) {
+      chips.add(_filterChip('Category: $_category'));
+    }
+    if (_isActive != null) {
+      chips.add(_filterChip('Status: ${_isActive == true ? 'Active' : 'Inactive'}'));
+    }
+    if (_assignedSalesOfficerId != null &&
+        _assignedSalesOfficerId!.isNotEmpty) {
+      chips.add(_filterChip('Sales Officer: $_assignedSalesOfficerId'));
+    }
+
+    if (chips.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        ...chips,
+        ActionChip(
+          label: const Text('Clear filters'),
+          onPressed: () {
+            setState(() {
+              _category = null;
+              _isActive = null;
+              _assignedSalesOfficerId = null;
+              _search = '';
+              _searchController.clear();
+            });
+            _loadCustomers();
+          },
+          backgroundColor: const Color(0xFFF4F6F8),
+        ),
+      ],
+    );
+  }
+
+  Widget _filterChip(String label) {
+    return Chip(
+      label: Text(
+        label,
+        style: const TextStyle(
+          color: AppColors.textPrimary,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      backgroundColor: AppColors.surfaceSoft,
+      side: BorderSide(color: AppColors.borderLight),
+    );
+  }
+
+  Widget _customerCard(CustomerModel customer) {
+    final statusActive = customer.isActive != false;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(10),
@@ -346,7 +602,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
           return Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _avatar(customer, compact ? 52 : 60),
+              _avatar(customer.initials, compact ? 52 : 60),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
@@ -372,12 +628,36 @@ class _CustomersScreenState extends State<CustomersScreen> {
                         _statusChip(customer),
                       ],
                     ),
+                    const SizedBox(height: 4),
+                    if (customer.businessName != null)
+                      Text(
+                        customer.businessName!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: textSecondary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     const SizedBox(height: 8),
                     _infoPairRow(
                       leftIcon: Icons.phone_outlined,
-                      leftText: customer.phone,
-                      rightIcon: Icons.person_outline_rounded,
-                      rightText: 'Sales Officer: ${customer.salesOfficer}',
+                      leftText: customer.phone ?? '--',
+                      rightIcon: Icons.business_outlined,
+                      rightText: customer.category ?? 'Category --',
+                    ),
+                    const SizedBox(height: 7),
+                    _infoPairRow(
+                      leftIcon: Icons.person_outline_rounded,
+                      leftText: customer.assignedSalesOfficerName ??
+                          customer.assignedSalesOfficerId ??
+                          'Sales officer --',
+                      rightIcon: Icons.circle_rounded,
+                      rightText: statusActive ? 'Active' : 'Inactive',
+                      rightIconColor: statusActive
+                          ? AppColors.statusActiveText
+                          : AppColors.red,
                     ),
                     const SizedBox(height: 7),
                     _infoPairRow(
@@ -402,6 +682,31 @@ class _CustomersScreenState extends State<CustomersScreen> {
         },
       ),
     );
+  }
+
+  Future<void> _openAddCustomerScreen() async {
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const AddCustomerScreen()),
+    );
+
+    if (result != null && mounted) {
+      await _loadCustomers();
+    }
+  }
+
+  Future<void> _openEditCustomerScreen(CustomerModel customer) async {
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => AddCustomerScreen(
+          customerId: customer.id,
+          existingCustomer: customer,
+        ),
+      ),
+    );
+
+    if (result != null && mounted) {
+      await _loadCustomers();
+    }
   }
 
   Widget _infoPairRow({
@@ -452,15 +757,15 @@ class _CustomersScreenState extends State<CustomersScreen> {
     );
   }
 
-  Widget _actionRow(_CustomerItem customer) {
+  Widget _actionRow(CustomerModel customer) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         _actionButton(
-          icon: Icons.visibility_rounded,
-          label: 'View',
+          icon: Icons.person_search_outlined,
+          label: 'View Details',
           color: AppColors.primary,
-          backgroundColor: AppColors.statusActiveBg,
+          backgroundColor: const Color(0xFFF3F5F8),
           onTap: () => _showCustomerDetails(customer),
         ),
         const SizedBox(width: 6),
@@ -469,7 +774,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
           label: 'Edit',
           color: textPrimary,
           backgroundColor: const Color(0xFFF3F5F8),
-          onTap: () => _showMessage('Edit customer is not connected yet.'),
+          onTap: () => _openEditCustomerScreen(customer),
         ),
         const SizedBox(width: 6),
         _actionButton(
@@ -483,7 +788,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
     );
   }
 
-  Widget _avatar(_CustomerItem customer, double size) {
+  Widget _avatar(String initials, double size) {
     return Container(
       width: size,
       height: size,
@@ -492,29 +797,21 @@ class _CustomersScreenState extends State<CustomersScreen> {
         shape: BoxShape.circle,
         border: Border.all(color: AppColors.borderLight),
       ),
-      clipBehavior: Clip.antiAlias,
-      child: Image.asset(
-        customer.avatarAsset,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return Center(
-            child: Text(
-              customer.initials,
-              style: TextStyle(
-                color: AppColors.primary,
-                fontWeight: FontWeight.w900,
-                fontSize: size * 0.24,
-                letterSpacing: 0,
-              ),
-            ),
-          );
-        },
+      alignment: Alignment.center,
+      child: Text(
+        initials,
+        style: TextStyle(
+          color: AppColors.primary,
+          fontWeight: FontWeight.w900,
+          fontSize: size * 0.24,
+          letterSpacing: 0,
+        ),
       ),
     );
   }
 
-  Widget _statusChip(_CustomerItem customer) {
-    final active = customer.isActive;
+  Widget _statusChip(CustomerModel customer) {
+    final active = customer.isActive != false;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
@@ -576,6 +873,44 @@ class _CustomersScreenState extends State<CustomersScreen> {
     );
   }
 
+  Widget _errorState(String message) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 40),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.cloud_off_rounded,
+              color: AppColors.textSecondary,
+              size: 42,
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Could not load customers',
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loadCustomers,
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _emptyState() {
     return const Padding(
       padding: EdgeInsets.symmetric(vertical: 30),
@@ -588,6 +923,58 @@ class _CustomersScreenState extends State<CustomersScreen> {
     );
   }
 
+  Widget _filterField({
+    required String label,
+    required String hint,
+    required TextEditingController controller,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            color: textPrimary,
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          style: const TextStyle(color: textPrimary),
+          decoration: _inputDecoration(label, hint),
+        ),
+      ],
+    );
+  }
+
+  InputDecoration _inputDecoration(String label, String hint) {
+    return InputDecoration(
+      hintText: hint,
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 13,
+      ),
+      labelText: label,
+      labelStyle: const TextStyle(color: AppColors.textSecondary),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: AppColors.borderStrong),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: AppColors.borderStrong),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: AppColors.primary),
+      ),
+    );
+  }
+
   OutlineInputBorder _outlineBorder(Color color) {
     return OutlineInputBorder(
       borderRadius: BorderRadius.circular(14),
@@ -595,7 +982,8 @@ class _CustomersScreenState extends State<CustomersScreen> {
     );
   }
 
-  String _formatCurrency(int value) {
+  String _formatCurrency(int? value) {
+    if (value == null) return '--';
     final raw = value.toString();
     final buffer = StringBuffer();
     for (var i = 0; i < raw.length; i++) {
@@ -603,37 +991,6 @@ class _CustomersScreenState extends State<CustomersScreen> {
       buffer.write(raw[i]);
       if (fromEnd > 1 && fromEnd % 3 == 1) buffer.write(',');
     }
-    return '₹$buffer';
-  }
-}
-
-class _CustomerItem {
-  final String name;
-  final String phone;
-  final String salesOfficer;
-  final int creditLimit;
-  final int outstanding;
-  final bool isActive;
-  final String avatarAsset;
-
-  const _CustomerItem({
-    required this.name,
-    required this.phone,
-    required this.salesOfficer,
-    required this.creditLimit,
-    required this.outstanding,
-    required this.isActive,
-    required this.avatarAsset,
-  });
-
-  String get statusLabel => isActive ? 'Active' : 'Inactive';
-
-  String get initials {
-    return name
-        .split(' ')
-        .where((part) => part.isNotEmpty)
-        .take(2)
-        .map((part) => part[0].toUpperCase())
-        .join();
+    return 'Rs. $buffer';
   }
 }
