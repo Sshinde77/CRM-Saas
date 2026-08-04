@@ -299,7 +299,8 @@ class _CustomersScreenState extends State<CustomersScreen> {
         Tooltip(
           message: 'Filter customers',
           child: InkWell(
-            onTap: () => _showMessage('Customer filters are not connected yet.'),
+            onTap: () =>
+                _showMessage('Customer filters are not connected yet.'),
             borderRadius: BorderRadius.circular(12),
             child: Container(
               width: 42,
@@ -425,7 +426,11 @@ class _CustomersScreenState extends State<CustomersScreen> {
     );
   }
 
-  Widget _infoLine(IconData icon, String text, {Color iconColor = textPrimary}) {
+  Widget _infoLine(
+    IconData icon,
+    String text, {
+    Color iconColor = textPrimary,
+  }) {
     return Row(
       children: [
         Icon(icon, size: 15, color: iconColor),

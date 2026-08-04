@@ -249,7 +249,9 @@ class ApiService {
     return decoded
         .whereType<Map<String, dynamic>>()
         .map(RoleModel.fromJson)
-        .where((role) => role.id.trim().isNotEmpty && role.name.trim().isNotEmpty)
+        .where(
+          (role) => role.id.trim().isNotEmpty && role.name.trim().isNotEmpty,
+        )
         .toList();
   }
 
@@ -280,7 +282,7 @@ class ApiService {
 
     final response = await _send(
       method: 'GET',
-      endpoint: '${ApiEndpoints.usersDetail}/$id',
+      endpoint: ApiEndpoints.usersDetail(id),
       requiresAuth: true,
     );
 
@@ -319,7 +321,7 @@ class ApiService {
 
     final response = await _send(
       method: 'PATCH',
-      endpoint: '${ApiEndpoints.usersUpdate}/$id',
+      endpoint: ApiEndpoints.usersUpdate(id),
       requiresAuth: true,
       body: request.toJson(),
     );
@@ -330,6 +332,57 @@ class ApiService {
     );
 
     return AppUser.fromJson(decoded);
+  }
+
+  Future<AppUser> updateUserStatus({
+    required String userId,
+    required UpdateUserStatusRequest request,
+  }) async {
+    final id = userId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing user id.');
+    }
+
+    final response = await _send(
+      method: 'PATCH',
+      endpoint: ApiEndpoints.usersStatus(id),
+      requiresAuth: true,
+      body: request.toJson(),
+    );
+
+    final decoded = _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid status update response.',
+    );
+
+    return AppUser.fromJson(decoded);
+  }
+
+  Future<void> resetUserPassword({
+    required String userId,
+    required ResetUserPasswordRequest request,
+  }) async {
+    final id = userId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing user id.');
+    }
+
+    final response = await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.usersResetPassword(id),
+      requiresAuth: true,
+      body: request.toJson(),
+    );
+
+    final body = response.body.trim();
+    if (body.isEmpty) {
+      return;
+    }
+
+    final decoded = _tryDecodeBody(body);
+    if (decoded is Map<String, dynamic>) {
+      return;
+    }
   }
 
   Future<void> logout() async {
@@ -528,7 +581,9 @@ class ApiService {
       return direct.trim();
     }
     final fallbackValue = fallback?.trim();
-    return fallbackValue == null || fallbackValue.isEmpty ? null : fallbackValue;
+    return fallbackValue == null || fallbackValue.isEmpty
+        ? null
+        : fallbackValue;
   }
 
   CurrentUserProfile? _extractUserProfile(Map<String, dynamic> decoded) {

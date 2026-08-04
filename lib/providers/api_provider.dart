@@ -155,6 +155,48 @@ class ApiProvider extends ChangeNotifier {
     }
   }
 
+  Future<AppUser> updateUserStatus({
+    required String userId,
+    required UpdateUserStatusRequest request,
+  }) async {
+    _setLoading(true);
+    _errorMessage = null;
+
+    try {
+      final user = await _apiService.updateUserStatus(
+        userId: userId,
+        request: request,
+      );
+      notifyListeners();
+      return user;
+    } catch (error) {
+      _errorMessage = error.toString();
+      notifyListeners();
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<void> resetUserPassword({
+    required String userId,
+    required ResetUserPasswordRequest request,
+  }) async {
+    _setLoading(true);
+    _errorMessage = null;
+
+    try {
+      await _apiService.resetUserPassword(userId: userId, request: request);
+      notifyListeners();
+    } catch (error) {
+      _errorMessage = error.toString();
+      notifyListeners();
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   Future<void> logout() async {
     _setLoading(true);
     _errorMessage = null;

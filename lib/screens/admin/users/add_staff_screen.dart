@@ -12,11 +12,7 @@ class AddStaffScreen extends StatefulWidget {
   final String? userId;
   final AppUser? existingUser;
 
-  const AddStaffScreen({
-    super.key,
-    this.userId,
-    this.existingUser,
-  });
+  const AddStaffScreen({super.key, this.userId, this.existingUser});
 
   bool get isEditMode => (userId ?? existingUser?.id ?? '').trim().isNotEmpty;
 
@@ -82,12 +78,13 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
       ..showSnackBar(SnackBar(content: Text(message)));
   }
 
-  String get _effectiveUserId => (widget.userId ?? widget.existingUser?.id ?? '')
-      .trim();
+  String get _effectiveUserId =>
+      (widget.userId ?? widget.existingUser?.id ?? '').trim();
 
   String get _title => widget.isEditMode ? 'Edit Staff' : 'Add Staff';
 
-  String get _submitLabel => widget.isEditMode ? 'Save Changes' : 'Add New Staff';
+  String get _submitLabel =>
+      widget.isEditMode ? 'Save Changes' : 'Add New Staff';
 
   bool get _showPasswordField => !widget.isEditMode;
 
@@ -187,7 +184,9 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
       }
 
       _showMessage(
-        widget.isEditMode ? 'Staff updated successfully.' : 'Staff created successfully.',
+        widget.isEditMode
+            ? 'Staff updated successfully.'
+            : 'Staff created successfully.',
       );
       Navigator.of(context).pop(true);
     } catch (error) {

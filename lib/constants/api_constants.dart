@@ -36,10 +36,25 @@ class ApiEndpoints {
 
   static const String usersList = '/users';
   static const String usersCreate = '/users';
-  static const String usersDetail = '/users';
-  static const String usersUpdate = '/users';
+  static const String usersDetailTemplate = '/users/{user_id}';
+  static const String usersUpdateTemplate = '/users/{user_id}';
+  static const String usersStatusTemplate = '/users/{user_id}/status';
+  static const String usersResetPasswordTemplate =
+      '/users/{user_id}/reset-password';
 
   static const String plans = plansList;
   static const String roles = rolesList;
   static const String users = usersList;
+
+  static String usersDetail(String userId) =>
+      usersDetailTemplate.replaceFirst('{user_id}', userId);
+
+  static String usersUpdate(String userId) =>
+      usersUpdateTemplate.replaceFirst('{user_id}', userId);
+
+  static String usersStatus(String userId) =>
+      usersStatusTemplate.replaceFirst('{user_id}', userId);
+
+  static String usersResetPassword(String userId) =>
+      usersResetPasswordTemplate.replaceFirst('{user_id}', userId);
 }

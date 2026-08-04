@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
 import '../../../models/app_user.dart';
+import '../../../models/auth_models.dart';
 import '../../../services/api_service.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
@@ -84,10 +85,8 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
   Future<void> _openUserDialog({AppUser? existing, int? index}) async {
     final created = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
-        builder: (_) => AddStaffScreen(
-          userId: existing?.id,
-          existingUser: existing,
-        ),
+        builder: (_) =>
+            AddStaffScreen(userId: existing?.id, existingUser: existing),
       ),
     );
     if (created == true) {
@@ -96,11 +95,9 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
   }
 
   Future<void> _openAddStaffScreen() async {
-    final created = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(
-        builder: (_) => const AddStaffScreen(),
-      ),
-    );
+    final created = await Navigator.of(
+      context,
+    ).push<bool>(MaterialPageRoute(builder: (_) => const AddStaffScreen()));
     if (created == true) {
       _refreshUsers();
     }
@@ -140,93 +137,217 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
   }
 
   Future<void> _changeStatus(AppUser user) async {
-    final targetStatus = user.isActive == true ? 'Inactive' : 'Active';
+    final isCurrentlyActive = user.isActive == true;
+    final nextIsActive = !isCurrentlyActive;
+    final targetStatus = nextIsActive ? 'active' : 'inactive';
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: AppColors.background,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text(
-          'Change status?',
-          style: TextStyle(color: textPrimary, fontWeight: FontWeight.w700),
-        ),
-        content: Text(
-          'Set ${user.name.trim().isEmpty ? 'this user' : user.name} to $targetStatus?',
-          style: const TextStyle(color: textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.primary),
-            child: const Text('Confirm'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      _showMessage('Status update is not connected to the backend yet.');
-    }
-  }
-
-  Future<void> _resetPassword(AppUser user) async {
-    final controller = TextEditingController();
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: AppColors.background,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text(
-          'Reset password',
-          style: TextStyle(color: textPrimary, fontWeight: FontWeight.w700),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        titlePadding: const EdgeInsets.fromLTRB(22, 22, 16, 14),
+        contentPadding: const EdgeInsets.fromLTRB(22, 0, 22, 18),
+        actionsPadding: const EdgeInsets.fromLTRB(22, 0, 22, 22),
+        title: Row(
           children: [
-            Text(
-              'Enter a new password for ${user.name.trim().isEmpty ? 'this user' : user.name}.',
-              style: const TextStyle(color: textSecondary),
+            const Expanded(
+              child: Text(
+                'Change Status',
+                style: TextStyle(
+                  color: textPrimary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: controller,
-              obscureText: true,
-              decoration: InputDecoration(
-                hintText: 'New password',
-                filled: true,
-                fillColor: AppColors.surfaceSoft,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: const BorderSide(color: AppColors.borderStrong),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: const BorderSide(color: AppColors.borderStrong),
-                ),
+            InkWell(
+              onTap: () => Navigator.of(context).pop(false),
+              borderRadius: BorderRadius.circular(999),
+              child: const Padding(
+                padding: EdgeInsets.all(4),
+                child: Icon(Icons.close_rounded, color: textSecondary),
               ),
             ),
           ],
         ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Current status',
+              style: TextStyle(
+                color: textSecondary,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceSoft,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.borderStrong),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 46,
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: AppColors.background,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: AppColors.borderStrong),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      user.name.trim().isEmpty
+                          ? '?'
+                          : user.name.trim()[0].toUpperCase(),
+                      style: const TextStyle(
+                        color: textPrimary,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          user.name.trim().isEmpty ? 'Unnamed user' : user.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: textPrimary,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          user.email.trim().isEmpty ? 'No email' : user.email,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: textSecondary,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isCurrentlyActive
+                          ? const Color(0xFFE9F8EF)
+                          : const Color(0xFFFFF1F1),
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(
+                        color: isCurrentlyActive
+                            ? const Color(0xFFBFE8CC)
+                            : const Color(0xFFF0C6C6),
+                      ),
+                    ),
+                    child: Text(
+                      isCurrentlyActive ? 'active' : 'inactive',
+                      style: TextStyle(
+                        color: isCurrentlyActive
+                            ? const Color(0xFF107C41)
+                            : AppColors.red,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              nextIsActive
+                  ? 'This will change the user to active.'
+                  : 'This will change the user to inactive.',
+              style: const TextStyle(color: textSecondary, fontSize: 14),
+            ),
+          ],
+        ),
         actions: [
-          TextButton(
+          OutlinedButton(
             onPressed: () => Navigator.of(context).pop(false),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: textPrimary,
+              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(999),
+              ),
+            ),
             child: const Text('Cancel'),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.primary),
-            child: const Text('Reset'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary900,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(999),
+              ),
+            ),
+            child: Text(
+              nextIsActive ? 'Set Active' : 'Set Inactive',
+              style: const TextStyle(fontWeight: FontWeight.w800),
+            ),
           ),
         ],
       ),
     );
 
     if (confirmed == true) {
-      _showMessage('Reset password is not connected to the backend yet.');
+      try {
+        await _apiService.updateUserStatus(
+          userId: user.id,
+          request: UpdateUserStatusRequest(isActive: nextIsActive),
+        );
+        _showMessage(
+          nextIsActive
+              ? 'User activated successfully.'
+              : 'User deactivated successfully.',
+        );
+        _refreshUsers();
+      } catch (error) {
+        _showMessage(error.toString());
+      }
+    }
+  }
+
+  Future<void> _resetPassword(AppUser user) async {
+    final password = await showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => _ResetPasswordDialog(user: user),
+    );
+
+    if (password == null || password.trim().isEmpty) {
+      return;
+    }
+
+    try {
+      await _apiService.resetUserPassword(
+        userId: user.id,
+        request: ResetUserPasswordRequest(newPassword: password.trim()),
+      );
+      _showMessage('Password reset successfully.');
+    } catch (error) {
+      _showMessage(error.toString());
     }
   }
 
@@ -751,5 +872,308 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
       'Dec',
     ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
+  }
+}
+
+class _ResetPasswordDialog extends StatefulWidget {
+  final AppUser user;
+
+  const _ResetPasswordDialog({required this.user});
+
+  @override
+  State<_ResetPasswordDialog> createState() => _ResetPasswordDialogState();
+}
+
+class _ResetPasswordDialogState extends State<_ResetPasswordDialog> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController _newPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
+
+  bool _obscureNewPassword = true;
+  bool _obscureConfirmPassword = true;
+
+  @override
+  void dispose() {
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      return;
+    }
+
+    Navigator.of(context).pop(_newPasswordController.text.trim());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final user = widget.user;
+    final userName = user.name.trim().isEmpty ? 'Unnamed user' : user.name;
+    final userEmail = user.email.trim().isEmpty ? 'No email' : user.email;
+
+    return Dialog(
+      backgroundColor: AppColors.background,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 22, vertical: 24),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 520),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(22, 20, 16, 16),
+                child: Row(
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'Reset Password',
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () => Navigator.of(context).pop(),
+                      borderRadius: BorderRadius.circular(999),
+                      child: const Padding(
+                        padding: EdgeInsets.all(4),
+                        child: Icon(
+                          Icons.close_rounded,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1, color: AppColors.borderStrong),
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(22, 18, 22, 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Resetting password for',
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceSoft,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: AppColors.borderStrong),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 48,
+                              height: 48,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: AppColors.background,
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: AppColors.borderStrong,
+                                ),
+                              ),
+                              child: Text(
+                                userName.isEmpty
+                                    ? '?'
+                                    : userName[0].toUpperCase(),
+                                style: const TextStyle(
+                                  color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    userName,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      color: AppColors.textPrimary,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    userEmail,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      color: AppColors.textSecondary,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      _fieldLabel('New Password'),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _newPasswordController,
+                        obscureText: _obscureNewPassword,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Required';
+                          }
+                          if (value.trim().length < 6) {
+                            return 'Password must be at least 6 characters';
+                          }
+                          return null;
+                        },
+                        decoration: _passwordDecoration(
+                          hint: 'Enter new password',
+                          obscure: _obscureNewPassword,
+                          onToggle: () => setState(
+                            () => _obscureNewPassword = !_obscureNewPassword,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      _fieldLabel('Confirm Password'),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _confirmPasswordController,
+                        obscureText: _obscureConfirmPassword,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Required';
+                          }
+                          if (value.trim() !=
+                              _newPasswordController.text.trim()) {
+                            return 'Passwords do not match';
+                          }
+                          return null;
+                        },
+                        decoration: _passwordDecoration(
+                          hint: 'Confirm password',
+                          obscure: _obscureConfirmPassword,
+                          onToggle: () => setState(
+                            () => _obscureConfirmPassword =
+                                !_obscureConfirmPassword,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const Divider(height: 1, color: AppColors.borderStrong),
+              Padding(
+                padding: const EdgeInsets.all(18),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    OutlinedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.textPrimary,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 22,
+                          vertical: 14,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                      ),
+                      child: const Text('Cancel'),
+                    ),
+                    const SizedBox(width: 12),
+                    ElevatedButton(
+                      onPressed: _submit,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary900,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 22,
+                          vertical: 14,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                      ),
+                      child: const Text(
+                        'Reset Password',
+                        style: TextStyle(fontWeight: FontWeight.w800),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  InputDecoration _passwordDecoration({
+    required String hint,
+    required bool obscure,
+    required VoidCallback onToggle,
+  }) {
+    return InputDecoration(
+      hintText: hint,
+      filled: true,
+      fillColor: AppColors.surfaceSoft,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      suffixIcon: IconButton(
+        onPressed: onToggle,
+        icon: Icon(
+          obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+          color: AppColors.textSecondary,
+        ),
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: AppColors.borderStrong),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: AppColors.borderStrong),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: AppColors.primary, width: 1.2),
+      ),
+    );
+  }
+
+  Widget _fieldLabel(String label) {
+    return Text(
+      label,
+      style: const TextStyle(
+        color: AppColors.textPrimary,
+        fontSize: 13.5,
+        fontWeight: FontWeight.w700,
+      ),
+    );
   }
 }

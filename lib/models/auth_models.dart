@@ -135,12 +135,27 @@ class UpdateUserRequest {
   });
 
   Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'email': email,
-      'username': username,
-      'phone': phone,
-    };
+    return {'name': name, 'email': email, 'username': username, 'phone': phone};
+  }
+}
+
+class UpdateUserStatusRequest {
+  final bool isActive;
+
+  const UpdateUserStatusRequest({required this.isActive});
+
+  Map<String, dynamic> toJson() {
+    return {'is_active': isActive};
+  }
+}
+
+class ResetUserPasswordRequest {
+  final String newPassword;
+
+  const ResetUserPasswordRequest({required this.newPassword});
+
+  Map<String, dynamic> toJson() {
+    return {'new_password': newPassword};
   }
 }
 
