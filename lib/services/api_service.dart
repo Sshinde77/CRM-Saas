@@ -258,17 +258,15 @@ class ApiService {
 
   Future<List<AppUser>> fetchAssignableUsers() async {
     final users = await fetchUsers();
-    return users
-        .where((user) {
-          final role = (user.role ?? '').trim().toLowerCase();
-          final systemRole = (user.systemRole ?? '').trim().toLowerCase();
-          final roleName = user.roleDetail?.name.trim().toLowerCase();
-          return role == 'sales_officer' ||
-              systemRole == 'staff' ||
-              roleName == 'sales officer' ||
-              roleName == 'staff';
-        })
-        .toList();
+    return users.where((user) {
+      final role = (user.role ?? '').trim().toLowerCase();
+      final systemRole = (user.systemRole ?? '').trim().toLowerCase();
+      final roleName = user.roleDetail?.name.trim().toLowerCase();
+      return role == 'sales_officer' ||
+          systemRole == 'staff' ||
+          roleName == 'sales officer' ||
+          roleName == 'staff';
+    }).toList();
   }
 
   Future<List<CustomerModel>> fetchCustomers({
@@ -361,6 +359,19 @@ class ApiService {
     );
 
     return CustomerModel.fromJson(decoded);
+  }
+
+  Future<void> deleteCustomer(String customerId) async {
+    final id = customerId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing customer id.');
+    }
+
+    await _send(
+      method: 'DELETE',
+      endpoint: ApiEndpoints.customersDelete(id),
+      requiresAuth: true,
+    );
   }
 
   Future<List<AppUser>> fetchUsers() async {

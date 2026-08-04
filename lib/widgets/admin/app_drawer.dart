@@ -42,10 +42,7 @@ class _DrawerMeta {
   final AuthMeResponse? authMe;
   final List<PlanModel> plans;
 
-  const _DrawerMeta({
-    required this.authMe,
-    required this.plans,
-  });
+  const _DrawerMeta({required this.authMe, required this.plans});
 
   bool get shouldShowUpgradeCard {
     final organization = authMe?.organization;
@@ -108,9 +105,7 @@ class AppDrawer extends StatefulWidget {
   static const Color textSecondary = AppColors.textSecondary;
 
   static const List<_NavSection> _sections = [
-    _NavSection('Overview', [
-      _NavItem('Dashboard', Icons.dashboard_outlined),
-    ]),
+    _NavSection('Overview', [_NavItem('Dashboard', Icons.dashboard_outlined)]),
     _NavSection('Sales & Catalog', [
       _NavItem('Customers', Icons.groups_2_outlined),
       _NavItem('Suppliers', Icons.local_shipping_outlined, enabled: false),
@@ -133,7 +128,11 @@ class AppDrawer extends StatefulWidget {
       _NavItem('Company Settings', Icons.storefront_outlined),
       _NavItem('Plans', Icons.workspace_premium_outlined),
       _NavItem('Staff', Icons.people_outline_rounded),
-      _NavItem('Roles & Permissions', Icons.admin_panel_settings_outlined, enabled: false),
+      _NavItem(
+        'Roles & Permissions',
+        Icons.admin_panel_settings_outlined,
+        enabled: false,
+      ),
       _NavItem('Attendance', Icons.fact_check_outlined, enabled: false),
       _NavItem('Notifications', Icons.notifications_none_rounded),
       _NavItem('Audit Logs', Icons.history_rounded),
@@ -184,9 +183,9 @@ class _AppDrawerState extends State<AppDrawer> {
   void _handleTap(_NavItem item) {
     if (!item.enabled) {
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${item.label} is coming soon.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('${item.label} is coming soon.')));
       return;
     }
 
@@ -461,8 +460,9 @@ class _AppDrawerState extends State<AppDrawer> {
   Widget _buildBottomArea(_DrawerMeta meta) {
     final user = meta.user;
     final organization = meta.authMe?.organization;
-    final displayName =
-        user?.name.trim().isNotEmpty == true ? user!.name.trim() : 'Admin';
+    final displayName = user?.name.trim().isNotEmpty == true
+        ? user!.name.trim()
+        : 'Admin';
     final email = user?.email?.trim().isNotEmpty == true
         ? user!.email!.trim()
         : 'admin@demo.com';
@@ -625,8 +625,8 @@ class _AppDrawerState extends State<AppDrawer> {
             FutureBuilder<_DrawerMeta>(
               future: _drawerMetaFuture,
               builder: (context, snapshot) {
-                final meta = snapshot.data ??
-                    const _DrawerMeta(authMe: null, plans: []);
+                final meta =
+                    snapshot.data ?? const _DrawerMeta(authMe: null, plans: []);
                 return _buildBottomArea(meta);
               },
             ),

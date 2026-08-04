@@ -219,6 +219,22 @@ class ApiProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> deleteCustomer(String customerId) async {
+    _setLoading(true);
+    _errorMessage = null;
+
+    try {
+      await _apiService.deleteCustomer(customerId);
+      notifyListeners();
+    } catch (error) {
+      _errorMessage = error.toString();
+      notifyListeners();
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   Future<AppUser> fetchUserById(String userId) async {
     _setLoading(true);
     _errorMessage = null;

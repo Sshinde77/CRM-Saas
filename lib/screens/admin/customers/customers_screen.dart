@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../../constants/app_colors.dart';
 import '../../../models/customer_model.dart';
 import '../../../providers/api_provider.dart';
+import 'customer_details_screen.dart';
 import 'add_customer_screen.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
@@ -97,6 +98,61 @@ class _CustomersScreenState extends State<CustomersScreen> {
       ..showSnackBar(SnackBar(content: Text(message)));
   }
 
+  Future<bool> _confirmDeleteCustomer(CustomerModel customer) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Text(
+            'Delete Customer',
+            style: TextStyle(fontWeight: FontWeight.w800),
+          ),
+          content: Text(
+            'Delete ${customer.name}? This action cannot be undone.',
+            style: const TextStyle(height: 1.4),
+          ),
+          actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.red,
+                foregroundColor: Colors.white,
+                elevation: 0,
+              ),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    return confirmed == true;
+  }
+
+  Future<void> _deleteCustomer(CustomerModel customer) async {
+    final confirmed = await _confirmDeleteCustomer(customer);
+    if (!confirmed || !mounted) return;
+
+    try {
+      await _apiProvider.deleteCustomer(customer.id);
+      if (!mounted) return;
+      _showMessage('${customer.name} deleted successfully.');
+      await _loadCustomers();
+    } catch (error) {
+      if (!mounted) return;
+      _showMessage(error.toString());
+    }
+  }
+
   Future<void> _openFilterSheet() async {
     final categoryController = TextEditingController(text: _category ?? '');
     final assignedSalesOfficerController = TextEditingController(
@@ -139,7 +195,8 @@ class _CustomersScreenState extends State<CustomersScreen> {
                           ),
                         ),
                         IconButton(
-                          onPressed: () => Navigator.of(sheetContext).pop(false),
+                          onPressed: () =>
+                              Navigator.of(sheetContext).pop(false),
                           icon: const Icon(Icons.close_rounded),
                         ),
                       ],
@@ -240,92 +297,14 @@ class _CustomersScreenState extends State<CustomersScreen> {
       _category = categoryController.text.trim().isEmpty
           ? null
           : categoryController.text.trim();
-      _assignedSalesOfficerId = assignedSalesOfficerController.text.trim().isEmpty
+      _assignedSalesOfficerId =
+          assignedSalesOfficerController.text.trim().isEmpty
           ? null
           : assignedSalesOfficerController.text.trim();
       _isActive = selectedIsActive;
     });
 
     await _loadCustomers();
-  }
-
-  void _showCustomerDetails(CustomerModel customer) {
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
-      ),
-      builder: (_) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(22, 22, 22, 30),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  _avatar(customer.initials, 58),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      customer.name,
-                      style: const TextStyle(
-                        color: textPrimary,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                  _statusChip(customer),
-                ],
-              ),
-              const SizedBox(height: 18),
-              _detailRow('Business', customer.businessName ?? '--'),
-              _detailRow('Category', customer.category ?? '--'),
-              _detailRow('Phone', customer.phone ?? '--'),
-              _detailRow('Email', customer.email ?? '--'),
-              _detailRow(
-                'Sales Officer',
-                customer.assignedSalesOfficerName ??
-                    customer.assignedSalesOfficerId ??
-                    '--',
-              ),
-              _detailRow('Credit Limit', _formatCurrency(customer.creditLimit)),
-              _detailRow('Outstanding', _formatCurrency(customer.outstanding)),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _detailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 120,
-            child: Text(
-              label,
-              style: const TextStyle(color: textSecondary, fontSize: 13),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(
-                color: textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
@@ -528,7 +507,9 @@ class _CustomersScreenState extends State<CustomersScreen> {
       chips.add(_filterChip('Category: $_category'));
     }
     if (_isActive != null) {
-      chips.add(_filterChip('Status: ${_isActive == true ? 'Active' : 'Inactive'}'));
+      chips.add(
+        _filterChip('Status: ${_isActive == true ? 'Active' : 'Inactive'}'),
+      );
     }
     if (_assignedSalesOfficerId != null &&
         _assignedSalesOfficerId!.isNotEmpty) {
@@ -650,7 +631,8 @@ class _CustomersScreenState extends State<CustomersScreen> {
                     const SizedBox(height: 7),
                     _infoPairRow(
                       leftIcon: Icons.person_outline_rounded,
-                      leftText: customer.assignedSalesOfficerName ??
+                      leftText:
+                          customer.assignedSalesOfficerName ??
                           customer.assignedSalesOfficerId ??
                           'Sales officer --',
                       rightIcon: Icons.circle_rounded,
@@ -665,8 +647,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
                       leftText:
                           'Credit Limit: ${_formatCurrency(customer.creditLimit)}',
                       rightIcon: Icons.currency_rupee_rounded,
-                      rightText:
-                          'Outstanding: ${_formatCurrency(customer.outstanding)}',
+                      rightText: _formatCurrency(customer.outstanding),
                       rightIconColor: AppColors.statusActiveText,
                     ),
                     const SizedBox(height: 10),
@@ -685,9 +666,9 @@ class _CustomersScreenState extends State<CustomersScreen> {
   }
 
   Future<void> _openAddCustomerScreen() async {
-    final result = await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const AddCustomerScreen()),
-    );
+    final result = await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const AddCustomerScreen()));
 
     if (result != null && mounted) {
       await _loadCustomers();
@@ -707,6 +688,17 @@ class _CustomersScreenState extends State<CustomersScreen> {
     if (result != null && mounted) {
       await _loadCustomers();
     }
+  }
+
+  Future<void> _openCustomerDetailsScreen(CustomerModel customer) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => CustomerDetailsScreen(
+          customerId: customer.id,
+          initialCustomer: customer,
+        ),
+      ),
+    );
   }
 
   Widget _infoPairRow({
@@ -766,7 +758,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
           label: 'View Details',
           color: AppColors.primary,
           backgroundColor: const Color(0xFFF3F5F8),
-          onTap: () => _showCustomerDetails(customer),
+          onTap: () => _openCustomerDetailsScreen(customer),
         ),
         const SizedBox(width: 6),
         _actionButton(
@@ -782,7 +774,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
           label: 'Delete',
           color: AppColors.red,
           backgroundColor: const Color(0xFFFFEBEB),
-          onTap: () => _showMessage('Delete customer is not connected yet.'),
+          onTap: () => _deleteCustomer(customer),
         ),
       ],
     );
@@ -954,10 +946,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
       hintText: hint,
       filled: true,
       fillColor: Colors.white,
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 14,
-        vertical: 13,
-      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
       labelText: label,
       labelStyle: const TextStyle(color: AppColors.textSecondary),
       border: OutlineInputBorder(
@@ -982,15 +971,18 @@ class _CustomersScreenState extends State<CustomersScreen> {
     );
   }
 
-  String _formatCurrency(int? value) {
+  String _formatCurrency(num? value) {
     if (value == null) return '--';
-    final raw = value.toString();
+    final raw = value.toStringAsFixed(value % 1 == 0 ? 0 : 2);
+    final parts = raw.split('.');
+    final whole = parts.first;
+    final fraction = parts.length > 1 ? '.${parts.last}' : '';
     final buffer = StringBuffer();
-    for (var i = 0; i < raw.length; i++) {
-      final fromEnd = raw.length - i;
-      buffer.write(raw[i]);
+    for (var i = 0; i < whole.length; i++) {
+      final fromEnd = whole.length - i;
+      buffer.write(whole[i]);
       if (fromEnd > 1 && fromEnd % 3 == 1) buffer.write(',');
     }
-    return 'Rs. $buffer';
+    return 'Rs. $buffer$fraction';
   }
 }

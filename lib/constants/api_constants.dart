@@ -39,7 +39,8 @@ class ApiEndpoints {
   static const String customersDetailTemplate = '/customers/{customer_id}';
   static const String customersUpdateTemplate = '/customers/{customer_id}';
   static const String customersDeleteTemplate = '/customers/{customer_id}';
-  static const String customersStatusTemplate = '/customers/{customer_id}/status';
+  static const String customersStatusTemplate =
+      '/customers/{customer_id}/status';
 
   static const String usersList = '/users';
   static const String usersCreate = '/users';

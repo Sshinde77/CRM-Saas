@@ -53,45 +53,44 @@ class CustomerModel {
 
     return CustomerModel(
       id: json['id']?.toString() ?? '',
-      name: _stringValue(
-        json,
-        const ['name', 'customer_name', 'full_name', 'contact_person'],
-      ),
-      businessName: _nullableStringValue(
-        json,
-        const [
-          'business_name',
-          'business',
-          'company_name',
-          'organization_name',
-        ],
-      ),
-      category: _nullableStringValue(
-        json,
-        const [
-          'category',
-          'customer_category',
-          'type',
-          'business_type',
-        ],
-      ),
+      name: _stringValue(json, const [
+        'name',
+        'customer_name',
+        'full_name',
+        'contact_person',
+      ]),
+      businessName: _nullableStringValue(json, const [
+        'business_name',
+        'business',
+        'company_name',
+        'organization_name',
+      ]),
+      category: _nullableStringValue(json, const [
+        'category',
+        'customer_category',
+        'type',
+        'business_type',
+      ]),
       email: _nullableStringValue(json, const ['email']),
-      phone: _nullableStringValue(
-        json,
-        const ['phone', 'phone_number', 'mobile', 'mobile_no'],
-      ),
-      gstNumber: _nullableStringValue(
-        json,
-        const ['gst_number', 'gst', 'gstin'],
-      ),
-      billingAddress: _nullableStringValue(
-        json,
-        const ['billing_address', 'billingAddress'],
-      ),
-      deliveryAddress: _nullableStringValue(
-        json,
-        const ['delivery_address', 'deliveryAddress'],
-      ),
+      phone: _nullableStringValue(json, const [
+        'phone',
+        'phone_number',
+        'mobile',
+        'mobile_no',
+      ]),
+      gstNumber: _nullableStringValue(json, const [
+        'gst_number',
+        'gst',
+        'gstin',
+      ]),
+      billingAddress: _nullableStringValue(json, const [
+        'billing_address',
+        'billingAddress',
+      ]),
+      deliveryAddress: _nullableStringValue(json, const [
+        'delivery_address',
+        'deliveryAddress',
+      ]),
       assignedSalesOfficerId: _stringFromNested(
         json,
         assignedSalesOfficer,
@@ -107,17 +106,18 @@ class CustomerModel {
       openingBalance: _intValue(json, const ['opening_balance']),
       totalBilled: _intValue(json, const ['total_billed']),
       totalReceived: _intValue(json, const ['total_received']),
-      outstanding: _intValue(json, const ['outstanding', 'due_amount']),
+      outstanding: _intValue(json, const [
+        'outstanding_balance',
+        'outstanding',
+        'due_amount',
+      ]),
       notes: _nullableStringValue(json, const ['notes']),
-      address: _nullableStringValue(
-        json,
-        const [
-          'address',
-          'billing_address',
-          'delivery_address',
-          'shipping_address',
-        ],
-      ),
+      address: _nullableStringValue(json, const [
+        'address',
+        'billing_address',
+        'delivery_address',
+        'shipping_address',
+      ]),
       createdAt: _tryParseDateTime(
         json['created_at']?.toString() ?? json['createdAt']?.toString(),
       ),
@@ -147,6 +147,32 @@ class CustomerModel {
     return '${values.first[0]}${values.last[0]}'.toUpperCase();
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'business_name': businessName,
+      'category': category,
+      'email': email,
+      'phone': phone,
+      'gst_number': gstNumber,
+      'billing_address': billingAddress,
+      'delivery_address': deliveryAddress,
+      'assigned_sales_officer_id': assignedSalesOfficerId,
+      'assigned_sales_officer_name': assignedSalesOfficerName,
+      'is_active': isActive,
+      'credit_limit': creditLimit,
+      'opening_balance': openingBalance,
+      'total_billed': totalBilled,
+      'total_received': totalReceived,
+      'outstanding': outstanding,
+      'notes': notes,
+      'address': address,
+      'created_at': createdAt?.toIso8601String(),
+      'updated_at': updatedAt?.toIso8601String(),
+    };
+  }
+
   static Map<String, dynamic>? _asMap(dynamic value) {
     return value is Map<String, dynamic> ? value : null;
   }
@@ -165,7 +191,10 @@ class CustomerModel {
     return fallback;
   }
 
-  static String? _nullableStringValue(Map<String, dynamic> json, List<String> keys) {
+  static String? _nullableStringValue(
+    Map<String, dynamic> json,
+    List<String> keys,
+  ) {
     for (final key in keys) {
       final value = json[key]?.toString().trim();
       if (value != null && value.isNotEmpty) {
@@ -269,95 +298,107 @@ class CustomerListQuery {
 }
 
 class CustomerCreateRequest {
-  final String name;
-  final String businessName;
-  final String phone;
-  final String email;
-  final String gstNumber;
-  final String billingAddress;
-  final String deliveryAddress;
-  final String assignedSalesOfficerId;
-  final int creditLimit;
-  final int openingBalance;
-  final String category;
-  final String notes;
+  final String? name;
+  final String? businessName;
+  final String? phone;
+  final String? email;
+  final String? gstNumber;
+  final String? billingAddress;
+  final String? deliveryAddress;
+  final String? assignedSalesOfficerId;
+  final int? creditLimit;
+  final int? openingBalance;
+  final String? category;
+  final String? notes;
 
   const CustomerCreateRequest({
-    required this.name,
-    required this.businessName,
-    required this.phone,
-    required this.email,
-    required this.gstNumber,
-    required this.billingAddress,
-    required this.deliveryAddress,
-    required this.assignedSalesOfficerId,
-    required this.creditLimit,
-    required this.openingBalance,
-    required this.category,
-    required this.notes,
+    this.name,
+    this.businessName,
+    this.phone,
+    this.email,
+    this.gstNumber,
+    this.billingAddress,
+    this.deliveryAddress,
+    this.assignedSalesOfficerId,
+    this.creditLimit,
+    this.openingBalance,
+    this.category,
+    this.notes,
   });
 
   Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'business_name': businessName,
-      'phone': phone,
-      'email': email,
-      'gst_number': gstNumber,
-      'billing_address': billingAddress,
-      'delivery_address': deliveryAddress,
-      'assigned_sales_officer_id': assignedSalesOfficerId,
-      'credit_limit': creditLimit,
-      'opening_balance': openingBalance,
-      'category': category,
-      'notes': notes,
-    };
+    final json = <String, dynamic>{};
+    void put(String key, Object? value) {
+      if (value == null) return;
+      if (value is String && value.trim().isEmpty) return;
+      json[key] = value;
+    }
+
+    put('name', name);
+    put('business_name', businessName);
+    put('phone', phone);
+    put('email', email);
+    put('gst_number', gstNumber);
+    put('billing_address', billingAddress);
+    put('delivery_address', deliveryAddress);
+    put('assigned_sales_officer_id', assignedSalesOfficerId);
+    put('credit_limit', creditLimit);
+    put('opening_balance', openingBalance);
+    put('category', category);
+    put('notes', notes);
+    return json;
   }
 }
 
 class CustomerUpdateRequest {
-  final String name;
-  final String businessName;
-  final String phone;
-  final String email;
-  final String gstNumber;
-  final String billingAddress;
-  final String deliveryAddress;
-  final String assignedSalesOfficerId;
-  final int creditLimit;
-  final String category;
-  final String notes;
-  final bool isActive;
+  final String? name;
+  final String? businessName;
+  final String? phone;
+  final String? email;
+  final String? gstNumber;
+  final String? billingAddress;
+  final String? deliveryAddress;
+  final String? assignedSalesOfficerId;
+  final int? creditLimit;
+  final String? category;
+  final String? notes;
+  final bool? isActive;
 
   const CustomerUpdateRequest({
-    required this.name,
-    required this.businessName,
-    required this.phone,
-    required this.email,
-    required this.gstNumber,
-    required this.billingAddress,
-    required this.deliveryAddress,
-    required this.assignedSalesOfficerId,
-    required this.creditLimit,
-    required this.category,
-    required this.notes,
-    required this.isActive,
+    this.name,
+    this.businessName,
+    this.phone,
+    this.email,
+    this.gstNumber,
+    this.billingAddress,
+    this.deliveryAddress,
+    this.assignedSalesOfficerId,
+    this.creditLimit,
+    this.category,
+    this.notes,
+    this.isActive,
   });
 
   Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'business_name': businessName,
-      'phone': phone,
-      'email': email,
-      'gst_number': gstNumber,
-      'billing_address': billingAddress,
-      'delivery_address': deliveryAddress,
-      'assigned_sales_officer_id': assignedSalesOfficerId,
-      'credit_limit': creditLimit,
-      'category': category,
-      'notes': notes,
-      'is_active': isActive,
-    };
+    final json = <String, dynamic>{};
+    void put(String key, Object? value) {
+      if (value == null) return;
+      if (value is String && value.trim().isEmpty) return;
+      json[key] = value;
+    }
+
+    put('name', name);
+    put('business_name', businessName);
+    put('phone', phone);
+    put('email', email);
+    put('gst_number', gstNumber);
+    put('billing_address', billingAddress);
+    put('delivery_address', deliveryAddress);
+    put('assigned_sales_officer_id', assignedSalesOfficerId);
+    put('credit_limit', creditLimit);
+    put('category', category);
+    put('notes', notes);
+    put('is_active', isActive);
+    return json;
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
@@ -40,8 +42,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   final _gstController = TextEditingController();
   final _billingAddressController = TextEditingController();
   final _deliveryAddressController = TextEditingController();
-  final _creditLimitController = TextEditingController(text: '0');
-  final _openingBalanceController = TextEditingController(text: '0');
+  final _creditLimitController = TextEditingController();
+  final _openingBalanceController = TextEditingController();
   final _categoryController = TextEditingController();
   final _notesController = TextEditingController();
 
@@ -100,6 +102,17 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       ..showSnackBar(SnackBar(content: Text(message)));
   }
 
+  String? _nullableText(String value) {
+    final normalized = value.trim();
+    return normalized.isEmpty ? null : normalized;
+  }
+
+  int? _nullableInt(String value) {
+    final normalized = value.trim();
+    if (normalized.isEmpty) return null;
+    return int.tryParse(normalized);
+  }
+
   Future<void> _loadCustomerForEdit() async {
     final customerId = (widget.customerId ?? widget.existingCustomer?.id ?? '')
         .trim();
@@ -142,7 +155,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     _notesController.text = customer.notes ?? '';
     _selectedType = customer.category;
     _isActive = customer.isActive ?? true;
-    _sameAsBilling = _billingAddressController.text.trim().isNotEmpty &&
+    _sameAsBilling =
+        _billingAddressController.text.trim().isNotEmpty &&
         _billingAddressController.text.trim() ==
             _deliveryAddressController.text.trim();
   }
@@ -176,81 +190,87 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   }
 
   Future<void> _submit(List<AppUser> users) async {
-    final name = _nameController.text.trim();
-    final businessName = _businessNameController.text.trim();
-    final phone = _phoneController.text.trim();
-    final email = _emailController.text.trim();
-    final gstNumber = _gstController.text.trim();
-    final billingAddress = _billingAddressController.text.trim();
+    final name = _nullableText(_nameController.text);
+    final businessName = _nullableText(_businessNameController.text);
+    final phone = _nullableText(_phoneController.text);
+    final email = _nullableText(_emailController.text);
+    final gstNumber = _nullableText(_gstController.text);
+    final billingAddress = _nullableText(_billingAddressController.text);
     final deliveryAddress = _sameAsBilling
         ? billingAddress
-        : _deliveryAddressController.text.trim();
-    final category = (_selectedType ?? _categoryController.text).trim();
-    final notes = _notesController.text.trim();
-    final creditLimit = int.tryParse(_creditLimitController.text.trim()) ?? 0;
-    final openingBalance =
-        int.tryParse(_openingBalanceController.text.trim()) ?? 0;
-
-    if (name.isEmpty || businessName.isEmpty || phone.isEmpty) {
-      _showMessage('Customer name, business name, and phone are required.');
-      return;
-    }
+        : _nullableText(_deliveryAddressController.text);
+    final category = _nullableText(_selectedType ?? _categoryController.text);
+    final notes = _nullableText(_notesController.text);
+    final creditLimit = _nullableInt(_creditLimitController.text);
+    final openingBalance = _nullableInt(_openingBalanceController.text);
 
     setState(() => _isSubmitting = true);
 
     try {
-      final selected = _effectiveSalesOfficer(users) ??
-          (users.isNotEmpty ? users.first : null);
+      final selected = _effectiveSalesOfficer(users);
 
       if (widget.isEditMode) {
-        final customerId = (widget.customerId ?? widget.existingCustomer?.id ?? '')
-            .trim();
+        final customerId =
+            (widget.customerId ?? widget.existingCustomer?.id ?? '').trim();
         if (customerId.isEmpty) {
           throw StateError('Missing customer id.');
         }
 
+        final request = CustomerUpdateRequest(
+          name: name,
+          businessName: businessName,
+          phone: phone,
+          email: email,
+          gstNumber: gstNumber,
+          billingAddress: billingAddress,
+          deliveryAddress: deliveryAddress,
+          assignedSalesOfficerId: selected?.id,
+          creditLimit: creditLimit,
+          category: category,
+          notes: notes,
+          isActive: _isActive,
+        );
+        debugPrint('[CUSTOMER UPDATE REQUEST] ${jsonEncode(request.toJson())}');
         final updated = await _apiProvider.updateCustomer(
           customerId: customerId,
-          request: CustomerUpdateRequest(
-            name: name,
-            businessName: businessName,
-            phone: phone,
-            email: email,
-            gstNumber: gstNumber,
-            billingAddress: billingAddress,
-            deliveryAddress: deliveryAddress,
-            assignedSalesOfficerId: selected?.id ?? '',
-            creditLimit: creditLimit,
-            category: category,
-            notes: notes,
-            isActive: _isActive,
-          ),
+          request: request,
+        );
+        debugPrint(
+          '[CUSTOMER UPDATE RESPONSE] ${jsonEncode(updated.toJson())}',
         );
 
         if (!mounted) return;
         Navigator.of(context).pop(updated);
       } else {
-        final created = await _apiProvider.createCustomer(
-          request: CustomerCreateRequest(
-            name: name,
-            businessName: businessName,
-            phone: phone,
-            email: email,
-            gstNumber: gstNumber,
-            billingAddress: billingAddress,
-            deliveryAddress: deliveryAddress,
-            assignedSalesOfficerId: selected?.id ?? '',
-            creditLimit: creditLimit,
-            openingBalance: openingBalance,
-            category: category,
-            notes: notes,
-          ),
+        final request = CustomerCreateRequest(
+          name: name,
+          businessName: businessName,
+          phone: phone,
+          email: email,
+          gstNumber: gstNumber,
+          billingAddress: billingAddress,
+          deliveryAddress: deliveryAddress,
+          assignedSalesOfficerId: selected?.id,
+          creditLimit: creditLimit,
+          openingBalance: openingBalance,
+          category: category,
+          notes: notes,
+        );
+        debugPrint('[CUSTOMER CREATE REQUEST] ${jsonEncode(request.toJson())}');
+        final created = await _apiProvider.createCustomer(request: request);
+        debugPrint(
+          '[CUSTOMER CREATE RESPONSE] ${jsonEncode(created.toJson())}',
         );
 
         if (!mounted) return;
         Navigator.of(context).pop(created);
       }
     } catch (error) {
+      debugPrint(
+        widget.isEditMode
+            ? '[CUSTOMER UPDATE ERROR] $error'
+            : '[CUSTOMER CREATE ERROR] $error',
+      );
       _showMessage(error.toString());
     } finally {
       if (mounted) {
@@ -357,7 +377,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                                   ),
                                   const SizedBox(width: 12),
                                   OutlinedButton(
-                                    onPressed: () => Navigator.of(context).maybePop(),
+                                    onPressed: () =>
+                                        Navigator.of(context).maybePop(),
                                     style: OutlinedButton.styleFrom(
                                       foregroundColor: AppColors.primary,
                                       side: const BorderSide(
@@ -368,15 +389,16 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                                         vertical: 13,
                                       ),
                                       shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(999),
+                                        borderRadius: BorderRadius.circular(
+                                          999,
+                                        ),
                                       ),
                                     ),
                                     child: const Text('Back to Customers'),
                                   ),
                                 ],
                               ),
-                              if (widget.isEditMode &&
-                                  _customerLoadFailed) ...[
+                              if (widget.isEditMode && _customerLoadFailed) ...[
                                 const SizedBox(height: 12),
                                 const Text(
                                   'Could not refresh customer details. The form still has the last loaded values.',
@@ -402,9 +424,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                                       ),
                                     ),
                                     const SizedBox(width: 16),
-                                    Expanded(
-                                      child: _typeDropdown(),
-                                    ),
+                                    Expanded(child: _typeDropdown()),
                                   ],
                                 ),
                                 const SizedBox(height: 16),
@@ -482,7 +502,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                                 width: double.infinity,
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 14,
-                                  vertical: 8,
+                                  vertical: 12,
                                 ),
                                 decoration: BoxDecoration(
                                   color: AppColors.surfaceSoft.withValues(
@@ -495,31 +515,41 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                                     ),
                                   ),
                                 ),
-                                child: CheckboxListTile(
-                                  contentPadding: EdgeInsets.zero,
-                                  controlAffinity:
-                                      ListTileControlAffinity.leading,
-                                  dense: true,
-                                  value: _sameAsBilling,
-                                  fillColor:
-                                      WidgetStatePropertyAll(AppColors.primary),
-                                  title: const Text(
-                                    'Delivery address same as billing',
-                                    style: TextStyle(
-                                      color: AppColors.textPrimary,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
+                                child: Row(
+                                  children: [
+                                    Checkbox(
+                                      value: _sameAsBilling,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _sameAsBilling = value ?? false;
+                                          if (_sameAsBilling) {
+                                            _deliveryAddressController.text =
+                                                _billingAddressController.text;
+                                          }
+                                        });
+                                      },
+                                      activeColor: AppColors.primary,
+                                      checkColor: Colors.white,
+                                      side: const BorderSide(
+                                        color: AppColors.borderStrong,
+                                        width: 1.2,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
                                     ),
-                                  ),
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _sameAsBilling = value ?? false;
-                                      if (_sameAsBilling) {
-                                        _deliveryAddressController.text =
-                                            _billingAddressController.text;
-                                      }
-                                    });
-                                  },
+                                    const SizedBox(width: 4),
+                                    const Expanded(
+                                      child: Text(
+                                        'Delivery address same as billing',
+                                        style: TextStyle(
+                                          color: AppColors.textPrimary,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                               const SizedBox(height: 12),
@@ -588,7 +618,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                                   width: double.infinity,
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 14,
-                                    vertical: 4,
+                                    vertical: 10,
                                   ),
                                   decoration: BoxDecoration(
                                     color: AppColors.surfaceSoft.withValues(
@@ -601,22 +631,35 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                                       ),
                                     ),
                                   ),
-                                  child: SwitchListTile(
-                                    contentPadding: EdgeInsets.zero,
-                                    value: _isActive,
-                                    thumbColor:
-                                        WidgetStatePropertyAll(AppColors.primary),
-                                    title: const Text(
-                                      'Customer is active',
-                                      style: TextStyle(
-                                        color: AppColors.textPrimary,
-                                        fontSize: 13.5,
-                                        fontWeight: FontWeight.w600,
+                                  child: Row(
+                                    children: [
+                                      const Expanded(
+                                        child: Text(
+                                          'Customer is active',
+                                          style: TextStyle(
+                                            color: AppColors.textPrimary,
+                                            fontSize: 13.5,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
                                       ),
-                                    ),
-                                    onChanged: (value) {
-                                      setState(() => _isActive = value);
-                                    },
+                                      Switch(
+                                        value: _isActive,
+                                        onChanged: (value) {
+                                          setState(() => _isActive = value);
+                                        },
+                                        activeThumbColor: Colors.white,
+                                        activeTrackColor: AppColors.primary,
+                                        inactiveThumbColor: Colors.white,
+                                        inactiveTrackColor: AppColors
+                                            .borderStrong
+                                            .withValues(alpha: 0.45),
+                                        trackOutlineColor:
+                                            const WidgetStatePropertyAll(
+                                              Colors.transparent,
+                                            ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
@@ -629,7 +672,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                                   TextButton(
                                     onPressed: _isSubmitting
                                         ? null
-                                        : () => Navigator.of(context).maybePop(),
+                                        : () =>
+                                              Navigator.of(context).maybePop(),
                                     style: TextButton.styleFrom(
                                       backgroundColor: AppColors.surfaceSoft,
                                       foregroundColor: AppColors.textPrimary,
@@ -638,8 +682,9 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                                         vertical: 14,
                                       ),
                                       shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(999),
+                                        borderRadius: BorderRadius.circular(
+                                          999,
+                                        ),
                                       ),
                                     ),
                                     child: const Text('Cancel'),
@@ -658,8 +703,9 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                                         vertical: 14,
                                       ),
                                       shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(999),
+                                        borderRadius: BorderRadius.circular(
+                                          999,
+                                        ),
                                       ),
                                     ),
                                     child: _isSubmitting
@@ -761,10 +807,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     );
   }
 
-  Widget _salesOfficerDropdown(
-    List<AppUser> users,
-    AppUser? selected,
-  ) {
+  Widget _salesOfficerDropdown(List<AppUser> users, AppUser? selected) {
     final items = List<AppUser>.from(users);
     if (selected != null &&
         !items.any((user) => user.id.trim() == selected.id.trim())) {
@@ -795,10 +838,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
               .map(
                 (user) => DropdownMenuItem<String>(
                   value: user.id,
-                  child: Text(
-                    user.name,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  child: Text(user.name, overflow: TextOverflow.ellipsis),
                 ),
               )
               .toList(),
@@ -837,10 +877,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           isExpanded: true,
           items: _typeOptions()
               .map(
-                (type) => DropdownMenuItem<String>(
-                  value: type,
-                  child: Text(type),
-                ),
+                (type) =>
+                    DropdownMenuItem<String>(value: type, child: Text(type)),
               )
               .toList(),
           onChanged: (value) {
@@ -860,10 +898,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       hintText: hintText,
       filled: true,
       fillColor: Colors.white,
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 14,
-        vertical: 14,
-      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: AppColors.borderStrong),
