@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../widgets/admin/admin_top_bar.dart';
 
 class BillingScreen extends StatefulWidget {
   const BillingScreen({super.key});
@@ -97,210 +98,112 @@ class _BillingScreenState extends State<BillingScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final isWide = constraints.maxWidth >= 900;
-            final contentWidth = constraints.maxWidth > 1200
-                ? 1200.0
-                : constraints.maxWidth;
+        child: Column(
+          children: [
+            AdminTopBar(
+              title: 'Billing',
+              leadingIcon: Icons.arrow_back_rounded,
+              onLeadingTap: () => Navigator.of(context).maybePop(),
+            ),
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final isWide = constraints.maxWidth >= 900;
+                  final contentWidth = constraints.maxWidth > 1200
+                      ? 1200.0
+                      : constraints.maxWidth;
 
-            return Center(
-              child: SizedBox(
-                width: contentWidth,
-                child: ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Billings',
-                                style: TextStyle(
-                                  color: _titleColor,
-                                  fontSize: 26,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                              SizedBox(height: 6),
-                              Text(
-                                'Manage digital payment and bank details.',
-                                style: TextStyle(
-                                  color: _mutedColor,
-                                  fontSize: 14.5,
-                                  height: 1.25,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        if (_isEditing)
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              OutlinedButton(
-                                onPressed: _saving
-                                    ? null
-                                    : () => setState(() => _isEditing = false),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: _accent,
-                                  side: const BorderSide(
-                                    color: _accent,
-                                    width: 1.5,
-                                  ),
-                                  shape: const CircleBorder(),
-                                  padding: const EdgeInsets.all(13),
-                                ),
-                                child: const Icon(Icons.close_rounded, size: 18),
-                              ),
-                              const SizedBox(width: 10),
-                              ElevatedButton.icon(
-                                onPressed: _saving ? null : _handleSave,
-                                icon: _saving
-                                    ? const SizedBox(
-                                        width: 16,
-                                        height: 16,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2.2,
-                                          color: Colors.white,
-                                        ),
-                                      )
-                                    : const Icon(Icons.check_rounded, size: 18),
-                                label: Text(_saving ? 'Saving' : 'Save Changes'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: _accent,
-                                  foregroundColor: Colors.white,
-                                  elevation: 10,
-                                  shadowColor:
-                                      _accent.withValues(alpha: 0.24),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 18,
-                                    vertical: 12,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(999),
-                                  ),
-                                  textStyle: const TextStyle(
-                                    fontSize: 14.5,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          )
-                        else
-                          ElevatedButton.icon(
-                            onPressed: _saving
-                                ? null
-                                : () => setState(() => _isEditing = true),
-                            icon: const Icon(Icons.edit_rounded, size: 18),
-                            label: const Text('Edit Profile'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: _accent,
-                              foregroundColor: Colors.white,
-                              elevation: 10,
-                              shadowColor: _accent.withValues(alpha: 0.24),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 18,
-                                vertical: 12,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(999),
-                              ),
-                              textStyle: const TextStyle(
-                                fontSize: 14.5,
-                                fontWeight: FontWeight.w700,
-                              ),
+                  return Center(
+                    child: SizedBox(
+                      width: contentWidth,
+                      child: ListView(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                        children: [
+                          _SectionShell(
+                            title: 'Payment QR',
+                            subtitle:
+                                'Upload a QR code for receiving payments.',
+                            child: _QrUploadCard(
+                              qrBytes: _qrBytes,
+                              qrName: _qrName,
+                              enabled: _isEditing,
+                              onUpload: _pickQrCode,
+                              onRemove: _removeQrCode,
                             ),
                           ),
-                      ],
-                    ),
-                    const SizedBox(height: 18),
-                    const Divider(color: Color(0xFFE5E7EB)),
-                    const SizedBox(height: 22),
-                    _SectionShell(
-                      title: 'Payment QR',
-                      subtitle: 'Upload a QR code for receiving payments.',
-                      child: _QrUploadCard(
-                        qrBytes: _qrBytes,
-                        qrName: _qrName,
-                        enabled: _isEditing,
-                        onUpload: _pickQrCode,
-                        onRemove: _removeQrCode,
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-                    _SectionShell(
-                      title: 'UPI Details',
-                      subtitle: 'Unified Payments Interface information.',
-                      child: _ResponsiveFields(
-                        isWide: isWide,
-                        children: [
-                          _fieldBlock(
-                            label: 'UPI ID',
-                            child: _textField(
-                              controller: _upiController,
+                          const SizedBox(height: 18),
+                          _SectionShell(
+                            title: 'UPI Details',
+                            subtitle:
+                                'Unified Payments Interface information.',
+                            child: _ResponsiveFields(
+                              isWide: isWide,
+                              children: [
+                                _fieldBlock(
+                                  label: 'UPI ID',
+                                  child: _textField(
+                                    controller: _upiController,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 18),
+                          const Divider(color: Color(0xFFE5E7EB)),
+                          const SizedBox(height: 18),
+                          _SectionShell(
+                            title: 'Bank Account',
+                            subtitle:
+                                'Account holder, bank, and IFSC information.',
+                            child: _ResponsiveFields(
+                              isWide: isWide,
+                              children: [
+                                _fieldBlock(
+                                  label: 'Bank Account Details',
+                                  child: _textField(
+                                    controller: _bankAccountController,
+                                  ),
+                                ),
+                                _fieldBlock(
+                                  label: 'Account Holder Name',
+                                  child: _textField(
+                                    controller: _accountHolderController,
+                                  ),
+                                ),
+                                _fieldBlock(
+                                  label: 'IFSC Code',
+                                  child: _textField(
+                                    controller: _ifscController,
+                                  ),
+                                ),
+                                _fieldBlock(
+                                  label: 'Bank Name',
+                                  child: _dropdownField<String>(
+                                    value: _selectedBank,
+                                    hintText: 'Select bank',
+                                    items: _bankOptions,
+                                    onChanged: (value) {
+                                      setState(() => _selectedBank = value);
+                                    },
+                                  ),
+                                ),
+                                _fieldBlock(
+                                  label: 'Account Number',
+                                  child: _textField(
+                                    controller: _accountNumberController,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 18),
-                    const Divider(color: Color(0xFFE5E7EB)),
-                    const SizedBox(height: 18),
-                    _SectionShell(
-                      title: 'Bank Account',
-                      subtitle: 'Account holder, bank, and IFSC information.',
-                      child: _ResponsiveFields(
-                        isWide: isWide,
-                        children: [
-                          _fieldBlock(
-                            label: 'Bank Account Details',
-                            child: _textField(
-                              controller: _bankAccountController,
-                            ),
-                          ),
-                          _fieldBlock(
-                            label: 'Account Holder Name',
-                            child: _textField(
-                              controller: _accountHolderController,
-                            ),
-                          ),
-                          _fieldBlock(
-                            label: 'IFSC Code',
-                            child: _textField(
-                              controller: _ifscController,
-                            ),
-                          ),
-                          _fieldBlock(
-                            label: 'Bank Name',
-                            child: _dropdownField<String>(
-                              value: _selectedBank,
-                              hintText: 'Select bank',
-                              items: _bankOptions,
-                              onChanged: (value) {
-                                setState(() => _selectedBank = value);
-                              },
-                            ),
-                          ),
-                          _fieldBlock(
-                            label: 'Account Number',
-                            child: _textField(
-                              controller: _accountNumberController,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                  );
+                },
               ),
-            );
-          },
+            ),
+          ],
         ),
       ),
     );

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../widgets/admin/admin_top_bar.dart';
 
 const Color kDocumentsTitleColor = Color(0xFF0F172A);
 const Color kDocumentsMutedColor = Color(0xFF64748B);
@@ -113,148 +114,51 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final isWide = constraints.maxWidth >= 900;
-            final contentWidth = constraints.maxWidth > 1200
-                ? 1200.0
-                : constraints.maxWidth;
+        child: Column(
+          children: [
+            AdminTopBar(
+              title: 'Documents',
+              leadingIcon: Icons.arrow_back_rounded,
+              onLeadingTap: () => Navigator.of(context).maybePop(),
+            ),
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final isWide = constraints.maxWidth >= 900;
+                  final contentWidth = constraints.maxWidth > 1200
+                      ? 1200.0
+                      : constraints.maxWidth;
 
-            return Center(
-              child: SizedBox(
-                width: contentWidth,
-                child: ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
-                  children: [
-                    _buildHeader(),
-                    const SizedBox(height: 18),
-                    const Divider(color: Color(0xFFE5E7EB)),
-                    const SizedBox(height: 22),
-                    _ResponsiveGrid(
-                      isWide: isWide,
-                      children: [
-                        for (final asset in _assets)
-                          _DocumentUploadCard(
-                            asset: asset,
-                            bytes: _bytes[asset.type],
-                            name: _names[asset.type],
-                            enabled: _isEditing,
-                            onUpload: () => _pickDocument(asset.type),
-                            onRemove: () => _removeDocument(asset.type),
+                  return Center(
+                    child: SizedBox(
+                      width: contentWidth,
+                      child: ListView(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                        children: [
+                          _ResponsiveGrid(
+                            isWide: isWide,
+                            children: [
+                              for (final asset in _assets)
+                                _DocumentUploadCard(
+                                  asset: asset,
+                                  bytes: _bytes[asset.type],
+                                  name: _names[asset.type],
+                                  enabled: _isEditing,
+                                  onUpload: () => _pickDocument(asset.type),
+                                  onRemove: () => _removeDocument(asset.type),
+                                ),
+                            ],
                           ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Documents',
-                style: TextStyle(
-                  color: kDocumentsTitleColor,
-                  fontSize: 26,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              SizedBox(height: 6),
-              Text(
-                'Manage compliance and registration documents.',
-                style: TextStyle(
-                  color: kDocumentsMutedColor,
-                  fontSize: 14.5,
-                  height: 1.25,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 12),
-        if (_isEditing)
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              OutlinedButton(
-                onPressed: _saving ? null : () => setState(() => _isEditing = false),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: kDocumentsAccentColor,
-                  side: const BorderSide(color: kDocumentsAccentColor, width: 1.5),
-                  shape: const CircleBorder(),
-                  padding: const EdgeInsets.all(13),
-                ),
-                child: const Icon(Icons.close_rounded, size: 18),
-              ),
-              const SizedBox(width: 10),
-              ElevatedButton.icon(
-                onPressed: _saving ? null : _handleSave,
-                icon: _saving
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Icon(Icons.check_rounded, size: 18),
-                label: Text(_saving ? 'Saving' : 'Save Changes'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: kDocumentsAccentColor,
-                  foregroundColor: Colors.white,
-                  elevation: 10,
-                  shadowColor: kDocumentsAccentColor.withValues(alpha: 0.24),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 12,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  textStyle: const TextStyle(
-                    fontSize: 14.5,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
-          )
-        else
-          ElevatedButton.icon(
-            onPressed: _saving ? null : () => setState(() => _isEditing = true),
-            icon: const Icon(Icons.edit_rounded, size: 18),
-            label: const Text('Edit Profile'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: kDocumentsAccentColor,
-              foregroundColor: Colors.white,
-              elevation: 10,
-              shadowColor: kDocumentsAccentColor.withValues(alpha: 0.24),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 18,
-                vertical: 12,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(999),
-              ),
-              textStyle: const TextStyle(
-                fontSize: 14.5,
-                fontWeight: FontWeight.w700,
+                  );
+                },
               ),
             ),
-          ),
-      ],
+          ],
+        ),
+      ),
     );
   }
 }

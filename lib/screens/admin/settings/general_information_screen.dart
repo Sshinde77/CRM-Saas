@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
 import 'company_settings_constants.dart';
+import '../../../widgets/admin/admin_top_bar.dart';
 
 const Color kGeneralInfoTitleColor = Color(0xFF0F172A);
 const Color kGeneralInfoMutedColor = Color(0xFF64748B);
@@ -212,435 +213,362 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final isWide = constraints.maxWidth >= 700;
-            final contentWidth = constraints.maxWidth > 1180
-                ? 1180.0
-                : constraints.maxWidth;
+        child: Column(
+          children: [
+            AdminTopBar(
+              title: 'General Information',
+              leadingIcon: Icons.arrow_back_rounded,
+              onLeadingTap: () => Navigator.of(context).maybePop(),
+            ),
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final isWide = constraints.maxWidth >= 700;
+                  final contentWidth = constraints.maxWidth > 1180
+                      ? 1180.0
+                      : constraints.maxWidth;
 
-            return Center(
-              child: SizedBox(
-                width: contentWidth,
-                child: ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
-                  children: [
-                    _buildHeader(),
-                    const SizedBox(height: 18),
-                    const Divider(color: Color(0xFFE5E7EB)),
-                    const SizedBox(height: 18),
-                    _GeneralInfoSectionCard(
-                      number: '1',
-                      title: 'Basic Information',
-                      subtitle: 'Company identity and legal registration details.',
-                      expanded: _basicExpanded,
-                      onTap: () => setState(() => _basicExpanded = !_basicExpanded),
-                      child: _basicExpanded
-                          ? _EditableAbsorbPointer(
-                              enabled: _isEditing,
-                              child: _ResponsiveFields(
-                                isWide: isWide,
-                                children: [
-                                  _fieldBlock(
-                                    label: 'Company Name',
-                                    child: _textField(
-                                      controller: _companyNameController,
-                                    ),
-                                  ),
-                                  _fieldBlock(
-                                    label: 'Legal Name',
-                                    child: _textField(
-                                      controller: _legalNameController,
-                                    ),
-                                  ),
-                                  _fieldBlock(
-                                    label: 'Business Type',
-                                    child: _dropdownField<String>(
-                                      value: _selectedBusinessType,
-                                      items: kBusinessTypeOptions,
-                                      onChanged: (value) {
-                                        if (value == null) return;
-                                        setState(
-                                          () => _selectedBusinessType = value,
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                  _fieldBlock(
-                                    label: 'Industry',
-                                    child: _dropdownField<String>(
-                                      value: _selectedIndustry,
-                                      hintText: 'Select industry',
-                                      items: kIndustryOptions,
-                                      onChanged: (value) {
-                                        if (value == null) return;
-                                        setState(() => _selectedIndustry = value);
-                                      },
-                                    ),
-                                  ),
-                                  _fieldBlock(
-                                    label: 'Date of Incorporation',
-                                    child: _textField(
-                                      controller: _dateOfIncorporationController,
-                                      hintText: 'dd-mm-yyyy',
-                                    ),
-                                  ),
-                                  _fieldBlock(
-                                    label: 'CIN/Registration Number',
-                                    child: _textField(
-                                      controller: _cinController,
-                                    ),
-                                  ),
-                                  _fieldBlock(
-                                    label: 'GSTIN/PAN',
-                                    child: _textField(
-                                      controller: _gstinController,
-                                    ),
-                                  ),
-                                  _fieldBlock(
-                                    label: 'PAN Number (if applicable)',
-                                    child: _textField(
-                                      controller: _panController,
-                                    ),
-                                  ),
-                                  _fieldBlock(
-                                    label: 'Company Description',
-                                    fullWidth: true,
-                                    child: _textField(
-                                      controller: _descriptionController,
-                                      maxLines: 4,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                          : const SizedBox.shrink(),
-                    ),
-                    const SizedBox(height: 18),
-                    _GeneralInfoSectionCard(
-                      number: '2',
-                      title: 'Contact Information',
-                      subtitle: 'Primary business contact details.',
-                      expanded: _contactExpanded,
-                      onTap: () => setState(() => _contactExpanded = !_contactExpanded),
-                      child: _contactExpanded
-                          ? _EditableAbsorbPointer(
-                              enabled: _isEditing,
-                              child: _ResponsiveFields(
-                                isWide: isWide,
-                                children: [
-                                  _fieldBlock(
-                                    label: 'Primary Mobile Number',
-                                    child: _textField(
-                                      controller: _primaryMobileController,
-                                      keyboardType: TextInputType.phone,
-                                    ),
-                                  ),
-                                  _fieldBlock(
-                                    label: 'Alternate Mobile Number',
-                                    child: _textField(
-                                      controller: _alternateMobileController,
-                                      keyboardType: TextInputType.phone,
-                                    ),
-                                  ),
-                                  _fieldBlock(
-                                    label: 'Landline Number',
-                                    child: _textField(
-                                      controller: _landlineController,
-                                      keyboardType: TextInputType.phone,
-                                    ),
-                                  ),
-                                  _fieldBlock(
-                                    label: 'Official Email Address',
-                                    child: _textField(
-                                      controller: _officialEmailController,
-                                      keyboardType: TextInputType.emailAddress,
-                                    ),
-                                  ),
-                                  _fieldBlock(
-                                    label: 'Website',
-                                    child: _textField(
-                                      controller: _websiteController,
-                                      hintText: 'https://',
-                                      keyboardType: TextInputType.url,
-                                    ),
-                                  ),
-                                  _fieldBlock(
-                                    label: 'Customer Support Number',
-                                    child: _textField(
-                                      controller: _supportNumberController,
-                                      keyboardType: TextInputType.phone,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                          : const SizedBox.shrink(),
-                    ),
-                    const SizedBox(height: 18),
-                    _GeneralInfoSectionCard(
-                      number: '3',
-                      title: 'Address Information',
-                      subtitle: 'Registered, billing, and shipping addresses.',
-                      expanded: _addressExpanded,
-                      onTap: () => setState(() => _addressExpanded = !_addressExpanded),
-                      child: _addressExpanded
-                          ? _EditableAbsorbPointer(
-                              enabled: _isEditing,
-                              child: Column(
-                                children: [
-                                  _fieldBlock(
-                                    label: 'Registered Address',
-                                    child: _textField(
-                                      controller: _registeredAddressController,
-                                      maxLines: 3,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  _fieldBlock(
-                                    label: 'Branch/Office Address(es)',
-                                    child: _textField(
-                                      controller: _branchOfficeAddressController,
-                                      maxLines: 3,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  _ResponsiveFields(
-                                    isWide: isWide,
-                                    children: [
-                                      _fieldBlock(
-                                        label: 'City',
-                                        child: _textField(
-                                          controller: _cityController,
+                  return Center(
+                    child: SizedBox(
+                      width: contentWidth,
+                      child: ListView(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                        children: [
+                          _GeneralInfoSectionCard(
+                            number: '1',
+                            title: 'Basic Information',
+                            subtitle:
+                                'Company identity and legal registration details.',
+                            expanded: _basicExpanded,
+                            onTap: () =>
+                                setState(() => _basicExpanded = !_basicExpanded),
+                            child: _basicExpanded
+                                ? _EditableAbsorbPointer(
+                                    enabled: _isEditing,
+                                    child: _ResponsiveFields(
+                                      isWide: isWide,
+                                      children: [
+                                        _fieldBlock(
+                                          label: 'Company Name',
+                                          child: _textField(
+                                            controller: _companyNameController,
+                                          ),
                                         ),
-                                      ),
-                                      _fieldBlock(
-                                        label: 'State',
-                                        child: _dropdownField<String>(
-                                          value: _selectedState,
-                                          items: const [
-                                            'Maharashtra',
-                                            'Gujarat',
-                                            'Karnataka',
-                                            'Delhi',
-                                            'Tamil Nadu',
-                                            'Other',
+                                        _fieldBlock(
+                                          label: 'Legal Name',
+                                          child: _textField(
+                                            controller: _legalNameController,
+                                          ),
+                                        ),
+                                        _fieldBlock(
+                                          label: 'Business Type',
+                                          child: _dropdownField<String>(
+                                            value: _selectedBusinessType,
+                                            items: kBusinessTypeOptions,
+                                            onChanged: (value) {
+                                              if (value == null) return;
+                                              setState(
+                                                () => _selectedBusinessType = value,
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                        _fieldBlock(
+                                          label: 'Industry',
+                                          child: _dropdownField<String>(
+                                            value: _selectedIndustry,
+                                            hintText: 'Select industry',
+                                            items: kIndustryOptions,
+                                            onChanged: (value) {
+                                              if (value == null) return;
+                                              setState(
+                                                () => _selectedIndustry = value,
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                        _fieldBlock(
+                                          label: 'Date of Incorporation',
+                                          child: _textField(
+                                            controller:
+                                                _dateOfIncorporationController,
+                                            hintText: 'dd-mm-yyyy',
+                                          ),
+                                        ),
+                                        _fieldBlock(
+                                          label: 'CIN/Registration Number',
+                                          child: _textField(
+                                            controller: _cinController,
+                                          ),
+                                        ),
+                                        _fieldBlock(
+                                          label: 'GSTIN/PAN',
+                                          child: _textField(
+                                            controller: _gstinController,
+                                          ),
+                                        ),
+                                        _fieldBlock(
+                                          label: 'PAN Number (if applicable)',
+                                          child: _textField(
+                                            controller: _panController,
+                                          ),
+                                        ),
+                                        _fieldBlock(
+                                          label: 'Company Description',
+                                          fullWidth: true,
+                                          child: _textField(
+                                            controller: _descriptionController,
+                                            maxLines: 4,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : const SizedBox.shrink(),
+                          ),
+                          const SizedBox(height: 18),
+                          _GeneralInfoSectionCard(
+                            number: '2',
+                            title: 'Contact Information',
+                            subtitle: 'Primary business contact details.',
+                            expanded: _contactExpanded,
+                            onTap: () => setState(
+                              () => _contactExpanded = !_contactExpanded,
+                            ),
+                            child: _contactExpanded
+                                ? _EditableAbsorbPointer(
+                                    enabled: _isEditing,
+                                    child: _ResponsiveFields(
+                                      isWide: isWide,
+                                      children: [
+                                        _fieldBlock(
+                                          label: 'Primary Mobile Number',
+                                          child: _textField(
+                                            controller: _primaryMobileController,
+                                            keyboardType: TextInputType.phone,
+                                          ),
+                                        ),
+                                        _fieldBlock(
+                                          label: 'Alternate Mobile Number',
+                                          child: _textField(
+                                            controller:
+                                                _alternateMobileController,
+                                            keyboardType: TextInputType.phone,
+                                          ),
+                                        ),
+                                        _fieldBlock(
+                                          label: 'Landline Number',
+                                          child: _textField(
+                                            controller: _landlineController,
+                                            keyboardType: TextInputType.phone,
+                                          ),
+                                        ),
+                                        _fieldBlock(
+                                          label: 'Official Email Address',
+                                          child: _textField(
+                                            controller: _officialEmailController,
+                                            keyboardType:
+                                                TextInputType.emailAddress,
+                                          ),
+                                        ),
+                                        _fieldBlock(
+                                          label: 'Website',
+                                          child: _textField(
+                                            controller: _websiteController,
+                                            hintText: 'https://',
+                                            keyboardType: TextInputType.url,
+                                          ),
+                                        ),
+                                        _fieldBlock(
+                                          label: 'Customer Support Number',
+                                          child: _textField(
+                                            controller: _supportNumberController,
+                                            keyboardType: TextInputType.phone,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : const SizedBox.shrink(),
+                          ),
+                          const SizedBox(height: 18),
+                          _GeneralInfoSectionCard(
+                            number: '3',
+                            title: 'Address Information',
+                            subtitle:
+                                'Registered, billing, and shipping addresses.',
+                            expanded: _addressExpanded,
+                            onTap: () => setState(
+                              () => _addressExpanded = !_addressExpanded,
+                            ),
+                            child: _addressExpanded
+                                ? _EditableAbsorbPointer(
+                                    enabled: _isEditing,
+                                    child: Column(
+                                      children: [
+                                        _fieldBlock(
+                                          label: 'Registered Address',
+                                          child: _textField(
+                                            controller:
+                                                _registeredAddressController,
+                                            maxLines: 3,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        _fieldBlock(
+                                          label: 'Branch/Office Address(es)',
+                                          child: _textField(
+                                            controller:
+                                                _branchOfficeAddressController,
+                                            maxLines: 3,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        _ResponsiveFields(
+                                          isWide: isWide,
+                                          children: [
+                                            _fieldBlock(
+                                              label: 'City',
+                                              child: _textField(
+                                                controller: _cityController,
+                                              ),
+                                            ),
+                                            _fieldBlock(
+                                              label: 'State',
+                                              child: _dropdownField<String>(
+                                                value: _selectedState,
+                                                items: const [
+                                                  'Maharashtra',
+                                                  'Gujarat',
+                                                  'Karnataka',
+                                                  'Delhi',
+                                                  'Tamil Nadu',
+                                                  'Other',
+                                                ],
+                                                onChanged: (value) {
+                                                  if (value == null) return;
+                                                  setState(
+                                                    () => _selectedState = value,
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                            _fieldBlock(
+                                              label: 'Country',
+                                              child: _dropdownField<String>(
+                                                value: _selectedCountry,
+                                                items: const [
+                                                  'India',
+                                                  'United States',
+                                                  'United Kingdom',
+                                                  'UAE',
+                                                  'Other',
+                                                ],
+                                                onChanged: (value) {
+                                                  if (value == null) return;
+                                                  setState(
+                                                    () => _selectedCountry =
+                                                        value,
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                            _fieldBlock(
+                                              label: 'PIN/ZIP Code',
+                                              child: _textField(
+                                                controller: _pinCodeController,
+                                              ),
+                                            ),
                                           ],
+                                        ),
+                                        const SizedBox(height: 14),
+                                        CheckboxListTile(
+                                          contentPadding: EdgeInsets.zero,
+                                          dense: true,
+                                          visualDensity: VisualDensity.compact,
+                                          controlAffinity:
+                                              ListTileControlAffinity.leading,
+                                          value: _billingSameAsRegistered,
                                           onChanged: (value) {
-                                            if (value == null) return;
-                                            setState(() => _selectedState = value);
+                                            setState(() {
+                                              _billingSameAsRegistered =
+                                                  value ?? false;
+                                              if (_billingSameAsRegistered) {
+                                                _billingAddressController.text =
+                                                    _registeredAddressController
+                                                        .text;
+                                              }
+                                            });
                                           },
+                                          title: const Text(
+                                            'Billing address same as registered address',
+                                            style: TextStyle(
+                                              color: kGeneralInfoTitleColor,
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
                                         ),
-                                      ),
-                                      _fieldBlock(
-                                        label: 'Country',
-                                        child: _dropdownField<String>(
-                                          value: _selectedCountry,
-                                          items: const [
-                                            'India',
-                                            'United States',
-                                            'United Kingdom',
-                                            'UAE',
-                                            'Other',
-                                          ],
+                                        const SizedBox(height: 6),
+                                        _fieldBlock(
+                                          label: 'Billing Address',
+                                          child: _textField(
+                                            controller: _billingAddressController,
+                                            maxLines: 3,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 14),
+                                        CheckboxListTile(
+                                          contentPadding: EdgeInsets.zero,
+                                          dense: true,
+                                          visualDensity: VisualDensity.compact,
+                                          controlAffinity:
+                                              ListTileControlAffinity.leading,
+                                          value: _shippingSameAsBilling,
                                           onChanged: (value) {
-                                            if (value == null) return;
-                                            setState(() => _selectedCountry = value);
+                                            setState(() {
+                                              _shippingSameAsBilling =
+                                                  value ?? false;
+                                              if (_shippingSameAsBilling) {
+                                                _shippingAddressController.text =
+                                                    _billingAddressController
+                                                        .text;
+                                              }
+                                            });
                                           },
+                                          title: const Text(
+                                            'Shipping/Warehouse address same as billing address',
+                                            style: TextStyle(
+                                              color: kGeneralInfoTitleColor,
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
                                         ),
-                                      ),
-                                      _fieldBlock(
-                                        label: 'PIN/ZIP Code',
-                                        child: _textField(
-                                          controller: _pinCodeController,
+                                        const SizedBox(height: 6),
+                                        _fieldBlock(
+                                          label: 'Shipping/Warehouse Address',
+                                          child: _textField(
+                                            controller:
+                                                _shippingAddressController,
+                                            maxLines: 3,
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 14),
-                                  CheckboxListTile(
-                                    contentPadding: EdgeInsets.zero,
-                                    dense: true,
-                                    visualDensity: VisualDensity.compact,
-                                    controlAffinity:
-                                        ListTileControlAffinity.leading,
-                                    value: _billingSameAsRegistered,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _billingSameAsRegistered = value ?? false;
-                                        if (_billingSameAsRegistered) {
-                                          _billingAddressController.text =
-                                              _registeredAddressController.text;
-                                        }
-                                      });
-                                    },
-                                    title: const Text(
-                                      'Billing address same as registered address',
-                                      style: TextStyle(
-                                        color: kGeneralInfoTitleColor,
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                      ],
                                     ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  _fieldBlock(
-                                    label: 'Billing Address',
-                                    child: _textField(
-                                      controller: _billingAddressController,
-                                      maxLines: 3,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 14),
-                                  CheckboxListTile(
-                                    contentPadding: EdgeInsets.zero,
-                                    dense: true,
-                                    visualDensity: VisualDensity.compact,
-                                    controlAffinity:
-                                        ListTileControlAffinity.leading,
-                                    value: _shippingSameAsBilling,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _shippingSameAsBilling = value ?? false;
-                                        if (_shippingSameAsBilling) {
-                                          _shippingAddressController.text =
-                                              _billingAddressController.text;
-                                        }
-                                      });
-                                    },
-                                    title: const Text(
-                                      'Shipping/Warehouse address same as billing address',
-                                      style: TextStyle(
-                                        color: kGeneralInfoTitleColor,
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  _fieldBlock(
-                                    label: 'Shipping/Warehouse Address',
-                                    child: _textField(
-                                      controller: _shippingAddressController,
-                                      maxLines: 3,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                          : const SizedBox.shrink(),
+                                  )
+                                : const SizedBox.shrink(),
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'General Information',
-                style: TextStyle(
-                  color: kGeneralInfoTitleColor,
-                  fontSize: 26,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              SizedBox(height: 6),
-              Text(
-                'Update public company details used across invoices and reports.',
-                style: TextStyle(
-                  color: kGeneralInfoMutedColor,
-                  fontSize: 14.5,
-                  height: 1.25,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 12),
-        if (_isEditing)
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              OutlinedButton(
-                onPressed: _saving ? null : _cancelEdit,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: kGeneralInfoAccentColor,
-                  side: const BorderSide(color: kGeneralInfoAccentColor, width: 1.5),
-                  shape: const CircleBorder(),
-                  padding: const EdgeInsets.all(13),
-                ),
-                child: const Icon(Icons.close_rounded, size: 18),
-              ),
-              const SizedBox(width: 10),
-              ElevatedButton.icon(
-                onPressed: _saving ? null : _handleSave,
-                icon: _saving
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Icon(Icons.check_rounded, size: 18),
-                label: Text(_saving ? 'Saving' : 'Save Changes'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: kGeneralInfoAccentColor,
-                  foregroundColor: Colors.white,
-                  elevation: 10,
-                  shadowColor: kGeneralInfoAccentColor.withValues(alpha: 0.24),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 12,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  textStyle: const TextStyle(
-                    fontSize: 14.5,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
-          )
-        else
-          ElevatedButton.icon(
-            onPressed: _saving ? null : _toggleEdit,
-            icon: const Icon(Icons.edit_rounded, size: 18),
-            label: const Text('Edit Profile'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: kGeneralInfoAccentColor,
-              foregroundColor: Colors.white,
-              elevation: 10,
-              shadowColor: kGeneralInfoAccentColor.withValues(alpha: 0.24),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 18,
-                vertical: 12,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(999),
-              ),
-              textStyle: const TextStyle(
-                fontSize: 14.5,
-                fontWeight: FontWeight.w700,
+                  );
+                },
               ),
             ),
-          ),
-      ],
+          ],
+        ),
+      ),
     );
   }
 

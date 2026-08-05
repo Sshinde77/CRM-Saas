@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../widgets/admin/admin_top_bar.dart';
 
 const Color kBusinessTitleColor = Color(0xFF0F172A);
 const Color kBusinessMutedColor = Color(0xFF64748B);
@@ -85,209 +86,116 @@ class _BusinessSettingsScreenState extends State<BusinessSettingsScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final isWide = constraints.maxWidth >= 900;
-            final contentWidth = constraints.maxWidth > 1200
-                ? 1200.0
-                : constraints.maxWidth;
+        child: Column(
+          children: [
+            AdminTopBar(
+              title: 'Business Settings',
+              leadingIcon: Icons.arrow_back_rounded,
+              onLeadingTap: () => Navigator.of(context).maybePop(),
+            ),
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final isWide = constraints.maxWidth >= 900;
+                  final contentWidth = constraints.maxWidth > 1200
+                      ? 1200.0
+                      : constraints.maxWidth;
 
-            return Center(
-              child: SizedBox(
-                width: contentWidth,
-                child: ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
-                  children: [
-                    _buildHeader(),
-                    const SizedBox(height: 18),
-                    const Divider(color: Color(0xFFE5E7EB)),
-                    const SizedBox(height: 18),
-                    _ResponsiveFields(
-                      isWide: isWide,
-                      children: [
-                        _fieldBlock(
-                          label: 'Financial Year',
-                          child: _dropdownField<String>(
-                            value: _selectedFinancialYear,
-                            items: _financialYears,
-                            onChanged: (value) {
-                              if (value == null) return;
-                              setState(() => _selectedFinancialYear = value);
-                            },
+                  return Center(
+                    child: SizedBox(
+                      width: contentWidth,
+                      child: ListView(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                        children: [
+                          _ResponsiveFields(
+                            isWide: isWide,
+                            children: [
+                              _fieldBlock(
+                                label: 'Financial Year',
+                                child: _dropdownField<String>(
+                                  value: _selectedFinancialYear,
+                                  items: _financialYears,
+                                  onChanged: (value) {
+                                    if (value == null) return;
+                                    setState(
+                                      () => _selectedFinancialYear = value,
+                                    );
+                                  },
+                                ),
+                              ),
+                              _fieldBlock(
+                                label: 'Currency',
+                                child: _dropdownField<String>(
+                                  value: _selectedCurrency,
+                                  hintText: 'Select currency',
+                                  items: _currencies,
+                                  onChanged: (value) {
+                                    setState(() => _selectedCurrency = value);
+                                  },
+                                ),
+                              ),
+                              _fieldBlock(
+                                label: 'Time Zone',
+                                child: _dropdownField<String>(
+                                  value: _selectedTimeZone,
+                                  hintText: 'Select time zone',
+                                  items: _timeZones,
+                                  onChanged: (value) {
+                                    setState(() => _selectedTimeZone = value);
+                                  },
+                                ),
+                              ),
+                              _fieldBlock(
+                                label: 'Language',
+                                child: _dropdownField<String>(
+                                  value: _selectedLanguage,
+                                  hintText: 'Select language',
+                                  items: _languages,
+                                  onChanged: (value) {
+                                    setState(() => _selectedLanguage = value);
+                                  },
+                                ),
+                              ),
+                              _fieldBlock(
+                                label: 'Tax Configuration',
+                                child: _dropdownField<String>(
+                                  value: _selectedTaxConfiguration,
+                                  hintText: 'Select tax configuration',
+                                  items: _taxConfigs,
+                                  onChanged: (value) {
+                                    setState(
+                                      () => _selectedTaxConfiguration = value,
+                                    );
+                                  },
+                                ),
+                              ),
+                              _fieldBlock(
+                                label: 'Invoice Prefix',
+                                child: _textField(
+                                  controller: _invoicePrefixController,
+                                  hintText: 'e.g. INV',
+                                ),
+                              ),
+                              _fieldBlock(
+                                label: 'Invoice Settings',
+                                fullWidth: true,
+                                child: _textField(
+                                  controller: _invoiceNotesController,
+                                  maxLines: 4,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                        _fieldBlock(
-                          label: 'Currency',
-                          child: _dropdownField<String>(
-                            value: _selectedCurrency,
-                            hintText: 'Select currency',
-                            items: _currencies,
-                            onChanged: (value) {
-                              setState(() => _selectedCurrency = value);
-                            },
-                          ),
-                        ),
-                        _fieldBlock(
-                          label: 'Time Zone',
-                          child: _dropdownField<String>(
-                            value: _selectedTimeZone,
-                            hintText: 'Select time zone',
-                            items: _timeZones,
-                            onChanged: (value) {
-                              setState(() => _selectedTimeZone = value);
-                            },
-                          ),
-                        ),
-                        _fieldBlock(
-                          label: 'Language',
-                          child: _dropdownField<String>(
-                            value: _selectedLanguage,
-                            hintText: 'Select language',
-                            items: _languages,
-                            onChanged: (value) {
-                              setState(() => _selectedLanguage = value);
-                            },
-                          ),
-                        ),
-                        _fieldBlock(
-                          label: 'Tax Configuration',
-                          child: _dropdownField<String>(
-                            value: _selectedTaxConfiguration,
-                            hintText: 'Select tax configuration',
-                            items: _taxConfigs,
-                            onChanged: (value) {
-                              setState(() => _selectedTaxConfiguration = value);
-                            },
-                          ),
-                        ),
-                        _fieldBlock(
-                          label: 'Invoice Prefix',
-                          child: _textField(
-                            controller: _invoicePrefixController,
-                            hintText: 'e.g. INV',
-                          ),
-                        ),
-                        _fieldBlock(
-                          label: 'Invoice Settings',
-                          fullWidth: true,
-                          child: _textField(
-                            controller: _invoiceNotesController,
-                            maxLines: 4,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Business Settings',
-                style: TextStyle(
-                  color: kBusinessTitleColor,
-                  fontSize: 26,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              SizedBox(height: 6),
-              Text(
-                'Manage accounting, tax, invoice, and localization settings.',
-                style: TextStyle(
-                  color: kBusinessMutedColor,
-                  fontSize: 14.5,
-                  height: 1.25,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 12),
-        if (_isEditing)
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              OutlinedButton(
-                onPressed: _saving ? null : () => setState(() => _isEditing = false),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: kBusinessAccentColor,
-                  side: const BorderSide(color: kBusinessAccentColor, width: 1.5),
-                  shape: const CircleBorder(),
-                  padding: const EdgeInsets.all(13),
-                ),
-                child: const Icon(Icons.close_rounded, size: 18),
-              ),
-              const SizedBox(width: 10),
-              ElevatedButton.icon(
-                onPressed: _saving ? null : _handleSave,
-                icon: _saving
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Icon(Icons.check_rounded, size: 18),
-                label: Text(_saving ? 'Saving' : 'Save Changes'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: kBusinessAccentColor,
-                  foregroundColor: Colors.white,
-                  elevation: 10,
-                  shadowColor: kBusinessAccentColor.withValues(alpha: 0.24),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 12,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  textStyle: const TextStyle(
-                    fontSize: 14.5,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
-          )
-        else
-          ElevatedButton.icon(
-            onPressed: _saving ? null : () => setState(() => _isEditing = true),
-            icon: const Icon(Icons.edit_rounded, size: 18),
-            label: const Text('Edit Profile'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: kBusinessAccentColor,
-              foregroundColor: Colors.white,
-              elevation: 10,
-              shadowColor: kBusinessAccentColor.withValues(alpha: 0.24),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 18,
-                vertical: 12,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(999),
-              ),
-              textStyle: const TextStyle(
-                fontSize: 14.5,
-                fontWeight: FontWeight.w700,
+                  );
+                },
               ),
             ),
-          ),
-      ],
+          ],
+        ),
+      ),
     );
   }
 

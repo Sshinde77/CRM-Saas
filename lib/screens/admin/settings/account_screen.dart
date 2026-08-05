@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../widgets/admin/admin_top_bar.dart';
 import 'company_settings_constants.dart';
 
 class AccountScreen extends StatefulWidget {
@@ -106,264 +107,131 @@ class _AccountScreenState extends State<AccountScreen> {
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+        child: Column(
           children: [
-            _buildMobileHeader(),
-            const SizedBox(height: 12),
-            const Divider(color: Color(0xFFE5E7EB)),
-            const SizedBox(height: 14),
-            _SectionCard(
-              number: 1,
-              title: 'Account Details',
-              subtitle: 'Company account classification and status.',
-              expanded: _accountDetailsExpanded,
-              onToggle: () {
-                setState(
-                  () => _accountDetailsExpanded = !_accountDetailsExpanded,
-                );
-              },
-              child: _accountDetailsExpanded
-                  ? Column(
-                      children: [
-                        _fieldBlock(
-                          label: 'Legal Name',
-                          child: _textField(
-                            controller: _legalNameController,
-                            enabled: _isEditing,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        _fieldBlock(
-                          label: 'Industry',
-                          child: _dropdownField(
-                            value: _selectedIndustry,
-                            hintText: 'Select industry',
-                            items: kIndustryOptions,
-                            enabled: _isEditing,
-                            onChanged: (value) {
-                              if (value == null) return;
-                              setState(() => _selectedIndustry = value);
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        _fieldBlock(
-                          label: 'Status',
-                          child: _dropdownField(
-                            value: _selectedStatus,
-                            items: _statusOptions,
-                            enabled: _isEditing,
-                            onChanged: (value) {
-                              if (value == null) return;
-                              setState(() => _selectedStatus = value);
-                            },
-                          ),
-                        ),
-                      ],
-                    )
-                  : const SizedBox.shrink(),
+            AdminTopBar(
+              title: 'Account',
+              leadingIcon: Icons.arrow_back_rounded,
+              onLeadingTap: () => Navigator.of(context).maybePop(),
             ),
-            const SizedBox(height: 18),
-            _SectionCard(
-              number: 2,
-              title: 'Authorized Person',
-              subtitle: 'Authorized representative contact and identity.',
-              expanded: _authorizedPersonExpanded,
-              onToggle: () {
-                setState(
-                  () => _authorizedPersonExpanded = !_authorizedPersonExpanded,
-                );
-              },
-              child: _authorizedPersonExpanded
-                  ? Column(
-                      children: [
-                        _fieldBlock(
-                          label: 'Owner/Director Name',
-                          child: _textField(
-                            controller: _ownerController,
-                            enabled: _isEditing,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        _fieldBlock(
-                          label: 'Designation',
-                          child: _dropdownField(
-                            value: _selectedDesignation,
-                            items: _designationOptions,
-                            enabled: _isEditing,
-                            onChanged: (value) {
-                              if (value == null) return;
-                              setState(() => _selectedDesignation = value);
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        _fieldBlock(
-                          label: 'Mobile Number',
-                          child: _textField(
-                            controller: _mobileController,
-                            keyboardType: TextInputType.phone,
-                            enabled: _isEditing,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        _fieldBlock(
-                          label: 'Email',
-                          child: _textField(
-                            controller: _emailController,
-                            keyboardType: TextInputType.emailAddress,
-                            enabled: _isEditing,
-                          ),
-                        ),
-                      ],
-                    )
-                  : const SizedBox.shrink(),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                children: [
+                  _SectionCard(
+                    number: 1,
+                    title: 'Account Details',
+                    subtitle: 'Company account classification and status.',
+                    expanded: _accountDetailsExpanded,
+                    onToggle: () {
+                      setState(
+                        () => _accountDetailsExpanded = !_accountDetailsExpanded,
+                      );
+                    },
+                    child: _accountDetailsExpanded
+                        ? Column(
+                            children: [
+                              _fieldBlock(
+                                label: 'Legal Name',
+                                child: _textField(
+                                  controller: _legalNameController,
+                                  enabled: _isEditing,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              _fieldBlock(
+                                label: 'Industry',
+                                child: _dropdownField(
+                                  value: _selectedIndustry,
+                                  hintText: 'Select industry',
+                                  items: kIndustryOptions,
+                                  enabled: _isEditing,
+                                  onChanged: (value) {
+                                    if (value == null) return;
+                                    setState(() => _selectedIndustry = value);
+                                  },
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              _fieldBlock(
+                                label: 'Status',
+                                child: _dropdownField(
+                                  value: _selectedStatus,
+                                  items: _statusOptions,
+                                  enabled: _isEditing,
+                                  onChanged: (value) {
+                                    if (value == null) return;
+                                    setState(() => _selectedStatus = value);
+                                  },
+                                ),
+                              ),
+                            ],
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                  const SizedBox(height: 18),
+                  _SectionCard(
+                    number: 2,
+                    title: 'Authorized Person',
+                    subtitle: 'Authorized representative contact and identity.',
+                    expanded: _authorizedPersonExpanded,
+                    onToggle: () {
+                      setState(
+                        () =>
+                            _authorizedPersonExpanded = !_authorizedPersonExpanded,
+                      );
+                    },
+                    child: _authorizedPersonExpanded
+                        ? Column(
+                            children: [
+                              _fieldBlock(
+                                label: 'Owner/Director Name',
+                                child: _textField(
+                                  controller: _ownerController,
+                                  enabled: _isEditing,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              _fieldBlock(
+                                label: 'Designation',
+                                child: _dropdownField(
+                                  value: _selectedDesignation,
+                                  items: _designationOptions,
+                                  enabled: _isEditing,
+                                  onChanged: (value) {
+                                    if (value == null) return;
+                                    setState(() => _selectedDesignation = value);
+                                  },
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              _fieldBlock(
+                                label: 'Mobile Number',
+                                child: _textField(
+                                  controller: _mobileController,
+                                  keyboardType: TextInputType.phone,
+                                  enabled: _isEditing,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              _fieldBlock(
+                                label: 'Email',
+                                child: _textField(
+                                  controller: _emailController,
+                                  keyboardType: TextInputType.emailAddress,
+                                  enabled: _isEditing,
+                                ),
+                              ),
+                            ],
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildMobileHeader() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: AppColors.surfaceSoft,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColors.border),
-              ),
-              child: IconButton(
-                onPressed: () => Navigator.of(context).maybePop(),
-                icon: const Icon(
-                  Icons.arrow_back_rounded,
-                  color: _titleColor,
-                ),
-                tooltip: 'Back',
-                padding: EdgeInsets.zero,
-              ),
-            ),
-            const SizedBox(width: 12),
-            const Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(top: 2),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Account',
-                      style: TextStyle(
-                        color: _titleColor,
-                        fontSize: 27,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    SizedBox(height: 3),
-                    Text(
-                      'Manage primary admin registration details.',
-                      style: TextStyle(
-                        color: _mutedColor,
-                        fontSize: 14,
-                        height: 1.2,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            if (_isEditing)
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  OutlinedButton(
-                    onPressed: _saving ? null : _cancelEdit,
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: _accent,
-                      side: const BorderSide(color: _accent, width: 1.5),
-                      shape: const CircleBorder(),
-                      padding: const EdgeInsets.all(13),
-                    ),
-                    child: const Icon(
-                      Icons.close_rounded,
-                      size: 18,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  ElevatedButton.icon(
-                    onPressed: _saving ? null : _handleSave,
-                    icon: _saving
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Icon(Icons.check_rounded, size: 18),
-                    label: Text(_saving ? 'Saving' : 'Save Changes'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _accent,
-                      foregroundColor: Colors.white,
-                      elevation: 8,
-                      shadowColor: _accent.withValues(alpha: 0.24),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 18,
-                        vertical: 14,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      textStyle: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ],
-              )
-            else
-              ElevatedButton.icon(
-                onPressed: _saving
-                    ? null
-                    : () => setState(() => _isEditing = true),
-                icon: const Icon(Icons.edit_rounded, size: 18),
-                label: const Text('Edit Profile'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _accent,
-                  foregroundColor: Colors.white,
-                  elevation: 8,
-                  shadowColor: _accent.withValues(alpha: 0.24),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 12,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  textStyle: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ],
     );
   }
 

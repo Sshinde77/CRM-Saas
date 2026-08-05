@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../widgets/admin/admin_top_bar.dart';
 
 const Color kOnlinePresenceTitleColor = Color(0xFF0F172A);
 const Color kOnlinePresenceMutedColor = Color(0xFF64748B);
@@ -55,169 +56,77 @@ class _OnlinePresenceScreenState extends State<OnlinePresenceScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final isWide = constraints.maxWidth >= 900;
-            final contentWidth = constraints.maxWidth > 1200
-                ? 1200.0
-                : constraints.maxWidth;
+        child: Column(
+          children: [
+            AdminTopBar(
+              title: 'Online Presence',
+              leadingIcon: Icons.arrow_back_rounded,
+              onLeadingTap: () => Navigator.of(context).maybePop(),
+            ),
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final isWide = constraints.maxWidth >= 900;
+                  final contentWidth = constraints.maxWidth > 1200
+                      ? 1200.0
+                      : constraints.maxWidth;
 
-            return Center(
-              child: SizedBox(
-                width: contentWidth,
-                child: ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
-                  children: [
-                    _buildHeader(),
-                    const SizedBox(height: 18),
-                    const Divider(color: Color(0xFFE5E7EB)),
-                    const SizedBox(height: 18),
-                    _ResponsiveFields(
-                      isWide: isWide,
-                      children: [
-                        _fieldBlock(
-                          label: 'Facebook',
-                          child: _textField(controller: _facebookController),
-                        ),
-                        _fieldBlock(
-                          label: 'Instagram',
-                          child: _textField(controller: _instagramController),
-                        ),
-                        _fieldBlock(
-                          label: 'LinkedIn',
-                          child: _textField(controller: _linkedinController),
-                        ),
-                        _fieldBlock(
-                          label: 'X (Twitter)',
-                          child: _textField(controller: _xController),
-                        ),
-                        _fieldBlock(
-                          label: 'YouTube',
-                          child: _textField(controller: _youtubeController),
-                        ),
-                        _fieldBlock(
-                          label: 'WhatsApp Business Number',
-                          child: _textField(
-                            controller: _whatsappController,
-                            keyboardType: TextInputType.phone,
+                  return Center(
+                    child: SizedBox(
+                      width: contentWidth,
+                      child: ListView(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                        children: [
+                          _ResponsiveFields(
+                            isWide: isWide,
+                            children: [
+                              _fieldBlock(
+                                label: 'Facebook',
+                                child: _textField(
+                                  controller: _facebookController,
+                                ),
+                              ),
+                              _fieldBlock(
+                                label: 'Instagram',
+                                child: _textField(
+                                  controller: _instagramController,
+                                ),
+                              ),
+                              _fieldBlock(
+                                label: 'LinkedIn',
+                                child: _textField(
+                                  controller: _linkedinController,
+                                ),
+                              ),
+                              _fieldBlock(
+                                label: 'X (Twitter)',
+                                child: _textField(controller: _xController),
+                              ),
+                              _fieldBlock(
+                                label: 'YouTube',
+                                child: _textField(
+                                  controller: _youtubeController,
+                                ),
+                              ),
+                              _fieldBlock(
+                                label: 'WhatsApp Business Number',
+                                child: _textField(
+                                  controller: _whatsappController,
+                                  keyboardType: TextInputType.phone,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Online Presence',
-                style: TextStyle(
-                  color: kOnlinePresenceTitleColor,
-                  fontSize: 26,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              SizedBox(height: 6),
-              Text(
-                'Manage social media and online business profiles.',
-                style: TextStyle(
-                  color: kOnlinePresenceMutedColor,
-                  fontSize: 14.5,
-                  height: 1.25,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 12),
-        if (_isEditing)
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              OutlinedButton(
-                onPressed: _saving ? null : () => setState(() => _isEditing = false),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: kOnlinePresenceAccentColor,
-                  side: const BorderSide(
-                    color: kOnlinePresenceAccentColor,
-                    width: 1.5,
-                  ),
-                  shape: const CircleBorder(),
-                  padding: const EdgeInsets.all(13),
-                ),
-                child: const Icon(Icons.close_rounded, size: 18),
-              ),
-              const SizedBox(width: 10),
-              ElevatedButton.icon(
-                onPressed: _saving ? null : _handleSave,
-                icon: _saving
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Icon(Icons.check_rounded, size: 18),
-                label: Text(_saving ? 'Saving' : 'Save Changes'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: kOnlinePresenceAccentColor,
-                  foregroundColor: Colors.white,
-                  elevation: 10,
-                  shadowColor: kOnlinePresenceAccentColor.withValues(alpha: 0.24),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 12,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  textStyle: const TextStyle(
-                    fontSize: 14.5,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
-          )
-        else
-          ElevatedButton.icon(
-            onPressed: _saving ? null : () => setState(() => _isEditing = true),
-            icon: const Icon(Icons.edit_rounded, size: 18),
-            label: const Text('Edit Profile'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: kOnlinePresenceAccentColor,
-              foregroundColor: Colors.white,
-              elevation: 10,
-              shadowColor: kOnlinePresenceAccentColor.withValues(alpha: 0.24),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 18,
-                vertical: 12,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(999),
-              ),
-              textStyle: const TextStyle(
-                fontSize: 14.5,
-                fontWeight: FontWeight.w700,
+                  );
+                },
               ),
             ),
-          ),
-      ],
+          ],
+        ),
+      ),
     );
   }
 

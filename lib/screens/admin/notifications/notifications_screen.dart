@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
-import '../../../widgets/admin/app_drawer.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -63,19 +62,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final unreadCount = _items.where((item) => !item.isRead).length;
-
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
-      drawer: const AppDrawer(activeItem: 'Notifications'),
       body: SafeArea(
         child: Column(
           children: [
             AdminTopBar(
               title: 'Notifications',
-              leadingIcon: Icons.menu_rounded,
-              onLeadingTap: () => _scaffoldKey.currentState?.openDrawer(),
+              leadingIcon: Icons.arrow_back_rounded,
+              onLeadingTap: () => Navigator.of(context).maybePop(),
             ),
             Expanded(
               child: SingleChildScrollView(
@@ -83,54 +79,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Notifications',
-                                style: TextStyle(
-                                  color: textPrimary,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                              SizedBox(height: 4),
-                              Text(
-                                'Keep track of important system and business updates',
-                                style: TextStyle(
-                                  color: textSecondary,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 12,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.purple.withValues(alpha: 0.08),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Text(
-                            '$unreadCount unread',
-                            style: const TextStyle(
-                              color: AppColors.purple,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
                     if (_items.isEmpty)
                       const Padding(
                         padding: EdgeInsets.symmetric(vertical: 40),
