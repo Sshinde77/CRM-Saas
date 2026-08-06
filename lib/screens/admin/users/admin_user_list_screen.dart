@@ -4,7 +4,6 @@ import '../../../constants/app_colors.dart';
 import '../../../models/app_user.dart';
 import '../../../models/auth_models.dart';
 import '../../../services/api_service.dart';
-import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
 import '../../../widgets/soft_action_button.dart';
 import 'add_staff_screen.dart';
@@ -24,8 +23,21 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
 
   static const Color textPrimary = AppColors.textPrimary;
   static const Color textSecondary = AppColors.textSecondary;
+  static const Color _headerGreen = Color(0xFF0D3B07);
+  static const Color _cardBorder = Color(0xFFE3E7EC);
+  static const Color _cardBg = Colors.white;
+  static const List<String> _statusFilters = [
+    'All',
+    'Accountant',
+    'Delivery Partner',
+    'Sales Officer',
+    'HR',
+  ];
 
   String _query = '';
+  String _selectedStatusFilter = 'All';
+  int _currentPage = 0;
+  static const int _pageSize = 6;
 
   @override
   void initState() {
@@ -44,16 +56,36 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
   List<AppUser> _filteredUsers(List<AppUser> users) {
     return users.where((user) {
       final query = _query.trim().toLowerCase();
-      if (query.isEmpty) {
-        return true;
-      }
-
-      return user.name.toLowerCase().contains(query) ||
-          _formatRole(user.role).toLowerCase().contains(query) ||
+      final roleLabel = _formatRole(user.role);
+      final matchesQuery = query.isEmpty ||
+          user.name.toLowerCase().contains(query) ||
+          roleLabel.toLowerCase().contains(query) ||
           _statusLabel(user).toLowerCase().contains(query) ||
           user.email.toLowerCase().contains(query) ||
           (user.phone ?? '').toLowerCase().contains(query);
+
+      final matchesStatus = _selectedStatusFilter == 'All' ||
+          roleLabel == _selectedStatusFilter;
+
+      return matchesQuery && matchesStatus;
     }).toList();
+  }
+
+  List<AppUser> _pagedUsers(List<AppUser> users) {
+    final start = _currentPage * _pageSize;
+    if (start >= users.length) {
+      return const <AppUser>[];
+    }
+
+    final end = (start + _pageSize).clamp(0, users.length);
+    return users.sublist(start, end);
+  }
+
+  void _setStatusFilter(String value) {
+    setState(() {
+      _selectedStatusFilter = value;
+      _currentPage = 0;
+    });
   }
 
   void _refreshUsers() {
@@ -369,72 +401,131 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            AdminTopBar(
-              title: 'Users',
-              leadingIcon: Icons.menu_rounded,
-              onLeadingTap: () => _scaffoldKey.currentState?.openDrawer(),
-            ),
+            _buildHeader(),
             Expanded(
               child: FutureBuilder<List<AppUser>>(
                 future: _usersFuture,
                 builder: (context, snapshot) {
                   final allUsers = snapshot.data ?? const <AppUser>[];
                   final users = _filteredUsers(allUsers);
+                  final pageUsers = _pagedUsers(users);
+                  final totalCount = users.length;
+                  final pageCount =
+                      totalCount == 0 ? 1 : ((totalCount - 1) ~/ _pageSize) + 1;
+                  final currentPage = _currentPage.clamp(0, pageCount - 1);
+                  if (currentPage != _currentPage) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) {
+                        setState(() => _currentPage = currentPage);
+                      }
+                    });
+                  }
 
-                  return SingleChildScrollView(
+                  return ListView(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            const Expanded(
-                              child: Text(
-                                'Users',
-                                style: TextStyle(
-                                  color: textPrimary,
-                                  fontSize: 24,
-                                  height: 1,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 0,
-                                ),
-                              ),
+                    children: [
+                      _buildSearchRow(),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(child: _buildStatusDropdown()),
+                          const SizedBox(width: 12),
+                          _addUserButton(),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      if (snapshot.connectionState == ConnectionState.waiting)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 40),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.primary,
                             ),
-                            const SizedBox(width: 12),
-                            _addUserButton(),
-                          ],
+                          ),
+                        )
+                      else if (snapshot.hasError)
+                        _buildUsersError(snapshot.error.toString())
+                      else
+                        _buildStaffList(
+                          pageUsers,
+                          totalCount,
+                          currentPage,
+                          pageCount,
                         ),
-                        const SizedBox(height: 18),
-                        Row(
-                          children: [
-                            Expanded(child: _buildSearchField()),
-                            const SizedBox(width: 12),
-                            _filterButton(),
-                          ],
-                        ),
-                        const SizedBox(height: 14),
-                        if (snapshot.connectionState == ConnectionState.waiting)
-                          const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 40),
-                            child: Center(
-                              child: CircularProgressIndicator(
-                                color: AppColors.primary,
-                              ),
-                            ),
-                          )
-                        else if (snapshot.hasError)
-                          _buildUsersError(snapshot.error.toString())
-                        else
-                          _buildUserList(users, allUsers),
-                      ],
-                    ),
+                    ],
                   );
                 },
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          bottom: BorderSide(color: Color(0xFFE5E7EB)),
+        ),
+      ),
+      child: Row(
+        children: [
+          InkWell(
+            onTap: () => _scaffoldKey.currentState?.openDrawer(),
+            borderRadius: BorderRadius.circular(14),
+            child: const SizedBox(
+              width: 38,
+              height: 38,
+              child: Icon(
+                Icons.menu_rounded,
+                color: Colors.black,
+                size: 24,
+              ),
+            ),
+          ),
+          const Expanded(
+            child: Text(
+              'Staff',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              const SizedBox(
+                width: 38,
+                height: 38,
+                child: Icon(
+                  Icons.notifications_none_rounded,
+                  color: Colors.white,
+                  size: 23,
+                ),
+              ),
+              Positioned(
+                right: 10,
+                top: 8,
+                child: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFF4D4F),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -460,75 +551,257 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
     );
   }
 
-  Widget _buildSearchField() {
-    return SizedBox(
-      height: 46,
-      child: TextField(
-        controller: _searchController,
-        onChanged: (value) => setState(() => _query = value),
-        style: const TextStyle(
-          color: textPrimary,
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
+  Widget _buildSearchRow() {
+    return Row(
+      children: [
+        Expanded(
+          child: SizedBox(
+            height: 48,
+            child: TextField(
+              controller: _searchController,
+              onChanged: (value) => setState(() {
+                _query = value;
+                _currentPage = 0;
+              }),
+              style: const TextStyle(
+                color: textPrimary,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Search staff',
+                hintStyle: const TextStyle(
+                  color: textSecondary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+                prefixIcon: const Padding(
+                  padding: EdgeInsets.only(left: 10, right: 4),
+                  child: Icon(Icons.search_rounded, color: textSecondary, size: 20),
+                ),
+                prefixIconConstraints: const BoxConstraints(
+                  minWidth: 42,
+                  minHeight: 46,
+                ),
+                filled: true,
+                fillColor: AppColors.background,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: _cardBorder),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: _cardBorder),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: AppColors.primary, width: 1.2),
+                ),
+              ),
+            ),
+          ),
         ),
+        const SizedBox(width: 12),
+        InkWell(
+          onTap: _showFilterMenu,
+          borderRadius: BorderRadius.circular(14),
+          child: Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: AppColors.background,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: _cardBorder),
+            ),
+            alignment: Alignment.center,
+            child: const Icon(
+              Icons.filter_alt_outlined,
+              color: textPrimary,
+              size: 22,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatusDropdown() {
+    return SizedBox(
+      height: 48,
+      child: DropdownButtonFormField<String>(
+        initialValue: _selectedStatusFilter,
+        items: _statusFilters
+            .map(
+              (value) => DropdownMenuItem<String>(
+                value: value,
+                child: Text(value),
+              ),
+            )
+            .toList(),
+        onChanged: (value) {
+          if (value == null) return;
+          _setStatusFilter(value);
+        },
         decoration: InputDecoration(
-          hintText: 'Search users...',
-          hintStyle: const TextStyle(
-            color: textSecondary,
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-          prefixIcon: const Padding(
-            padding: EdgeInsets.only(left: 8, right: 4),
-            child: Icon(Icons.search_rounded, color: textPrimary, size: 22),
-          ),
-          prefixIconConstraints: const BoxConstraints(
-            minWidth: 42,
-            minHeight: 46,
-          ),
           filled: true,
           fillColor: AppColors.background,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 10,
-          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: AppColors.borderStrong),
+            borderSide: const BorderSide(color: _cardBorder),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: AppColors.borderStrong),
+            borderSide: const BorderSide(color: _cardBorder),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
             borderSide: const BorderSide(color: AppColors.primary, width: 1.2),
           ),
         ),
+        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: textSecondary),
+        style: const TextStyle(
+          color: textPrimary,
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
+        dropdownColor: Colors.white,
+        borderRadius: BorderRadius.circular(14),
       ),
     );
   }
 
-  Widget _filterButton() {
-    return Tooltip(
-      message: 'Refresh users',
-      child: InkWell(
-        onTap: _refreshUsers,
-        borderRadius: BorderRadius.circular(14),
-        child: Container(
-          width: 46,
-          height: 46,
+  Future<void> _showFilterMenu() async {
+    final selection = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          margin: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: AppColors.background,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.borderStrong),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
           ),
-          alignment: Alignment.center,
-          child: const Icon(
-            Icons.filter_list_rounded,
-            color: textPrimary,
-            size: 22,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: _statusFilters
+                .map(
+                  (item) => ListTile(
+                    onTap: () => Navigator.of(context).pop(item),
+                    title: Text(
+                      item,
+                      style: const TextStyle(
+                        color: textPrimary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    trailing: _selectedStatusFilter == item
+                        ? const Icon(
+                            Icons.check_rounded,
+                            color: AppColors.primary,
+                          )
+                        : null,
+                  ),
+                )
+                .toList(),
           ),
+        );
+      },
+    );
+
+    if (selection != null) {
+      _setStatusFilter(selection);
+    }
+  }
+
+  Widget _buildStaffList(
+    List<AppUser> users,
+    int totalCount,
+    int currentPage,
+    int pageCount,
+  ) {
+    if (users.isEmpty) {
+      return _emptyUsers(
+        _query.isNotEmpty || _selectedStatusFilter != 'All'
+            ? 'No staff match your filters.'
+            : 'No staff available.',
+      );
+    }
+
+    final start = totalCount == 0 ? 0 : currentPage * _pageSize;
+    final end = totalCount == 0 ? 0 : start + users.length;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ...users.asMap().entries.map((entry) {
+          final index = start + entry.key;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: _userCard(entry.value, index),
+          );
+        }),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Text(
+              '${start + 1} to $end of $totalCount',
+              style: const TextStyle(
+                color: textSecondary,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const Spacer(),
+            _pageButton(
+              icon: Icons.chevron_left_rounded,
+              enabled: currentPage > 0,
+              onTap: () {
+                if (currentPage <= 0) return;
+                setState(() => _currentPage = currentPage - 1);
+              },
+            ),
+            const SizedBox(width: 10),
+            _pageButton(
+              icon: Icons.chevron_right_rounded,
+              enabled: currentPage < pageCount - 1,
+              onTap: () {
+                if (currentPage >= pageCount - 1) return;
+                setState(() => _currentPage = currentPage + 1);
+              },
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _pageButton({
+    required IconData icon,
+    required bool enabled,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: enabled ? onTap : null,
+      borderRadius: BorderRadius.circular(999),
+      child: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: enabled ? Colors.white : const Color(0xFFF2F4F7),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: _cardBorder),
+        ),
+        alignment: Alignment.center,
+        child: Icon(
+          icon,
+          size: 18,
+          color: enabled ? textPrimary : AppColors.textLightMuted,
         ),
       ),
     );
@@ -584,26 +857,6 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
               child: _userCard(entry.value, index),
             );
           }),
-        const SizedBox(height: 8),
-        Text.rich(
-          TextSpan(
-            text: 'Total Users: ',
-            children: [
-              TextSpan(
-                text: '${users.length}',
-                style: const TextStyle(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ],
-          ),
-          style: const TextStyle(
-            color: textPrimary,
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
       ],
     );
   }
@@ -623,59 +876,55 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
   Widget _userCard(AppUser user, int index) {
     final displayName = user.name.trim().isEmpty ? 'Unnamed user' : user.name;
     final displayEmail = user.email.trim().isEmpty ? 'No email' : user.email;
-    final displayPhone = (user.phone ?? '').trim().isEmpty
-        ? 'No phone'
-        : user.phone!.trim();
+    final roleLabel = _formatRole(user.role);
     final initials = displayName
         .split(' ')
         .where((part) => part.isNotEmpty)
         .take(2)
         .map((part) => part[0].toUpperCase())
         .join();
-    final avatarAsset = 'assets/avatar${(index % 3) + 1}.png';
+    final avatarColors = <Color>[
+      const Color(0xFFEAF5D9),
+      const Color(0xFFE9EEFF),
+      const Color(0xFFFCEFD9),
+      const Color(0xFFF4E8FF),
+      const Color(0xFFE6F8F3),
+      const Color(0xFFFFE8EE),
+    ];
+    final avatarBg = avatarColors[index % avatarColors.length];
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.borderStrong),
+        color: _cardBg,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: _cardBorder),
         boxShadow: [
           BoxShadow(
-            color: AppColors.textPrimary.withValues(alpha: 0.035),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.035),
+            blurRadius: 12,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 56,
-            height: 56,
+            width: 48,
+            height: 48,
             decoration: BoxDecoration(
-              color: AppColors.surfaceSoft,
+              color: avatarBg,
               shape: BoxShape.circle,
-              border: Border.all(color: AppColors.borderLight),
             ),
-            clipBehavior: Clip.antiAlias,
-            child: Image.asset(
-              avatarAsset,
-              width: 56,
-              height: 56,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Center(
-                child: Text(
-                  initials.isEmpty ? '?' : initials,
-                  style: const TextStyle(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 16,
-                    letterSpacing: 0,
-                  ),
-                ),
+            alignment: Alignment.center,
+            child: Text(
+              initials.isEmpty ? '?' : initials,
+              style: const TextStyle(
+                color: AppColors.primary,
+                fontWeight: FontWeight.w800,
+                fontSize: 18,
               ),
             ),
           ),
@@ -684,68 +933,154 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  displayName,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: textPrimary,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0,
-                  ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            displayName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: textPrimary,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            displayEmail,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: textSecondary,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    PopupMenuButton<_StaffAction>(
+                      tooltip: 'Staff actions',
+                      padding: EdgeInsets.zero,
+                      icon: const Icon(
+                        Icons.more_vert_rounded,
+                        size: 20,
+                        color: AppColors.textSecondary,
+                      ),
+                      onSelected: (action) {
+                        switch (action) {
+                          case _StaffAction.edit:
+                            _openUserDialog(existing: user, index: index);
+                            break;
+                          case _StaffAction.status:
+                            _changeStatus(user);
+                            break;
+                          case _StaffAction.resetPassword:
+                            _resetPassword(user);
+                            break;
+                          case _StaffAction.delete:
+                            _confirmDelete(user, index);
+                            break;
+                        }
+                      },
+                      itemBuilder: (context) => const [
+                        PopupMenuItem(
+                          value: _StaffAction.edit,
+                          child: Text('Edit'),
+                        ),
+                        PopupMenuItem(
+                          value: _StaffAction.status,
+                          child: Text('Change Status'),
+                        ),
+                        PopupMenuItem(
+                          value: _StaffAction.resetPassword,
+                          child: Text('Reset Password'),
+                        ),
+                        PopupMenuItem(
+                          value: _StaffAction.delete,
+                          child: Text('Delete'),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 8),
-                _contactLine(Icons.phone_outlined, displayPhone),
-                const SizedBox(height: 6),
-                _contactLine(Icons.mail_outline_rounded, displayEmail),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    _roleChip(roleLabel),
+                    _statusChip(user.isActive == true),
+                    _dateChip(user.createdAt),
+                  ],
+                ),
               ],
             ),
           ),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              _dateChip(user.createdAt),
-              const SizedBox(height: 14),
-              Row(
-                children: [
-                  _actionButton(
-                    icon: Icons.edit_outlined,
-                    label: 'Edit',
-                    color: textPrimary,
-                    backgroundColor: const Color(0xFFF3F5F8),
-                    onTap: () => _openUserDialog(existing: user, index: index),
-                  ),
-                  const SizedBox(width: 6),
-                  _actionButton(
-                    icon: Icons.swap_horiz_rounded,
-                    label: 'Change Status',
-                    color: textPrimary,
-                    backgroundColor: const Color(0xFFF3F5F8),
-                    onTap: () => _changeStatus(user),
-                  ),
-                  const SizedBox(width: 6),
-                  _actionButton(
-                    icon: Icons.key_outlined,
-                    label: 'Reset Password',
-                    color: textPrimary,
-                    backgroundColor: const Color(0xFFF3F5F8),
-                    onTap: () => _resetPassword(user),
-                  ),
-                  const SizedBox(width: 6),
-                  _actionButton(
-                    icon: Icons.delete_outline_rounded,
-                    label: 'Delete',
-                    color: AppColors.red,
-                    backgroundColor: const Color(0xFFFFEBEB),
-                    onTap: () => _confirmDelete(user, index),
-                  ),
-                ],
-              ),
-            ],
-          ),
         ],
+      ),
+    );
+  }
+
+  Widget _roleChip(String role) {
+    final normalized = role.toLowerCase();
+    Color bg;
+    Color fg;
+
+    if (normalized.contains('admin')) {
+      bg = const Color(0xFFEAF0FF);
+      fg = const Color(0xFF3662D6);
+    } else if (normalized.contains('accountant')) {
+      bg = const Color(0xFFFFF0DC);
+      fg = const Color(0xFFCE7A00);
+    } else if (normalized.contains('sales')) {
+      bg = const Color(0xFFEAF5D9);
+      fg = const Color(0xFF4E8210);
+    } else {
+      bg = const Color(0xFFF4E8FF);
+      fg = const Color(0xFF7A49C4);
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        role,
+        style: TextStyle(
+          color: fg,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+
+  Widget _statusChip(bool active) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: active ? AppColors.statusActiveBg : AppColors.statusInactiveBg,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        active ? 'Active' : 'Inactive',
+        style: TextStyle(
+          color: active
+              ? AppColors.statusActiveText
+              : AppColors.statusInactiveText,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }
@@ -846,6 +1181,8 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 }
+
+enum _StaffAction { edit, status, resetPassword, delete }
 
 class _ResetPasswordDialog extends StatefulWidget {
   final AppUser user;

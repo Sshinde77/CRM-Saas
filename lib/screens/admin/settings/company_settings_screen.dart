@@ -6,6 +6,7 @@ import 'additional_information_screen.dart';
 import 'billing_screen.dart';
 import 'branding_identity_screen.dart';
 import 'business_settings_screen.dart';
+import 'change_password_screen.dart';
 import 'documents_screen.dart';
 import 'general_information_screen.dart';
 import 'online_presence_screen.dart';
@@ -206,6 +207,16 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
                               MaterialPageRoute(
                                 builder: (_) =>
                                     const AdditionalInformationScreen(),
+                              ),
+                            );
+                            return;
+                          }
+
+                          if (section.label == 'Change Password') {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    const ChangePasswordScreen(),
                               ),
                             );
                             return;
