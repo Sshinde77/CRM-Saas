@@ -33,6 +33,7 @@ class ApiEndpoints {
   static const String authLogout = '/auth/logout';
   static const String plansList = '/plans';
   static const String rolesList = '/roles';
+  static const String organizationsSettings = '/organizations/settings';
 
   static const String customersList = '/customers';
   static const String customersCreate = '/customers';
@@ -47,6 +48,9 @@ class ApiEndpoints {
   static const String usersDetailTemplate = '/users/{user_id}';
   static const String usersUpdateTemplate = '/users/{user_id}';
   static const String usersStatusTemplate = '/users/{user_id}/status';
+  static const String usersIdentityProofTemplate =
+      '/users/{user_id}/identity-proof';
+  static const String usersFilesTemplate = '/users/{user_id}/files/{field}';
   static const String usersResetPasswordTemplate =
       '/users/{user_id}/reset-password';
 
@@ -75,6 +79,13 @@ class ApiEndpoints {
 
   static String usersStatus(String userId) =>
       usersStatusTemplate.replaceFirst('{user_id}', userId);
+
+  static String usersIdentityProof(String userId) =>
+      usersIdentityProofTemplate.replaceFirst('{user_id}', userId);
+
+  static String usersFiles(String userId, String field) => usersFilesTemplate
+      .replaceFirst('{user_id}', userId)
+      .replaceFirst('{field}', field);
 
   static String usersResetPassword(String userId) =>
       usersResetPasswordTemplate.replaceFirst('{user_id}', userId);

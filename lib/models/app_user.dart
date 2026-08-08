@@ -12,6 +12,7 @@ class AppUser {
     this.phone,
     this.isActive,
     this.createdAt,
+    this.profilePhoto,
   });
 
   final String id;
@@ -26,6 +27,7 @@ class AppUser {
   final String? phone;
   final bool? isActive;
   final DateTime? createdAt;
+  final String? profilePhoto;
 
   factory AppUser.fromJson(Map<String, dynamic> json) {
     return AppUser(
@@ -44,6 +46,9 @@ class AppUser {
       phone: json['phone']?.toString(),
       isActive: json['is_active'] as bool?,
       createdAt: DateTime.tryParse(json['created_at']?.toString() ?? ''),
+      profilePhoto: json['profile_photo']?.toString().trim().isEmpty == true
+          ? null
+          : json['profile_photo']?.toString(),
     );
   }
 }

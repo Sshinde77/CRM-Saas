@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -427,6 +428,52 @@ class ApiService {
     );
 
     return AppUser.fromJson(decoded);
+  }
+
+  Future<Map<String, dynamic>> updateOrganizationSettings({
+    required OrganizationSettingsRequest request,
+  }) async {
+    final response = await _send(
+      method: 'PUT',
+      endpoint: ApiEndpoints.organizationsSettings,
+      requiresAuth: true,
+      body: request.toJson(),
+    );
+
+    final decoded = _tryDecodeBody(response.body.trim());
+    if (decoded is Map<String, dynamic>) {
+      return decoded;
+    }
+    return const {};
+  }
+
+  Future<void> uploadUserIdentityProof({
+    required String userId,
+    required Uint8List fileBytes,
+    String fileName = 'identity_proof.png',
+  }) async {
+    await _sendMultipart(
+      method: 'POST',
+      endpoint: ApiEndpoints.usersIdentityProof(userId),
+      requiresAuth: true,
+      fileBytes: fileBytes,
+      fileName: fileName,
+    );
+  }
+
+  Future<void> uploadUserFile({
+    required String userId,
+    required String field,
+    required Uint8List fileBytes,
+    String fileName = 'document.png',
+  }) async {
+    await _sendMultipart(
+      method: 'POST',
+      endpoint: ApiEndpoints.usersFiles(userId, field),
+      requiresAuth: true,
+      fileBytes: fileBytes,
+      fileName: fileName,
+    );
   }
 
   Future<AppUser> updateUser({
@@ -916,6 +963,112 @@ class ApiService {
     throw const ApiException(message: 'API request failed.');
   }
 
+  Future<http.Response> _sendMultipart({
+    required String method,
+    required String endpoint,
+    required bool requiresAuth,
+    required Uint8List fileBytes,
+    required String fileName,
+    Map<String, String>? fields,
+    Duration? timeout,
+    bool retryOnTimeout = false,
+  }) async {
+    final uri = Uri.parse('$baseUrl$endpoint');
+    final attempts = retryOnTimeout ? 2 : 1;
+    final effectiveTimeout = timeout ?? ApiConstants.requestTimeout;
+    var headers = _buildMultipartHeaders(requiresAuth: requiresAuth);
+    var unauthorizedRetryUsed = false;
+
+    var attempt = 1;
+    while (attempt <= attempts) {
+      _logMultipartRequest(
+        method: method,
+        uri: uri,
+        headers: headers,
+        attempt: attempt,
+        timeout: effectiveTimeout,
+        fields: fields,
+        fileName: fileName,
+      );
+
+      try {
+        final request = http.MultipartRequest(method.toUpperCase(), uri);
+        request.headers.addAll(headers);
+        if (fields != null && fields.isNotEmpty) {
+          request.fields.addAll(fields);
+        }
+        request.files.add(
+          http.MultipartFile.fromBytes('file', fileBytes, filename: fileName),
+        );
+
+        final streamedResponse = await request.send().timeout(effectiveTimeout);
+        final response = await http.Response.fromStream(streamedResponse);
+
+        _logResponse(
+          method: method,
+          uri: uri,
+          statusCode: response.statusCode,
+          body: response.body,
+          attempt: attempt,
+        );
+
+        if (response.statusCode < 200 || response.statusCode >= 300) {
+          if (response.statusCode == 401 &&
+              requiresAuth &&
+              !unauthorizedRetryUsed) {
+            unauthorizedRetryUsed = true;
+            final refreshed = await _refreshAccessToken();
+            if (refreshed) {
+              headers = _buildMultipartHeaders(requiresAuth: requiresAuth);
+              debugPrint(
+                '[API RETRY] $method $uri -> retrying after token refresh',
+              );
+              continue;
+            }
+          }
+
+          throw ApiException(
+            statusCode: response.statusCode,
+            message: _extractErrorMessage(response.body.trim()),
+          );
+        }
+
+        return response;
+      } on TimeoutException catch (error) {
+        _logTransportError(
+          method: method,
+          uri: uri,
+          error: error,
+          attempt: attempt,
+        );
+
+        if (attempt < attempts) {
+          debugPrint('[API RETRY] $method $uri -> retrying after timeout');
+          attempt++;
+          continue;
+        }
+
+        throw const ApiException(
+          message:
+              'The server is still starting. Please wait while we retry your login.',
+        );
+      } catch (error) {
+        _logTransportError(
+          method: method,
+          uri: uri,
+          error: error,
+          attempt: attempt,
+        );
+        if (error is ApiException) {
+          rethrow;
+        }
+        throw ApiException(message: 'Network request failed: $error');
+      }
+    }
+
+    throw const ApiException(message: 'API request failed.');
+  }
+
   Future<bool> _refreshAccessToken() async {
     final refreshToken = _refreshToken?.trim();
     if (refreshToken == null || refreshToken.isEmpty) {
@@ -996,6 +1149,21 @@ class ApiService {
     return ApiConstants.authorizedHeaders(token);
   }
 
+  Map<String, String> _buildMultipartHeaders({required bool requiresAuth}) {
+    final headers = <String, String>{
+      ApiConstants.acceptHeader: ApiConstants.jsonMimeType,
+    };
+    if (requiresAuth) {
+      final token = _accessToken;
+      if (token == null || token.trim().isEmpty) {
+        throw const ApiException(message: 'Missing access token.');
+      }
+      headers[ApiConstants.authorizationHeader] =
+          '${ApiConstants.bearerPrefix} $token';
+    }
+    return headers;
+  }
+
   Future<http.Response> _dispatch({
     required String method,
     required Uri uri,
@@ -1033,6 +1201,25 @@ class ApiService {
     if (body != null && body.trim().isNotEmpty) {
       debugPrint('[API REQUEST BODY] $body');
     }
+  }
+
+  void _logMultipartRequest({
+    required String method,
+    required Uri uri,
+    required Map<String, String> headers,
+    required int attempt,
+    required Duration timeout,
+    Map<String, String>? fields,
+    required String fileName,
+  }) {
+    debugPrint(
+      '[API REQUEST] $method $uri (multipart, attempt $attempt, timeout ${timeout.inSeconds}s)',
+    );
+    debugPrint('[API REQUEST HEADERS] ${_sanitizeHeaders(headers)}');
+    if (fields != null && fields.isNotEmpty) {
+      debugPrint('[API REQUEST FIELDS] ${jsonEncode(fields)}');
+    }
+    debugPrint('[API REQUEST FILE] $fileName');
   }
 
   void _logResponse({

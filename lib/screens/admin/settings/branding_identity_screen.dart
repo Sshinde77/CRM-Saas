@@ -1,9 +1,14 @@
+// ignore_for_file: unused_field, unused_element, prefer_final_fields
+
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../models/auth_models.dart';
+import '../../../services/api_service.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 
 const Color kBrandingTitleColor = Color(0xFF0F172A);
@@ -28,8 +33,7 @@ class _BrandingIdentityScreenState extends State<BrandingIdentityScreen> {
   };
 
   bool _isEditing = false;
-  bool _saving = false;
-
+  final ApiService _apiService = ApiService();
   static const List<_BrandAsset> _assets = [
     _BrandAsset(
       type: _BrandAssetType.logo,
@@ -78,9 +82,9 @@ class _BrandingIdentityScreenState extends State<BrandingIdentityScreen> {
       });
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Unable to upload file')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Unable to upload file')));
     }
   }
 
@@ -89,19 +93,6 @@ class _BrandingIdentityScreenState extends State<BrandingIdentityScreen> {
       _bytes[type] = null;
       _names[type] = null;
     });
-  }
-
-  Future<void> _handleSave() async {
-    setState(() => _saving = true);
-    await Future.delayed(const Duration(milliseconds: 650));
-    if (!mounted) return;
-    setState(() {
-      _saving = false;
-      _isEditing = false;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Branding details saved')),
-    );
   }
 
   @override
@@ -115,6 +106,13 @@ class _BrandingIdentityScreenState extends State<BrandingIdentityScreen> {
               title: 'Branding & Identity',
               leadingIcon: Icons.arrow_back_rounded,
               onLeadingTap: () => Navigator.of(context).maybePop(),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: _actionButton(),
+              ),
             ),
             Expanded(
               child: LayoutBuilder(
@@ -161,6 +159,89 @@ class _BrandingIdentityScreenState extends State<BrandingIdentityScreen> {
       ),
     );
   }
+
+  Widget _actionButton() {
+    final editing = _isEditing;
+    return ElevatedButton.icon(
+      onPressed: () async {
+        if (editing) {
+          await _saveSettings();
+          return;
+        }
+        setState(() => _isEditing = true);
+      },
+      icon: Icon(editing ? Icons.save_outlined : Icons.edit_outlined, size: 18),
+      label: Text(editing ? 'Save' : 'Edit'),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: editing
+            ? kBrandingAccentColor
+            : const Color(0xFFF3F4F6),
+        foregroundColor: editing ? Colors.white : kBrandingTitleColor,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+      ),
+    );
+  }
+
+  Future<void> _saveSettings() async {
+    try {
+      final payload = <String, dynamic>{};
+      _putIfNotBlank(
+        payload,
+        'logo_url',
+        _bytesToDataUri(_bytes[_BrandAssetType.logo]),
+      );
+      _putIfNotBlank(
+        payload,
+        'signature_url',
+        _bytesToDataUri(_bytes[_BrandAssetType.signature]),
+      );
+      _putIfNotBlank(
+        payload,
+        'banner_url',
+        _bytesToDataUri(_bytes[_BrandAssetType.banner]),
+      );
+      _putIfNotBlank(
+        payload,
+        'stamp_url',
+        _bytesToDataUri(_bytes[_BrandAssetType.seal]),
+      );
+      _putIfNotBlank(
+        payload,
+        'letterhead_url',
+        _bytesToDataUri(_bytes[_BrandAssetType.letterhead]),
+      );
+
+      await _apiService.updateOrganizationSettings(
+        request: OrganizationSettingsRequest(fields: payload),
+      );
+
+      if (!mounted) return;
+      setState(() => _isEditing = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Changes saved.')));
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Unable to save changes: $error')));
+    }
+  }
+
+  String? _bytesToDataUri(Uint8List? bytes) {
+    if (bytes == null) return null;
+    return 'data:image/png;base64,${base64Encode(bytes)}';
+  }
+
+  void _putIfNotBlank(Map<String, dynamic> payload, String key, String? value) {
+    final trimmed = value?.trim();
+    if (trimmed != null && trimmed.isNotEmpty) {
+      payload[key] = trimmed;
+    }
+  }
 }
 
 enum _BrandAssetType { logo, signature, banner, seal, letterhead }
@@ -206,10 +287,7 @@ class _SectionShell extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           subtitle,
-          style: const TextStyle(
-            color: kBrandingMutedColor,
-            fontSize: 13,
-          ),
+          style: const TextStyle(color: kBrandingMutedColor, fontSize: 13),
         ),
         const SizedBox(height: 14),
         child,
@@ -222,10 +300,7 @@ class _ResponsiveGrid extends StatelessWidget {
   final bool isWide;
   final List<Widget> children;
 
-  const _ResponsiveGrid({
-    required this.isWide,
-    required this.children,
-  });
+  const _ResponsiveGrid({required this.isWide, required this.children});
 
   @override
   Widget build(BuildContext context) {

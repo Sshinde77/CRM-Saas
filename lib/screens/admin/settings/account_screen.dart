@@ -1,6 +1,10 @@
+// ignore_for_file: unused_field, unused_element, prefer_final_fields
+
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../models/auth_models.dart';
+import '../../../services/api_service.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import 'company_settings_constants.dart';
 
@@ -14,20 +18,24 @@ class AccountScreen extends StatefulWidget {
 class _AccountScreenState extends State<AccountScreen> {
   static const Color _titleColor = Color(0xFF0F172A);
   static const Color _mutedColor = Color(0xFF64748B);
-  static const Color _borderColor = Color(0xFFDDE3EA);
   static const Color _cardBg = Colors.white;
   static const Color _accent = Color(0xFF0B4D08);
+  final ApiService _apiService = ApiService();
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  final TextEditingController _legalNameController =
-      TextEditingController(text: 'lol');
-  final TextEditingController _ownerController =
-      TextEditingController(text: 'Sushil');
-  final TextEditingController _mobileController =
-      TextEditingController(text: '9986547856');
-  final TextEditingController _emailController =
-      TextEditingController(text: 'testing@gmail.com');
+  final TextEditingController _legalNameController = TextEditingController(
+    text: 'lol',
+  );
+  final TextEditingController _ownerController = TextEditingController(
+    text: 'Sushil',
+  );
+  final TextEditingController _mobileController = TextEditingController(
+    text: '9986547856',
+  );
+  final TextEditingController _emailController = TextEditingController(
+    text: 'testing@gmail.com',
+  );
 
   String? _selectedIndustry;
   String _selectedStatus = 'Active';
@@ -42,8 +50,6 @@ class _AccountScreenState extends State<AccountScreen> {
   bool _isEditing = false;
   bool _accountDetailsExpanded = true;
   bool _authorizedPersonExpanded = true;
-  bool _saving = false;
-
   final List<String> _statusOptions = const [
     'Active',
     'Inactive',
@@ -68,39 +74,6 @@ class _AccountScreenState extends State<AccountScreen> {
     super.dispose();
   }
 
-  Future<void> _handleSave() async {
-    setState(() => _saving = true);
-    await Future.delayed(const Duration(milliseconds: 650));
-    if (!mounted) return;
-    setState(() {
-      _savedLegalName = _legalNameController.text;
-      _savedOwnerName = _ownerController.text;
-      _savedMobileNumber = _mobileController.text;
-      _savedEmail = _emailController.text;
-      _savedIndustry = _selectedIndustry;
-      _savedStatus = _selectedStatus;
-      _savedDesignation = _selectedDesignation;
-      _saving = false;
-      _isEditing = false;
-    });
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Account updated')));
-  }
-
-  void _cancelEdit() {
-    setState(() {
-      _legalNameController.text = _savedLegalName;
-      _ownerController.text = _savedOwnerName;
-      _mobileController.text = _savedMobileNumber;
-      _emailController.text = _savedEmail;
-      _selectedIndustry = _savedIndustry;
-      _selectedStatus = _savedStatus;
-      _selectedDesignation = _savedDesignation;
-      _isEditing = false;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -114,6 +87,13 @@ class _AccountScreenState extends State<AccountScreen> {
               leadingIcon: Icons.arrow_back_rounded,
               onLeadingTap: () => Navigator.of(context).maybePop(),
             ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: _actionButton(),
+              ),
+            ),
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
@@ -125,7 +105,8 @@ class _AccountScreenState extends State<AccountScreen> {
                     expanded: _accountDetailsExpanded,
                     onToggle: () {
                       setState(
-                        () => _accountDetailsExpanded = !_accountDetailsExpanded,
+                        () =>
+                            _accountDetailsExpanded = !_accountDetailsExpanded,
                       );
                     },
                     child: _accountDetailsExpanded
@@ -177,8 +158,8 @@ class _AccountScreenState extends State<AccountScreen> {
                     expanded: _authorizedPersonExpanded,
                     onToggle: () {
                       setState(
-                        () =>
-                            _authorizedPersonExpanded = !_authorizedPersonExpanded,
+                        () => _authorizedPersonExpanded =
+                            !_authorizedPersonExpanded,
                       );
                     },
                     child: _authorizedPersonExpanded
@@ -200,7 +181,9 @@ class _AccountScreenState extends State<AccountScreen> {
                                   enabled: _isEditing,
                                   onChanged: (value) {
                                     if (value == null) return;
-                                    setState(() => _selectedDesignation = value);
+                                    setState(
+                                      () => _selectedDesignation = value,
+                                    );
                                   },
                                 ),
                               ),
@@ -255,6 +238,64 @@ class _AccountScreenState extends State<AccountScreen> {
     );
   }
 
+  Widget _actionButton() {
+    final editing = _isEditing;
+    return ElevatedButton.icon(
+      onPressed: () async {
+        if (editing) {
+          await _saveSettings();
+          return;
+        }
+        setState(() => _isEditing = true);
+      },
+      icon: Icon(editing ? Icons.save_outlined : Icons.edit_outlined, size: 18),
+      label: Text(editing ? 'Save' : 'Edit'),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: editing ? _accent : const Color(0xFFF3F4F6),
+        foregroundColor: editing ? Colors.white : _titleColor,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+      ),
+    );
+  }
+
+  Future<void> _saveSettings() async {
+    try {
+      final payload = <String, dynamic>{};
+      _putIfNotBlank(payload, 'legal_name', _legalNameController.text);
+      _putIfNotBlank(payload, 'industry', _selectedIndustry);
+      _putIfNotBlank(payload, 'auth_person_name', _ownerController.text);
+      _putIfNotBlank(payload, 'auth_person_designation', _selectedDesignation);
+      _putIfNotBlank(payload, 'auth_person_mobile', _mobileController.text);
+      _putIfNotBlank(payload, 'auth_person_email', _emailController.text);
+      _putIfNotBlank(payload, 'company_status', _selectedStatus);
+
+      await _apiService.updateOrganizationSettings(
+        request: OrganizationSettingsRequest(fields: payload),
+      );
+
+      if (!mounted) return;
+      setState(() => _isEditing = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Changes saved.')));
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Unable to save changes: $error')));
+    }
+  }
+
+  void _putIfNotBlank(Map<String, dynamic> payload, String key, String? value) {
+    final trimmed = value?.trim();
+    if (trimmed != null && trimmed.isNotEmpty) {
+      payload[key] = trimmed;
+    }
+  }
+
   Widget _textField({
     required TextEditingController controller,
     TextInputType? keyboardType,
@@ -281,16 +322,10 @@ class _AccountScreenState extends State<AccountScreen> {
       onChanged: enabled ? onChanged : null,
       isExpanded: true,
       menuMaxHeight: 260,
-      icon: const Icon(
-        Icons.expand_more_rounded,
-        color: Color(0xFF98A2B3),
-      ),
+      icon: const Icon(Icons.expand_more_rounded, color: Color(0xFF98A2B3)),
       hint: hintText == null
           ? null
-          : Text(
-              hintText,
-              style: const TextStyle(color: Color(0xFF98A2B3)),
-            ),
+          : Text(hintText, style: const TextStyle(color: Color(0xFF98A2B3))),
       style: const TextStyle(fontSize: 15, color: _titleColor),
       decoration: _fieldDecoration(),
       dropdownColor: Colors.white,
@@ -430,53 +465,9 @@ class _SectionCard extends StatelessWidget {
               ),
             ),
           ),
-          if (expanded) ...[
-            const SizedBox(height: 20),
-            child,
-          ],
+          if (expanded) ...[const SizedBox(height: 20), child],
         ],
       ),
-    );
-  }
-}
-
-class _ResponsiveFormGrid extends StatelessWidget {
-  final bool wide;
-  final List<Widget> children;
-
-  const _ResponsiveFormGrid({
-    required this.wide,
-    required this.children,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    if (!wide) {
-      return Column(
-        children: [
-          for (var i = 0; i < children.length; i++) ...[
-            children[i],
-            if (i != children.length - 1) const SizedBox(height: 18),
-          ],
-        ],
-      );
-    }
-
-    return Wrap(
-      spacing: 20,
-      runSpacing: 18,
-      children: children
-          .map(
-            (child) => SizedBox(
-              width: (MediaQuery.of(context).size.width > 1180
-                      ? 1180
-                      : MediaQuery.of(context).size.width) /
-                  2 -
-                  38,
-              child: child,
-            ),
-          )
-          .toList(),
     );
   }
 }

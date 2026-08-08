@@ -1,6 +1,10 @@
+// ignore_for_file: unused_field, unused_element, prefer_final_fields
+
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../models/auth_models.dart';
+import '../../../services/api_service.dart';
 import 'company_settings_constants.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 
@@ -19,25 +23,31 @@ class GeneralInformationScreen extends StatefulWidget {
 class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
   static const Color _borderColor = Color(0xFFD8DFD8);
   static const Color _fieldBg = Colors.white;
+  final ApiService _apiService = ApiService();
 
-  final TextEditingController _companyNameController =
-      TextEditingController(text: 'lol');
-  final TextEditingController _legalNameController =
-      TextEditingController(text: 'lol');
+  final TextEditingController _companyNameController = TextEditingController(
+    text: 'lol',
+  );
+  final TextEditingController _legalNameController = TextEditingController(
+    text: 'lol',
+  );
   final TextEditingController _dateOfIncorporationController =
       TextEditingController();
   final TextEditingController _cinController = TextEditingController();
-  final TextEditingController _gstinController =
-      TextEditingController(text: '29AAACA1234F1Z3');
+  final TextEditingController _gstinController = TextEditingController(
+    text: '29AAACA1234F1Z3',
+  );
   final TextEditingController _panController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _primaryMobileController =
-      TextEditingController(text: '9986547856');
+  final TextEditingController _primaryMobileController = TextEditingController(
+    text: '9986547856',
+  );
   final TextEditingController _alternateMobileController =
       TextEditingController();
   final TextEditingController _landlineController = TextEditingController();
-  final TextEditingController _officialEmailController =
-      TextEditingController(text: 'testing@gmail.com');
+  final TextEditingController _officialEmailController = TextEditingController(
+    text: 'testing@gmail.com',
+  );
   final TextEditingController _websiteController = TextEditingController();
   final TextEditingController _supportNumberController =
       TextEditingController();
@@ -45,12 +55,15 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
       TextEditingController(text: 'rwqyenebqqbth');
   final TextEditingController _branchOfficeAddressController =
       TextEditingController();
-  final TextEditingController _cityController =
-      TextEditingController(text: 'Mumbai');
-  final TextEditingController _pinCodeController =
-      TextEditingController(text: '400001');
-  final TextEditingController _billingAddressController =
-      TextEditingController(text: 'rwqyenebqqbth');
+  final TextEditingController _cityController = TextEditingController(
+    text: 'Mumbai',
+  );
+  final TextEditingController _pinCodeController = TextEditingController(
+    text: '400001',
+  );
+  final TextEditingController _billingAddressController = TextEditingController(
+    text: 'rwqyenebqqbth',
+  );
   final TextEditingController _shippingAddressController =
       TextEditingController();
 
@@ -58,7 +71,6 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
   bool _basicExpanded = true;
   bool _contactExpanded = false;
   bool _addressExpanded = true;
-  bool _saving = false;
   bool _billingSameAsRegistered = false;
   bool _shippingSameAsBilling = false;
 
@@ -135,79 +147,6 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
     }
   }
 
-  Future<void> _handleSave() async {
-    setState(() => _saving = true);
-    await Future.delayed(const Duration(milliseconds: 650));
-    if (!mounted) return;
-    setState(() {
-      _saving = false;
-      _isEditing = false;
-      _savedCompanyName = _companyNameController.text;
-      _savedLegalName = _legalNameController.text;
-      _savedDateOfIncorporation = _dateOfIncorporationController.text;
-      _savedCin = _cinController.text;
-      _savedGstin = _gstinController.text;
-      _savedPan = _panController.text;
-      _savedDescription = _descriptionController.text;
-      _savedPrimaryMobile = _primaryMobileController.text;
-      _savedAlternateMobile = _alternateMobileController.text;
-      _savedLandline = _landlineController.text;
-      _savedOfficialEmail = _officialEmailController.text;
-      _savedWebsite = _websiteController.text;
-      _savedSupportNumber = _supportNumberController.text;
-      _savedBusinessType = _selectedBusinessType;
-      _savedIndustry = _selectedIndustry;
-      _savedRegisteredAddress = _registeredAddressController.text;
-      _savedBranchOfficeAddress = _branchOfficeAddressController.text;
-      _savedCity = _cityController.text;
-      _savedState = _selectedState;
-      _savedCountry = _selectedCountry;
-      _savedPinCode = _pinCodeController.text;
-      _savedBillingAddress = _billingAddressController.text;
-      _savedShippingAddress = _shippingAddressController.text;
-      _savedBillingSameAsRegistered = _billingSameAsRegistered;
-      _savedShippingSameAsBilling = _shippingSameAsBilling;
-    });
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('General information saved')));
-  }
-
-  void _toggleEdit() {
-    setState(() => _isEditing = !_isEditing);
-  }
-
-  void _cancelEdit() {
-    setState(() {
-      _companyNameController.text = _savedCompanyName;
-      _legalNameController.text = _savedLegalName;
-      _dateOfIncorporationController.text = _savedDateOfIncorporation;
-      _cinController.text = _savedCin;
-      _gstinController.text = _savedGstin;
-      _panController.text = _savedPan;
-      _descriptionController.text = _savedDescription;
-      _primaryMobileController.text = _savedPrimaryMobile;
-      _alternateMobileController.text = _savedAlternateMobile;
-      _landlineController.text = _savedLandline;
-      _officialEmailController.text = _savedOfficialEmail;
-      _websiteController.text = _savedWebsite;
-      _supportNumberController.text = _savedSupportNumber;
-      _selectedBusinessType = _savedBusinessType;
-      _selectedIndustry = _savedIndustry;
-      _registeredAddressController.text = _savedRegisteredAddress;
-      _branchOfficeAddressController.text = _savedBranchOfficeAddress;
-      _cityController.text = _savedCity;
-      _selectedState = _savedState;
-      _selectedCountry = _savedCountry;
-      _pinCodeController.text = _savedPinCode;
-      _billingAddressController.text = _savedBillingAddress;
-      _shippingAddressController.text = _savedShippingAddress;
-      _billingSameAsRegistered = _savedBillingSameAsRegistered;
-      _shippingSameAsBilling = _savedShippingSameAsBilling;
-      _isEditing = false;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -219,6 +158,13 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
               title: 'General Information',
               leadingIcon: Icons.arrow_back_rounded,
               onLeadingTap: () => Navigator.of(context).maybePop(),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: _actionButton(),
+              ),
             ),
             Expanded(
               child: LayoutBuilder(
@@ -240,8 +186,9 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
                             subtitle:
                                 'Company identity and legal registration details.',
                             expanded: _basicExpanded,
-                            onTap: () =>
-                                setState(() => _basicExpanded = !_basicExpanded),
+                            onTap: () => setState(
+                              () => _basicExpanded = !_basicExpanded,
+                            ),
                             child: _basicExpanded
                                 ? _EditableAbsorbPointer(
                                     enabled: _isEditing,
@@ -268,7 +215,8 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
                                             onChanged: (value) {
                                               if (value == null) return;
                                               setState(
-                                                () => _selectedBusinessType = value,
+                                                () => _selectedBusinessType =
+                                                    value,
                                               );
                                             },
                                           ),
@@ -344,7 +292,8 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
                                         _fieldBlock(
                                           label: 'Primary Mobile Number',
                                           child: _textField(
-                                            controller: _primaryMobileController,
+                                            controller:
+                                                _primaryMobileController,
                                             keyboardType: TextInputType.phone,
                                           ),
                                         ),
@@ -366,7 +315,8 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
                                         _fieldBlock(
                                           label: 'Official Email Address',
                                           child: _textField(
-                                            controller: _officialEmailController,
+                                            controller:
+                                                _officialEmailController,
                                             keyboardType:
                                                 TextInputType.emailAddress,
                                           ),
@@ -382,7 +332,8 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
                                         _fieldBlock(
                                           label: 'Customer Support Number',
                                           child: _textField(
-                                            controller: _supportNumberController,
+                                            controller:
+                                                _supportNumberController,
                                             keyboardType: TextInputType.phone,
                                           ),
                                         ),
@@ -448,7 +399,8 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
                                                 onChanged: (value) {
                                                   if (value == null) return;
                                                   setState(
-                                                    () => _selectedState = value,
+                                                    () =>
+                                                        _selectedState = value,
                                                   );
                                                 },
                                               ),
@@ -513,7 +465,8 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
                                         _fieldBlock(
                                           label: 'Billing Address',
                                           child: _textField(
-                                            controller: _billingAddressController,
+                                            controller:
+                                                _billingAddressController,
                                             maxLines: 3,
                                           ),
                                         ),
@@ -530,7 +483,8 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
                                               _shippingSameAsBilling =
                                                   value ?? false;
                                               if (_shippingSameAsBilling) {
-                                                _shippingAddressController.text =
+                                                _shippingAddressController
+                                                        .text =
                                                     _billingAddressController
                                                         .text;
                                               }
@@ -570,6 +524,110 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
         ),
       ),
     );
+  }
+
+  Widget _actionButton() {
+    final editing = _isEditing;
+    return ElevatedButton.icon(
+      onPressed: () async {
+        if (editing) {
+          await _saveSettings();
+          return;
+        }
+        setState(() => _isEditing = true);
+      },
+      icon: Icon(editing ? Icons.save_outlined : Icons.edit_outlined, size: 18),
+      label: Text(editing ? 'Save' : 'Edit'),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: editing
+            ? kGeneralInfoAccentColor
+            : const Color(0xFFF3F4F6),
+        foregroundColor: editing ? Colors.white : kGeneralInfoTitleColor,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+      ),
+    );
+  }
+
+  Future<void> _saveSettings() async {
+    try {
+      final payload = <String, dynamic>{};
+      _putIfNotBlank(payload, 'name', _companyNameController.text);
+      _putIfNotBlank(payload, 'legal_name', _legalNameController.text);
+      _putIfNotBlank(payload, 'business_type', _selectedBusinessType);
+      _putIfNotBlank(payload, 'industry', _selectedIndustry);
+      _putIfNotBlank(
+        payload,
+        'date_of_incorporation',
+        _dateOfIncorporationController.text,
+      );
+      _putIfNotBlank(payload, 'cin_number', _cinController.text);
+      _putIfNotBlank(payload, 'gstin_pan', _gstinController.text);
+      _putIfNotBlank(payload, 'pan_number', _panController.text);
+      _putIfNotBlank(payload, 'description', _descriptionController.text);
+      _putIfNotBlank(payload, 'primary_mobile', _primaryMobileController.text);
+      _putIfNotBlank(
+        payload,
+        'alternate_mobile',
+        _alternateMobileController.text,
+      );
+      _putIfNotBlank(payload, 'landline', _landlineController.text);
+      _putIfNotBlank(payload, 'email', _officialEmailController.text);
+      _putIfNotBlank(payload, 'website', _websiteController.text);
+      _putIfNotBlank(
+        payload,
+        'customer_support_number',
+        _supportNumberController.text,
+      );
+      _putIfNotBlank(payload, 'address', _registeredAddressController.text);
+      _putIfNotBlank(
+        payload,
+        'registered_address',
+        _registeredAddressController.text,
+      );
+      _putIfNotBlank(payload, 'city', _cityController.text);
+      _putIfNotBlank(payload, 'state', _selectedState);
+      _putIfNotBlank(payload, 'country', _selectedCountry);
+      _putIfNotBlank(payload, 'pin_code', _pinCodeController.text);
+
+      final branchAddress = _branchOfficeAddressController.text.trim();
+      if (branchAddress.isNotEmpty) {
+        payload['branch_addresses'] = [
+          <String, dynamic>{
+            'label': 'Branch Office',
+            'address': branchAddress,
+            'city': _cityController.text.trim(),
+            'state': _selectedState,
+            'country': _selectedCountry,
+            'pin_code': _pinCodeController.text.trim(),
+          },
+        ];
+      }
+
+      await _apiService.updateOrganizationSettings(
+        request: OrganizationSettingsRequest(fields: payload),
+      );
+
+      if (!mounted) return;
+      setState(() => _isEditing = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Changes saved.')));
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Unable to save changes: $error')));
+    }
+  }
+
+  void _putIfNotBlank(Map<String, dynamic> payload, String key, String? value) {
+    final trimmed = value?.trim();
+    if (trimmed != null && trimmed.isNotEmpty) {
+      payload[key] = trimmed;
+    }
   }
 
   Widget _fieldBlock({
@@ -626,16 +684,10 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
       onChanged: onChanged,
       isExpanded: true,
       menuMaxHeight: 260,
-      icon: const Icon(
-        Icons.expand_more_rounded,
-        color: Color(0xFF98A2B3),
-      ),
+      icon: const Icon(Icons.expand_more_rounded, color: Color(0xFF98A2B3)),
       hint: hintText == null
           ? null
-          : Text(
-              hintText,
-              style: const TextStyle(color: Color(0xFFB5BCC6)),
-            ),
+          : Text(hintText, style: const TextStyle(color: Color(0xFFB5BCC6))),
       style: const TextStyle(fontSize: 15, color: kGeneralInfoTitleColor),
       decoration: _fieldDecoration(),
       dropdownColor: Colors.white,
@@ -663,10 +715,7 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
       filled: true,
       fillColor: _fieldBg,
       hintText: hintText,
-      hintStyle: const TextStyle(
-        color: Color(0xFFB5BCC6),
-        fontSize: 15,
-      ),
+      hintStyle: const TextStyle(color: Color(0xFFB5BCC6), fontSize: 15),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(18),
@@ -781,10 +830,7 @@ class _GeneralInfoSectionCard extends StatelessWidget {
               ),
             ),
           ),
-          if (expanded) ...[
-            const SizedBox(height: 18),
-            child,
-          ],
+          if (expanded) ...[const SizedBox(height: 18), child],
         ],
       ),
     );
@@ -795,10 +841,7 @@ class _ResponsiveFields extends StatelessWidget {
   final bool isWide;
   final List<Widget> children;
 
-  const _ResponsiveFields({
-    required this.isWide,
-    required this.children,
-  });
+  const _ResponsiveFields({required this.isWide, required this.children});
 
   @override
   Widget build(BuildContext context) {
@@ -830,10 +873,7 @@ class _EditableAbsorbPointer extends StatelessWidget {
   final bool enabled;
   final Widget child;
 
-  const _EditableAbsorbPointer({
-    required this.enabled,
-    required this.child,
-  });
+  const _EditableAbsorbPointer({required this.enabled, required this.child});
 
   @override
   Widget build(BuildContext context) {

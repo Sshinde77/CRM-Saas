@@ -1,9 +1,14 @@
+// ignore_for_file: unused_field, unused_element, prefer_final_fields
+
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../models/auth_models.dart';
+import '../../../services/api_service.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 
 class BillingScreen extends StatefulWidget {
@@ -19,20 +24,21 @@ class _BillingScreenState extends State<BillingScreen> {
   static const Color _accent = Color(0xFF0B4D08);
   static const Color _borderColor = Color(0xFFD8DFD8);
   static const Color _fieldBg = Colors.white;
+  final ApiService _apiService = ApiService();
 
   final ImagePicker _imagePicker = ImagePicker();
   final TextEditingController _upiController = TextEditingController();
   final TextEditingController _bankAccountController = TextEditingController();
-  final TextEditingController _accountHolderController = TextEditingController();
+  final TextEditingController _accountHolderController =
+      TextEditingController();
   final TextEditingController _ifscController = TextEditingController();
-  final TextEditingController _accountNumberController = TextEditingController();
+  final TextEditingController _accountNumberController =
+      TextEditingController();
 
   Uint8List? _qrBytes;
   String? _qrName;
   String? _selectedBank;
   bool _isEditing = false;
-  bool _saving = false;
-
   final List<String> _bankOptions = const [
     'State Bank of India',
     'HDFC Bank',
@@ -67,9 +73,9 @@ class _BillingScreenState extends State<BillingScreen> {
       });
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Unable to upload QR code')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Unable to upload QR code')));
     }
   }
 
@@ -78,19 +84,6 @@ class _BillingScreenState extends State<BillingScreen> {
       _qrBytes = null;
       _qrName = null;
     });
-  }
-
-  Future<void> _handleSave() async {
-    setState(() => _saving = true);
-    await Future.delayed(const Duration(milliseconds: 650));
-    if (!mounted) return;
-    setState(() {
-      _saving = false;
-      _isEditing = false;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Billing details saved')),
-    );
   }
 
   @override
@@ -104,6 +97,13 @@ class _BillingScreenState extends State<BillingScreen> {
               title: 'Billing',
               leadingIcon: Icons.arrow_back_rounded,
               onLeadingTap: () => Navigator.of(context).maybePop(),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: _actionButton(),
+              ),
             ),
             Expanded(
               child: LayoutBuilder(
@@ -134,16 +134,13 @@ class _BillingScreenState extends State<BillingScreen> {
                           const SizedBox(height: 18),
                           _SectionShell(
                             title: 'UPI Details',
-                            subtitle:
-                                'Unified Payments Interface information.',
+                            subtitle: 'Unified Payments Interface information.',
                             child: _ResponsiveFields(
                               isWide: isWide,
                               children: [
                                 _fieldBlock(
                                   label: 'UPI ID',
-                                  child: _textField(
-                                    controller: _upiController,
-                                  ),
+                                  child: _textField(controller: _upiController),
                                 ),
                               ],
                             ),
@@ -209,10 +206,7 @@ class _BillingScreenState extends State<BillingScreen> {
     );
   }
 
-  Widget _fieldBlock({
-    required String label,
-    required Widget child,
-  }) {
+  Widget _fieldBlock({required String label, required Widget child}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -232,9 +226,83 @@ class _BillingScreenState extends State<BillingScreen> {
     );
   }
 
-  Widget _textField({
-    required TextEditingController controller,
-  }) {
+  Widget _actionButton() {
+    final editing = _isEditing;
+    return ElevatedButton.icon(
+      onPressed: () async {
+        if (editing) {
+          await _saveSettings();
+          return;
+        }
+        setState(() => _isEditing = true);
+      },
+      icon: Icon(editing ? Icons.save_outlined : Icons.edit_outlined, size: 18),
+      label: Text(editing ? 'Save' : 'Edit'),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: editing ? _accent : const Color(0xFFF3F4F6),
+        foregroundColor: editing ? Colors.white : _titleColor,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+      ),
+    );
+  }
+
+  Future<void> _saveSettings() async {
+    try {
+      final payload = <String, dynamic>{};
+      _putIfNotBlank(payload, 'upi_id', _upiController.text);
+      final bankDetails = <String>[
+        _bankAccountController.text.trim(),
+        if (_accountNumberController.text.trim().isNotEmpty)
+          'Account Number: ${_accountNumberController.text.trim()}',
+      ].where((part) => part.isNotEmpty).join(' | ');
+      _putIfNotBlank(payload, 'bank_account_details', bankDetails);
+      _putIfNotBlank(
+        payload,
+        'bank_account_holder',
+        _accountHolderController.text,
+      );
+      _putIfNotBlank(payload, 'bank_ifsc', _ifscController.text);
+      _putIfNotBlank(payload, 'bank_name', _selectedBank);
+      final qrUrl = _bytesToDataUri(_qrBytes, _qrName);
+      _putIfNotBlank(payload, 'payment_qr_url', qrUrl);
+
+      await _apiService.updateOrganizationSettings(
+        request: OrganizationSettingsRequest(fields: payload),
+      );
+
+      if (!mounted) return;
+      setState(() => _isEditing = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Changes saved.')));
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Unable to save changes: $error')));
+    }
+  }
+
+  String? _bytesToDataUri(Uint8List? bytes, String? fileName) {
+    if (bytes == null) return null;
+    final lower = (fileName ?? '').toLowerCase();
+    final mimeType = lower.endsWith('.jpg') || lower.endsWith('.jpeg')
+        ? 'image/jpeg'
+        : 'image/png';
+    return 'data:$mimeType;base64,${base64Encode(bytes)}';
+  }
+
+  void _putIfNotBlank(Map<String, dynamic> payload, String key, String? value) {
+    final trimmed = value?.trim();
+    if (trimmed != null && trimmed.isNotEmpty) {
+      payload[key] = trimmed;
+    }
+  }
+
+  Widget _textField({required TextEditingController controller}) {
     return TextField(
       controller: controller,
       enabled: _isEditing,
@@ -254,16 +322,10 @@ class _BillingScreenState extends State<BillingScreen> {
       onChanged: _isEditing ? onChanged : null,
       isExpanded: true,
       menuMaxHeight: 260,
-      icon: const Icon(
-        Icons.expand_more_rounded,
-        color: Color(0xFF98A2B3),
-      ),
+      icon: const Icon(Icons.expand_more_rounded, color: Color(0xFF98A2B3)),
       hint: hintText == null
           ? null
-          : Text(
-              hintText,
-              style: const TextStyle(color: Color(0xFFB5BCC6)),
-            ),
+          : Text(hintText, style: const TextStyle(color: Color(0xFFB5BCC6))),
       style: const TextStyle(fontSize: 15, color: _titleColor),
       decoration: _fieldDecoration(),
       dropdownColor: Colors.white,
@@ -472,11 +534,7 @@ class _QrUploadCard extends StatelessWidget {
           if (isCompact) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                preview,
-                const SizedBox(height: 14),
-                details,
-              ],
+              children: [preview, const SizedBox(height: 14), details],
             );
           }
 
@@ -498,10 +556,7 @@ class _ResponsiveFields extends StatelessWidget {
   final bool isWide;
   final List<Widget> children;
 
-  const _ResponsiveFields({
-    required this.isWide,
-    required this.children,
-  });
+  const _ResponsiveFields({required this.isWide, required this.children});
 
   @override
   Widget build(BuildContext context) {

@@ -1,6 +1,10 @@
+// ignore_for_file: unused_field, unused_element, prefer_final_fields
+
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../models/auth_models.dart';
+import '../../../services/api_service.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 
 const Color kAdditionalTitleColor = Color(0xFF0F172A);
@@ -17,18 +21,16 @@ class AdditionalInformationScreen extends StatefulWidget {
       _AdditionalInformationScreenState();
 }
 
-class _AdditionalInformationScreenState extends State<AdditionalInformationScreen> {
+class _AdditionalInformationScreenState
+    extends State<AdditionalInformationScreen> {
   final TextEditingController _employeesController = TextEditingController();
-  final TextEditingController _businessHoursController = TextEditingController();
+  final TextEditingController _businessHoursController =
+      TextEditingController();
   final TextEditingController _missionController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
 
   bool _isEditing = false;
-  bool _saving = false;
-
-  final List<String> _statusOptions = const ['Active', 'Inactive'];
-  String _selectedStatus = 'Active';
-
+  final ApiService _apiService = ApiService();
   @override
   void dispose() {
     _employeesController.dispose();
@@ -36,19 +38,6 @@ class _AdditionalInformationScreenState extends State<AdditionalInformationScree
     _missionController.dispose();
     _notesController.dispose();
     super.dispose();
-  }
-
-  Future<void> _handleSave() async {
-    setState(() => _saving = true);
-    await Future.delayed(const Duration(milliseconds: 650));
-    if (!mounted) return;
-    setState(() {
-      _saving = false;
-      _isEditing = false;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Additional information saved')),
-    );
   }
 
   @override
@@ -62,6 +51,13 @@ class _AdditionalInformationScreenState extends State<AdditionalInformationScree
               title: 'Additional Information',
               leadingIcon: Icons.arrow_back_rounded,
               onLeadingTap: () => Navigator.of(context).maybePop(),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: _actionButton(),
+              ),
             ),
             Expanded(
               child: LayoutBuilder(
@@ -121,6 +117,65 @@ class _AdditionalInformationScreenState extends State<AdditionalInformationScree
         ),
       ),
     );
+  }
+
+  Widget _actionButton() {
+    final editing = _isEditing;
+    return ElevatedButton.icon(
+      onPressed: () async {
+        if (editing) {
+          await _saveSettings();
+          return;
+        }
+        setState(() => _isEditing = true);
+      },
+      icon: Icon(editing ? Icons.save_outlined : Icons.edit_outlined, size: 18),
+      label: Text(editing ? 'Save' : 'Edit'),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: editing
+            ? kAdditionalAccentColor
+            : const Color(0xFFF3F4F6),
+        foregroundColor: editing ? Colors.white : kAdditionalTitleColor,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+      ),
+    );
+  }
+
+  Future<void> _saveSettings() async {
+    try {
+      final payload = <String, dynamic>{};
+      _putIfNotBlank(payload, 'employee_count', _employeesController.text);
+      _putIfNotBlank(payload, 'business_hours', _businessHoursController.text);
+      _putIfNotBlank(payload, 'mission_vision', _missionController.text);
+      _putIfNotBlank(payload, 'notes', _notesController.text);
+
+      await _apiService.updateOrganizationSettings(
+        request: OrganizationSettingsRequest(fields: payload),
+      );
+
+      if (!mounted) return;
+      setState(() => _isEditing = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Changes saved.')));
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Unable to save changes: $error')));
+    }
+  }
+
+  void _putIfNotBlank(Map<String, dynamic> payload, String key, String? value) {
+    final trimmed = value?.trim();
+    if (trimmed != null && trimmed.isNotEmpty) {
+      payload[key] = key == 'employee_count'
+          ? int.tryParse(trimmed) ?? trimmed
+          : trimmed;
+    }
   }
 
   Widget _fieldBlock({
@@ -189,10 +244,7 @@ class _ResponsiveFields extends StatelessWidget {
   final bool isWide;
   final List<Widget> children;
 
-  const _ResponsiveFields({
-    required this.isWide,
-    required this.children,
-  });
+  const _ResponsiveFields({required this.isWide, required this.children});
 
   @override
   Widget build(BuildContext context) {

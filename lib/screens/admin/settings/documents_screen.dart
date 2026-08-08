@@ -1,9 +1,14 @@
+// ignore_for_file: unused_field, unused_element, prefer_final_fields
+
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../models/auth_models.dart';
+import '../../../services/api_service.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 
 const Color kDocumentsTitleColor = Color(0xFF0F172A);
@@ -21,8 +26,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   final ImagePicker _imagePicker = ImagePicker();
 
   bool _isEditing = false;
-  bool _saving = false;
-
+  final ApiService _apiService = ApiService();
   final Map<_DocumentType, Uint8List?> _bytes = {
     for (final type in _DocumentType.values) type: null,
   };
@@ -96,19 +100,6 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     });
   }
 
-  Future<void> _handleSave() async {
-    setState(() => _saving = true);
-    await Future.delayed(const Duration(milliseconds: 650));
-    if (!mounted) return;
-    setState(() {
-      _saving = false;
-      _isEditing = false;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Documents saved')),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -120,6 +111,13 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
               title: 'Documents',
               leadingIcon: Icons.arrow_back_rounded,
               onLeadingTap: () => Navigator.of(context).maybePop(),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: _actionButton(),
+              ),
             ),
             Expanded(
               child: LayoutBuilder(
@@ -161,9 +159,110 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       ),
     );
   }
+
+  Widget _actionButton() {
+    final editing = _isEditing;
+    return ElevatedButton.icon(
+      onPressed: () async {
+        if (editing) {
+          await _saveSettings();
+          return;
+        }
+        setState(() => _isEditing = true);
+      },
+      icon: Icon(editing ? Icons.save_outlined : Icons.edit_outlined, size: 18),
+      label: Text(editing ? 'Save' : 'Edit'),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: editing
+            ? kDocumentsAccentColor
+            : const Color(0xFFF3F4F6),
+        foregroundColor: editing ? Colors.white : kDocumentsTitleColor,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+      ),
+    );
+  }
+
+  Future<void> _saveSettings() async {
+    try {
+      final payload = <String, dynamic>{};
+      _putIfNotBlank(
+        payload,
+        'doc_gst_url',
+        _bytesToDataUri(_bytes[_DocumentType.gstCertificate]),
+      );
+      _putIfNotBlank(
+        payload,
+        'doc_pan_url',
+        _bytesToDataUri(_bytes[_DocumentType.panCard]),
+      );
+      _putIfNotBlank(
+        payload,
+        'doc_coi_url',
+        _bytesToDataUri(_bytes[_DocumentType.incorporation]),
+      );
+      _putIfNotBlank(
+        payload,
+        'doc_trade_license_url',
+        _bytesToDataUri(_bytes[_DocumentType.tradeLicense]),
+      );
+      _putIfNotBlank(
+        payload,
+        'doc_msme_url',
+        _bytesToDataUri(_bytes[_DocumentType.msme]),
+      );
+      _putIfNotBlank(
+        payload,
+        'doc_fssai_url',
+        _bytesToDataUri(_bytes[_DocumentType.fssai]),
+      );
+      _putIfNotBlank(
+        payload,
+        'doc_other_url',
+        _bytesToDataUri(_bytes[_DocumentType.other]),
+      );
+
+      await _apiService.updateOrganizationSettings(
+        request: OrganizationSettingsRequest(fields: payload),
+      );
+
+      if (!mounted) return;
+      setState(() => _isEditing = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Changes saved.')));
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Unable to save changes: $error')));
+    }
+  }
+
+  String? _bytesToDataUri(Uint8List? bytes) {
+    if (bytes == null) return null;
+    return 'data:image/png;base64,${base64Encode(bytes)}';
+  }
+
+  void _putIfNotBlank(Map<String, dynamic> payload, String key, String? value) {
+    final trimmed = value?.trim();
+    if (trimmed != null && trimmed.isNotEmpty) {
+      payload[key] = trimmed;
+    }
+  }
 }
 
-enum _DocumentType { gstCertificate, panCard, incorporation, tradeLicense, msme, fssai, other }
+enum _DocumentType {
+  gstCertificate,
+  panCard,
+  incorporation,
+  tradeLicense,
+  msme,
+  fssai,
+  other,
+}
 
 class _DocumentAsset {
   final _DocumentType type;
@@ -321,10 +420,7 @@ class _ResponsiveGrid extends StatelessWidget {
   final bool isWide;
   final List<Widget> children;
 
-  const _ResponsiveGrid({
-    required this.isWide,
-    required this.children,
-  });
+  const _ResponsiveGrid({required this.isWide, required this.children});
 
   @override
   Widget build(BuildContext context) {

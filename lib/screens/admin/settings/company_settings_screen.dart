@@ -167,8 +167,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
                           if (section.label == 'Branding & Identity') {
                             Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (_) =>
-                                    const BrandingIdentityScreen(),
+                                builder: (_) => const BrandingIdentityScreen(),
                               ),
                             );
                             return;
@@ -186,8 +185,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
                           if (section.label == 'Business Settings') {
                             Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (_) =>
-                                    const BusinessSettingsScreen(),
+                                builder: (_) => const BusinessSettingsScreen(),
                               ),
                             );
                             return;
@@ -215,17 +213,14 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
                           if (section.label == 'Change Password') {
                             Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (_) =>
-                                    const ChangePasswordScreen(),
+                                builder: (_) => const ChangePasswordScreen(),
                               ),
                             );
                             return;
                           }
 
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('${section.label} opened'),
-                            ),
+                            SnackBar(content: Text('${section.label} opened')),
                           );
                         },
                       ),
@@ -394,10 +389,7 @@ class _SettingsTile extends StatelessWidget {
   final _CompanySettingsSection section;
   final VoidCallback onTap;
 
-  const _SettingsTile({
-    required this.section,
-    required this.onTap,
-  });
+  const _SettingsTile({required this.section, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -430,11 +422,7 @@ class _SettingsTile extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 alignment: Alignment.center,
-                child: Icon(
-                  section.icon,
-                  color: section.iconColor,
-                  size: 22,
-                ),
+                child: Icon(section.icon, color: section.iconColor, size: 22),
               ),
               const SizedBox(width: 12),
               Expanded(

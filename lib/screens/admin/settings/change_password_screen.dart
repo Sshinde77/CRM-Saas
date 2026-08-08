@@ -18,8 +18,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   final TextEditingController _currentPasswordController =
       TextEditingController();
-  final TextEditingController _newPasswordController =
-      TextEditingController();
+  final TextEditingController _newPasswordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
 
@@ -50,7 +49,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
     if (next != confirm) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('New password and confirm password do not match')),
+        const SnackBar(
+          content: Text('New password and confirm password do not match'),
+        ),
       );
       return;
     }
@@ -146,7 +147,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     ),
                     const SizedBox(height: 20),
                     Align(
-                            alignment: Alignment.centerLeft,
+                      alignment: Alignment.centerLeft,
                       child: SizedBox(
                         height: 42,
                         child: ElevatedButton.icon(
@@ -163,7 +164,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                                   ),
                                 )
                               : const Icon(Icons.vpn_key_outlined, size: 18),
-                          label: Text(_saving ? 'Changing...' : 'Change Password'),
+                          label: Text(
+                            _saving ? 'Changing...' : 'Change Password',
+                          ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: _accent,
                             foregroundColor: Colors.white,
@@ -248,10 +251,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         filled: true,
         fillColor: _fieldBg,
         hintText: hintText,
-        hintStyle: const TextStyle(
-          color: Color(0xFF98A2B3),
-          fontSize: 15,
-        ),
+        hintStyle: const TextStyle(color: Color(0xFF98A2B3), fontSize: 15),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 14,
@@ -287,10 +287,7 @@ class _ResponsivePasswordRow extends StatelessWidget {
   final bool isWide;
   final List<Widget> children;
 
-  const _ResponsivePasswordRow({
-    required this.isWide,
-    required this.children,
-  });
+  const _ResponsivePasswordRow({required this.isWide, required this.children});
 
   @override
   Widget build(BuildContext context) {

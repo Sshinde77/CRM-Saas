@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:csc_picker/csc_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -7,7 +9,6 @@ import '../../../constants/app_colors.dart';
 import '../../../models/app_user.dart';
 import '../../../models/auth_models.dart';
 import '../../../models/role_model.dart';
-import '../../../providers/api_provider.dart';
 import '../../../services/api_service.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 
@@ -28,6 +29,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
   final ApiService _apiService = ApiService();
   final ImagePicker _imagePicker = ImagePicker();
   Future<List<RoleModel>>? _rolesFuture;
+  Future<List<AppUser>>? _usersFuture;
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
@@ -56,19 +58,17 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
       TextEditingController();
   final TextEditingController _cityController = TextEditingController();
   final TextEditingController _stateController = TextEditingController();
+  final TextEditingController _countryController = TextEditingController();
   final TextEditingController _pinCodeController = TextEditingController();
-  final TextEditingController _designationController =
-      TextEditingController(text: 'Sales Officer');
+  final TextEditingController _designationController = TextEditingController();
   final TextEditingController _reportingManagerController =
       TextEditingController();
   final TextEditingController _employmentTypeController =
       TextEditingController();
   final TextEditingController _dateOfJoiningController =
       TextEditingController();
-  final TextEditingController _dateOfExitController =
-      TextEditingController();
-  final TextEditingController _workLocationController =
-      TextEditingController();
+  final TextEditingController _dateOfExitController = TextEditingController();
+  final TextEditingController _workLocationController = TextEditingController();
   final TextEditingController _salaryController = TextEditingController();
   final TextEditingController _accountNumberController =
       TextEditingController();
@@ -82,7 +82,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
       TextEditingController();
 
   RoleModel? _selectedRole;
-  AppUser? _editingUser;
+  String? _selectedReportingManagerId;
   bool _sendNotification = true;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -92,26 +92,23 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
   int _currentStep = 0;
   String? _selectedLanguage;
   String? _selectedTimeZone;
+  String? _selectedShift;
+  String _selectedEmployeeStatus = 'Active';
   String _selectedStatus = 'Active';
   String? _selectedGender;
   String? _selectedMaritalStatus;
   String? _selectedBloodGroup;
   String? _selectedNationality;
+  String? _selectedEmergencyContactRelationship;
+  String? _selectedIdentityProofType;
   String? _selectedBankName;
   Uint8List? _photoBytes;
-  String? _photoName;
   Uint8List? _identityProofBytes;
-  String? _identityProofName;
   Uint8List? _resumeBytes;
-  String? _resumeName;
   Uint8List? _offerLetterBytes;
-  String? _offerLetterName;
   Uint8List? _appointmentLetterBytes;
-  String? _appointmentLetterName;
   Uint8List? _experienceCertificatesBytes;
-  String? _experienceCertificatesName;
   Uint8List? _educationalCertificatesBytes;
-  String? _educationalCertificatesName;
 
   static const List<String> _genderOptions = [
     'Male',
@@ -150,6 +147,26 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
     'Bank of Baroda',
     'Punjab National Bank',
   ];
+  static const List<String> _relationshipOptions = [
+    'Father',
+    'Mother',
+    'Spouse',
+    'Sibling',
+    'Son',
+    'Daughter',
+    'Guardian',
+    'Relative',
+    'Friend',
+    'Other',
+  ];
+  static const List<String> _identityProofOptions = [
+    'Aadhaar',
+    'PAN',
+    'Passport',
+    'Driving Licence',
+    'Voter ID',
+    'Other',
+  ];
   static const List<String> _languageOptions = [
     'English',
     'Hindi',
@@ -183,20 +200,30 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
   ];
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _rolesFuture ??= ApiProviderScope.of(context).fetchRoles();
-    if (widget.isEditMode && _editingUser == null && !_isLoadingEditUser) {
-      _loadEditUser();
-    }
-  }
-
-  @override
   void initState() {
     super.initState();
+    _rolesFuture = _apiService.fetchRoles().then((roles) {
+      if (!mounted) {
+        return roles;
+      }
+      if (_selectedRole == null && roles.isNotEmpty) {
+        final salesOfficerRole = roles.firstWhere(
+          (role) => role.name.trim().toLowerCase() == 'sales officer',
+          orElse: () => roles.first,
+        );
+        setState(() => _selectedRole = salesOfficerRole);
+      }
+      return roles;
+    });
+    _usersFuture = _apiService.fetchUsers();
+
     final existing = widget.existingUser;
     if (existing != null) {
       _applyUser(existing);
+    }
+
+    if (widget.isEditMode) {
+      _loadEditUser();
     }
   }
 
@@ -223,6 +250,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
     _permanentAddressController.dispose();
     _cityController.dispose();
     _stateController.dispose();
+    _countryController.dispose();
     _pinCodeController.dispose();
     _designationController.dispose();
     _reportingManagerController.dispose();
@@ -265,6 +293,66 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
         .replaceAll(RegExp(r'^_|_$'), '');
   }
 
+  String? _nullableText(String? value) {
+    final trimmed = value?.trim();
+    return trimmed == null || trimmed.isEmpty ? null : trimmed;
+  }
+
+  DateTime? _parseFlexibleDate(String? value) {
+    final text = value?.trim();
+    if (text == null || text.isEmpty) {
+      return null;
+    }
+
+    final iso = DateTime.tryParse(text);
+    if (iso != null) {
+      return iso;
+    }
+
+    final parts = text.split(RegExp(r'[-/]'));
+    if (parts.length != 3) {
+      return null;
+    }
+
+    final day = int.tryParse(parts[0]);
+    final month = int.tryParse(parts[1]);
+    final year = int.tryParse(parts[2]);
+    if (day == null || month == null || year == null) {
+      return null;
+    }
+
+    return DateTime.utc(year, month, day);
+  }
+
+  String? _slugifyValue(String? value) {
+    final text = value?.trim();
+    if (text == null || text.isEmpty) {
+      return null;
+    }
+
+    return text
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9]+'), '_')
+        .replaceAll(RegExp(r'_+'), '_')
+        .replaceAll(RegExp(r'^_|_$'), '');
+  }
+
+  String? _base64OrNull(Uint8List? bytes) {
+    if (bytes == null || bytes.isEmpty) {
+      return null;
+    }
+    return base64Encode(bytes);
+  }
+
+  List<String>? _skillsList() {
+    final skills = _skillsController.text
+        .split(',')
+        .map((skill) => skill.trim())
+        .where((skill) => skill.isNotEmpty)
+        .toList();
+    return skills.isEmpty ? null : skills;
+  }
+
   Future<void> _loadEditUser() async {
     final userId = _effectiveUserId;
     if (userId.isEmpty) return;
@@ -278,7 +366,6 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
       final user = await _apiService.fetchUserById(userId);
       if (!mounted) return;
       _applyUser(user);
-      setState(() => _editingUser = user);
     } catch (error) {
       if (mounted) {
         setState(() => _editLoadError = error.toString());
@@ -302,7 +389,6 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
       if (!mounted) return;
       setState(() {
         _photoBytes = bytes;
-        _photoName = picked.name;
       });
     } catch (error) {
       if (mounted) {
@@ -314,7 +400,6 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
   void _removePhoto() {
     setState(() {
       _photoBytes = null;
-      _photoName = null;
     });
   }
 
@@ -331,27 +416,21 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
         switch (slot) {
           case _StaffUploadSlot.identityProof:
             _identityProofBytes = bytes;
-            _identityProofName = picked.name;
             break;
           case _StaffUploadSlot.resumeCv:
             _resumeBytes = bytes;
-            _resumeName = picked.name;
             break;
           case _StaffUploadSlot.offerLetter:
             _offerLetterBytes = bytes;
-            _offerLetterName = picked.name;
             break;
           case _StaffUploadSlot.appointmentLetter:
             _appointmentLetterBytes = bytes;
-            _appointmentLetterName = picked.name;
             break;
           case _StaffUploadSlot.experienceCertificates:
             _experienceCertificatesBytes = bytes;
-            _experienceCertificatesName = picked.name;
             break;
           case _StaffUploadSlot.educationalCertificates:
             _educationalCertificatesBytes = bytes;
-            _educationalCertificatesName = picked.name;
             break;
         }
       });
@@ -367,27 +446,21 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
       switch (slot) {
         case _StaffUploadSlot.identityProof:
           _identityProofBytes = null;
-          _identityProofName = null;
           break;
         case _StaffUploadSlot.resumeCv:
           _resumeBytes = null;
-          _resumeName = null;
           break;
         case _StaffUploadSlot.offerLetter:
           _offerLetterBytes = null;
-          _offerLetterName = null;
           break;
         case _StaffUploadSlot.appointmentLetter:
           _appointmentLetterBytes = null;
-          _appointmentLetterName = null;
           break;
         case _StaffUploadSlot.experienceCertificates:
           _experienceCertificatesBytes = null;
-          _experienceCertificatesName = null;
           break;
         case _StaffUploadSlot.educationalCertificates:
           _educationalCertificatesBytes = null;
-          _educationalCertificatesName = null;
           break;
       }
     });
@@ -401,6 +474,10 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
     _usernameController.text = user.username ?? user.email;
     _phoneController.text = user.phone ?? '';
     _displayNameController.text = user.name;
+    _selectedEmergencyContactRelationship =
+        _emergencyContactRelationshipController.text.trim().isEmpty
+        ? null
+        : _emergencyContactRelationshipController.text.trim();
 
     final roleDetail = user.roleDetail;
     if (roleDetail != null && roleDetail.id.trim().isNotEmpty) {
@@ -416,8 +493,9 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
   Future<void> _submit() async {
     setState(() => _isSubmitting = true);
     try {
+      String userId;
       if (widget.isEditMode) {
-        final userId = _effectiveUserId;
+        userId = _effectiveUserId;
         if (userId.isEmpty) {
           throw const ApiException(message: 'Missing user id.');
         }
@@ -425,37 +503,101 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
         await _apiService.updateUser(
           userId: userId,
           request: UpdateUserRequest(
-            name: _nameController.text.trim(),
-            email: _officialEmailController.text.trim(),
-            username: _usernameController.text.trim().isEmpty
-                ? _officialEmailController.text.trim()
-                : _usernameController.text.trim(),
-            phone: _phoneController.text.trim(),
+            name: _nullableText(_nameController.text),
+            email: _nullableText(_officialEmailController.text),
+            username: _nullableText(_usernameController.text),
+            phone: _nullableText(_phoneController.text),
           ),
         );
       } else {
         final selectedRole = _selectedRole;
-        await _apiService.createUser(
+        final createdUser = await _apiService.createUser(
           request: CreateUserRequest(
-            name: _nameController.text.trim(),
-            email: _officialEmailController.text.trim(),
-            username: _usernameController.text.trim().isEmpty
-                ? _officialEmailController.text.trim()
-                : _usernameController.text.trim(),
-            phone: _phoneController.text.trim(),
-            password: _passwordController.text,
-            roleId: selectedRole?.id.trim() ?? '',
+            name:
+                _nullableText(_displayNameController.text) ??
+                _nullableText(
+                  '${_firstNameController.text} ${_lastNameController.text}',
+                ),
+            email:
+                _nullableText(_officialEmailController.text) ??
+                _nullableText(_personalEmailController.text),
+            username: _nullableText(_usernameController.text),
+            phone: _nullableText(_phoneController.text),
+            password: _nullableText(_passwordController.text),
+            confirmPassword:
+                _nullableText(_confirmPasswordController.text) ??
+                _nullableText(_passwordController.text),
+            employeeId: _nullableText(_employeeIdController.text),
+            firstName: _nullableText(_firstNameController.text),
+            lastName: _nullableText(_lastNameController.text),
+            displayName: _nullableText(_displayNameController.text),
+            gender: _slugifyValue(_selectedGender),
+            dateOfBirth: _parseFlexibleDate(_dobController.text),
+            maritalStatus: _slugifyValue(_selectedMaritalStatus),
+            bloodGroup: _nullableText(_selectedBloodGroup),
+            nationality: _nullableText(_selectedNationality),
+            alternateMobileNumber: _nullableText(
+              _alternatePhoneController.text,
+            ),
+            personalEmail: _nullableText(_personalEmailController.text),
+            emergencyContactName: _nullableText(
+              _emergencyContactNameController.text,
+            ),
+            emergencyContactNumber: _nullableText(
+              _emergencyContactNumberController.text,
+            ),
+            emergencyContactRelationship: _nullableText(
+              _emergencyContactRelationshipController.text,
+            ),
+            currentAddress: _nullableText(_addressController.text),
+            permanentAddress: _nullableText(_permanentAddressController.text),
+            city: _nullableText(_cityController.text),
+            state: _nullableText(_stateController.text),
+            country: _nullableText(_countryController.text),
+            pinZipCode: _nullableText(_pinCodeController.text),
+            designation: _nullableText(_designationController.text),
+            reportingManagerId: _selectedReportingManagerId,
+            employmentType:
+                _slugifyValue(_employmentTypeController.text) ?? 'full_time',
+            dateOfJoining: _parseFlexibleDate(_dateOfJoiningController.text),
+            dateOfExit: _parseFlexibleDate(_dateOfExitController.text),
+            workLocation: _nullableText(_workLocationController.text),
+            shift: _slugifyValue(_selectedShift),
+            employeeStatus: _slugifyValue(_selectedEmployeeStatus),
+            basicSalary: num.tryParse(_basicSalaryController.text.trim()),
+            bankName: _nullableText(_selectedBankName),
+            accountNumber: _nullableText(_accountNumberController.text),
+            ifscSwiftCode: _nullableText(_ifscCodeController.text),
+            accountHolderName: _nullableText(_accountHolderController.text),
+            upiId: _nullableText(_upiIdController.text),
+            profilePhoto: _base64OrNull(_photoBytes),
+            identityProofType: _nullableText(_selectedIdentityProofType),
+            identityProofFile: _base64OrNull(_identityProofBytes),
+            resumeCv: _base64OrNull(_resumeBytes),
+            offerLetter: _base64OrNull(_offerLetterBytes),
+            appointmentLetter: _base64OrNull(_appointmentLetterBytes),
+            skills: _skillsList(),
+            language: _nullableText(_selectedLanguage),
+            timeZone: _nullableText(_selectedTimeZone),
+            status: _slugifyValue(_selectedStatus),
+            roleId: _nullableText(selectedRole?.id),
             role: selectedRole == null
-                ? ''
-                : _roleSlugFromLabel(selectedRole.name),
+                ? null
+                : _nullableText(_roleSlugFromLabel(selectedRole.name)),
           ),
         );
+        userId = createdUser.id.trim();
+        if (userId.isEmpty) {
+          throw const ApiException(message: 'Created user id missing.');
+        }
       }
+
+      await _uploadStaffDocuments(userId);
 
       if (!mounted) return;
       _nameController.text = _displayNameController.text.trim().isEmpty
           ? '${_firstNameController.text.trim()} ${_lastNameController.text.trim()}'
-              .trim()
+                .trim()
           : _displayNameController.text.trim();
       _showMessage(
         widget.isEditMode
@@ -470,6 +612,82 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
         setState(() => _isSubmitting = false);
       }
     }
+  }
+
+  Future<void> _uploadStaffDocuments(String userId) async {
+    final trimmedUserId = userId.trim();
+    if (trimmedUserId.isEmpty) {
+      return;
+    }
+
+    Future<void> uploadIfPresent({
+      required Uint8List? bytes,
+      required String endpointField,
+      required String fileName,
+      required String errorLabel,
+      bool isIdentityProof = false,
+    }) async {
+      final fileBytes = bytes;
+      if (fileBytes == null) return;
+
+      try {
+        if (isIdentityProof) {
+          await _apiService.uploadUserIdentityProof(
+            userId: trimmedUserId,
+            fileBytes: fileBytes,
+            fileName: fileName,
+          );
+          return;
+        }
+
+        await _apiService.uploadUserFile(
+          userId: trimmedUserId,
+          field: endpointField,
+          fileBytes: fileBytes,
+          fileName: fileName,
+        );
+      } catch (error) {
+        throw ApiException(message: 'Failed to upload $errorLabel: $error');
+      }
+    }
+
+    await uploadIfPresent(
+      bytes: _identityProofBytes,
+      endpointField: 'identity_proof_file',
+      fileName: 'identity-proof.png',
+      errorLabel: 'identity proof',
+      isIdentityProof: true,
+    );
+    await uploadIfPresent(
+      bytes: _resumeBytes,
+      endpointField: 'resume_cv',
+      fileName: 'resume-cv.png',
+      errorLabel: 'resume/CV',
+    );
+    await uploadIfPresent(
+      bytes: _offerLetterBytes,
+      endpointField: 'offer_letter',
+      fileName: 'offer-letter.png',
+      errorLabel: 'offer letter',
+    );
+    await uploadIfPresent(
+      bytes: _appointmentLetterBytes,
+      endpointField: 'appointment_letter',
+      fileName: 'appointment-letter.png',
+      errorLabel: 'appointment letter',
+    );
+    await uploadIfPresent(
+      bytes: _experienceCertificatesBytes,
+      endpointField: 'experience_certificates',
+      fileName: 'experience-certificates.png',
+      errorLabel: 'experience certificates',
+    );
+    await uploadIfPresent(
+      bytes: _educationalCertificatesBytes,
+      endpointField: 'educational_certificates',
+      fileName: 'educational-certificates.png',
+      errorLabel: 'educational certificates',
+    );
   }
 
   void _nextStep() {
@@ -620,8 +838,9 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                               boxShadow: isActive
                                   ? [
                                       BoxShadow(
-                                        color: AppColors.primary
-                                            .withValues(alpha: 0.18),
+                                        color: AppColors.primary.withValues(
+                                          alpha: 0.18,
+                                        ),
                                         blurRadius: 10,
                                         offset: const Offset(0, 4),
                                       ),
@@ -750,8 +969,8 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                 onPressed: _isSubmitting
                     ? null
                     : (_currentStep == 0
-                        ? () => Navigator.of(context).pop()
-                        : _previousStep),
+                          ? () => Navigator.of(context).pop()
+                          : _previousStep),
                 style: TextButton.styleFrom(
                   backgroundColor: AppColors.surfaceSoft,
                   foregroundColor: AppColors.textPrimary,
@@ -882,10 +1101,11 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
       children: children
           .map(
             (child) => SizedBox(
-              width: (MediaQuery.of(context).size.width > 1200
-                      ? 1200
-                      : MediaQuery.of(context).size.width) /
-                  2 -
+              width:
+                  (MediaQuery.of(context).size.width > 1200
+                          ? 1200
+                          : MediaQuery.of(context).size.width) /
+                      2 -
                   32,
               child: child,
             ),
@@ -928,103 +1148,68 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
           const SizedBox(height: 18),
           const Divider(height: 1, color: AppColors.borderStrong),
           const SizedBox(height: 18),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                flex: 5,
-                child: _photoUploadCard(),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                flex: 5,
-                child: _fieldBlock(
-                  'Employee ID *',
-                  _textField(
-                    controller: _employeeIdController,
-                    hintText: '',
-                  ),
-                ),
-              ),
-            ],
+          _photoUploadCard(),
+          const SizedBox(height: 16),
+          _fieldBlock(
+            'First Name *',
+            _textField(controller: _firstNameController, hintText: ''),
           ),
-          const SizedBox(height: 18),
-          _twoColumnFields(
-            wide: wide,
-            children: [
-              _fieldBlock(
-                'First Name *',
-                _textField(
-                  controller: _firstNameController,
-                  hintText: '',
-                ),
-              ),
-              _fieldBlock(
-                'Last Name *',
-                _textField(
-                  controller: _lastNameController,
-                  hintText: '',
-                ),
-              ),
-              _fieldBlock(
-                'Display Name',
-                _textField(
-                  controller: _displayNameController,
-                  hintText: '',
-                ),
-              ),
-              _fieldBlock(
-                'Gender',
-                _dropdownField(
-                  value: _selectedGender,
-                  hintText: 'Select...',
-                  items: _genderOptions,
-                  onChanged: (value) => setState(() => _selectedGender = value),
-                ),
-              ),
-              _fieldBlock(
-                'Date of Birth',
-                _textField(
-                  controller: _dobController,
-                  hintText: 'dd-mm-yyyy',
-                  suffixIcon: const Icon(
-                    Icons.calendar_month_outlined,
-                    size: 20,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ),
-              _fieldBlock(
-                'Marital Status',
-                _dropdownField(
-                  value: _selectedMaritalStatus,
-                  hintText: 'Select...',
-                  items: _maritalOptions,
-                  onChanged: (value) =>
-                      setState(() => _selectedMaritalStatus = value),
-                ),
-              ),
-              _fieldBlock(
-                'Blood Group',
-                _dropdownField(
-                  value: _selectedBloodGroup,
-                  hintText: 'Select...',
-                  items: _bloodOptions,
-                  onChanged: (value) =>
-                      setState(() => _selectedBloodGroup = value),
-                ),
-              ),
-              _fieldBlock(
-                'Nationality',
-                _dropdownField(
-                  value: _selectedNationality,
-                  hintText: 'Select...',
-                  items: _nationalityOptions,
-                  onChanged: (value) =>
-                      setState(() => _selectedNationality = value),
-                ),
-              ),
-            ],
+          const SizedBox(height: 16),
+          _fieldBlock(
+            'Last Name *',
+            _textField(controller: _lastNameController, hintText: ''),
+          ),
+          const SizedBox(height: 16),
+          _fieldBlock(
+            'Display Name',
+            _textField(controller: _displayNameController, hintText: ''),
+          ),
+          const SizedBox(height: 16),
+          _fieldBlock(
+            'Gender',
+            _dropdownField(
+              value: _selectedGender,
+              hintText: 'Select...',
+              items: _genderOptions,
+              onChanged: (value) => setState(() => _selectedGender = value),
+            ),
+          ),
+          const SizedBox(height: 16),
+          _fieldBlock(
+            'Date of Birth',
+            _dateField(controller: _dobController, hintText: 'Select date'),
+          ),
+          const SizedBox(height: 16),
+          _fieldBlock(
+            'Marital Status',
+            _dropdownField(
+              value: _selectedMaritalStatus,
+              hintText: 'Select...',
+              items: _maritalOptions,
+              onChanged: (value) =>
+                  setState(() => _selectedMaritalStatus = value),
+            ),
+          ),
+          const SizedBox(height: 16),
+          _fieldBlock(
+            'Blood Group',
+            _dropdownField(
+              value: _selectedBloodGroup,
+              hintText: 'Select...',
+              items: _bloodOptions,
+              onChanged: (value) => setState(() => _selectedBloodGroup = value),
+            ),
+          ),
+          const SizedBox(height: 16),
+          _fieldBlock(
+            'Nationality',
+            _dropdownField(
+              value: _selectedNationality,
+              hintText: 'Select...',
+              items: _nationalityOptions,
+              onChanged: (value) =>
+                  setState(() => _selectedNationality = value),
+            ),
           ),
         ],
       ),
@@ -1069,7 +1254,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             wide: wide,
             children: [
               _fieldBlock(
-                'Mobile Number *',
+                'Mobile Number',
                 _textField(
                   controller: _phoneController,
                   hintText: '',
@@ -1093,7 +1278,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                 ),
               ),
               _fieldBlock(
-                'Official Email *',
+                'Official Email',
                 _textField(
                   controller: _officialEmailController,
                   hintText: '',
@@ -1117,9 +1302,43 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
               ),
               _fieldBlock(
                 'Emergency Contact Relationship',
-                _textField(
-                  controller: _emergencyContactRelationshipController,
-                  hintText: '',
+                DropdownButtonFormField<String>(
+                  initialValue: _selectedEmergencyContactRelationship,
+                  isExpanded: true,
+                  menuMaxHeight: 280,
+                  icon: const Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    color: AppColors.textLightMuted,
+                  ),
+                  hint: const Text(
+                    'Select...',
+                    style: TextStyle(color: AppColors.textLightMuted),
+                  ),
+                  decoration: _inputDecoration(''),
+                  dropdownColor: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  items: _relationshipOptions
+                      .map(
+                        (item) => DropdownMenuItem<String>(
+                          value: item,
+                          child: Text(
+                            item,
+                            style: const TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedEmergencyContactRelationship = value;
+                      _emergencyContactRelationshipController.text =
+                          value ?? '';
+                    });
+                  },
                 ),
               ),
             ],
@@ -1182,34 +1401,67 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                   maxLines: 4,
                 ),
               ),
-              _fieldBlock(
-                'City',
-                _textField(
-                  controller: _cityController,
-                  hintText: '',
+              CSCPicker(
+                layout: Layout.vertical,
+                showStates: true,
+                showCities: true,
+                flagState: CountryFlag.DISABLE,
+                currentCountry: _countryController.text,
+                currentState: _stateController.text,
+                currentCity: _cityController.text,
+                dropdownDecoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(14),
+                  color: AppColors.surfaceSoft.withValues(alpha: 0.28),
+                  border: Border.all(
+                    color: AppColors.borderStrong.withValues(alpha: 0.25),
+                  ),
                 ),
-              ),
-              _fieldBlock(
-                'State',
-                _textField(
-                  controller: _stateController,
-                  hintText: '',
+                disabledDropdownDecoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(14),
+                  color: AppColors.surfaceSoft.withValues(alpha: 0.28),
+                  border: Border.all(
+                    color: AppColors.borderStrong.withValues(alpha: 0.25),
+                  ),
                 ),
-              ),
-              _fieldBlock(
-                'Country',
-                _dropdownField<String>(
-                  value: null,
-                  hintText: 'Select...',
-                  items: const [
-                    'India',
-                    'United States',
-                    'United Kingdom',
-                    'Canada',
-                    'Australia',
-                  ],
-                  onChanged: (_) {},
+                selectedItemStyle: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 14,
                 ),
+                dropdownHeadingStyle: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+                dropdownItemStyle: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 14,
+                ),
+                dropdownDialogRadius: 12,
+                searchBarRadius: 12,
+                countryDropdownLabel: '*Country',
+                stateDropdownLabel: '*State',
+                cityDropdownLabel: '*City',
+                countrySearchPlaceholder: 'Search country',
+                stateSearchPlaceholder: 'Search state',
+                citySearchPlaceholder: 'Search city',
+                onCountryChanged: (value) {
+                  setState(() {
+                    _countryController.text = value;
+                    _stateController.clear();
+                    _cityController.clear();
+                  });
+                },
+                onStateChanged: (value) {
+                  setState(() {
+                    _stateController.text = value ?? '';
+                    _cityController.clear();
+                  });
+                },
+                onCityChanged: (value) {
+                  setState(() {
+                    _cityController.text = value ?? '';
+                  });
+                },
               ),
               _fieldBlock(
                 'PIN/ZIP Code',
@@ -1227,149 +1479,151 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
   }
 
   Widget _employmentInformationCard({required bool wide}) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: AppColors.borderStrong.withValues(alpha: 0.35),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Employment Information',
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 6),
-          const Text(
-            'Role, reporting, joining, location, and employee status.',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 13,
-              height: 1.35,
-            ),
-          ),
-          const SizedBox(height: 18),
-          const Divider(height: 1, color: AppColors.borderStrong),
-          const SizedBox(height: 18),
-          _twoColumnFields(
-            wide: wide,
-            children: [
-              _fieldBlock(
-                'Designation *',
-                _dropdownField<String>(
-                  value: _designationController.text.isEmpty
-                      ? null
-                      : _designationController.text,
-                  hintText: 'Select...',
-                  items: const [
-                    'Sales Officer',
-                    'Accountant',
-                    'Admin',
-                    'Manager',
-                    'HR',
-                    'Director',
-                  ],
-                  onChanged: (value) {
-                    setState(() {
-                      _designationController.text = value ?? '';
-                    });
-                  },
+    return FutureBuilder<List<RoleModel>>(
+      future: _rolesFuture,
+      builder: (context, rolesSnapshot) {
+        final roles = rolesSnapshot.data ?? const <RoleModel>[];
+        return FutureBuilder<List<AppUser>>(
+          future: _usersFuture,
+          builder: (context, usersSnapshot) {
+            final users = usersSnapshot.data ?? const <AppUser>[];
+
+            return Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: AppColors.background,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: AppColors.borderStrong.withValues(alpha: 0.35),
                 ),
               ),
-              _fieldBlock(
-                'Reporting Manager',
-                _textField(
-                  controller: _reportingManagerController,
-                  hintText: 'Select...',
-                ),
-              ),
-              _fieldBlock(
-                'Employment Type *',
-                _dropdownField<String>(
-                  value: _employmentTypeController.text.isEmpty
-                      ? null
-                      : _employmentTypeController.text,
-                  hintText: 'Select...',
-                  items: const [
-                    'Full Time',
-                    'Part Time',
-                    'Contract',
-                    'Intern',
-                  ],
-                  onChanged: (value) {
-                    setState(() {
-                      _employmentTypeController.text = value ?? '';
-                    });
-                  },
-                ),
-              ),
-              _fieldBlock(
-                'Date of Joining *',
-                _textField(
-                  controller: _dateOfJoiningController,
-                  hintText: 'dd-mm-yyyy',
-                  suffixIcon: const Icon(
-                    Icons.calendar_month_outlined,
-                    size: 20,
-                    color: AppColors.textSecondary,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Employment Information',
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
-                ),
-              ),
-              _fieldBlock(
-                'Date of Exit',
-                _textField(
-                  controller: _dateOfExitController,
-                  hintText: 'dd-mm-yyyy',
-                  suffixIcon: const Icon(
-                    Icons.calendar_month_outlined,
-                    size: 20,
-                    color: AppColors.textSecondary,
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Role, reporting, joining, location, and employee status.',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 13,
+                      height: 1.35,
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 18),
+                  const Divider(height: 1, color: AppColors.borderStrong),
+                  const SizedBox(height: 18),
+                  _twoColumnFields(
+                    wide: wide,
+                    children: [
+                      _fieldBlock(
+                        'Role *',
+                        rolesSnapshot.connectionState == ConnectionState.waiting
+                            ? _loadingField()
+                            : _roleDropdown(roles),
+                      ),
+                      _fieldBlock(
+                        'Designation *',
+                        _textField(
+                          controller: _designationController,
+                          hintText: '',
+                        ),
+                      ),
+                      _fieldBlock(
+                        'Reporting Manager',
+                        usersSnapshot.connectionState == ConnectionState.waiting
+                            ? _loadingField()
+                            : _reportingManagerDropdown(users),
+                      ),
+                      _fieldBlock(
+                        'Employment Type *',
+                        _dropdownField<String>(
+                          value: _employmentTypeController.text.isEmpty
+                              ? null
+                              : _employmentTypeController.text,
+                          hintText: 'Select...',
+                          items: const [
+                            'Full Time',
+                            'Part Time',
+                            'Contract',
+                            'Intern',
+                            'Temporary',
+                          ],
+                          onChanged: (value) {
+                            setState(() {
+                              _employmentTypeController.text = value ?? '';
+                            });
+                          },
+                        ),
+                      ),
+                      _fieldBlock(
+                        'Date of Joining *',
+                        _dateField(
+                          controller: _dateOfJoiningController,
+                          hintText: 'dd-mm-yyyy',
+                        ),
+                      ),
+                      _fieldBlock(
+                        'Date of Exit',
+                        _dateField(
+                          controller: _dateOfExitController,
+                          hintText: 'dd-mm-yyyy',
+                        ),
+                      ),
+                      _fieldBlock(
+                        'Work Location',
+                        _textField(
+                          controller: _workLocationController,
+                          hintText: '',
+                        ),
+                      ),
+                      _fieldBlock(
+                        'Shift',
+                        _dropdownField<String>(
+                          value: _selectedShift,
+                          hintText: 'Select...',
+                          items: const ['Morning', 'Day', 'Night', 'Flexible'],
+                          onChanged: (value) {
+                            setState(() => _selectedShift = value);
+                          },
+                        ),
+                      ),
+                      _fieldBlock(
+                        'Employee Status *',
+                        _dropdownField<String>(
+                          value: _selectedEmployeeStatus,
+                          hintText: '',
+                          items: const [
+                            'Active',
+                            'Probation',
+                            'On Leave',
+                            'Notice Period',
+                            'Resigned',
+                            'Terminated',
+                          ],
+                          onChanged: (value) {
+                            if (value != null) {
+                              setState(() => _selectedEmployeeStatus = value);
+                            }
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              _fieldBlock(
-                'Work Location',
-                _textField(
-                  controller: _workLocationController,
-                  hintText: '',
-                ),
-              ),
-              _fieldBlock(
-                'Shift',
-                _dropdownField<String>(
-                  value: null,
-                  hintText: 'Select...',
-                  items: const [
-                    'Morning',
-                    'Day',
-                    'Night',
-                    'Flexible',
-                  ],
-                  onChanged: (_) {},
-                ),
-              ),
-              _fieldBlock(
-                'Employee Status *',
-                _dropdownField<String>(
-                  value: 'Active',
-                  hintText: '',
-                  items: const ['Active', 'Inactive', 'Suspended'],
-                  onChanged: (_) {},
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -1439,24 +1693,15 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
               ),
               _fieldBlock(
                 'IFSC/SWIFT Code',
-                _textField(
-                  controller: _ifscCodeController,
-                  hintText: '',
-                ),
+                _textField(controller: _ifscCodeController, hintText: ''),
               ),
               _fieldBlock(
                 'Account Holder Name',
-                _textField(
-                  controller: _accountHolderController,
-                  hintText: '',
-                ),
+                _textField(controller: _accountHolderController, hintText: ''),
               ),
               _fieldBlock(
                 'UPI ID',
-                _textField(
-                  controller: _upiIdController,
-                  hintText: '',
-                ),
+                _textField(controller: _upiIdController, hintText: ''),
               ),
             ],
           ),
@@ -1466,11 +1711,6 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
   }
 
   Widget _loginSecurityCard({required bool wide}) {
-    if (_usernameController.text.trim().isEmpty &&
-        _officialEmailController.text.trim().isNotEmpty) {
-      _usernameController.text = _officialEmailController.text.trim();
-    }
-
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
@@ -1508,21 +1748,15 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             wide: wide,
             children: [
               _fieldBlock(
-                'Username *',
+                'Username',
                 _textField(
                   controller: _usernameController,
                   hintText: '',
                   keyboardType: TextInputType.emailAddress,
                 ),
               ),
-              _fieldBlock(
-                'Password *',
-                _passwordField(),
-              ),
-              _fieldBlock(
-                'Confirm Password *',
-                _confirmPasswordField(),
-              ),
+              _fieldBlock('Password', _passwordField()),
+              _fieldBlock('Confirm Password', _confirmPasswordField()),
               _securityNotificationCard(),
             ],
           ),
@@ -1578,7 +1812,9 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
       decoration: BoxDecoration(
         color: AppColors.background,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.borderStrong.withValues(alpha: 0.35)),
+        border: Border.all(
+          color: AppColors.borderStrong.withValues(alpha: 0.35),
+        ),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -1593,104 +1829,95 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             ),
           ),
           const SizedBox(height: 14),
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 120,
-                    height: 84,
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceSoft,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: AppColors.borderStrong.withValues(alpha: 0.45),
-                      ),
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: _photoBytes == null
-                        ? const Center(
-                            child: Text(
-                              'Preview',
-                              style: TextStyle(
-                                color: AppColors.textLightMuted,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          )
-                        : Image.memory(
-                            _photoBytes!,
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                            height: double.infinity,
-                          ),
-                  ),
-                ],
+          _profilePhotoPreview(),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            height: 38,
+            child: ElevatedButton.icon(
+              onPressed: _pickPhoto,
+              icon: const Icon(Icons.upload_outlined, size: 16),
+              label: const Text('Upload'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 8,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                textStyle: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
-              const SizedBox(height: 14),
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    height: 38,
-                    child: ElevatedButton.icon(
-                      onPressed: _pickPhoto,
-                      icon: const Icon(Icons.upload_outlined, size: 16),
-                      label: const Text('Upload'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 8,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        textStyle: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 38,
-                    child: OutlinedButton.icon(
-                      onPressed: _removePhoto,
-                      icon: const Icon(Icons.delete_outline_rounded, size: 16),
-                      label: const Text('Remove'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.textSecondary,
-                        side: const BorderSide(color: AppColors.borderStrong),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 8,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        textStyle: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            height: 38,
+            child: OutlinedButton.icon(
+              onPressed: _removePhoto,
+              icon: const Icon(Icons.delete_outline_rounded, size: 16),
+              label: const Text('Remove'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.textSecondary,
+                side: const BorderSide(color: AppColors.borderStrong),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 8,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                textStyle: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
-            ],
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _profilePhotoPreview() {
+    final content = _photoBytes == null
+        ? const Center(
+            child: Text(
+              'Preview',
+              style: TextStyle(
+                color: AppColors.textLightMuted,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          )
+        : Image.memory(
+            _photoBytes!,
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
+          );
+
+    return Center(
+      child: Container(
+        width: 132,
+        height: 132,
+        decoration: BoxDecoration(
+          color: AppColors.surfaceSoft,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: AppColors.borderStrong.withValues(alpha: 0.45),
+          ),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: content,
       ),
     );
   }
@@ -1733,11 +1960,19 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             wide: wide,
             children: [
               _staffUploadCard(
-                title: 'Identity Proofs *',
-                mimeHint: 'application/pdf,image/*',
+                title: 'Identity Proofs',
+                secondaryWidget: _dropdownField<String>(
+                  value: _selectedIdentityProofType,
+                  hintText: 'Select...',
+                  items: _identityProofOptions,
+                  onChanged: (value) {
+                    setState(() => _selectedIdentityProofType = value);
+                  },
+                ),
                 bytes: _identityProofBytes,
                 onUpload: () => _pickUploadFile(_StaffUploadSlot.identityProof),
-                onRemove: () => _removeUploadFile(_StaffUploadSlot.identityProof),
+                onRemove: () =>
+                    _removeUploadFile(_StaffUploadSlot.identityProof),
               ),
               _staffUploadCard(
                 title: 'Resume/CV',
@@ -1766,23 +2001,19 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                 title: 'Experience Certificates',
                 mimeHint: 'application/pdf,image/*',
                 bytes: _experienceCertificatesBytes,
-                onUpload: () => _pickUploadFile(
-                  _StaffUploadSlot.experienceCertificates,
-                ),
-                onRemove: () => _removeUploadFile(
-                  _StaffUploadSlot.experienceCertificates,
-                ),
+                onUpload: () =>
+                    _pickUploadFile(_StaffUploadSlot.experienceCertificates),
+                onRemove: () =>
+                    _removeUploadFile(_StaffUploadSlot.experienceCertificates),
               ),
               _staffUploadCard(
                 title: 'Educational Certificates',
                 mimeHint: 'application/pdf,image/*',
                 bytes: _educationalCertificatesBytes,
-                onUpload: () => _pickUploadFile(
-                  _StaffUploadSlot.educationalCertificates,
-                ),
-                onRemove: () => _removeUploadFile(
-                  _StaffUploadSlot.educationalCertificates,
-                ),
+                onUpload: () =>
+                    _pickUploadFile(_StaffUploadSlot.educationalCertificates),
+                onRemove: () =>
+                    _removeUploadFile(_StaffUploadSlot.educationalCertificates),
               ),
             ],
           ),
@@ -1857,7 +2088,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                 ),
               ),
               _fieldBlock(
-                'Status *',
+                'Status',
                 _dropdownField<String>(
                   value: _selectedStatus,
                   hintText: 'Select...',
@@ -1878,7 +2109,8 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
 
   Widget _staffUploadCard({
     required String title,
-    required String mimeHint,
+    String? mimeHint,
+    Widget? secondaryWidget,
     required Uint8List? bytes,
     required VoidCallback onUpload,
     required VoidCallback onRemove,
@@ -1912,7 +2144,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                       fontWeight: FontWeight.w600,
                     ),
                   )
-                : Image.memory(bytes!, fit: BoxFit.cover),
+                : Image.memory(bytes, fit: BoxFit.cover),
           );
 
           final actions = Wrap(
@@ -1976,14 +2208,19 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                   fontWeight: FontWeight.w800,
                 ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                mimeHint,
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 12.5,
+              if (secondaryWidget != null) ...[
+                const SizedBox(height: 10),
+                secondaryWidget,
+              ] else if (mimeHint != null && mimeHint.trim().isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(
+                  mimeHint,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12.5,
+                  ),
                 ),
-              ),
+              ],
               const SizedBox(height: 14),
               actions,
             ],
@@ -1992,11 +2229,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
           if (compact) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                preview,
-                const SizedBox(height: 12),
-                details,
-              ],
+              children: [preview, const SizedBox(height: 12), details],
             );
           }
 
@@ -2009,61 +2242,6 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             ],
           );
         },
-      ),
-    );
-  }
-
-  Widget _infoCard({
-    required String title,
-    required String subtitle,
-    required IconData icon,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.borderStrong.withValues(alpha: 0.35)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              color: AppColors.surfaceSoft,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            alignment: Alignment.center,
-            child: Icon(icon, color: AppColors.primary, size: 22),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 13,
-                    height: 1.35,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -2154,6 +2332,8 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
     TextInputType? keyboardType,
     int maxLines = 1,
     Widget? suffixIcon,
+    bool readOnly = false,
+    VoidCallback? onTap,
   }) {
     return TextFormField(
       controller: controller,
@@ -2161,7 +2341,157 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
       validator: validator,
       maxLines: maxLines,
       minLines: maxLines > 1 ? maxLines : 1,
+      readOnly: readOnly,
+      onTap: onTap,
       decoration: _inputDecoration(hintText, suffixIcon: suffixIcon),
+    );
+  }
+
+  Widget _dateField({
+    required TextEditingController controller,
+    required String hintText,
+  }) {
+    return _textField(
+      controller: controller,
+      hintText: hintText,
+      readOnly: true,
+      onTap: () => _pickDate(controller),
+      suffixIcon: IconButton(
+        onPressed: () => _pickDate(controller),
+        icon: const Icon(
+          Icons.calendar_month_outlined,
+          size: 20,
+          color: AppColors.textSecondary,
+        ),
+      ),
+    );
+  }
+
+  Widget _loadingField() {
+    return Container(
+      height: 56,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: AppColors.surfaceSoft.withValues(alpha: 0.28),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: AppColors.borderStrong.withValues(alpha: 0.45),
+        ),
+      ),
+      child: const SizedBox(
+        width: 18,
+        height: 18,
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          color: AppColors.primary,
+        ),
+      ),
+    );
+  }
+
+  Widget _roleDropdown(List<RoleModel> roles) {
+    final selectedRole = _selectedRole;
+    final initialRoleId = roles.any((role) => role.id == selectedRole?.id)
+        ? selectedRole?.id
+        : null;
+    return DropdownButtonFormField<String>(
+      initialValue: initialRoleId,
+      isExpanded: true,
+      menuMaxHeight: 280,
+      icon: const Icon(
+        Icons.keyboard_arrow_down_rounded,
+        color: AppColors.textLightMuted,
+      ),
+      hint: const Text(
+        'Select...',
+        style: TextStyle(color: AppColors.textLightMuted),
+      ),
+      decoration: _inputDecoration(''),
+      dropdownColor: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      items: roles
+          .map(
+            (role) => DropdownMenuItem<String>(
+              value: role.id,
+              child: Text(
+                role.name,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          )
+          .toList(),
+      onChanged: (value) {
+        if (value == null) {
+          setState(() => _selectedRole = null);
+          return;
+        }
+
+        final match = roles.firstWhere(
+          (role) => role.id == value,
+          orElse: () => roles.first,
+        );
+        setState(() => _selectedRole = match);
+      },
+    );
+  }
+
+  Widget _reportingManagerDropdown(List<AppUser> users) {
+    final selectedId = _selectedReportingManagerId;
+    final initialUserId = users.any((user) => user.id == selectedId)
+        ? selectedId
+        : null;
+    return DropdownButtonFormField<String>(
+      initialValue: initialUserId,
+      isExpanded: true,
+      menuMaxHeight: 280,
+      icon: const Icon(
+        Icons.keyboard_arrow_down_rounded,
+        color: AppColors.textLightMuted,
+      ),
+      hint: const Text(
+        'Select...',
+        style: TextStyle(color: AppColors.textLightMuted),
+      ),
+      decoration: _inputDecoration(''),
+      dropdownColor: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      items: users
+          .map(
+            (user) => DropdownMenuItem<String>(
+              value: user.id,
+              child: Text(
+                user.name.trim().isNotEmpty ? user.name : user.email,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          )
+          .toList(),
+      onChanged: (value) {
+        if (value == null) {
+          setState(() {
+            _selectedReportingManagerId = null;
+            _reportingManagerController.clear();
+          });
+          return;
+        }
+
+        final selectedUser = users.firstWhere(
+          (user) => user.id == value,
+          orElse: () => users.first,
+        );
+        setState(() {
+          _selectedReportingManagerId = selectedUser.id;
+          _reportingManagerController.text = selectedUser.name;
+        });
+      },
     );
   }
 
@@ -2205,29 +2535,31 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
     );
   }
 
-  Widget _roleDropdown(List<RoleModel> roles) {
-    final selectedRole = _selectedRole;
-    return DropdownButtonFormField<String>(
-      initialValue: selectedRole?.id,
-      onChanged: (value) {
-        if (value != null) {
-          final match = roles.firstWhere(
-            (role) => role.id == value,
-            orElse: () => roles.first,
-          );
-          setState(() => _selectedRole = match);
-        }
-      },
-      decoration: _inputDecoration('Select role'),
-      items: roles
-          .map(
-            (role) => DropdownMenuItem<String>(
-              value: role.id,
-              child: Text(role.name),
-            ),
-          )
-          .toList(),
+  Future<void> _pickDate(TextEditingController controller) async {
+    final initialDate = _parseFlexibleDate(controller.text) ?? DateTime.now();
+    final today = DateTime.now();
+    final earliest = DateTime(1900, 1, 1);
+
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate.isAfter(today) ? today : initialDate,
+      firstDate: earliest,
+      lastDate: today,
     );
+
+    if (picked == null || !mounted) {
+      return;
+    }
+
+    setState(() {
+      controller.text = _formatDateForInput(picked);
+    });
+  }
+
+  String _formatDateForInput(DateTime date) {
+    final day = date.day.toString().padLeft(2, '0');
+    final month = date.month.toString().padLeft(2, '0');
+    return '$day-$month-${date.year}';
   }
 
   InputDecoration _inputDecoration(String hint, {Widget? suffixIcon}) {

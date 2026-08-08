@@ -1,6 +1,10 @@
+// ignore_for_file: unused_field, unused_element, prefer_final_fields
+
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../models/auth_models.dart';
+import '../../../services/api_service.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 
 const Color kOnlinePresenceTitleColor = Color(0xFF0F172A);
@@ -25,8 +29,7 @@ class _OnlinePresenceScreenState extends State<OnlinePresenceScreen> {
   final TextEditingController _whatsappController = TextEditingController();
 
   bool _isEditing = false;
-  bool _saving = false;
-
+  final ApiService _apiService = ApiService();
   @override
   void dispose() {
     _facebookController.dispose();
@@ -36,19 +39,6 @@ class _OnlinePresenceScreenState extends State<OnlinePresenceScreen> {
     _youtubeController.dispose();
     _whatsappController.dispose();
     super.dispose();
-  }
-
-  Future<void> _handleSave() async {
-    setState(() => _saving = true);
-    await Future.delayed(const Duration(milliseconds: 650));
-    if (!mounted) return;
-    setState(() {
-      _saving = false;
-      _isEditing = false;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Online presence saved')),
-    );
   }
 
   @override
@@ -62,6 +52,13 @@ class _OnlinePresenceScreenState extends State<OnlinePresenceScreen> {
               title: 'Online Presence',
               leadingIcon: Icons.arrow_back_rounded,
               onLeadingTap: () => Navigator.of(context).maybePop(),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: _actionButton(),
+              ),
             ),
             Expanded(
               child: LayoutBuilder(
@@ -130,10 +127,66 @@ class _OnlinePresenceScreenState extends State<OnlinePresenceScreen> {
     );
   }
 
-  Widget _fieldBlock({
-    required String label,
-    required Widget child,
-  }) {
+  Widget _actionButton() {
+    final editing = _isEditing;
+    return ElevatedButton.icon(
+      onPressed: () async {
+        if (editing) {
+          await _saveSettings();
+          return;
+        }
+        setState(() => _isEditing = true);
+      },
+      icon: Icon(editing ? Icons.save_outlined : Icons.edit_outlined, size: 18),
+      label: Text(editing ? 'Save' : 'Edit'),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: editing
+            ? kOnlinePresenceAccentColor
+            : const Color(0xFFF3F4F6),
+        foregroundColor: editing ? Colors.white : kOnlinePresenceTitleColor,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+      ),
+    );
+  }
+
+  Future<void> _saveSettings() async {
+    try {
+      final payload = <String, dynamic>{};
+      _putIfNotBlank(payload, 'facebook_url', _facebookController.text);
+      _putIfNotBlank(payload, 'instagram_url', _instagramController.text);
+      _putIfNotBlank(payload, 'linkedin_url', _linkedinController.text);
+      _putIfNotBlank(payload, 'twitter_url', _xController.text);
+      _putIfNotBlank(payload, 'youtube_url', _youtubeController.text);
+      _putIfNotBlank(payload, 'whatsapp_number', _whatsappController.text);
+
+      await _apiService.updateOrganizationSettings(
+        request: OrganizationSettingsRequest(fields: payload),
+      );
+
+      if (!mounted) return;
+      setState(() => _isEditing = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Changes saved.')));
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Unable to save changes: $error')));
+    }
+  }
+
+  void _putIfNotBlank(Map<String, dynamic> payload, String key, String? value) {
+    final trimmed = value?.trim();
+    if (trimmed != null && trimmed.isNotEmpty) {
+      payload[key] = trimmed;
+    }
+  }
+
+  Widget _fieldBlock({required String label, required Widget child}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -173,15 +226,24 @@ class _OnlinePresenceScreenState extends State<OnlinePresenceScreen> {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(18),
-        borderSide: const BorderSide(color: kOnlinePresenceBorderColor, width: 1.5),
+        borderSide: const BorderSide(
+          color: kOnlinePresenceBorderColor,
+          width: 1.5,
+        ),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(18),
-        borderSide: const BorderSide(color: kOnlinePresenceBorderColor, width: 1.5),
+        borderSide: const BorderSide(
+          color: kOnlinePresenceBorderColor,
+          width: 1.5,
+        ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(18),
-        borderSide: const BorderSide(color: kOnlinePresenceAccentColor, width: 2),
+        borderSide: const BorderSide(
+          color: kOnlinePresenceAccentColor,
+          width: 2,
+        ),
       ),
     );
   }
@@ -191,10 +253,7 @@ class _ResponsiveFields extends StatelessWidget {
   final bool isWide;
   final List<Widget> children;
 
-  const _ResponsiveFields({
-    required this.isWide,
-    required this.children,
-  });
+  const _ResponsiveFields({required this.isWide, required this.children});
 
   @override
   Widget build(BuildContext context) {
