@@ -1,10 +1,10 @@
 // ignore_for_file: unused_field, unused_element, prefer_final_fields
 
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
 
 import '../../../constants/app_colors.dart';
 import '../../../models/auth_models.dart';
@@ -37,6 +37,8 @@ class _BillingScreenState extends State<BillingScreen> {
 
   Uint8List? _qrBytes;
   String? _qrName;
+  String? _paymentQrUrl;
+  bool _paymentQrRemoved = false;
   String? _selectedBank;
   bool _isEditing = false;
   final List<String> _bankOptions = const [
@@ -58,6 +60,14 @@ class _BillingScreenState extends State<BillingScreen> {
     super.dispose();
   }
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadOrganizationSettings();
+    });
+  }
+
   Future<void> _pickQrCode() async {
     try {
       final picked = await _imagePicker.pickImage(
@@ -67,9 +77,17 @@ class _BillingScreenState extends State<BillingScreen> {
       if (picked == null || !mounted) return;
       final bytes = await picked.readAsBytes();
       if (!mounted) return;
+      final uploadedUrl = await _apiService.uploadOrganizationSettingsFile(
+        fileBytes: bytes,
+        fileName: picked.name,
+      );
       setState(() {
         _qrBytes = bytes;
         _qrName = picked.name;
+        _paymentQrRemoved = false;
+        if (uploadedUrl != null && uploadedUrl.trim().isNotEmpty) {
+          _paymentQrUrl = uploadedUrl.trim();
+        }
       });
     } catch (_) {
       if (!mounted) return;
@@ -83,7 +101,100 @@ class _BillingScreenState extends State<BillingScreen> {
     setState(() {
       _qrBytes = null;
       _qrName = null;
+      _paymentQrUrl = null;
+      _paymentQrRemoved = true;
     });
+  }
+
+  Future<void> _loadOrganizationSettings() async {
+    try {
+      final data = await _apiService.fetchOrganizationSettingsView();
+      if (!mounted) return;
+      setState(() {
+        _applyOrganizationData(data);
+      });
+    } catch (_) {
+      // Keep defaults if settings are unavailable.
+    }
+  }
+
+  void _applyOrganizationData(Map<String, dynamic> data) {
+    final upiId = _readString(data, 'upi_id');
+    final bankAccountDetails = _readString(data, 'bank_account_details');
+    final bankAccountHolder = _readString(data, 'bank_account_holder');
+    final bankIfsc = _readString(data, 'bank_ifsc');
+    final bankName = _readString(data, 'bank_name');
+    final paymentQrUrl = _readString(data, 'payment_qr_url');
+
+    if (upiId != null) {
+      _upiController.text = upiId;
+    }
+    if (bankAccountDetails != null) {
+      _bankAccountController.text = bankAccountDetails;
+      final accountNumber = _extractAccountNumber(bankAccountDetails);
+      if (accountNumber != null) {
+        _accountNumberController.text = accountNumber;
+      }
+    }
+    if (bankAccountHolder != null) {
+      _accountHolderController.text = bankAccountHolder;
+    }
+    if (bankIfsc != null) {
+      _ifscController.text = bankIfsc;
+    }
+    if (bankName != null) {
+      _selectedBank = _matchOption(_bankOptions, bankName);
+    }
+    if (paymentQrUrl != null) {
+      _paymentQrUrl = paymentQrUrl;
+      _paymentQrRemoved = false;
+      _qrName = Uri.tryParse(paymentQrUrl)?.pathSegments.isNotEmpty == true
+          ? Uri.parse(paymentQrUrl).pathSegments.last
+          : 'payment_qr';
+      _loadRemoteBytes(paymentQrUrl).then((bytes) {
+        if (!mounted || bytes == null) return;
+        setState(() {
+          _qrBytes = bytes;
+        });
+      });
+    }
+  }
+
+  String? _readString(Map<String, dynamic> data, String key) {
+    final value = data[key]?.toString().trim();
+    if (value == null || value.isEmpty) return null;
+    return value;
+  }
+
+  String? _matchOption(List<String> options, String value) {
+    for (final option in options) {
+      if (option.trim().toLowerCase() == value.trim().toLowerCase()) {
+        return option;
+      }
+    }
+    return null;
+  }
+
+  String? _extractAccountNumber(String bankAccountDetails) {
+    final match = RegExp(
+      r'Account Number:\s*(.+)$',
+      caseSensitive: false,
+    ).firstMatch(bankAccountDetails);
+    if (match == null) return null;
+    final value = match.group(1)?.trim();
+    return value == null || value.isEmpty ? null : value;
+  }
+
+  Future<Uint8List?> _loadRemoteBytes(String url) async {
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return response.bodyBytes;
+      }
+    } catch (_) {
+      // Ignore preview loading failures.
+    }
+    return null;
   }
 
   @override
@@ -266,8 +377,11 @@ class _BillingScreenState extends State<BillingScreen> {
       );
       _putIfNotBlank(payload, 'bank_ifsc', _ifscController.text);
       _putIfNotBlank(payload, 'bank_name', _selectedBank);
-      final qrUrl = _bytesToDataUri(_qrBytes, _qrName);
-      _putIfNotBlank(payload, 'payment_qr_url', qrUrl);
+      if (_paymentQrRemoved) {
+        payload['payment_qr_url'] = null;
+      } else {
+        _putIfNotBlank(payload, 'payment_qr_url', _paymentQrUrl);
+      }
 
       await _apiService.updateOrganizationSettings(
         request: OrganizationSettingsRequest(fields: payload),
@@ -284,15 +398,6 @@ class _BillingScreenState extends State<BillingScreen> {
         context,
       ).showSnackBar(SnackBar(content: Text('Unable to save changes: $error')));
     }
-  }
-
-  String? _bytesToDataUri(Uint8List? bytes, String? fileName) {
-    if (bytes == null) return null;
-    final lower = (fileName ?? '').toLowerCase();
-    final mimeType = lower.endsWith('.jpg') || lower.endsWith('.jpeg')
-        ? 'image/jpeg'
-        : 'image/png';
-    return 'data:$mimeType;base64,${base64Encode(bytes)}';
   }
 
   void _putIfNotBlank(Map<String, dynamic> payload, String key, String? value) {
@@ -507,7 +612,9 @@ class _QrUploadCard extends StatelessWidget {
                     ),
                   ),
                   OutlinedButton.icon(
-                    onPressed: qrBytes == null ? null : onRemove,
+                    onPressed: enabled && (qrBytes != null || qrName != null)
+                        ? onRemove
+                        : null,
                     icon: const Icon(Icons.delete_outline_rounded, size: 18),
                     label: const Text('Remove'),
                     style: OutlinedButton.styleFrom(

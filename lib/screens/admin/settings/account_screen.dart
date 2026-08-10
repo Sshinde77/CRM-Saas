@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
 import '../../../models/auth_models.dart';
+import '../../../providers/api_provider.dart';
 import '../../../services/api_service.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import 'company_settings_constants.dart';
@@ -23,6 +24,8 @@ class _AccountScreenState extends State<AccountScreen> {
   final ApiService _apiService = ApiService();
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  String? _currentUserId;
+  bool _didLoadInitialData = false;
 
   final TextEditingController _legalNameController = TextEditingController(
     text: 'lol',
@@ -72,6 +75,17 @@ class _AccountScreenState extends State<AccountScreen> {
     _mobileController.dispose();
     _emailController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _currentUserId = _resolveCurrentUserId();
+    if (_didLoadInitialData) return;
+    _didLoadInitialData = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadOrganizationSettings();
+    });
   }
 
   @override
@@ -263,18 +277,83 @@ class _AccountScreenState extends State<AccountScreen> {
 
   Future<void> _saveSettings() async {
     try {
-      final payload = <String, dynamic>{};
-      _putIfNotBlank(payload, 'legal_name', _legalNameController.text);
-      _putIfNotBlank(payload, 'industry', _selectedIndustry);
-      _putIfNotBlank(payload, 'auth_person_name', _ownerController.text);
-      _putIfNotBlank(payload, 'auth_person_designation', _selectedDesignation);
-      _putIfNotBlank(payload, 'auth_person_mobile', _mobileController.text);
-      _putIfNotBlank(payload, 'auth_person_email', _emailController.text);
-      _putIfNotBlank(payload, 'company_status', _selectedStatus);
-
-      await _apiService.updateOrganizationSettings(
-        request: OrganizationSettingsRequest(fields: payload),
+      final organizationPayload = <String, dynamic>{};
+      _putIfNotBlank(
+        organizationPayload,
+        'legal_name',
+        _legalNameController.text,
       );
+      _putIfNotBlank(organizationPayload, 'industry', _selectedIndustry);
+      _putIfNotBlank(
+        organizationPayload,
+        'auth_person_name',
+        _ownerController.text,
+      );
+      _putIfNotBlank(
+        organizationPayload,
+        'auth_person_designation',
+        _selectedDesignation,
+      );
+      _putIfNotBlank(
+        organizationPayload,
+        'auth_person_mobile',
+        _mobileController.text,
+      );
+      _putIfNotBlank(
+        organizationPayload,
+        'auth_person_email',
+        _emailController.text,
+      );
+      _putIfNotBlank(
+        organizationPayload,
+        'company_status',
+        _apiStatusValue(_selectedStatus),
+      );
+
+      final userPayload = <String, dynamic>{};
+      _putIfNotBlank(userPayload, 'name', _ownerController.text);
+      _putIfNotBlank(userPayload, 'display_name', _ownerController.text);
+      _putIfNotBlank(userPayload, 'email', _emailController.text);
+      _putIfNotBlank(userPayload, 'phone', _mobileController.text);
+      _putIfNotBlank(userPayload, 'designation', _selectedDesignation);
+      _putIfNotBlank(userPayload, 'status', _apiStatusValue(_selectedStatus));
+      _putIfNotBlank(
+        userPayload,
+        'employee_status',
+        _apiStatusValue(_selectedStatus),
+      );
+
+      final userId = await _getCurrentUserId();
+      if (userId.trim().isEmpty) {
+        throw const ApiException(message: 'Missing user id.');
+      }
+
+      final tasks = <Future<dynamic>>[];
+      if (organizationPayload.isNotEmpty) {
+        tasks.add(
+          _apiService.updateOrganizationSettings(
+            request: OrganizationSettingsRequest(fields: organizationPayload),
+          ),
+        );
+      }
+      if (userPayload.isNotEmpty) {
+        tasks.add(
+          _apiService.updateUser(
+            userId: userId,
+            request: UpdateUserRequest(
+              name: _ownerController.text,
+              displayName: _ownerController.text,
+              email: _emailController.text,
+              phone: _mobileController.text,
+              designation: _selectedDesignation,
+              status: _apiStatusValue(_selectedStatus),
+              employeeStatus: _apiStatusValue(_selectedStatus),
+            ),
+          ),
+        );
+      }
+
+      await Future.wait(tasks);
 
       if (!mounted) return;
       setState(() => _isEditing = false);
@@ -289,11 +368,139 @@ class _AccountScreenState extends State<AccountScreen> {
     }
   }
 
+  Future<void> _loadOrganizationSettings() async {
+    try {
+      final data = await _apiService.fetchOrganizationSettingsView();
+      if (!mounted) return;
+      setState(() {
+        _applyOrganizationData(data);
+      });
+    } catch (_) {
+      // Keep defaults if the organization profile cannot be loaded.
+    }
+  }
+
+  void _applyOrganizationData(Map<String, dynamic> data) {
+    final legalName =
+        _readString(data, 'legal_name') ?? _readString(data, 'name');
+    final industry = _readString(data, 'industry');
+    final ownerName = _readString(data, 'auth_person_name');
+    final designation = _readString(data, 'auth_person_designation');
+    final mobile =
+        _readString(data, 'auth_person_mobile') ?? _readString(data, 'phone');
+    final email =
+        _readString(data, 'auth_person_email') ?? _readString(data, 'email');
+    final companyStatus = _readString(data, 'company_status');
+
+    if (legalName != null) {
+      _legalNameController.text = legalName;
+      _savedLegalName = legalName;
+    }
+    if (industry != null) {
+      final matchedIndustry = _matchOption(kIndustryOptions, industry);
+      _selectedIndustry = matchedIndustry;
+      _savedIndustry = _selectedIndustry;
+    }
+    if (ownerName != null) {
+      _ownerController.text = ownerName;
+      _savedOwnerName = ownerName;
+    }
+    if (designation != null) {
+      final matchedDesignation = _matchOption(_designationOptions, designation);
+      if (matchedDesignation != null) {
+        _selectedDesignation = matchedDesignation;
+      }
+      _savedDesignation = _selectedDesignation;
+    }
+    if (mobile != null) {
+      _mobileController.text = mobile;
+      _savedMobileNumber = mobile;
+    }
+    if (email != null) {
+      _emailController.text = email;
+      _savedEmail = email;
+    }
+    if (companyStatus != null) {
+      final matchedStatus = _matchOption(_statusOptions, companyStatus);
+      if (matchedStatus != null) {
+        _selectedStatus = matchedStatus;
+      }
+      _savedStatus = _selectedStatus;
+    }
+  }
+
+  String? _readString(Map<String, dynamic> data, String key) {
+    final value = data[key]?.toString().trim();
+    if (value == null || value.isEmpty) return null;
+    return value;
+  }
+
+  String? _matchOption(List<String> options, String value) {
+    for (final option in options) {
+      if (option.trim().toLowerCase() == value.trim().toLowerCase()) {
+        return option;
+      }
+    }
+    return null;
+  }
+
   void _putIfNotBlank(Map<String, dynamic> payload, String key, String? value) {
     final trimmed = value?.trim();
     if (trimmed != null && trimmed.isNotEmpty) {
       payload[key] = trimmed;
     }
+  }
+
+  String? _resolveCurrentUserId() {
+    final apiProvider = ApiProviderScope.maybeOf(context);
+    final currentId = apiProvider?.currentUser?.id?.trim();
+    if (currentId != null && currentId.isNotEmpty) {
+      return currentId;
+    }
+    return _currentUserId;
+  }
+
+  Future<String> _getCurrentUserId() async {
+    final cached = _currentUserId?.trim();
+    if (cached != null && cached.isNotEmpty) {
+      return cached;
+    }
+
+    final apiProvider = ApiProviderScope.maybeOf(context);
+    if (apiProvider == null) {
+      return '';
+    }
+
+    final providerId = apiProvider.currentUser?.id?.trim();
+    if (providerId != null && providerId.isNotEmpty) {
+      _currentUserId = providerId;
+      return providerId;
+    }
+
+    try {
+      final profile = await apiProvider.fetchCurrentUserProfile(force: true);
+      final fetchedId = profile?.id?.trim();
+      if (fetchedId != null && fetchedId.isNotEmpty) {
+        _currentUserId = fetchedId;
+        return fetchedId;
+      }
+    } catch (_) {
+      // Leave empty so the caller surfaces a missing-id error.
+    }
+
+    return '';
+  }
+
+  String _apiStatusValue(String value) {
+    final normalized = value.trim().toLowerCase();
+    if (normalized.isEmpty) {
+      return normalized;
+    }
+    if (normalized == 'active') return 'active';
+    if (normalized == 'inactive') return 'inactive';
+    if (normalized == 'suspended') return 'suspended';
+    if (normalized == 'locked') return 'locked';
+    return normalized;
   }
 
   Widget _textField({

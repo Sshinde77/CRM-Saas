@@ -27,6 +27,9 @@ class AppTheme {
         surfaceTintColor: Colors.transparent,
       ),
       drawerTheme: const DrawerThemeData(backgroundColor: AppColors.primary),
+      checkboxTheme: CheckboxThemeData(
+        checkColor: WidgetStateProperty.all(Colors.white),
+      ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.primary,

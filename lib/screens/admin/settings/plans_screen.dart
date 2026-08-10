@@ -223,6 +223,12 @@ class _PlansScreenState extends State<PlansScreen> {
   List<PlanModel> _sortPlans(List<PlanModel> plans) {
     final sorted = List<PlanModel>.from(plans);
     sorted.sort((a, b) {
+      final freeA = _isFreePlan(a);
+      final freeB = _isFreePlan(b);
+      if (freeA != freeB) {
+        return freeA ? -1 : 1;
+      }
+
       final priceA = _selectedPrice(a);
       final priceB = _selectedPrice(b);
       final compared = priceB.compareTo(priceA);
@@ -236,6 +242,14 @@ class _PlansScreenState extends State<PlansScreen> {
 
   num _selectedPrice(PlanModel plan) {
     return _isMonthly ? plan.priceMonthly : plan.priceYearly;
+  }
+
+  bool _isFreePlan(PlanModel plan) {
+    final planName = plan.name.trim().toLowerCase();
+    return planName == 'free' ||
+        planName.startsWith('free ') ||
+        planName.endsWith(' free') ||
+        planName.contains('free plan');
   }
 
   Widget _buildHeroSection({

@@ -218,6 +218,85 @@ class ApiService {
     return AuthMeResponse.fromJson(decoded);
   }
 
+  Future<Map<String, dynamic>> fetchOrganizationMe() async {
+    final token = _accessToken;
+    if (token == null || token.trim().isEmpty) {
+      throw const ApiException(message: 'Missing access token.');
+    }
+
+    final response = await _send(
+      method: 'GET',
+      endpoint: ApiEndpoints.organizationsMe,
+      requiresAuth: true,
+    );
+    final decoded = _tryDecodeBody(response.body.trim());
+    if (decoded is Map<String, dynamic>) {
+      return decoded;
+    }
+    throw const ApiException(message: 'Invalid organization me response.');
+  }
+
+  Future<Map<String, dynamic>> fetchOrganizationSettings() async {
+    final token = _accessToken;
+    if (token == null || token.trim().isEmpty) {
+      throw const ApiException(message: 'Missing access token.');
+    }
+
+    final response = await _send(
+      method: 'GET',
+      endpoint: ApiEndpoints.organizationsSettings,
+      requiresAuth: true,
+    );
+    final decoded = _tryDecodeBody(response.body.trim());
+    if (decoded is Map<String, dynamic>) {
+      return decoded;
+    }
+    throw const ApiException(
+      message: 'Invalid organization settings response.',
+    );
+  }
+
+  Future<Map<String, dynamic>> fetchOrganizationSettingsView() async {
+    final results = await Future.wait([
+      fetchOrganizationMe(),
+      fetchOrganizationSettings(),
+    ]);
+
+    final merged = <String, dynamic>{};
+    for (final result in results) {
+      merged.addAll(result);
+    }
+    return merged;
+  }
+
+  Future<String?> uploadOrganizationSettingsFile({
+    required Uint8List fileBytes,
+    required String fileName,
+  }) async {
+    final response = await _sendMultipart(
+      method: 'POST',
+      endpoint: ApiEndpoints.organizationsSettingsUploadFile,
+      requiresAuth: true,
+      fileBytes: fileBytes,
+      fileName: fileName,
+    );
+    return _extractUploadedUrl(_tryDecodeBody(response.body.trim()));
+  }
+
+  Future<String?> uploadOrganizationLogo({
+    required Uint8List fileBytes,
+    required String fileName,
+  }) async {
+    final response = await _sendMultipart(
+      method: 'POST',
+      endpoint: ApiEndpoints.organizationsSettingsLogo,
+      requiresAuth: true,
+      fileBytes: fileBytes,
+      fileName: fileName,
+    );
+    return _extractUploadedUrl(_tryDecodeBody(response.body.trim()));
+  }
+
   Future<List<PlanModel>> fetchPlans() async {
     final response = await _send(
       method: 'GET',
@@ -371,6 +450,19 @@ class ApiService {
     await _send(
       method: 'DELETE',
       endpoint: ApiEndpoints.customersDelete(id),
+      requiresAuth: true,
+    );
+  }
+
+  Future<void> deleteUser(String userId) async {
+    final id = userId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing user id.');
+    }
+
+    await _send(
+      method: 'DELETE',
+      endpoint: ApiEndpoints.usersDelete(id),
       requiresAuth: true,
     );
   }
@@ -549,6 +641,15 @@ class ApiService {
     if (decoded is Map<String, dynamic>) {
       return;
     }
+  }
+
+  Future<void> changePassword({required ChangePasswordRequest request}) async {
+    await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.authChangePassword,
+      requiresAuth: true,
+      body: request.toJson(),
+    );
   }
 
   Future<void> logout() async {
@@ -750,6 +851,36 @@ class ApiService {
     return fallbackValue == null || fallbackValue.isEmpty
         ? null
         : fallbackValue;
+  }
+
+  static String? _extractUploadedUrl(dynamic decoded) {
+    if (decoded is String && decoded.trim().isNotEmpty) {
+      return decoded.trim();
+    }
+
+    if (decoded is Map<String, dynamic>) {
+      final candidates = [
+        decoded['url'],
+        decoded['file_url'],
+        decoded['fileUrl'],
+        decoded['path'],
+        decoded['location'],
+      ];
+
+      for (final candidate in candidates) {
+        final value = candidate?.toString().trim();
+        if (value != null && value.isNotEmpty) {
+          return value;
+        }
+      }
+
+      final nestedData = decoded['data'];
+      if (nestedData is Map<String, dynamic>) {
+        return _extractUploadedUrl(nestedData);
+      }
+    }
+
+    return null;
   }
 
   CurrentUserProfile? _extractUserProfile(Map<String, dynamic> decoded) {

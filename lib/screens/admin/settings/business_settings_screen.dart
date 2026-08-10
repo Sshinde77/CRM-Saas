@@ -66,6 +66,14 @@ class _BusinessSettingsScreenState extends State<BusinessSettingsScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadOrganizationSettings();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -280,6 +288,80 @@ class _BusinessSettingsScreenState extends State<BusinessSettingsScreen> {
         context,
       ).showSnackBar(SnackBar(content: Text('Unable to save changes: $error')));
     }
+  }
+
+  Future<void> _loadOrganizationSettings() async {
+    try {
+      final data = await _apiService.fetchOrganizationSettingsView();
+      if (!mounted) return;
+      setState(() {
+        final financialYear = _readString(data, 'financial_year');
+        final currency = _readString(data, 'currency');
+        final timezone = _readString(data, 'timezone');
+        final language = _readString(data, 'language');
+        final taxConfiguration = _readNestedString(data, 'tax_configuration');
+        final invoiceSettings = data['invoice_settings'];
+
+        if (financialYear != null) {
+          final matchedYear = _matchOption(_financialYears, financialYear);
+          if (matchedYear != null) {
+            _selectedFinancialYear = matchedYear;
+          }
+        }
+        if (currency != null) {
+          _selectedCurrency = _matchOption(_currencies, currency);
+        }
+        if (timezone != null) {
+          _selectedTimeZone = _matchOption(_timeZones, timezone);
+        }
+        if (language != null) {
+          _selectedLanguage = _matchOption(_languages, language);
+        }
+        if (taxConfiguration != null) {
+          _selectedTaxConfiguration = _matchOption(
+            _taxConfigs,
+            taxConfiguration,
+          );
+        }
+
+        if (invoiceSettings is Map<String, dynamic>) {
+          final prefix = _readString(invoiceSettings, 'invoice_prefix');
+          final notes = _readString(invoiceSettings, 'notes');
+          if (prefix != null) {
+            _invoicePrefixController.text = prefix;
+          }
+          if (notes != null) {
+            _invoiceNotesController.text = notes;
+          }
+        }
+      });
+    } catch (_) {
+      // Keep defaults if organization data cannot be loaded.
+    }
+  }
+
+  String? _readString(Map<String, dynamic> data, String key) {
+    final value = data[key]?.toString().trim();
+    if (value == null || value.isEmpty) return null;
+    return value;
+  }
+
+  String? _readNestedString(Map<String, dynamic> data, String key) {
+    final nested = data[key];
+    if (nested is Map<String, dynamic>) {
+      final direct = _readString(nested, 'value');
+      if (direct != null) return direct;
+    }
+    return _readString(data, key);
+  }
+
+  String? _matchOption(List<String> options, String value) {
+    for (final option in options) {
+      if (option.trim().toLowerCase() == value.trim().toLowerCase()) {
+        return option;
+      }
+    }
+    return null;
   }
 
   void _putIfNotBlank(Map<String, dynamic> payload, String key, dynamic value) {

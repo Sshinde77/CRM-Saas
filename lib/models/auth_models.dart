@@ -99,7 +99,12 @@ class OrganizationSettingsRequest {
     for (final entry in fields.entries) {
       final key = entry.key.trim();
       final value = entry.value;
-      if (key.isEmpty || value == null) {
+      if (key.isEmpty) {
+        continue;
+      }
+
+      if (value == null) {
+        payload[key] = null;
         continue;
       }
 
@@ -316,8 +321,101 @@ class UpdateUserRequest {
   final String? email;
   final String? username;
   final String? phone;
+  final String? employeeId;
+  final String? firstName;
+  final String? lastName;
+  final String? displayName;
+  final String? gender;
+  final DateTime? dateOfBirth;
+  final String? maritalStatus;
+  final String? bloodGroup;
+  final String? nationality;
+  final String? alternateMobileNumber;
+  final String? personalEmail;
+  final String? emergencyContactName;
+  final String? emergencyContactNumber;
+  final String? emergencyContactRelationship;
+  final String? currentAddress;
+  final String? permanentAddress;
+  final String? city;
+  final String? state;
+  final String? country;
+  final String? pinZipCode;
+  final String? designation;
+  final String? reportingManagerId;
+  final String? employmentType;
+  final DateTime? dateOfJoining;
+  final DateTime? dateOfExit;
+  final String? workLocation;
+  final String? shift;
+  final String? employeeStatus;
+  final num? basicSalary;
+  final String? bankName;
+  final String? accountNumber;
+  final String? ifscSwiftCode;
+  final String? accountHolderName;
+  final String? upiId;
+  final String? profilePhoto;
+  final String? identityProofType;
+  final String? identityProofFile;
+  final String? resumeCv;
+  final String? offerLetter;
+  final String? appointmentLetter;
+  final List<String>? skills;
+  final String? language;
+  final String? timeZone;
+  final String? status;
 
-  const UpdateUserRequest({this.name, this.email, this.username, this.phone});
+  const UpdateUserRequest({
+    this.name,
+    this.email,
+    this.username,
+    this.phone,
+    this.employeeId,
+    this.firstName,
+    this.lastName,
+    this.displayName,
+    this.gender,
+    this.dateOfBirth,
+    this.maritalStatus,
+    this.bloodGroup,
+    this.nationality,
+    this.alternateMobileNumber,
+    this.personalEmail,
+    this.emergencyContactName,
+    this.emergencyContactNumber,
+    this.emergencyContactRelationship,
+    this.currentAddress,
+    this.permanentAddress,
+    this.city,
+    this.state,
+    this.country,
+    this.pinZipCode,
+    this.designation,
+    this.reportingManagerId,
+    this.employmentType,
+    this.dateOfJoining,
+    this.dateOfExit,
+    this.workLocation,
+    this.shift,
+    this.employeeStatus,
+    this.basicSalary,
+    this.bankName,
+    this.accountNumber,
+    this.ifscSwiftCode,
+    this.accountHolderName,
+    this.upiId,
+    this.profilePhoto,
+    this.identityProofType,
+    this.identityProofFile,
+    this.resumeCv,
+    this.offerLetter,
+    this.appointmentLetter,
+    this.skills,
+    this.language,
+    this.timeZone,
+    this.status,
+  });
 
   Map<String, dynamic> toJson() {
     final payload = <String, dynamic>{};
@@ -325,6 +423,64 @@ class UpdateUserRequest {
     _putIfNotBlank(payload, 'email', email);
     _putIfNotBlank(payload, 'username', username);
     _putIfNotBlank(payload, 'phone', phone);
+    _putIfNotBlank(payload, 'employee_id', employeeId);
+    _putIfNotBlank(payload, 'first_name', firstName);
+    _putIfNotBlank(payload, 'last_name', lastName);
+    _putIfNotBlank(payload, 'display_name', displayName);
+    _putIfNotBlank(payload, 'gender', gender);
+    if (dateOfBirth != null) {
+      payload['date_of_birth'] = dateOfBirth!.toUtc().toIso8601String();
+    }
+    _putIfNotBlank(payload, 'marital_status', maritalStatus);
+    _putIfNotBlank(payload, 'blood_group', bloodGroup);
+    _putIfNotBlank(payload, 'nationality', nationality);
+    _putIfNotBlank(payload, 'alternate_mobile_number', alternateMobileNumber);
+    _putIfNotBlank(payload, 'personal_email', personalEmail);
+    _putIfNotBlank(payload, 'emergency_contact_name', emergencyContactName);
+    _putIfNotBlank(payload, 'emergency_contact_number', emergencyContactNumber);
+    _putIfNotBlank(
+      payload,
+      'emergency_contact_relationship',
+      emergencyContactRelationship,
+    );
+    _putIfNotBlank(payload, 'current_address', currentAddress);
+    _putIfNotBlank(payload, 'permanent_address', permanentAddress);
+    _putIfNotBlank(payload, 'city', city);
+    _putIfNotBlank(payload, 'state', state);
+    _putIfNotBlank(payload, 'country', country);
+    _putIfNotBlank(payload, 'pin_zip_code', pinZipCode);
+    _putIfNotBlank(payload, 'designation', designation);
+    _putIfNotBlank(payload, 'reporting_manager_id', reportingManagerId);
+    _putIfNotBlank(payload, 'employment_type', employmentType);
+    if (dateOfJoining != null) {
+      payload['date_of_joining'] = dateOfJoining!.toUtc().toIso8601String();
+    }
+    if (dateOfExit != null) {
+      payload['date_of_exit'] = dateOfExit!.toUtc().toIso8601String();
+    }
+    _putIfNotBlank(payload, 'work_location', workLocation);
+    _putIfNotBlank(payload, 'shift', shift);
+    _putIfNotBlank(payload, 'employee_status', employeeStatus);
+    if (basicSalary != null) {
+      payload['basic_salary'] = basicSalary;
+    }
+    _putIfNotBlank(payload, 'bank_name', bankName);
+    _putIfNotBlank(payload, 'account_number', accountNumber);
+    _putIfNotBlank(payload, 'ifsc_swift_code', ifscSwiftCode);
+    _putIfNotBlank(payload, 'account_holder_name', accountHolderName);
+    _putIfNotBlank(payload, 'upi_id', upiId);
+    _putIfNotBlank(payload, 'profile_photo', profilePhoto);
+    _putIfNotBlank(payload, 'identity_proof_type', identityProofType);
+    _putIfNotBlank(payload, 'identity_proof_file', identityProofFile);
+    _putIfNotBlank(payload, 'resume_cv', resumeCv);
+    _putIfNotBlank(payload, 'offer_letter', offerLetter);
+    _putIfNotBlank(payload, 'appointment_letter', appointmentLetter);
+    if (skills != null && skills!.isNotEmpty) {
+      payload['skills'] = skills;
+    }
+    _putIfNotBlank(payload, 'language', language);
+    _putIfNotBlank(payload, 'time_zone', timeZone);
+    _putIfNotBlank(payload, 'status', status);
     return payload;
   }
 }
@@ -349,6 +505,20 @@ class ResetUserPasswordRequest {
   }
 }
 
+class ChangePasswordRequest {
+  final String currentPassword;
+  final String newPassword;
+
+  const ChangePasswordRequest({
+    required this.currentPassword,
+    required this.newPassword,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {'current_password': currentPassword, 'new_password': newPassword};
+  }
+}
+
 void _putIfNotBlank(Map<String, dynamic> payload, String key, String? value) {
   final trimmed = value?.trim();
   if (trimmed != null && trimmed.isNotEmpty) {
@@ -357,23 +527,27 @@ void _putIfNotBlank(Map<String, dynamic> payload, String key, String? value) {
 }
 
 class CurrentUserProfile {
+  final String? id;
   final String name;
   final String role;
   final String? email;
 
   const CurrentUserProfile({
+    this.id,
     required this.name,
     required this.role,
     this.email,
   });
 
   factory CurrentUserProfile.fromJson(Map<String, dynamic> json) {
+    final rawId = json['id'] ?? json['user_id'] ?? json['userId'];
     final rawName = (json['name'] ?? json['full_name'] ?? json['admin_name'])
         ?.toString();
     final rawRole = (json['role'] ?? json['user_role'])?.toString();
     final rawEmail = json['email']?.toString();
 
     return CurrentUserProfile(
+      id: rawId?.trim().isEmpty == true ? null : rawId?.trim(),
       name: (rawName == null || rawName.trim().isEmpty)
           ? 'User'
           : rawName.trim(),

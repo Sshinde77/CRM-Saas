@@ -31,9 +31,15 @@ class ApiEndpoints {
   static const String authMe = '/auth/me';
   static const String authRefresh = '/auth/refresh';
   static const String authLogout = '/auth/logout';
+  static const String authChangePassword = '/auth/change-password';
   static const String plansList = '/plans';
   static const String rolesList = '/roles';
+  static const String organizationsMe = '/organizations/me';
   static const String organizationsSettings = '/organizations/settings';
+  static const String organizationsSettingsUploadFile =
+      '/organizations/settings/upload-file';
+  static const String organizationsSettingsLogo =
+      '/organizations/settings/logo';
 
   static const String customersList = '/customers';
   static const String customersCreate = '/customers';
@@ -47,6 +53,7 @@ class ApiEndpoints {
   static const String usersCreate = '/users';
   static const String usersDetailTemplate = '/users/{user_id}';
   static const String usersUpdateTemplate = '/users/{user_id}';
+  static const String usersDeleteTemplate = '/users/{user_id}';
   static const String usersStatusTemplate = '/users/{user_id}/status';
   static const String usersIdentityProofTemplate =
       '/users/{user_id}/identity-proof';
@@ -76,6 +83,9 @@ class ApiEndpoints {
 
   static String usersUpdate(String userId) =>
       usersUpdateTemplate.replaceFirst('{user_id}', userId);
+
+  static String usersDelete(String userId) =>
+      usersDeleteTemplate.replaceFirst('{user_id}', userId);
 
   static String usersStatus(String userId) =>
       usersStatusTemplate.replaceFirst('{user_id}', userId);

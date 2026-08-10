@@ -1,10 +1,10 @@
 // ignore_for_file: unused_field, unused_element, prefer_final_fields
 
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
 
 import '../../../constants/app_colors.dart';
 import '../../../models/auth_models.dart';
@@ -30,6 +30,12 @@ class _BrandingIdentityScreenState extends State<BrandingIdentityScreen> {
   };
   final Map<_BrandAssetType, String?> _names = {
     for (final type in _BrandAssetType.values) type: null,
+  };
+  final Map<_BrandAssetType, String?> _urls = {
+    for (final type in _BrandAssetType.values) type: null,
+  };
+  final Map<_BrandAssetType, bool> _removed = {
+    for (final type in _BrandAssetType.values) type: false,
   };
 
   bool _isEditing = false;
@@ -76,9 +82,14 @@ class _BrandingIdentityScreenState extends State<BrandingIdentityScreen> {
       if (picked == null || !mounted) return;
       final bytes = await picked.readAsBytes();
       if (!mounted) return;
+      final uploadedUrl = await _uploadAsset(type, bytes, picked.name);
       setState(() {
         _bytes[type] = bytes;
         _names[type] = picked.name;
+        _removed[type] = false;
+        if (uploadedUrl != null && uploadedUrl.trim().isNotEmpty) {
+          _urls[type] = uploadedUrl.trim();
+        }
       });
     } catch (_) {
       if (!mounted) return;
@@ -92,7 +103,112 @@ class _BrandingIdentityScreenState extends State<BrandingIdentityScreen> {
     setState(() {
       _bytes[type] = null;
       _names[type] = null;
+      _urls[type] = null;
+      _removed[type] = true;
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadOrganizationSettings();
+    });
+  }
+
+  Future<void> _loadOrganizationSettings() async {
+    try {
+      final data = await _apiService.fetchOrganizationSettingsView();
+      if (!mounted) return;
+      setState(() {
+        _applyAssetFromUrl(_BrandAssetType.logo, _readString(data, 'logo_url'));
+        _applyAssetFromUrl(
+          _BrandAssetType.signature,
+          _readString(data, 'signature_url'),
+        );
+        _applyAssetFromUrl(
+          _BrandAssetType.banner,
+          _readString(data, 'banner_url'),
+        );
+        _applyAssetFromUrl(
+          _BrandAssetType.seal,
+          _readString(data, 'stamp_url'),
+        );
+        _applyAssetFromUrl(
+          _BrandAssetType.letterhead,
+          _readString(data, 'letterhead_url'),
+        );
+      });
+    } catch (_) {
+      // Keep defaults if branding data cannot be loaded.
+    }
+  }
+
+  void _applyAssetFromUrl(_BrandAssetType type, String? url) {
+    if (url == null) return;
+    _urls[type] = url;
+    _removed[type] = false;
+    _names[type] = _extractFileName(url);
+    if (!_looksLikeImage(url)) {
+      return;
+    }
+    _loadRemoteBytes(url).then((bytes) {
+      if (!mounted || bytes == null) return;
+      setState(() {
+        _bytes[type] = bytes;
+      });
+    });
+  }
+
+  bool _looksLikeImage(String url) {
+    final lower = url.toLowerCase();
+    return lower.endsWith('.png') ||
+        lower.endsWith('.jpg') ||
+        lower.endsWith('.jpeg') ||
+        lower.endsWith('.webp') ||
+        lower.endsWith('.gif');
+  }
+
+  String _extractFileName(String url) {
+    final uri = Uri.tryParse(url);
+    if (uri == null || uri.pathSegments.isEmpty) return url;
+    return uri.pathSegments.last;
+  }
+
+  String? _readString(Map<String, dynamic> data, String key) {
+    final value = data[key]?.toString().trim();
+    if (value == null || value.isEmpty) return null;
+    return value;
+  }
+
+  Future<Uint8List?> _loadRemoteBytes(String url) async {
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return response.bodyBytes;
+      }
+    } catch (_) {
+      // Ignore preview loading failures.
+    }
+    return null;
+  }
+
+  Future<String?> _uploadAsset(
+    _BrandAssetType type,
+    Uint8List bytes,
+    String fileName,
+  ) async {
+    if (type == _BrandAssetType.logo) {
+      return _apiService.uploadOrganizationLogo(
+        fileBytes: bytes,
+        fileName: fileName,
+      );
+    }
+
+    return _apiService.uploadOrganizationSettingsFile(
+      fileBytes: bytes,
+      fileName: fileName,
+    );
   }
 
   @override
@@ -188,31 +304,11 @@ class _BrandingIdentityScreenState extends State<BrandingIdentityScreen> {
   Future<void> _saveSettings() async {
     try {
       final payload = <String, dynamic>{};
-      _putIfNotBlank(
-        payload,
-        'logo_url',
-        _bytesToDataUri(_bytes[_BrandAssetType.logo]),
-      );
-      _putIfNotBlank(
-        payload,
-        'signature_url',
-        _bytesToDataUri(_bytes[_BrandAssetType.signature]),
-      );
-      _putIfNotBlank(
-        payload,
-        'banner_url',
-        _bytesToDataUri(_bytes[_BrandAssetType.banner]),
-      );
-      _putIfNotBlank(
-        payload,
-        'stamp_url',
-        _bytesToDataUri(_bytes[_BrandAssetType.seal]),
-      );
-      _putIfNotBlank(
-        payload,
-        'letterhead_url',
-        _bytesToDataUri(_bytes[_BrandAssetType.letterhead]),
-      );
+      _putAssetUrl(payload, 'logo_url', _BrandAssetType.logo);
+      _putAssetUrl(payload, 'signature_url', _BrandAssetType.signature);
+      _putAssetUrl(payload, 'banner_url', _BrandAssetType.banner);
+      _putAssetUrl(payload, 'stamp_url', _BrandAssetType.seal);
+      _putAssetUrl(payload, 'letterhead_url', _BrandAssetType.letterhead);
 
       await _apiService.updateOrganizationSettings(
         request: OrganizationSettingsRequest(fields: payload),
@@ -231,16 +327,23 @@ class _BrandingIdentityScreenState extends State<BrandingIdentityScreen> {
     }
   }
 
-  String? _bytesToDataUri(Uint8List? bytes) {
-    if (bytes == null) return null;
-    return 'data:image/png;base64,${base64Encode(bytes)}';
-  }
-
   void _putIfNotBlank(Map<String, dynamic> payload, String key, String? value) {
     final trimmed = value?.trim();
     if (trimmed != null && trimmed.isNotEmpty) {
       payload[key] = trimmed;
     }
+  }
+
+  void _putAssetUrl(
+    Map<String, dynamic> payload,
+    String key,
+    _BrandAssetType type,
+  ) {
+    if (_removed[type] == true) {
+      payload[key] = null;
+      return;
+    }
+    _putIfNotBlank(payload, key, _urls[type]);
   }
 }
 
@@ -425,7 +528,9 @@ class _BrandUploadCard extends StatelessWidget {
                       ),
                     ),
                     OutlinedButton.icon(
-                      onPressed: bytes == null ? null : onRemove,
+                      onPressed: enabled && (bytes != null || name != null)
+                          ? onRemove
+                          : null,
                       icon: const Icon(Icons.delete_outline_rounded, size: 18),
                       label: const Text('Remove'),
                       style: OutlinedButton.styleFrom(

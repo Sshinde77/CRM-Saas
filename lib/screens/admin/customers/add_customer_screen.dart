@@ -91,11 +91,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     'West',
     'Central',
   ];
-  static const List<String> _priorityOptions = [
-    'High',
-    'Medium',
-    'Low',
-  ];
+  static const List<String> _priorityOptions = ['High', 'Medium', 'Low'];
   static const List<String> _paymentOptions = [
     'Cash',
     'Cheque',
@@ -195,10 +191,19 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     _CustomerWizardStep('Basic Information', Icons.info_outline_rounded),
     _CustomerWizardStep('Contact Information', Icons.call_outlined),
     _CustomerWizardStep('Address Information', Icons.location_on_outlined),
-    _CustomerWizardStep('Business & Tax Information', Icons.receipt_long_outlined),
+    _CustomerWizardStep(
+      'Business & Tax Information',
+      Icons.receipt_long_outlined,
+    ),
     _CustomerWizardStep('Payment Information', Icons.payments_outlined),
-    _CustomerWizardStep('Sales & CRM Information', Icons.manage_accounts_outlined),
-    _CustomerWizardStep('Social Media & Online Presence', Icons.public_outlined),
+    _CustomerWizardStep(
+      'Sales & CRM Information',
+      Icons.manage_accounts_outlined,
+    ),
+    _CustomerWizardStep(
+      'Social Media & Online Presence',
+      Icons.public_outlined,
+    ),
     _CustomerWizardStep('Documents (Uploads)', Icons.upload_file_outlined),
     _CustomerWizardStep('Additional Information', Icons.notes_outlined),
   ];
@@ -718,11 +723,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           const SizedBox(height: 10),
           const Text(
             'Capture customer identity, billing details, delivery address, ownership, and credit in one clean flow.',
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 13,
-              height: 1.45,
-            ),
+            style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.45),
           ),
           const SizedBox(height: 20),
           _introBullet('Basic identity and contact details'),
@@ -753,10 +754,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                 Row(
                   children: [
                     Expanded(
-                      child: _miniStat(
-                        label: 'Sections',
-                        value: '4',
-                      ),
+                      child: _miniStat(label: 'Sections', value: '4'),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
@@ -1042,8 +1040,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                 onPressed: _isSubmitting
                     ? null
                     : (_currentStep == 0
-                        ? () => Navigator.of(context).maybePop()
-                        : _previousStep),
+                          ? () => Navigator.of(context).maybePop()
+                          : _previousStep),
                 style: TextButton.styleFrom(
                   backgroundColor: AppColors.surfaceSoft,
                   foregroundColor: AppColors.textPrimary,
@@ -1086,7 +1084,9 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                       )
                     : Text(
                         _currentStep == _steps.length - 1
-                            ? (widget.isEditMode ? 'Save Changes' : 'Add New Customer')
+                            ? (widget.isEditMode
+                                  ? 'Save Changes'
+                                  : 'Add New Customer')
                             : 'Next',
                         style: const TextStyle(fontWeight: FontWeight.w800),
                       ),
@@ -1209,10 +1209,11 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       children: children
           .map(
             (child) => SizedBox(
-              width: (MediaQuery.of(context).size.width > 1200
-                      ? 1200
-                      : MediaQuery.of(context).size.width) /
-                  2 -
+              width:
+                  (MediaQuery.of(context).size.width > 1200
+                          ? 1200
+                          : MediaQuery.of(context).size.width) /
+                      2 -
                   32,
               child: child,
             ),
@@ -1500,7 +1501,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                 controller: _googleMapsController,
                 hintText: 'Paste Google Maps link or coordinates',
                 suffixIcon: TextButton.icon(
-                  onPressed: () => _showMessage('Map picker not connected yet.'),
+                  onPressed: () =>
+                      _showMessage('Map picker not connected yet.'),
                   icon: const Icon(
                     Icons.my_location_outlined,
                     size: 18,
@@ -1563,7 +1565,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
               children: [
                 Checkbox(
                   value: _taxExempt,
-                  onChanged: (value) => setState(() => _taxExempt = value ?? false),
+                  onChanged: (value) =>
+                      setState(() => _taxExempt = value ?? false),
                   activeColor: AppColors.primary,
                   checkColor: Colors.white,
                 ),
@@ -1598,7 +1601,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             value: _selectedPaymentMethod,
             hintText: 'Select payment terms',
             items: _paymentTermsOptions,
-            onChanged: (value) => setState(() => _selectedPaymentMethod = value),
+            onChanged: (value) =>
+                setState(() => _selectedPaymentMethod = value),
           ),
           _field(
             label: 'Credit Limit',
@@ -1617,7 +1621,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             value: _selectedPaymentMethod,
             hintText: 'Select preferred payment method',
             items: _paymentOptions,
-            onChanged: (value) => setState(() => _selectedPaymentMethod = value),
+            onChanged: (value) =>
+                setState(() => _selectedPaymentMethod = value),
           ),
           _field(
             label: 'UPI ID',
@@ -1676,7 +1681,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             value: _selectedCustomerPriority,
             hintText: 'Select customer priority',
             items: _priorityOptions,
-            onChanged: (value) => setState(() => _selectedCustomerPriority = value),
+            onChanged: (value) =>
+                setState(() => _selectedCustomerPriority = value),
           ),
           _field(
             label: 'Preferred Communication',
@@ -1772,24 +1778,32 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                 mimeHint: 'image/png,image/jpeg',
                 bytes: _businessRegistrationBytes,
                 name: _businessRegistrationName,
-                onUpload: () => _pickCustomerDocument(_CustomerDocSlot.businessRegistration),
-                onRemove: () => _removeCustomerDocument(_CustomerDocSlot.businessRegistration),
+                onUpload: () => _pickCustomerDocument(
+                  _CustomerDocSlot.businessRegistration,
+                ),
+                onRemove: () => _removeCustomerDocument(
+                  _CustomerDocSlot.businessRegistration,
+                ),
               ),
               _customerUploadCard(
                 title: 'Address Proof',
                 mimeHint: 'image/png,image/jpeg',
                 bytes: _addressProofBytes,
                 name: _addressProofName,
-                onUpload: () => _pickCustomerDocument(_CustomerDocSlot.addressProof),
-                onRemove: () => _removeCustomerDocument(_CustomerDocSlot.addressProof),
+                onUpload: () =>
+                    _pickCustomerDocument(_CustomerDocSlot.addressProof),
+                onRemove: () =>
+                    _removeCustomerDocument(_CustomerDocSlot.addressProof),
               ),
               _customerUploadCard(
                 title: 'Purchase Agreement',
                 mimeHint: 'image/png,image/jpeg',
                 bytes: _purchaseAgreementBytes,
                 name: _purchaseAgreementName,
-                onUpload: () => _pickCustomerDocument(_CustomerDocSlot.purchaseAgreement),
-                onRemove: () => _removeCustomerDocument(_CustomerDocSlot.purchaseAgreement),
+                onUpload: () =>
+                    _pickCustomerDocument(_CustomerDocSlot.purchaseAgreement),
+                onRemove: () =>
+                    _removeCustomerDocument(_CustomerDocSlot.purchaseAgreement),
               ),
               _customerUploadCard(
                 title: 'Other Business Documents',
@@ -1819,7 +1833,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             hintText: 'dd-mm-yyyy',
             readOnly: true,
             suffixIcon: IconButton(
-              onPressed: () => _showMessage('Date of birth picker not connected yet.'),
+              onPressed: () =>
+                  _showMessage('Date of birth picker not connected yet.'),
               icon: const Icon(
                 Icons.calendar_month_outlined,
                 size: 20,
@@ -1833,7 +1848,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             hintText: 'dd-mm-yyyy',
             readOnly: true,
             suffixIcon: IconButton(
-              onPressed: () => _showMessage('Anniversary picker not connected yet.'),
+              onPressed: () =>
+                  _showMessage('Anniversary picker not connected yet.'),
               icon: const Icon(
                 Icons.calendar_month_outlined,
                 size: 20,
@@ -2128,10 +2144,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           const SizedBox(height: 12),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(
-              horizontal: 14,
-              vertical: 12,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
               color: AppColors.surfaceSoft.withValues(alpha: 0.25),
               borderRadius: BorderRadius.circular(12),
@@ -2191,10 +2204,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             Row(
               children: [
                 Expanded(
-                  child: _salesOfficerDropdown(
-                    users,
-                    selectedSalesOfficer,
-                  ),
+                  child: _salesOfficerDropdown(users, selectedSalesOfficer),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -2208,10 +2218,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
               ],
             ),
           ] else ...[
-            _salesOfficerDropdown(
-              users,
-              selectedSalesOfficer,
-            ),
+            _salesOfficerDropdown(users, selectedSalesOfficer),
             const SizedBox(height: 16),
             _field(
               label: 'Credit Limit',
@@ -2240,10 +2247,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             const SizedBox(height: 10),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 10,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
                 color: AppColors.surfaceSoft.withValues(alpha: 0.32),
                 borderRadius: BorderRadius.circular(14),

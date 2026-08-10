@@ -166,7 +166,20 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
     );
 
     if (confirmed == true) {
-      _showMessage('Delete user is not connected to the backend yet.');
+      try {
+        await _apiService.deleteUser(user.id);
+        if (!mounted) return;
+
+        _showMessage(
+          user.name.trim().isEmpty
+              ? 'User deleted successfully.'
+              : '${user.name} deleted successfully.',
+        );
+        _refreshUsers();
+      } catch (error) {
+        if (!mounted) return;
+        _showMessage(error.toString());
+      }
     }
   }
 

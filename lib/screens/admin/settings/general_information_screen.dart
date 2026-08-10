@@ -109,6 +109,9 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
     super.initState();
     _registeredAddressController.addListener(_syncAddressFields);
     _billingAddressController.addListener(_syncAddressFields);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadOrganizationSettings();
+    });
   }
 
   @override
@@ -145,6 +148,193 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
         _shippingAddressController.text != _billingAddressController.text) {
       _shippingAddressController.text = _billingAddressController.text;
     }
+  }
+
+  Future<void> _loadOrganizationSettings() async {
+    try {
+      final data = await _apiService.fetchOrganizationSettingsView();
+      if (!mounted) return;
+      setState(() {
+        _applyOrganizationData(data);
+      });
+    } catch (_) {
+      // Keep existing defaults when organization settings cannot be loaded.
+    }
+  }
+
+  void _applyOrganizationData(Map<String, dynamic> data) {
+    final name = _readString(data, 'name');
+    final legalName = _readString(data, 'legal_name');
+    final businessType = _readString(data, 'business_type');
+    final industry = _readString(data, 'industry');
+    final dateOfIncorporation = _readString(data, 'date_of_incorporation');
+    final cin = _readString(data, 'cin_number');
+    final gstinPan = _readString(data, 'gstin_pan');
+    final pan = _readString(data, 'pan_number');
+    final description = _readString(data, 'description');
+    final primaryMobile = _readString(data, 'primary_mobile');
+    final alternateMobile = _readString(data, 'alternate_mobile');
+    final landline = _readString(data, 'landline');
+    final officialEmail = _readString(data, 'email');
+    final website = _readString(data, 'website');
+    final supportNumber = _readString(data, 'customer_support_number');
+    final registeredAddress =
+        _readString(data, 'registered_address') ?? _readString(data, 'address');
+    final city = _readString(data, 'city');
+    final state = _readString(data, 'state');
+    final country = _readString(data, 'country');
+    final pinCode = _readString(data, 'pin_code');
+    final branchAddress = _readBranchAddress(data);
+
+    if (name != null) {
+      _companyNameController.text = name;
+      _savedCompanyName = name;
+    }
+    if (legalName != null) {
+      _legalNameController.text = legalName;
+      _savedLegalName = legalName;
+    }
+    if (businessType != null) {
+      final matched = _matchOption(kBusinessTypeOptions, businessType);
+      if (matched != null) {
+        _selectedBusinessType = matched;
+      }
+      _savedBusinessType = _selectedBusinessType;
+    }
+    if (industry != null) {
+      final matched = _matchOption(kIndustryOptions, industry);
+      _selectedIndustry = matched;
+      _savedIndustry = _selectedIndustry;
+    }
+    if (dateOfIncorporation != null) {
+      _dateOfIncorporationController.text = dateOfIncorporation;
+      _savedDateOfIncorporation = dateOfIncorporation;
+    }
+    if (cin != null) {
+      _cinController.text = cin;
+      _savedCin = cin;
+    }
+    if (gstinPan != null) {
+      _gstinController.text = gstinPan;
+      _savedGstin = gstinPan;
+    }
+    if (pan != null) {
+      _panController.text = pan;
+      _savedPan = pan;
+    }
+    if (description != null) {
+      _descriptionController.text = description;
+      _savedDescription = description;
+    }
+    if (primaryMobile != null) {
+      _primaryMobileController.text = primaryMobile;
+      _savedPrimaryMobile = primaryMobile;
+    }
+    if (alternateMobile != null) {
+      _alternateMobileController.text = alternateMobile;
+      _savedAlternateMobile = alternateMobile;
+    }
+    if (landline != null) {
+      _landlineController.text = landline;
+      _savedLandline = landline;
+    }
+    if (officialEmail != null) {
+      _officialEmailController.text = officialEmail;
+      _savedOfficialEmail = officialEmail;
+    }
+    if (website != null) {
+      _websiteController.text = website;
+      _savedWebsite = website;
+    }
+    if (supportNumber != null) {
+      _supportNumberController.text = supportNumber;
+      _savedSupportNumber = supportNumber;
+    }
+    if (registeredAddress != null) {
+      _registeredAddressController.text = registeredAddress;
+      _savedRegisteredAddress = registeredAddress;
+      _billingAddressController.text = registeredAddress;
+      _savedBillingAddress = registeredAddress;
+    }
+    if (city != null) {
+      _cityController.text = city;
+      _savedCity = city;
+    }
+    if (state != null) {
+      final matchedState = _matchOption(const [
+        'Maharashtra',
+        'Gujarat',
+        'Karnataka',
+        'Delhi',
+        'Tamil Nadu',
+        'Other',
+      ], state);
+      if (matchedState != null) {
+        _selectedState = matchedState;
+      }
+      _savedState = _selectedState;
+    }
+    if (country != null) {
+      final matchedCountry = _matchOption(const [
+        'India',
+        'United States',
+        'United Kingdom',
+        'UAE',
+        'Other',
+      ], country);
+      if (matchedCountry != null) {
+        _selectedCountry = matchedCountry;
+      }
+      _savedCountry = _selectedCountry;
+    }
+    if (pinCode != null) {
+      _pinCodeController.text = pinCode;
+      _savedPinCode = pinCode;
+    }
+    if (branchAddress != null) {
+      _branchOfficeAddressController.text = branchAddress;
+      _savedBranchOfficeAddress = branchAddress;
+      _shippingAddressController.text = branchAddress;
+      _savedShippingAddress = branchAddress;
+    }
+
+    final billing = _billingAddressController.text.trim();
+    final registered = _registeredAddressController.text.trim();
+    _billingSameAsRegistered = billing.isNotEmpty && billing == registered;
+    _savedBillingSameAsRegistered = _billingSameAsRegistered;
+
+    final shipping = _shippingAddressController.text.trim();
+    _shippingSameAsBilling =
+        shipping.isNotEmpty &&
+        shipping == _billingAddressController.text.trim();
+    _savedShippingSameAsBilling = _shippingSameAsBilling;
+    _savedShippingAddress = shipping;
+  }
+
+  String? _readString(Map<String, dynamic> data, String key) {
+    final value = data[key]?.toString().trim();
+    if (value == null || value.isEmpty) return null;
+    return value;
+  }
+
+  String? _readBranchAddress(Map<String, dynamic> data) {
+    final branchAddresses = data['branch_addresses'];
+    if (branchAddresses is List && branchAddresses.isNotEmpty) {
+      final first = branchAddresses.first;
+      if (first is Map<String, dynamic>) {
+        return _readString(first, 'address');
+      }
+    }
+    return _readString(data, 'branch_address');
+  }
+
+  String? _matchOption(List<String> options, String value) {
+    for (final option in options) {
+      if (option.trim().toLowerCase() == value.trim().toLowerCase()) {
+        return option;
+      }
+    }
+    return null;
   }
 
   @override

@@ -41,6 +41,14 @@ class _AdditionalInformationScreenState
   }
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadOrganizationSettings();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -167,6 +175,40 @@ class _AdditionalInformationScreenState
         context,
       ).showSnackBar(SnackBar(content: Text('Unable to save changes: $error')));
     }
+  }
+
+  Future<void> _loadOrganizationSettings() async {
+    try {
+      final data = await _apiService.fetchOrganizationSettingsView();
+      if (!mounted) return;
+      setState(() {
+        final employees = _readString(data, 'employee_count');
+        final businessHours = _readString(data, 'business_hours');
+        final mission = _readString(data, 'mission_vision');
+        final notes = _readString(data, 'notes');
+
+        if (employees != null) {
+          _employeesController.text = employees;
+        }
+        if (businessHours != null) {
+          _businessHoursController.text = businessHours;
+        }
+        if (mission != null) {
+          _missionController.text = mission;
+        }
+        if (notes != null) {
+          _notesController.text = notes;
+        }
+      });
+    } catch (_) {
+      // Keep defaults if organization data cannot be loaded.
+    }
+  }
+
+  String? _readString(Map<String, dynamic> data, String key) {
+    final value = data[key]?.toString().trim();
+    if (value == null || value.isEmpty) return null;
+    return value;
   }
 
   void _putIfNotBlank(Map<String, dynamic> payload, String key, String? value) {

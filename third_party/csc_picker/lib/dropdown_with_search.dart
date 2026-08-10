@@ -203,10 +203,18 @@ class _SearchDialogState<T> extends State<SearchDialog> {
               margin: EdgeInsets.symmetric(horizontal: 16),
               child: TextField(
                 autofocus: true,
+                cursorColor: Colors.white,
                 decoration: InputDecoration(
                   isDense: true,
-                  prefixIcon: Icon(Icons.search),
+                  prefixIcon: const Icon(
+                    Icons.search,
+                    color: Colors.white,
+                  ),
                   hintText: widget.placeHolder,
+                  hintStyle: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 14,
+                  ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.all(
                         widget.searchInputRadius != null
@@ -224,9 +232,8 @@ class _SearchDialogState<T> extends State<SearchDialog> {
                     borderSide: const BorderSide(color: Colors.black12),
                   ),
                 ),
-                style: widget.itemStyle != null
-                    ? widget.itemStyle
-                    : TextStyle(fontSize: 14),
+                style: (widget.itemStyle ?? const TextStyle(fontSize: 14))
+                    .copyWith(color: Colors.white),
                 controller: textController,
               ),
             ),

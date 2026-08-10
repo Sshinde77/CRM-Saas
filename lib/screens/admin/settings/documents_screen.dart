@@ -1,10 +1,10 @@
 // ignore_for_file: unused_field, unused_element, prefer_final_fields
 
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
 
 import '../../../constants/app_colors.dart';
 import '../../../models/auth_models.dart';
@@ -32,6 +32,12 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   };
   final Map<_DocumentType, String?> _names = {
     for (final type in _DocumentType.values) type: null,
+  };
+  final Map<_DocumentType, String?> _urls = {
+    for (final type in _DocumentType.values) type: null,
+  };
+  final Map<_DocumentType, bool> _removed = {
+    for (final type in _DocumentType.values) type: false,
   };
 
   static const List<_DocumentAsset> _assets = [
@@ -81,9 +87,17 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       if (picked == null || !mounted) return;
       final bytes = await picked.readAsBytes();
       if (!mounted) return;
+      final uploadedUrl = await _apiService.uploadOrganizationSettingsFile(
+        fileBytes: bytes,
+        fileName: picked.name,
+      );
       setState(() {
         _bytes[type] = bytes;
         _names[type] = picked.name;
+        _removed[type] = false;
+        if (uploadedUrl != null && uploadedUrl.trim().isNotEmpty) {
+          _urls[type] = uploadedUrl.trim();
+        }
       });
     } catch (_) {
       if (!mounted) return;
@@ -97,7 +111,105 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     setState(() {
       _bytes[type] = null;
       _names[type] = null;
+      _urls[type] = null;
+      _removed[type] = true;
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadOrganizationSettings();
+    });
+  }
+
+  Future<void> _loadOrganizationSettings() async {
+    try {
+      final data = await _apiService.fetchOrganizationSettingsView();
+      if (!mounted) return;
+      setState(() {
+        _applyDocumentFromUrl(
+          _DocumentType.gstCertificate,
+          _readString(data, 'doc_gst_url'),
+        );
+        _applyDocumentFromUrl(
+          _DocumentType.panCard,
+          _readString(data, 'doc_pan_url'),
+        );
+        _applyDocumentFromUrl(
+          _DocumentType.incorporation,
+          _readString(data, 'doc_coi_url'),
+        );
+        _applyDocumentFromUrl(
+          _DocumentType.tradeLicense,
+          _readString(data, 'doc_trade_license_url'),
+        );
+        _applyDocumentFromUrl(
+          _DocumentType.msme,
+          _readString(data, 'doc_msme_url'),
+        );
+        _applyDocumentFromUrl(
+          _DocumentType.fssai,
+          _readString(data, 'doc_fssai_url'),
+        );
+        _applyDocumentFromUrl(
+          _DocumentType.other,
+          _readString(data, 'doc_other_url'),
+        );
+      });
+    } catch (_) {
+      // Keep defaults if documents cannot be loaded.
+    }
+  }
+
+  void _applyDocumentFromUrl(_DocumentType type, String? url) {
+    if (url == null) return;
+    _urls[type] = url;
+    _removed[type] = false;
+    _names[type] = _extractFileName(url);
+    if (!_looksLikeImage(url)) {
+      return;
+    }
+    _loadRemoteBytes(url).then((bytes) {
+      if (!mounted || bytes == null) return;
+      setState(() {
+        _bytes[type] = bytes;
+      });
+    });
+  }
+
+  bool _looksLikeImage(String url) {
+    final lower = url.toLowerCase();
+    return lower.endsWith('.png') ||
+        lower.endsWith('.jpg') ||
+        lower.endsWith('.jpeg') ||
+        lower.endsWith('.webp') ||
+        lower.endsWith('.gif');
+  }
+
+  String _extractFileName(String url) {
+    final uri = Uri.tryParse(url);
+    if (uri == null || uri.pathSegments.isEmpty) return url;
+    return uri.pathSegments.last;
+  }
+
+  String? _readString(Map<String, dynamic> data, String key) {
+    final value = data[key]?.toString().trim();
+    if (value == null || value.isEmpty) return null;
+    return value;
+  }
+
+  Future<Uint8List?> _loadRemoteBytes(String url) async {
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return response.bodyBytes;
+      }
+    } catch (_) {
+      // Ignore preview loading failures.
+    }
+    return null;
   }
 
   @override
@@ -188,41 +300,17 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   Future<void> _saveSettings() async {
     try {
       final payload = <String, dynamic>{};
-      _putIfNotBlank(
-        payload,
-        'doc_gst_url',
-        _bytesToDataUri(_bytes[_DocumentType.gstCertificate]),
-      );
-      _putIfNotBlank(
-        payload,
-        'doc_pan_url',
-        _bytesToDataUri(_bytes[_DocumentType.panCard]),
-      );
-      _putIfNotBlank(
-        payload,
-        'doc_coi_url',
-        _bytesToDataUri(_bytes[_DocumentType.incorporation]),
-      );
-      _putIfNotBlank(
+      _putDocumentUrl(payload, 'doc_gst_url', _DocumentType.gstCertificate);
+      _putDocumentUrl(payload, 'doc_pan_url', _DocumentType.panCard);
+      _putDocumentUrl(payload, 'doc_coi_url', _DocumentType.incorporation);
+      _putDocumentUrl(
         payload,
         'doc_trade_license_url',
-        _bytesToDataUri(_bytes[_DocumentType.tradeLicense]),
+        _DocumentType.tradeLicense,
       );
-      _putIfNotBlank(
-        payload,
-        'doc_msme_url',
-        _bytesToDataUri(_bytes[_DocumentType.msme]),
-      );
-      _putIfNotBlank(
-        payload,
-        'doc_fssai_url',
-        _bytesToDataUri(_bytes[_DocumentType.fssai]),
-      );
-      _putIfNotBlank(
-        payload,
-        'doc_other_url',
-        _bytesToDataUri(_bytes[_DocumentType.other]),
-      );
+      _putDocumentUrl(payload, 'doc_msme_url', _DocumentType.msme);
+      _putDocumentUrl(payload, 'doc_fssai_url', _DocumentType.fssai);
+      _putDocumentUrl(payload, 'doc_other_url', _DocumentType.other);
 
       await _apiService.updateOrganizationSettings(
         request: OrganizationSettingsRequest(fields: payload),
@@ -241,16 +329,23 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     }
   }
 
-  String? _bytesToDataUri(Uint8List? bytes) {
-    if (bytes == null) return null;
-    return 'data:image/png;base64,${base64Encode(bytes)}';
-  }
-
   void _putIfNotBlank(Map<String, dynamic> payload, String key, String? value) {
     final trimmed = value?.trim();
     if (trimmed != null && trimmed.isNotEmpty) {
       payload[key] = trimmed;
     }
+  }
+
+  void _putDocumentUrl(
+    Map<String, dynamic> payload,
+    String key,
+    _DocumentType type,
+  ) {
+    if (_removed[type] == true) {
+      payload[key] = null;
+      return;
+    }
+    _putIfNotBlank(payload, key, _urls[type]);
   }
 }
 
@@ -373,7 +468,9 @@ class _DocumentUploadCard extends StatelessWidget {
                       ),
                     ),
                     OutlinedButton.icon(
-                      onPressed: bytes == null ? null : onRemove,
+                      onPressed: enabled && (bytes != null || name != null)
+                          ? onRemove
+                          : null,
                       icon: const Icon(Icons.delete_outline_rounded, size: 18),
                       label: const Text('Remove'),
                       style: OutlinedButton.styleFrom(

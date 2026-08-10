@@ -187,6 +187,14 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
     'Suspended',
     'Locked',
   ];
+  static const List<String> _employeeStatusOptions = [
+    'Active',
+    'Probation',
+    'On Leave',
+    'Notice Period',
+    'Resigned',
+    'Terminated',
+  ];
 
   static const List<_StaffWizardStep> _steps = [
     _StaffWizardStep('Basic Information', Icons.person_outline_rounded),
@@ -337,6 +345,37 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
         .replaceAll(RegExp(r'^_|_$'), '');
   }
 
+  String? _matchOptionValue(String? value, List<String> options) {
+    final text = value?.trim();
+    if (text == null || text.isEmpty) {
+      return null;
+    }
+
+    if (options.contains(text)) {
+      return text;
+    }
+
+    final normalized = _slugifyValue(text);
+    if (normalized == null) {
+      return text;
+    }
+
+    for (final option in options) {
+      if (_slugifyValue(option) == normalized) {
+        return option;
+      }
+    }
+
+    return text;
+  }
+
+  String _dateText(DateTime? value) {
+    if (value == null) {
+      return '';
+    }
+    return _formatDateForInput(value.toLocal());
+  }
+
   String? _base64OrNull(Uint8List? bytes) {
     if (bytes == null || bytes.isEmpty) {
       return null;
@@ -470,14 +509,78 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
     _nameController.text = user.name;
     _emailController.text = user.email;
     _officialEmailController.text = user.email;
-    _personalEmailController.text = user.email;
+    _personalEmailController.text = user.personalEmail ?? user.email;
     _usernameController.text = user.username ?? user.email;
     _phoneController.text = user.phone ?? '';
-    _displayNameController.text = user.name;
-    _selectedEmergencyContactRelationship =
-        _emergencyContactRelationshipController.text.trim().isEmpty
-        ? null
-        : _emergencyContactRelationshipController.text.trim();
+    _employeeIdController.text = user.employeeId ?? '';
+    _firstNameController.text = user.firstName ?? '';
+    _lastNameController.text = user.lastName ?? '';
+    _displayNameController.text = user.displayName ?? user.name;
+    _dobController.text = _dateText(user.dateOfBirth);
+    _alternatePhoneController.text = user.alternateMobileNumber ?? '';
+    _emergencyContactNameController.text = user.emergencyContactName ?? '';
+    _emergencyContactNumberController.text = user.emergencyContactNumber ?? '';
+    _emergencyContactRelationshipController.text =
+        user.emergencyContactRelationship ?? '';
+    _addressController.text = user.currentAddress ?? '';
+    _permanentAddressController.text = user.permanentAddress ?? '';
+    _cityController.text = user.city ?? '';
+    _stateController.text = user.state ?? '';
+    _countryController.text = user.country ?? '';
+    _pinCodeController.text = user.pinZipCode ?? '';
+    _designationController.text = user.designation ?? '';
+    _reportingManagerController.text = user.reportingManagerId ?? '';
+    _employmentTypeController.text =
+        _matchOptionValue(user.employmentType, const [
+          'Full Time',
+          'Part Time',
+          'Contract',
+          'Intern',
+          'Temporary',
+        ]) ??
+        '';
+    _dateOfJoiningController.text = _dateText(user.dateOfJoining);
+    _dateOfExitController.text = _dateText(user.dateOfExit);
+    _workLocationController.text = user.workLocation ?? '';
+    _basicSalaryController.text = user.basicSalary?.toString() ?? '';
+    _accountNumberController.text = user.accountNumber ?? '';
+    _ifscCodeController.text = user.ifscSwiftCode ?? '';
+    _accountHolderController.text = user.accountHolderName ?? '';
+    _upiIdController.text = user.upiId ?? '';
+    _skillsController.text = user.skills?.join(', ') ?? '';
+    _selectedGender = _matchOptionValue(user.gender, _genderOptions);
+    _selectedMaritalStatus = _matchOptionValue(
+      user.maritalStatus,
+      _maritalOptions,
+    );
+    _selectedBloodGroup = _matchOptionValue(user.bloodGroup, _bloodOptions);
+    _selectedNationality = _matchOptionValue(
+      user.nationality,
+      _nationalityOptions,
+    );
+    _selectedShift = _matchOptionValue(user.shift, const [
+      'Morning',
+      'Day',
+      'Night',
+      'Flexible',
+    ]);
+    _selectedEmployeeStatus =
+        _matchOptionValue(user.employeeStatus, _employeeStatusOptions) ??
+        _selectedEmployeeStatus;
+    _selectedStatus =
+        _matchOptionValue(user.status, _statusOptions) ?? _selectedStatus;
+    _selectedBankName = _matchOptionValue(user.bankName, _bankOptions);
+    _selectedLanguage = _matchOptionValue(user.language, _languageOptions);
+    _selectedTimeZone = _matchOptionValue(user.timeZone, _timeZoneOptions);
+    _selectedEmergencyContactRelationship = _matchOptionValue(
+      user.emergencyContactRelationship,
+      _relationshipOptions,
+    );
+    _selectedIdentityProofType = _matchOptionValue(
+      user.identityProofType,
+      _identityProofOptions,
+    );
+    _selectedReportingManagerId = user.reportingManagerId;
 
     final roleDetail = user.roleDetail;
     if (roleDetail != null && roleDetail.id.trim().isNotEmpty) {
@@ -488,6 +591,70 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
         permissions: const {},
       );
     }
+  }
+
+  UpdateUserRequest _buildUpdateUserRequest() {
+    return UpdateUserRequest(
+      name:
+          _nullableText(_displayNameController.text) ??
+          _nullableText(
+            '${_firstNameController.text} ${_lastNameController.text}',
+          ) ??
+          _nullableText(_nameController.text),
+      email:
+          _nullableText(_officialEmailController.text) ??
+          _nullableText(_personalEmailController.text),
+      username: _nullableText(_usernameController.text),
+      phone: _nullableText(_phoneController.text),
+      employeeId: _nullableText(_employeeIdController.text),
+      firstName: _nullableText(_firstNameController.text),
+      lastName: _nullableText(_lastNameController.text),
+      displayName: _nullableText(_displayNameController.text),
+      gender: _slugifyValue(_selectedGender),
+      dateOfBirth: _parseFlexibleDate(_dobController.text),
+      maritalStatus: _slugifyValue(_selectedMaritalStatus),
+      bloodGroup: _nullableText(_selectedBloodGroup),
+      nationality: _nullableText(_selectedNationality),
+      alternateMobileNumber: _nullableText(_alternatePhoneController.text),
+      personalEmail: _nullableText(_personalEmailController.text),
+      emergencyContactName: _nullableText(_emergencyContactNameController.text),
+      emergencyContactNumber: _nullableText(
+        _emergencyContactNumberController.text,
+      ),
+      emergencyContactRelationship: _nullableText(
+        _emergencyContactRelationshipController.text,
+      ),
+      currentAddress: _nullableText(_addressController.text),
+      permanentAddress: _nullableText(_permanentAddressController.text),
+      city: _nullableText(_cityController.text),
+      state: _nullableText(_stateController.text),
+      country: _nullableText(_countryController.text),
+      pinZipCode: _nullableText(_pinCodeController.text),
+      designation: _nullableText(_designationController.text),
+      reportingManagerId: _selectedReportingManagerId,
+      employmentType: _slugifyValue(_employmentTypeController.text),
+      dateOfJoining: _parseFlexibleDate(_dateOfJoiningController.text),
+      dateOfExit: _parseFlexibleDate(_dateOfExitController.text),
+      workLocation: _nullableText(_workLocationController.text),
+      shift: _slugifyValue(_selectedShift),
+      employeeStatus: _slugifyValue(_selectedEmployeeStatus),
+      basicSalary: num.tryParse(_basicSalaryController.text.trim()),
+      bankName: _nullableText(_selectedBankName),
+      accountNumber: _nullableText(_accountNumberController.text),
+      ifscSwiftCode: _nullableText(_ifscCodeController.text),
+      accountHolderName: _nullableText(_accountHolderController.text),
+      upiId: _nullableText(_upiIdController.text),
+      profilePhoto: _base64OrNull(_photoBytes),
+      identityProofType: _nullableText(_selectedIdentityProofType),
+      identityProofFile: _base64OrNull(_identityProofBytes),
+      resumeCv: _base64OrNull(_resumeBytes),
+      offerLetter: _base64OrNull(_offerLetterBytes),
+      appointmentLetter: _base64OrNull(_appointmentLetterBytes),
+      skills: _skillsList(),
+      language: _nullableText(_selectedLanguage),
+      timeZone: _nullableText(_selectedTimeZone),
+      status: _slugifyValue(_selectedStatus),
+    );
   }
 
   Future<void> _submit() async {
@@ -502,12 +669,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
 
         await _apiService.updateUser(
           userId: userId,
-          request: UpdateUserRequest(
-            name: _nullableText(_nameController.text),
-            email: _nullableText(_officialEmailController.text),
-            username: _nullableText(_usernameController.text),
-            phone: _nullableText(_phoneController.text),
-          ),
+          request: _buildUpdateUserRequest(),
         );
       } else {
         final selectedRole = _selectedRole;
@@ -1254,7 +1416,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             wide: wide,
             children: [
               _fieldBlock(
-                'Mobile Number',
+                'Mobile Number *',
                 _textField(
                   controller: _phoneController,
                   hintText: '',
@@ -1278,7 +1440,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                 ),
               ),
               _fieldBlock(
-                'Official Email',
+                'Official Email *',
                 _textField(
                   controller: _officialEmailController,
                   hintText: '',
@@ -1438,9 +1600,9 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                 ),
                 dropdownDialogRadius: 12,
                 searchBarRadius: 12,
-                countryDropdownLabel: '*Country',
-                stateDropdownLabel: '*State',
-                cityDropdownLabel: '*City',
+                countryDropdownLabel: 'Select Country',
+                stateDropdownLabel: 'Select State',
+                cityDropdownLabel: 'Select City',
                 countrySearchPlaceholder: 'Search country',
                 stateSearchPlaceholder: 'Search state',
                 citySearchPlaceholder: 'Search city',
@@ -1597,7 +1759,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                         ),
                       ),
                       _fieldBlock(
-                        'Employee Status *',
+                        'Employment Status *',
                         _dropdownField<String>(
                           value: _selectedEmployeeStatus,
                           hintText: '',
@@ -1748,15 +1910,15 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             wide: wide,
             children: [
               _fieldBlock(
-                'Username',
+                'Username *',
                 _textField(
                   controller: _usernameController,
                   hintText: '',
                   keyboardType: TextInputType.emailAddress,
                 ),
               ),
-              _fieldBlock('Password', _passwordField()),
-              _fieldBlock('Confirm Password', _confirmPasswordField()),
+              _fieldBlock('Password *', _passwordField()),
+              _fieldBlock('Confirm Password *', _confirmPasswordField()),
               _securityNotificationCard(),
             ],
           ),
@@ -1789,7 +1951,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
           }
           return Colors.white;
         }),
-        checkColor: AppColors.primary,
+        checkColor: Colors.white,
         controlAffinity: ListTileControlAffinity.leading,
         title: const Text(
           'Send a notification to the user for this new role.',
@@ -1960,7 +2122,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             wide: wide,
             children: [
               _staffUploadCard(
-                title: 'Identity Proofs',
+                title: 'Identity Proof *',
                 secondaryWidget: _dropdownField<String>(
                   value: _selectedIdentityProofType,
                   hintText: 'Select...',
@@ -2088,7 +2250,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                 ),
               ),
               _fieldBlock(
-                'Status',
+                'Status *',
                 _dropdownField<String>(
                   value: _selectedStatus,
                   hintText: 'Select...',

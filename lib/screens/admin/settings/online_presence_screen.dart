@@ -42,6 +42,14 @@ class _OnlinePresenceScreenState extends State<OnlinePresenceScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadOrganizationSettings();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -177,6 +185,29 @@ class _OnlinePresenceScreenState extends State<OnlinePresenceScreen> {
         context,
       ).showSnackBar(SnackBar(content: Text('Unable to save changes: $error')));
     }
+  }
+
+  Future<void> _loadOrganizationSettings() async {
+    try {
+      final data = await _apiService.fetchOrganizationSettingsView();
+      if (!mounted) return;
+      setState(() {
+        _facebookController.text = _readString(data, 'facebook_url') ?? '';
+        _instagramController.text = _readString(data, 'instagram_url') ?? '';
+        _linkedinController.text = _readString(data, 'linkedin_url') ?? '';
+        _xController.text = _readString(data, 'twitter_url') ?? '';
+        _youtubeController.text = _readString(data, 'youtube_url') ?? '';
+        _whatsappController.text = _readString(data, 'whatsapp_number') ?? '';
+      });
+    } catch (_) {
+      // Keep defaults if organization data cannot be loaded.
+    }
+  }
+
+  String? _readString(Map<String, dynamic> data, String key) {
+    final value = data[key]?.toString().trim();
+    if (value == null || value.isEmpty) return null;
+    return value;
   }
 
   void _putIfNotBlank(Map<String, dynamic> payload, String key, String? value) {

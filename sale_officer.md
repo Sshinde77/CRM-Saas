@@ -52,4 +52,3 @@ The Sales Officer can:
 Sales Officer Daily Workflow
 Check-In → View Assigned Customers & Follow-Ups → Plan Customer Visits → Visit Customer → Create/Update Customer → Check Product Availability → Create Sales Order → Record Visit Outcome → Schedule Follow-Up → Track Daily Sales Performance → Check-Out
 The Sales Officer Dashboard should provide a daily summary of assigned customers, planned visits, completed visits, pending follow-ups, sales orders created, total sales value, new customers added, outstanding payment follow-ups, and sales target achievement.
-

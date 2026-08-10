@@ -61,12 +61,7 @@ class _DrawerMeta {
       return false;
     }
 
-    final topPlan = _topPlan(plans);
-    if (topPlan == null) {
-      return false;
-    }
-
-    return currentPlan.id != topPlan.id;
+    return _isFreePlan(currentPlan);
   }
 
   CurrentUserProfile? get user => authMe?.user;
@@ -87,6 +82,14 @@ class _DrawerMeta {
       return a.name.toLowerCase().compareTo(b.name.toLowerCase());
     });
     return sorted.first;
+  }
+
+  static bool _isFreePlan(PlanModel plan) {
+    final planName = plan.name.trim().toLowerCase();
+    return planName == 'free' ||
+        planName.startsWith('free ') ||
+        planName.endsWith(' free') ||
+        planName.contains('free plan');
   }
 }
 
@@ -324,15 +327,6 @@ class _AppDrawerState extends State<AppDrawer> {
                     ),
                   ),
                 ),
-                if (isStaffActive)
-                  Text(
-                    widget.activeSubItem!,
-                    style: const TextStyle(
-                      color: accent,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
               ],
             ),
           ),

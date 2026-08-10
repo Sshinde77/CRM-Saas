@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../models/auth_models.dart';
+import '../../../services/api_service.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});
@@ -16,6 +18,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   static const Color _fieldBg = Colors.white;
   static const Color _accent = Color(0xFF0B4D08);
 
+  final ApiService _apiService = ApiService();
   final TextEditingController _currentPasswordController =
       TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
@@ -57,13 +60,37 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     }
 
     setState(() => _saving = true);
-    await Future.delayed(const Duration(milliseconds: 650));
-    if (!mounted) return;
-    setState(() => _saving = false);
+    try {
+      await _apiService.changePassword(
+        request: ChangePasswordRequest(
+          currentPassword: current,
+          newPassword: next,
+        ),
+      );
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Password changed successfully')),
-    );
+      if (!mounted) return;
+
+      _currentPasswordController.clear();
+      _newPasswordController.clear();
+      _confirmPasswordController.clear();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password changed successfully')),
+      );
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to change password: $error')),
+      );
+    } finally {
+      if (!mounted) return;
+      setState(() => _saving = false);
+    }
   }
 
   @override
