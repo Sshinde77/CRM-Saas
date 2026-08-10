@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../constants/app_colors.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../customers/sales_manager_customers_screen.dart';
+import '../leads/sales_manager_leads_screen.dart';
 import '../orders/sales_manager_orders_screen.dart';
 import '../visits/sales_manager_visits_screen.dart';
 
@@ -291,7 +292,14 @@ class _SalesManagerDashboardScreenState
       return;
     }
 
-    if (action == 'Sales Orders') {
+    if (action == 'Leads') {
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const SalesManagerLeadsScreen()),
+      );
+      return;
+    }
+
+    if (action == 'Create Order' || action == 'Sales Orders') {
       _openSalesOrdersScreen();
       return;
     }

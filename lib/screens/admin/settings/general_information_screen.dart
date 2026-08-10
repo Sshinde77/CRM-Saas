@@ -1,6 +1,9 @@
 // ignore_for_file: unused_field, unused_element, prefer_final_fields
 
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../constants/app_colors.dart';
 import '../../../models/auth_models.dart';
@@ -24,6 +27,7 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
   static const Color _borderColor = Color(0xFFD8DFD8);
   static const Color _fieldBg = Colors.white;
   final ApiService _apiService = ApiService();
+  final ImagePicker _imagePicker = ImagePicker();
 
   final TextEditingController _companyNameController = TextEditingController(
     text: 'lol',
@@ -39,6 +43,16 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
   );
   final TextEditingController _panController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _authorizedNameController = TextEditingController(
+    text: 'Sushil',
+  );
+  final TextEditingController _designationController = TextEditingController(
+    text: 'Admin',
+  );
+  final TextEditingController _authorizedMobileController =
+      TextEditingController(text: '9986547856');
+  final TextEditingController _authorizedEmailController =
+      TextEditingController(text: 'testing@gmail.com');
   final TextEditingController _primaryMobileController = TextEditingController(
     text: '9986547856',
   );
@@ -69,12 +83,20 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
 
   bool _isEditing = false;
   bool _basicExpanded = true;
+  bool _authorizedExpanded = true;
   bool _contactExpanded = false;
   bool _addressExpanded = true;
   bool _billingSameAsRegistered = false;
   bool _shippingSameAsBilling = false;
 
   String _selectedBusinessType = 'Private Ltd';
+  static const List<String> _designationOptions = [
+    'Owner',
+    'Director',
+    'Admin',
+    'Manager',
+    'Sales Officer',
+  ];
   String? _selectedIndustry;
   String _selectedState = 'Maharashtra';
   String _selectedCountry = 'India';
@@ -103,6 +125,10 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
   String _savedShippingAddress = '';
   bool _savedBillingSameAsRegistered = false;
   bool _savedShippingSameAsBilling = false;
+  Uint8List? _profilePictureBytes;
+  String? _profilePictureName;
+  Uint8List? _signatureBytes;
+  String? _signatureName;
 
   @override
   void initState() {
@@ -123,6 +149,10 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
     _gstinController.dispose();
     _panController.dispose();
     _descriptionController.dispose();
+    _authorizedNameController.dispose();
+    _designationController.dispose();
+    _authorizedMobileController.dispose();
+    _authorizedEmailController.dispose();
     _primaryMobileController.dispose();
     _alternateMobileController.dispose();
     _landlineController.dispose();
@@ -136,6 +166,107 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
     _billingAddressController.dispose();
     _shippingAddressController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickAttachment({required bool isSignature}) async {
+    try {
+      final picked = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+      );
+      if (picked == null || !mounted) return;
+      final bytes = await picked.readAsBytes();
+      if (!mounted) return;
+      setState(() {
+        if (isSignature) {
+          _signatureBytes = bytes;
+          _signatureName = picked.name;
+        } else {
+          _profilePictureBytes = bytes;
+          _profilePictureName = picked.name;
+        }
+      });
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Unable to pick file: $error')),
+      );
+    }
+  }
+
+  void _removeAttachment({required bool isSignature}) {
+    setState(() {
+      if (isSignature) {
+        _signatureBytes = null;
+        _signatureName = null;
+      } else {
+        _profilePictureBytes = null;
+        _profilePictureName = null;
+      }
+    });
+  }
+
+  Future<void> _previewAttachment({
+    required String title,
+    required Uint8List? bytes,
+    required String? name,
+  }) async {
+    if (bytes == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No file selected yet.')),
+      );
+      return;
+    }
+
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return Dialog(
+          insetPadding: const EdgeInsets.all(16),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: kGeneralInfoTitleColor,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  name ?? 'Selected file',
+                  style: const TextStyle(
+                    color: kGeneralInfoMutedColor,
+                    fontSize: 12.5,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.memory(
+                    bytes,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(),
+                    child: const Text('Close'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   void _syncAddressFields() {
@@ -467,6 +598,118 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
                           const SizedBox(height: 18),
                           _GeneralInfoSectionCard(
                             number: '2',
+                            title: 'Authorized Person',
+                            subtitle:
+                                'Authorized representative contact and identity.',
+                            expanded: _authorizedExpanded,
+                            onTap: () => setState(
+                              () => _authorizedExpanded = !_authorizedExpanded,
+                            ),
+                            child: _authorizedExpanded
+                                ? _EditableAbsorbPointer(
+                                    enabled: _isEditing,
+                                    child: Column(
+                                      children: [
+                                        _ResponsiveFields(
+                                          isWide: isWide,
+                                          children: [
+                                            _fieldBlock(
+                                              label: 'Owner/Director Name *',
+                                              child: _textField(
+                                                controller:
+                                                    _authorizedNameController,
+                                              ),
+                                            ),
+                                            _fieldBlock(
+                                              label: 'Designation *',
+                                              child: _dropdownField<String>(
+                                                value: _designationController.text,
+                                                hintText: 'Select designation',
+                                                items: _designationOptions,
+                                                onChanged: (value) {
+                                                  if (value == null) return;
+                                                  setState(
+                                                    () => _designationController.text = value,
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                            _fieldBlock(
+                                              label: 'Mobile Number *',
+                                              child: _textField(
+                                                controller:
+                                                    _authorizedMobileController,
+                                                keyboardType:
+                                                    TextInputType.phone,
+                                              ),
+                                            ),
+                                            _fieldBlock(
+                                              label: 'Email *',
+                                              child: _textField(
+                                                controller:
+                                                    _authorizedEmailController,
+                                                keyboardType:
+                                                    TextInputType.emailAddress,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 18),
+                                        _ResponsiveFields(
+                                          isWide: isWide,
+                                          children: [
+                                            _attachmentCard(
+                                              title: 'Profile Picture',
+                                              subtitle: _profilePictureName ??
+                                                  'Tap upload to select a photo',
+                                              previewBytes: _profilePictureBytes,
+                                              previewName: _profilePictureName,
+                                              previewLabel: 'Preview',
+                                              uploadLabel: 'Upload Photo',
+                                              onPreview: () => _previewAttachment(
+                                                title: 'Profile Picture',
+                                                bytes: _profilePictureBytes,
+                                                name: _profilePictureName,
+                                              ),
+                                              onUpload: () => _pickAttachment(
+                                                isSignature: false,
+                                              ),
+                                              onRemove: () =>
+                                                  _removeAttachment(
+                                                isSignature: false,
+                                              ),
+                                            ),
+                                            _attachmentCard(
+                                              title: 'Digital Signature',
+                                              subtitle: _signatureName ??
+                                                  'Tap upload to select a signature',
+                                              previewBytes: _signatureBytes,
+                                              previewName: _signatureName,
+                                              previewLabel: 'Preview',
+                                              uploadLabel: 'Upload Signature',
+                                              onPreview: () => _previewAttachment(
+                                                title: 'Digital Signature',
+                                                bytes: _signatureBytes,
+                                                name: _signatureName,
+                                              ),
+                                              onUpload: () => _pickAttachment(
+                                                isSignature: true,
+                                              ),
+                                              onRemove: () =>
+                                                  _removeAttachment(
+                                                isSignature: true,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : const SizedBox.shrink(),
+                          ),
+                          const SizedBox(height: 18),
+                          _GeneralInfoSectionCard(
+                            number: '3',
                             title: 'Contact Information',
                             subtitle: 'Primary business contact details.',
                             expanded: _contactExpanded,
@@ -534,7 +777,7 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
                           ),
                           const SizedBox(height: 18),
                           _GeneralInfoSectionCard(
-                            number: '3',
+                            number: '4',
                             title: 'Address Information',
                             subtitle:
                                 'Registered, billing, and shipping addresses.',
@@ -918,6 +1161,143 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(18),
         borderSide: const BorderSide(color: kGeneralInfoAccentColor, width: 2),
+      ),
+    );
+  }
+
+  Widget _attachmentCard({
+    required String title,
+    required String subtitle,
+    required Uint8List? previewBytes,
+    required String? previewName,
+    required String previewLabel,
+    required String uploadLabel,
+    required VoidCallback onPreview,
+    required VoidCallback onUpload,
+    required VoidCallback onRemove,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFDDE3EA)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 120,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFFE5E7EB)),
+                ),
+                child: Center(
+                  child: previewBytes != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.memory(
+                            previewBytes,
+                            width: 100,
+                            height: 60,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : const Icon(
+                          Icons.upload_file_outlined,
+                          color: Color(0xFF94A3B8),
+                          size: 28,
+                        ),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: kGeneralInfoTitleColor,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    if (subtitle.trim().isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        style: const TextStyle(
+                          color: kGeneralInfoMutedColor,
+                          fontSize: 12.5,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: [
+                        _attachmentButton(
+                          label: previewBytes != null ? previewLabel : uploadLabel,
+                          icon: previewBytes != null
+                              ? Icons.remove_red_eye_outlined
+                              : Icons.upload_outlined,
+                          active: true,
+                          onPressed: previewBytes != null ? onPreview : onUpload,
+                        ),
+                        if (previewBytes != null)
+                          _attachmentButton(
+                            label: uploadLabel,
+                            icon: Icons.upload_outlined,
+                            active: true,
+                            onPressed: onUpload,
+                          ),
+                        if (previewBytes != null)
+                          _attachmentButton(
+                            label: 'Remove',
+                            icon: Icons.delete_outline_rounded,
+                            active: true,
+                            onPressed: onRemove,
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _attachmentButton({
+    required String label,
+    required IconData icon,
+    required bool active,
+    required VoidCallback onPressed,
+  }) {
+    return OutlinedButton.icon(
+      onPressed: active ? onPressed : null,
+      icon: Icon(icon, size: 16),
+      label: Text(label),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: active ? kGeneralInfoTitleColor : const Color(0xFF98A2B3),
+        side: BorderSide(
+          color: active ? const Color(0xFFD1D5DB) : const Color(0xFFE5E7EB),
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(999),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        textStyle: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
       ),
     );
   }

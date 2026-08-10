@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../constants/app_colors.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../customers/sales_manager_customers_screen.dart';
+import '../leads/sales_manager_leads_screen.dart';
 import '../dashboard/sales_manager_dashboard_screen.dart';
 import '../visits/sales_manager_visits_screen.dart';
 
@@ -131,10 +132,16 @@ class _SalesManagerOrdersScreenState extends State<SalesManagerOrdersScreen> {
 
   void _handleSidebarSelection(String action) {
     Navigator.of(context).maybePop();
-    if (action == 'Sales Orders') return;
+    if (action == 'Create Order' || action == 'Sales Orders') return;
     if (action == 'Dashboard') {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const SalesManagerDashboardScreen()),
+      );
+      return;
+    }
+    if (action == 'Leads') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerLeadsScreen()),
       );
       return;
     }
@@ -177,7 +184,7 @@ class _SalesManagerOrdersScreenState extends State<SalesManagerOrdersScreen> {
       backgroundColor: AppColors.background,
       drawer: SalesManagerSidebarDrawer(
         onSelect: _handleSidebarSelection,
-        currentPage: 'Sales Orders',
+        currentPage: 'Create Order',
       ),
       body: SafeArea(
         child: Column(
@@ -405,7 +412,7 @@ class _SalesManagerDrawer extends StatelessWidget {
       backgroundColor: AppColors.adminSidebarBg,
       child: _SalesManagerSidebar(
         onSelect: onSelect,
-        currentPage: 'Sales Orders',
+        currentPage: 'Create Order',
       ),
     );
   }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../admin/customers/add_customer_screen.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
+import '../leads/sales_manager_leads_screen.dart';
 import '../dashboard/sales_manager_dashboard_screen.dart';
 import '../orders/sales_manager_orders_screen.dart';
 import '../visits/sales_manager_visits_screen.dart';
@@ -136,13 +138,10 @@ class _SalesManagerCustomersScreenState
   }
 
   Future<void> _openAddCustomerForm() async {
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return _AddCustomerSheet(onSaved: _showCustomerAddedSuccessfullyPopup);
-      },
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const AddCustomerScreen(),
+      ),
     );
   }
 
@@ -155,9 +154,15 @@ class _SalesManagerCustomersScreenState
       );
       return;
     }
-    if (action == 'Sales Orders') {
+    if (action == 'Create Order' || action == 'Sales Orders') {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const SalesManagerOrdersScreen()),
+      );
+      return;
+    }
+    if (action == 'Leads') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerLeadsScreen()),
       );
       return;
     }

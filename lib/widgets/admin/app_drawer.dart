@@ -13,6 +13,7 @@ import '../../screens/admin/expenses/expenses_screen.dart';
 import '../../screens/admin/inventory/inventory_screen.dart';
 import '../../screens/admin/invoices/invoices_screen.dart';
 import '../../screens/admin/notifications/notifications_screen.dart';
+import '../../screens/admin/orders/admin_orders_screen.dart';
 import '../../screens/admin/products/products_screen.dart';
 import '../../screens/admin/purchases/purchases_screen.dart';
 import '../../screens/admin/reports/reports_screen.dart';
@@ -111,13 +112,15 @@ class AppDrawer extends StatefulWidget {
     _NavSection('Overview', [_NavItem('Dashboard', Icons.dashboard_outlined)]),
     _NavSection('Sales & Catalog', [
       _NavItem('Customers', Icons.groups_2_outlined),
+      _NavItem('Leads', Icons.person_add_alt_1_outlined),
+      _NavItem('Quotation', Icons.description_outlined),
       _NavItem('Suppliers', Icons.local_shipping_outlined, enabled: false),
       _NavItem('Categories', Icons.category_outlined, enabled: false),
       _NavItem('Products', Icons.inventory_2_outlined),
     ]),
     _NavSection('Operations', [
       _NavItem('Inventory', Icons.warehouse_outlined),
-      _NavItem('Orders', Icons.shopping_cart_outlined, enabled: false),
+      _NavItem('Orders', Icons.shopping_cart_outlined),
       _NavItem('Vehicle Stock', Icons.local_shipping_outlined),
       _NavItem('Purchases', Icons.inventory_2_outlined),
       _NavItem('Deliveries', Icons.local_shipping_outlined),
@@ -224,6 +227,19 @@ class _AppDrawerState extends State<AppDrawer> {
       case 'Customers':
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const CustomersScreen()),
+        );
+        break;
+      case 'Orders':
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const AdminOrdersScreen()),
+        );
+        break;
+      case 'Leads':
+      case 'Quotation':
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(
+          SnackBar(content: Text('${item.label} is coming soon.')),
         );
         break;
       case 'Products':

@@ -94,140 +94,921 @@ class _AccountScreenState extends State<AccountScreen> {
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: Column(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isMobile = constraints.maxWidth < 900;
+
+            if (isMobile) {
+              return _buildMobileDashboard();
+            }
+
+            return Column(
+              children: [
+                AdminTopBar(
+                  title: 'Account',
+                  leadingIcon: Icons.arrow_back_rounded,
+                  onLeadingTap: () => Navigator.of(context).maybePop(),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: _actionButton(),
+                  ),
+                ),
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                    children: [
+                      _SectionCard(
+                        number: 1,
+                        title: 'Account Details',
+                        subtitle: 'Company account classification and status.',
+                        expanded: _accountDetailsExpanded,
+                        onToggle: () {
+                          setState(
+                            () =>
+                                _accountDetailsExpanded = !_accountDetailsExpanded,
+                          );
+                        },
+                        child: _accountDetailsExpanded
+                            ? Column(
+                                children: [
+                                  _fieldBlock(
+                                    label: 'Legal Name',
+                                    child: _textField(
+                                      controller: _legalNameController,
+                                      enabled: _isEditing,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _fieldBlock(
+                                    label: 'Industry',
+                                    child: _dropdownField(
+                                      value: _selectedIndustry,
+                                      hintText: 'Select industry',
+                                      items: kIndustryOptions,
+                                      enabled: _isEditing,
+                                      onChanged: (value) {
+                                        if (value == null) return;
+                                        setState(() => _selectedIndustry = value);
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _fieldBlock(
+                                    label: 'Status',
+                                    child: _dropdownField(
+                                      value: _selectedStatus,
+                                      items: _statusOptions,
+                                      enabled: _isEditing,
+                                      onChanged: (value) {
+                                        if (value == null) return;
+                                        setState(() => _selectedStatus = value);
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : const SizedBox.shrink(),
+                      ),
+                      const SizedBox(height: 18),
+                      _SectionCard(
+                        number: 2,
+                        title: 'Authorized Person',
+                        subtitle: 'Authorized representative contact and identity.',
+                        expanded: _authorizedPersonExpanded,
+                        onToggle: () {
+                          setState(
+                            () => _authorizedPersonExpanded =
+                                !_authorizedPersonExpanded,
+                          );
+                        },
+                        child: _authorizedPersonExpanded
+                            ? Column(
+                                children: [
+                                  _fieldBlock(
+                                    label: 'Owner/Director Name',
+                                    child: _textField(
+                                      controller: _ownerController,
+                                      enabled: _isEditing,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _fieldBlock(
+                                    label: 'Designation',
+                                    child: _dropdownField(
+                                      value: _selectedDesignation,
+                                      items: _designationOptions,
+                                      enabled: _isEditing,
+                                      onChanged: (value) {
+                                        if (value == null) return;
+                                        setState(
+                                          () => _selectedDesignation = value,
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _fieldBlock(
+                                    label: 'Mobile Number',
+                                    child: _textField(
+                                      controller: _mobileController,
+                                      keyboardType: TextInputType.phone,
+                                      enabled: _isEditing,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _fieldBlock(
+                                    label: 'Email',
+                                    child: _textField(
+                                      controller: _emailController,
+                                      keyboardType: TextInputType.emailAddress,
+                                      enabled: _isEditing,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : const SizedBox.shrink(),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMobileDashboard() {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 24),
+      children: [
+        _mobileHeader(),
+        const SizedBox(height: 14),
+        _mobileOverviewCard(),
+        const SizedBox(height: 14),
+        _mobileMetricsGrid(),
+        const SizedBox(height: 14),
+        _mobileProfileCompletionCard(),
+        const SizedBox(height: 14),
+        _mobileAuthorizedPersonCard(),
+        const SizedBox(height: 14),
+        _mobileDocumentsCard(),
+        const SizedBox(height: 14),
+        _mobileCompanyAddressesCard(),
+        const SizedBox(height: 14),
+        _mobileRecentActivityCard(),
+        const SizedBox(height: 14),
+        _mobileQuickActionsCard(),
+      ],
+    );
+  }
+
+  Widget _mobileHeader() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
           children: [
-            AdminTopBar(
-              title: 'Account',
-              leadingIcon: Icons.arrow_back_rounded,
-              onLeadingTap: () => Navigator.of(context).maybePop(),
+            IconButton(
+              onPressed: () => Navigator.of(context).maybePop(),
+              icon: const Icon(Icons.arrow_back_rounded, color: _titleColor),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: _actionButton(),
+            const SizedBox(width: 2),
+            const Text(
+              'Account',
+              style: TextStyle(
+                color: _titleColor,
+                fontSize: 24,
+                fontWeight: FontWeight.w800,
               ),
             ),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-                children: [
-                  _SectionCard(
-                    number: 1,
-                    title: 'Account Details',
-                    subtitle: 'Company account classification and status.',
-                    expanded: _accountDetailsExpanded,
-                    onToggle: () {
-                      setState(
-                        () =>
-                            _accountDetailsExpanded = !_accountDetailsExpanded,
-                      );
-                    },
-                    child: _accountDetailsExpanded
-                        ? Column(
-                            children: [
-                              _fieldBlock(
-                                label: 'Legal Name',
-                                child: _textField(
-                                  controller: _legalNameController,
-                                  enabled: _isEditing,
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              _fieldBlock(
-                                label: 'Industry',
-                                child: _dropdownField(
-                                  value: _selectedIndustry,
-                                  hintText: 'Select industry',
-                                  items: kIndustryOptions,
-                                  enabled: _isEditing,
-                                  onChanged: (value) {
-                                    if (value == null) return;
-                                    setState(() => _selectedIndustry = value);
-                                  },
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              _fieldBlock(
-                                label: 'Status',
-                                child: _dropdownField(
-                                  value: _selectedStatus,
-                                  items: _statusOptions,
-                                  enabled: _isEditing,
-                                  onChanged: (value) {
-                                    if (value == null) return;
-                                    setState(() => _selectedStatus = value);
-                                  },
-                                ),
-                              ),
-                            ],
-                          )
-                        : const SizedBox.shrink(),
+            const Spacer(),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _mobileOverviewCard() {
+    final company = _savedLegalName.trim().isEmpty ? 'Company' : _savedLegalName;
+    final industry = _savedIndustry?.trim().isNotEmpty == true ? _savedIndustry! : 'Beverages';
+    final companyType = _selectedDesignation.isEmpty ? 'LLP' : _selectedDesignation;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFDDE3EA)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFFE5E7EB), width: 2),
+                  color: const Color(0xFFF8FAFC),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  company.isNotEmpty ? company[0].toUpperCase() : 'C',
+                  style: const TextStyle(
+                    color: _accent,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
                   ),
-                  const SizedBox(height: 18),
-                  _SectionCard(
-                    number: 2,
-                    title: 'Authorized Person',
-                    subtitle: 'Authorized representative contact and identity.',
-                    expanded: _authorizedPersonExpanded,
-                    onToggle: () {
-                      setState(
-                        () => _authorizedPersonExpanded =
-                            !_authorizedPersonExpanded,
-                      );
-                    },
-                    child: _authorizedPersonExpanded
-                        ? Column(
-                            children: [
-                              _fieldBlock(
-                                label: 'Owner/Director Name',
-                                child: _textField(
-                                  controller: _ownerController,
-                                  enabled: _isEditing,
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              _fieldBlock(
-                                label: 'Designation',
-                                child: _dropdownField(
-                                  value: _selectedDesignation,
-                                  items: _designationOptions,
-                                  enabled: _isEditing,
-                                  onChanged: (value) {
-                                    if (value == null) return;
-                                    setState(
-                                      () => _selectedDesignation = value,
-                                    );
-                                  },
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              _fieldBlock(
-                                label: 'Mobile Number',
-                                child: _textField(
-                                  controller: _mobileController,
-                                  keyboardType: TextInputType.phone,
-                                  enabled: _isEditing,
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              _fieldBlock(
-                                label: 'Email',
-                                child: _textField(
-                                  controller: _emailController,
-                                  keyboardType: TextInputType.emailAddress,
-                                  enabled: _isEditing,
-                                ),
-                              ),
-                            ],
-                          )
-                        : const SizedBox.shrink(),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            company,
+                            style: const TextStyle(
+                              color: _titleColor,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                        _statusChip(_savedStatus),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Company profile and organization information.',
+                      style: TextStyle(
+                        color: _mutedColor,
+                        fontSize: 13.5,
+                        height: 1.45,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          const Divider(height: 1, color: Color(0xFFE5E7EB)),
+          const SizedBox(height: 14),
+          _miniOverviewRow(
+            'Company Code',
+            'CMP-cc2af8a3-2114-4eb1-a89a...',
+          ),
+          const SizedBox(height: 10),
+          _miniOverviewRow('Industry', industry),
+          const SizedBox(height: 10),
+          _miniOverviewRow('Company Type', companyType),
+          const SizedBox(height: 10),
+          _miniOverviewRow('Registration Date', 'Not set'),
+          const SizedBox(height: 10),
+          _miniOverviewRow('Plan', 'Enterprise'),
+        ],
+      ),
+    );
+  }
+
+  Widget _mobileMetricsGrid() {
+    final metrics = [
+      _MobileMetric('Employees', '0', 'Total Employees', Icons.groups_outlined, const Color(0xFFDCFCE7), const Color(0xFF16A34A)),
+      _MobileMetric('Branches', '0', 'Total Branches', Icons.apartment_outlined, const Color(0xFFFFEDD5), const Color(0xFFF97316)),
+      _MobileMetric('Active Users', '0', 'System Users', Icons.person_outline_rounded, const Color(0xFFE0F2FE), const Color(0xFF0284C7)),
+      _MobileMetric('Documents', '1', 'Uploaded Files', Icons.description_outlined, const Color(0xFFFEF3C7), const Color(0xFFF59E0B)),
+      _MobileMetric('Storage Used', '4 files', 'Company Documents', Icons.storage_rounded, const Color(0xFFF3E8FF), const Color(0xFF7C3AED)),
+    ];
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: metrics.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisExtent: 92,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+      ),
+      itemBuilder: (context, index) {
+        final metric = metrics[index];
+        return Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFDDE3EA)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 12,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: metric.iconBg,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(metric.icon, color: metric.iconColor, size: 18),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      metric.label,
+                      style: const TextStyle(
+                        color: _mutedColor,
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      metric.value,
+                      style: const TextStyle(
+                        color: _titleColor,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      metric.subtitle,
+                      style: const TextStyle(
+                        color: _mutedColor,
+                        fontSize: 10.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _mobileProfileCompletionCard() {
+    return _dashboardCard(
+      title: 'Profile Completion',
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 92,
+            height: 92,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                CircularProgressIndicator(
+                  value: 0.89,
+                  strokeWidth: 10,
+                  backgroundColor: const Color(0xFFE5E7EB),
+                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF16A34A)),
+                ),
+                const Center(
+                  child: Text(
+                    '89%',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: _titleColor,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      height: 1,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 14),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Profile Needs Attention',
+                  style: TextStyle(
+                    color: _titleColor,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                SizedBox(height: 6),
+                Text(
+                  'Complete the missing items to improve company readiness.',
+                  style: TextStyle(
+                    color: _mutedColor,
+                    fontSize: 12.5,
+                    height: 1.35,
+                  ),
+                ),
+                SizedBox(height: 10),
+                Text(
+                  'Missing Information',
+                  style: TextStyle(
+                    color: _titleColor,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text('- GST Certificate', style: TextStyle(color: _mutedColor, fontSize: 11.5)),
+                Text('- PAN Card', style: TextStyle(color: _mutedColor, fontSize: 11.5)),
+                SizedBox(height: 8),
+                Text(
+                  'Complete Now',
+                  style: TextStyle(
+                    color: _accent,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _mobileAuthorizedPersonCard() {
+    return _dashboardCard(
+      title: 'Authorized Person',
+      trailing: _statusChip('Verified'),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 22,
+                backgroundColor: const Color(0xFFF3F4F6),
+                child: Text(
+                  _savedOwnerName.isNotEmpty ? _savedOwnerName[0].toUpperCase() : 'S',
+                  style: const TextStyle(
+                    color: _accent,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _savedOwnerName,
+                      style: const TextStyle(
+                        color: _titleColor,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      _savedDesignation,
+                      style: const TextStyle(
+                        color: _mutedColor,
+                        fontSize: 12.5,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      _savedEmail,
+                      style: const TextStyle(
+                        color: _mutedColor,
+                        fontSize: 12.5,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      _savedMobileNumber,
+                      style: const TextStyle(
+                        color: _mutedColor,
+                        fontSize: 12.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: _miniActionButton(
+                  label: 'View Details',
+                  foreground: _titleColor,
+                  background: Colors.white,
+                  borderColor: const Color(0xFFD8DFD8),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _miniActionButton(
+                  label: 'Edit',
+                  foreground: Colors.white,
+                  background: _accent,
+                  borderColor: _accent,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _mobileDocumentsCard() {
+    final docs = [
+      ('GST Certificate', 'Pending'),
+      ('PAN Card', 'Pending'),
+      ('Incorporation Certificate', 'Pending'),
+      ('Trade License', 'Pending'),
+      ('MSME Certificate', 'Pending'),
+    ];
+
+    return _dashboardCard(
+      title: 'Documents Overview',
+      trailing: const Icon(Icons.content_copy_outlined, color: Color(0xFF94A3B8), size: 18),
+      child: Column(
+        children: [
+          ...docs.map(
+            (doc) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Row(
+                children: [
+                  const Icon(Icons.description_outlined, size: 16, color: Color(0xFF64748B)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      doc.$1,
+                      style: const TextStyle(
+                        color: _titleColor,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  _statusChip(doc.$2, compact: true, accent: const Color(0xFFF97316)),
+                ],
+              ),
+            ),
+          ),
+          const Divider(height: 20),
+          const Text(
+            'View All Documents',
+            style: TextStyle(
+              color: _accent,
+              fontSize: 12.5,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _mobileCompanyAddressesCard() {
+    return _dashboardCard(
+      title: 'Company Addresses',
+      trailing: const Icon(Icons.location_on_outlined, color: Color(0xFF94A3B8), size: 18),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Registered Office',
+                  style: TextStyle(
+                    color: _titleColor,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _savedLegalName,
+                  style: const TextStyle(
+                    color: _accent,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Mumbai, Maharashtra, India',
+                  style: TextStyle(color: _mutedColor, fontSize: 12.5),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Branch/Warehouse Address',
+                  style: TextStyle(
+                    color: _accent,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _savedLegalName,
+                  style: const TextStyle(color: _mutedColor, fontSize: 12.5),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Container(
+            width: 110,
+            height: 110,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              color: const Color(0xFFF8FAFC),
+              border: Border.all(color: const Color(0xFFE5E7EB)),
+            ),
+            child: const Center(
+              child: Icon(Icons.location_pin, color: Color(0xFFEF4444), size: 34),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _mobileRecentActivityCard() {
+    final items = [
+      ('Company profile updated', 'Today'),
+      ('Billing information checked', 'Recent'),
+      ('Authorized person updated', 'Recent'),
+      ('Documents reviewed', 'Recent'),
+    ];
+
+    return _dashboardCard(
+      title: 'Recent Activity',
+      trailing: const Text(
+        'View All',
+        style: TextStyle(
+          color: _accent,
+          fontSize: 12,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+      child: Column(
+        children: [
+          ...items.map(
+            (item) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                children: [
+                  Container(
+                    width: 26,
+                    height: 26,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF3FAF0),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFFD1D5DB)),
+                    ),
+                    child: const Icon(Icons.check_circle_outline, color: _accent, size: 15),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.$1,
+                          style: const TextStyle(
+                            color: _titleColor,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          item.$2,
+                          style: const TextStyle(color: _mutedColor, fontSize: 11.5),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _mobileQuickActionsCard() {
+    return _dashboardCard(
+      title: 'Quick Actions',
+      child: GridView.count(
+        crossAxisCount: 2,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        mainAxisSpacing: 10,
+        crossAxisSpacing: 10,
+        childAspectRatio: 1.15,
+        children: [
+          _quickActionTile('Edit Profile', Icons.edit_outlined, const Color(0xFFDCFCE7), const Color(0xFF16A34A)),
+          _quickActionTile('Upload Document', Icons.cloud_upload_outlined, const Color(0xFFE0E7FF), const Color(0xFF4F46E5)),
+          _quickActionTile('Invite User', Icons.person_add_alt_1_outlined, const Color(0xFFF3E8FF), const Color(0xFF7C3AED)),
+          _quickActionTile('View Reports', Icons.bar_chart_outlined, const Color(0xFFFFEDD5), const Color(0xFFF97316)),
+        ],
+      ),
+    );
+  }
+
+  Widget _quickActionTile(
+    String label,
+    IconData icon,
+    Color background,
+    Color color,
+  ) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFDDE3EA)),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: background,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 18),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: _titleColor,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _miniOverviewRow(String label, String value) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            label,
+            style: const TextStyle(
+              color: _mutedColor,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ),
+        Text(
+          value,
+          style: const TextStyle(
+            color: _titleColor,
+            fontSize: 12.5,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _statusChip(
+    String label, {
+    bool compact = false,
+    Color accent = const Color(0xFF16A34A),
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 8 : 10,
+        vertical: compact ? 4 : 5,
+      ),
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: accent,
+          fontSize: compact ? 10.5 : 11.5,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+
+  Widget _miniActionButton({
+    required String label,
+    required Color foreground,
+    required Color background,
+    required Color borderColor,
+  }) {
+    return Container(
+      height: 38,
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: borderColor),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        label,
+        style: TextStyle(
+          color: foreground,
+          fontSize: 12.5,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+
+  Widget _dashboardCard({
+    required String title,
+    required Widget child,
+    Widget? trailing,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFDDE3EA)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    color: _titleColor,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              if (trailing != null) trailing,
+            ],
+          ),
+          const SizedBox(height: 12),
+          child,
+        ],
       ),
     );
   }
@@ -677,4 +1458,22 @@ class _SectionCard extends StatelessWidget {
       ),
     );
   }
+}
+
+class _MobileMetric {
+  final String label;
+  final String value;
+  final String subtitle;
+  final IconData icon;
+  final Color iconBg;
+  final Color iconColor;
+
+  const _MobileMetric(
+    this.label,
+    this.value,
+    this.subtitle,
+    this.icon,
+    this.iconBg,
+    this.iconColor,
+  );
 }

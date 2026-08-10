@@ -9,6 +9,7 @@ import '../settings/plans_screen.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
 import '../../../widgets/soft_action_button.dart';
+import '../orders/admin_orders_screen.dart';
 import '../inventory/inventory_screen.dart';
 import '../products/products_screen.dart';
 import '../purchases/purchases_screen.dart';
@@ -1275,11 +1276,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 label: 'New Order',
                 icon: Icons.add_rounded,
                 onPressed: () {
-                  // TODO(nav): push the sales-order creation screen once it
-                  // exists (BRD 4.7 "Create sales orders").
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('New Order screen not wired yet'),
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const AdminOrdersScreen(),
                     ),
                   );
                 },

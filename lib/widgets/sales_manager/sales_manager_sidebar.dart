@@ -34,24 +34,23 @@ class SalesManagerSidebar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = <_SidebarItem>[
-      const _SidebarItem('Dashboard', Icons.dashboard_rounded),
-      const _SidebarItem('Customers', Icons.groups_rounded),
-      const _SidebarItem('Sales Orders', Icons.receipt_long_rounded),
-      const _SidebarItem('Visits', Icons.place_rounded),
-      const _SidebarItem('Follow-Ups', Icons.notifications_active_rounded),
-      const _SidebarItem('Attendance', Icons.fact_check_rounded),
-      const _SidebarItem('Notifications', Icons.notifications_rounded),
-      const _SidebarItem('Products', Icons.inventory_2_rounded),
-      const _SidebarItem('Outstanding & Payments', Icons.payments_rounded),
-      const _SidebarItem('Reports', Icons.bar_chart_rounded),
-      const _SidebarItem('Settings', Icons.settings_rounded),
+      const _SidebarItem('Dashboard', Icons.dashboard_outlined),
+      const _SidebarItem('Customers', Icons.groups_outlined),
+      const _SidebarItem('Leads', Icons.person_add_alt_1_outlined),
+      const _SidebarItem('Quotations', Icons.description_outlined),
+      const _SidebarItem('Create Order', Icons.shopping_cart_outlined),
+      const _SidebarItem('Stock', Icons.inventory_2_outlined),
+      const _SidebarItem('Visits', Icons.place_outlined),
+      const _SidebarItem('Follow-ups', Icons.notifications_active_outlined),
+      const _SidebarItem('Attendance', Icons.fact_check_outlined),
+      const _SidebarItem('My Performance', Icons.bar_chart_outlined),
     ];
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.adminSidebarBg.withValues(alpha: 0.72),
+        color: AppColors.adminSidebarBg,
         border: Border(
-          right: BorderSide(color: AppColors.border.withValues(alpha: 0.65)),
+          right: BorderSide(color: AppColors.border.withValues(alpha: 0.45)),
         ),
       ),
       child: SafeArea(
@@ -59,117 +58,90 @@ class SalesManagerSidebar extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
-              child: Row(
-                children: [
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: const Icon(
-                      Icons.water_drop_rounded,
-                      color: Colors.white,
-                      size: 26,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'SAAS CRM',
-                          style: TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        SizedBox(height: 5),
-                        Text(
-                          'Sales Manager',
-                          style: TextStyle(
-                            color: AppColors.primary,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.of(context).maybePop(),
-                    icon: const Icon(
-                      Icons.close_rounded,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
+              padding: const EdgeInsets.fromLTRB(18, 18, 18, 12),
+              child: Text(
+                'MAIN MENU',
+                style: TextStyle(
+                  color: AppColors.textSecondary.withValues(alpha: 0.72),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.2,
+                ),
               ),
             ),
-            Divider(height: 1, color: AppColors.border.withValues(alpha: 0.75)),
+            Divider(height: 1, color: AppColors.border.withValues(alpha: 0.5)),
             Expanded(
               child: ListView.separated(
-                padding: const EdgeInsets.fromLTRB(12, 14, 12, 14),
+                padding: const EdgeInsets.fromLTRB(12, 14, 12, 16),
                 itemCount: items.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 10),
+                separatorBuilder: (_, _) => const SizedBox(height: 8),
                 itemBuilder: (context, index) {
                   final item = items[index];
-                  final selected = item.label == currentPage;
+                  final selected = _isSelected(item.label, currentPage);
 
                   return Material(
-                    color: selected ? AppColors.activeMenuBg : Colors.white,
-                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.transparent,
                     child: InkWell(
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(18),
                       onTap: () => onSelect(item.label),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 14,
-                        ),
+                      child: Ink(
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: selected
-                                ? AppColors.activeMenuBg
-                                : AppColors.border.withValues(alpha: 0.7),
-                          ),
+                          color: selected
+                              ? AppColors.activeMenuBg.withValues(alpha: 0.86)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(18),
                         ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              item.icon,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
                               color: selected
-                                  ? AppColors.primary
-                                  : AppColors.textSecondary,
-                              size: 20,
+                                  ? AppColors.primary.withValues(alpha: 0.18)
+                                  : Colors.transparent,
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                item.label,
-                                style: TextStyle(
+                          ),
+                          child: Row(
+                            children: [
+                              AnimatedContainer(
+                                duration: const Duration(milliseconds: 180),
+                                width: 4,
+                                height: 24,
+                                decoration: BoxDecoration(
                                   color: selected
                                       ? AppColors.primary
-                                      : AppColors.textSecondary,
-                                  fontSize: 13.5,
-                                  fontWeight: selected
-                                      ? FontWeight.w800
-                                      : FontWeight.w700,
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(999),
                                 ),
                               ),
-                            ),
-                            if (!selected)
-                              const Icon(
-                                Icons.chevron_right_rounded,
-                                color: AppColors.textLightMuted,
-                                size: 18,
+                              const SizedBox(width: 12),
+                              Icon(
+                                item.icon,
+                                color: selected
+                                    ? AppColors.textPrimary
+                                    : AppColors.textSecondary,
+                                size: 20,
                               ),
-                          ],
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  item.label,
+                                  style: TextStyle(
+                                    color: selected
+                                        ? AppColors.textPrimary
+                                        : AppColors.textSecondary,
+                                    fontSize: 13.5,
+                                    fontWeight: selected
+                                        ? FontWeight.w800
+                                        : FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -177,50 +149,21 @@ class SalesManagerSidebar extends StatelessWidget {
                 },
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 14,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(
-                    color: AppColors.border.withValues(alpha: 0.8),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.logout_rounded,
-                      color: AppColors.red,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 10),
-                    const Expanded(
-                      child: Text(
-                        'Check-Out',
-                        style: TextStyle(
-                          color: AppColors.red,
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                    Icon(
-                      Icons.chevron_right_rounded,
-                      color: AppColors.textLightMuted,
-                    ),
-                  ],
-                ),
-              ),
-            ),
           ],
         ),
       ),
     );
+  }
+
+  bool _isSelected(String itemLabel, String currentPage) {
+    if (itemLabel == currentPage) return true;
+    if (itemLabel == 'Create Order' && currentPage == 'Sales Orders') {
+      return true;
+    }
+    if (itemLabel == 'Follow-ups' && currentPage == 'Follow-Ups') {
+      return true;
+    }
+    return false;
   }
 }
 
