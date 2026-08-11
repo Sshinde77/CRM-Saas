@@ -22,6 +22,7 @@ import '../../screens/admin/settings/company_settings_screen.dart';
 import '../../screens/admin/settings/plans_screen.dart';
 import '../../screens/admin/users/admin_user_list_screen.dart';
 import '../../screens/admin/vehicles/vehicle_stock_screen.dart';
+import '../../screens/admin/leads/admin_leads_screen.dart';
 import '../../services/api_service.dart';
 
 class _NavItem {
@@ -235,6 +236,12 @@ class _AppDrawerState extends State<AppDrawer> {
         );
         break;
       case 'Leads':
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => const AdminLeadsScreen(),
+          ),
+        );
+        break;
       case 'Quotation':
         ScaffoldMessenger.of(
           context,

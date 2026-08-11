@@ -1,22 +1,18 @@
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
-import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
-import '../customers/sales_manager_customers_screen.dart';
-import '../dashboard/sales_manager_dashboard_screen.dart';
-import '../orders/sales_manager_orders_screen.dart';
-import '../visits/sales_manager_visits_screen.dart';
-import 'add_lead_screen.dart';
+import '../../../widgets/admin/admin_top_bar.dart';
+import '../../../widgets/admin/app_drawer.dart';
+import '../../sales_manager/leads/add_lead_screen.dart';
 
-class SalesManagerLeadsScreen extends StatefulWidget {
-  const SalesManagerLeadsScreen({super.key});
+class AdminLeadsScreen extends StatefulWidget {
+  const AdminLeadsScreen({super.key});
 
   @override
-  State<SalesManagerLeadsScreen> createState() =>
-      _SalesManagerLeadsScreenState();
+  State<AdminLeadsScreen> createState() => _AdminLeadsScreenState();
 }
 
-class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
+class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _productFilterController =
@@ -118,37 +114,6 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
     );
   }
 
-  void _handleSidebarSelection(String action) {
-    Navigator.of(context).maybePop();
-    switch (action) {
-      case 'Dashboard':
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const SalesManagerDashboardScreen()),
-        );
-        return;
-      case 'Customers':
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const SalesManagerCustomersScreen()),
-        );
-        return;
-      case 'Create Order':
-      case 'Sales Orders':
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const SalesManagerOrdersScreen()),
-        );
-        return;
-      case 'Visits':
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const SalesManagerVisitsScreen()),
-        );
-        return;
-      case 'Leads':
-        return;
-      default:
-        _showSnack('$action is not wired yet');
-    }
-  }
-
   void _showSnack(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -172,11 +137,8 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
 
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: Colors.white,
-      drawer: SalesManagerSidebarDrawer(
-        onSelect: _handleSidebarSelection,
-        currentPage: 'Leads',
-      ),
+      backgroundColor: AppColors.background,
+      drawer: const AppDrawer(activeItem: 'Leads'),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -184,7 +146,11 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
 
             return Column(
               children: [
-                _buildTopBar(isMobile: isMobile),
+                AdminTopBar(
+                  title: 'Leads',
+                  leadingIcon: Icons.menu_rounded,
+                  onLeadingTap: () => _scaffoldKey.currentState?.openDrawer(),
+                ),
                 Expanded(
                   child: SingleChildScrollView(
                     padding: EdgeInsets.fromLTRB(
@@ -226,88 +192,6 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
     }).toList();
   }
 
-  Widget _buildTopBar({required bool isMobile}) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(isMobile ? 14 : 18, 14, isMobile ? 14 : 18, 10),
-      child: Row(
-        children: [
-          if (isMobile) ...[
-            IconButton(
-              onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-              icon: const Icon(Icons.menu_rounded, color: Colors.black),
-            ),
-            const SizedBox(width: 4),
-          ],
-          const Text(
-            'Leads',
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const Spacer(),
-          _topIconButton(Icons.help_outline_rounded, () {}),
-          const SizedBox(width: 10),
-          _topIconButton(Icons.notifications_none_rounded, () {}),
-          const SizedBox(width: 10),
-          Container(
-            padding: const EdgeInsets.only(right: 4),
-            child: Row(
-              children: [
-                Container(
-                  width: 30,
-                  height: 30,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF0B4A06),
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: const Text(
-                    'SS',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Sunil Sales',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    SizedBox(height: 3),
-                    Text(
-                      'Sales Officer',
-                      style: TextStyle(
-                        color: Color(0xFF0B4A06),
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 8),
-                const Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  color: Color(0xFF9CA3AF),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildDesktopContent(List<_LeadRecord> shownLeads) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -327,7 +211,34 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
       children: [
         _buildMobilePanelHeader(shownLeads.length, totalLeads),
         const SizedBox(height: 12),
-        _buildMobileTableCard(shownLeads, totalLeads),
+        if (shownLeads.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(22),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFFE5E7EB)),
+            ),
+            child: const Center(
+              child: Text(
+                'No leads found.',
+                style: TextStyle(
+                  color: Color(0xFF6B7280),
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          )
+          else
+            Column(
+              children: [
+                for (var i = 0; i < shownLeads.length; i++) ...[
+                  _buildMobileLeadCard(shownLeads[i]),
+                  if (i != shownLeads.length - 1) const SizedBox(height: 12),
+                ],
+              ],
+          ),
       ],
     );
   }
@@ -399,17 +310,79 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  'Showing $shownLeads of $totalLeads leads',
-                  style: const TextStyle(
-                    color: Color(0xFF64748B),
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w500,
-                  ),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isCompact = constraints.maxWidth < 380;
+              final dropdownWidth = isCompact ? constraints.maxWidth : 110.0;
+
+              final dropdown = SizedBox(
+                width: dropdownWidth,
+                child: _dropdownFilter(
+                  width: dropdownWidth,
+                  value: '$_selectedPageSize / page',
+                  items: _pageSizeOptions.map((e) => '$e / page').toList(),
+                  onChanged: (value) {
+                    if (value == null) return;
+                    setState(
+                      () => _selectedPageSize = int.parse(value.split(' ').first),
+                    );
+                  },
                 ),
+              );
+
+              final summaryText = Text(
+                'Showing $shownLeads of $totalLeads leads',
+                maxLines: 1,
+                softWrap: false,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Color(0xFF64748B),
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w500,
+                ),
+              );
+
+              if (isCompact) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    summaryText,
+                    const SizedBox(height: 8),
+                    dropdown,
+                  ],
+                );
+              }
+
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(child: summaryText),
+                  const SizedBox(width: 10),
+                  dropdown,
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            alignment: WrapAlignment.start,
+            children: [
+              _smallActionButton(
+                label: 'Manage',
+                icon: Icons.tune_rounded,
+                onTap: () => _showSnack('Manage is not wired yet'),
+              ),
+              _smallActionButton(
+                label: 'Bulk Upload',
+                icon: Icons.upload_rounded,
+                onTap: () => _showSnack('Bulk Upload is not wired yet'),
+              ),
+              _smallActionButton(
+                label: 'Export',
+                icon: Icons.download_rounded,
+                onTap: () => _showSnack('Export is not wired yet'),
               ),
               ElevatedButton.icon(
                 onPressed: _openAddLeadPage,
@@ -505,6 +478,166 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
             ),
         ],
       ),
+    );
+  }
+
+  Widget _buildMobileLeadCard(_LeadRecord record) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 14,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: record.initialsColor,
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  record.initials,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            record.name,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Color(0xFF111827),
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                              height: 1.25,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        _Chip(
+                          label: record.status,
+                          background: _leadStatusBackground(record.status),
+                          foreground: _leadStatusColor(record.status),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${record.code} - ${record.amount}',
+                      style: const TextStyle(
+                        color: Color(0xFF94A3B8),
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Icon(Icons.more_vert_rounded, color: Color(0xFF94A3B8)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _mobileInfoLine('Phone', record.phone),
+          if (record.email.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            _mobileInfoLine('Email', record.email),
+          ],
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _Chip(
+                label: record.source,
+                background: const Color(0xFFF3F4F6),
+                foreground: const Color(0xFF334155),
+              ),
+              _Chip(
+                label: record.assignedTo,
+                background: const Color(0xFFEFF6FF),
+                foreground: const Color(0xFF1D4ED8),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            record.product,
+            style: const TextStyle(
+              color: Color(0xFF334155),
+              fontSize: 12.8,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: _mobileInfoLine('Closing Date', record.closingDate),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _mobileInfoLine('Created', record.createdAt),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _mobileInfoLine(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            color: Color(0xFF94A3B8),
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: Color(0xFF111827),
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            height: 1.25,
+          ),
+        ),
+      ],
     );
   }
 
@@ -749,6 +882,30 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
     );
   }
 
+  Widget _smallActionButton({
+    required String label,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return OutlinedButton.icon(
+      onPressed: onTap,
+      icon: Icon(icon, size: 15, color: const Color(0xFF475569)),
+      label: Text(label),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: const Color(0xFF111827),
+        side: const BorderSide(color: Color(0xFFD1D5DB)),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(999),
+        ),
+        textStyle: const TextStyle(
+          fontSize: 12.5,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
   Widget _filterField({
     required double width,
     required String hintText,
@@ -798,10 +955,13 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
       key: ValueKey<String>(value),
       initialValue: value,
       onChanged: onChanged,
+      isDense: true,
+      isExpanded: true,
+      iconSize: 18,
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
@@ -818,17 +978,18 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
       icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF94A3B8)),
       items: items
           .map(
-            (item) => DropdownMenuItem<String>(
-              value: item,
-              child: Text(
-                item,
-                style: const TextStyle(
-                  color: Color(0xFF111827),
-                  fontSize: 13.5,
+                (item) => DropdownMenuItem<String>(
+                  value: item,
+                  child: Text(
+                    item,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Color(0xFF111827),
+                      fontSize: 13,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          )
+              )
           .toList(),
     );
 

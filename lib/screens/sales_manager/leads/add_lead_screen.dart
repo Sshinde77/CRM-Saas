@@ -29,6 +29,7 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
   final _expectedValueController = TextEditingController();
   final _closingDateController = TextEditingController();
   final _notesController = TextEditingController();
+  final Set<String> _selectedInterestProducts = <String>{};
 
   int _currentStep = 0;
 
@@ -59,6 +60,70 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
     'Qualified',
     'Lost',
   ];
+
+  final List<String> _interestProducts = const [
+    'Packaged Drinking Water (250ml)',
+    'Packaged Drinking Water (500ml)',
+    'Packaged Drinking Water (1L)',
+    'Packaged Drinking Water (2L)',
+    'Natural Mineral Water (500ml)',
+    'Natural Mineral Water (1L)',
+    'Sparkling Water (300ml)',
+    'Sparkling Water (750ml)',
+    'Water Jar Refill (20L)',
+    'Water Jar (New, with can) (20L)',
+    'Flavored Water - Lemon (500ml)',
+    'Flavored Water - Orange (500ml)',
+    'Alkaline Water (500ml)',
+    'Alkaline Water (1L)',
+    'Water Dispenser - Hot & Cold (Standard)',
+    'Water Dispenser - Normal (Standard)',
+    'Dispenser Tap (Standard)',
+    'Bottle Stand (Standard)',
+  ];
+
+  Future<void> _pickClosingDate() async {
+    final now = DateTime.now();
+    final initialDate = _parseDate(_closingDateController.text) ?? now;
+
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: DateTime(now.year, now.month, now.day),
+      lastDate: DateTime(now.year + 10),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFF0B4A06),
+              onPrimary: Colors.white,
+              onSurface: Color(0xFF0F172A),
+            ),
+          ),
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
+    );
+
+    if (picked == null) return;
+
+    setState(() {
+      _closingDateController.text =
+          '${picked.day.toString().padLeft(2, '0')}-'
+          '${picked.month.toString().padLeft(2, '0')}-'
+          '${picked.year}';
+    });
+  }
+
+  DateTime? _parseDate(String text) {
+    final parts = text.split('-');
+    if (parts.length != 3) return null;
+    final day = int.tryParse(parts[0]);
+    final month = int.tryParse(parts[1]);
+    final year = int.tryParse(parts[2]);
+    if (day == null || month == null || year == null) return null;
+    return DateTime(year, month, day);
+  }
 
   @override
   void dispose() {
@@ -116,173 +181,56 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
         currentPage: 'Leads',
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            _buildTopBar(),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(18, 10, 18, 18),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: const Color(0xFFE5E7EB)),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
-                        blurRadius: 18,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 280,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFAFAFA),
-                          border: Border(
-                            right: BorderSide(
-                              color: const Color(0xFFE5E7EB),
-                            ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isCompact = constraints.maxWidth < 980;
+
+            return Column(
+              children: [
+                _buildTopBar(),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(18, 10, 18, 18),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: const Color(0xFFE5E7EB)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 18,
+                            offset: const Offset(0, 6),
                           ),
-                        ),
-                        child: Column(
-                          children: [
-                            const SizedBox(height: 12),
-                            for (var i = 0; i < _steps.length; i++) ...[
-                              _StepTile(
-                                title: _steps[i].title,
-                                icon: _steps[i].icon,
-                                selected: _currentStep == i,
-                                onTap: () => setState(() => _currentStep = i),
-                              ),
-                              const SizedBox(height: 10),
-                            ],
-                          ],
-                        ),
+                        ],
                       ),
-                      Expanded(
-                        child: Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(22, 22, 22, 16),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Text(
-                                          'Lead Information',
-                                          style: TextStyle(
-                                            color: Colors.black,
-                                            fontSize: 22,
-                                            fontWeight: FontWeight.w800,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 6),
-                                        Text(
-                                          'Lead identity, source, customer, and ownership.',
-                                          style: TextStyle(
-                                            color: Colors.black.withValues(
-                                              alpha: 0.6,
-                                            ),
-                                            fontSize: 13.5,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  OutlinedButton(
-                                    onPressed: () => Navigator.of(context).maybePop(),
-                                    style: OutlinedButton.styleFrom(
-                                      foregroundColor: const Color(0xFF0F172A),
-                                      side: const BorderSide(
-                                        color: Color(0xFFD1D5DB),
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(999),
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 12,
-                                      ),
-                                    ),
-                                    child: const Text('Back to Leads'),
-                                  ),
-                                ],
-                              ),
+                      child: isCompact
+                          ? Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(18, 18, 18, 14),
+                                  child: _buildCompactStepper(),
+                                ),
+                                const Divider(height: 1, color: Color(0xFFE5E7EB)),
+                                Expanded(child: _buildLeadFormPanel(context)),
+                              ],
+                            )
+                          : Row(
+                              children: [
+                                SizedBox(
+                                  width: 320,
+                                  child: _buildDesktopStepper(),
+                                ),
+                                const VerticalDivider(width: 1, color: Color(0xFFE5E7EB)),
+                                Expanded(child: _buildLeadFormPanel(context)),
+                              ],
                             ),
-                            const Divider(height: 1, color: Color(0xFFE5E7EB)),
-                            Expanded(
-                              child: SingleChildScrollView(
-                                padding: const EdgeInsets.fromLTRB(22, 20, 22, 22),
-                                child: _buildCurrentStepForm(),
-                              ),
-                            ),
-                            const Divider(height: 1, color: Color(0xFFE5E7EB)),
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(22, 18, 22, 18),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  TextButton(
-                                    onPressed: _currentStep == 0
-                                        ? null
-                                        : () => setState(() => _currentStep--),
-                                    style: TextButton.styleFrom(
-                                      foregroundColor: const Color(0xFF9CA3AF),
-                                      backgroundColor: const Color(0xFFF3F4F6),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 18,
-                                        vertical: 14,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(999),
-                                      ),
-                                    ),
-                                    child: const Text('Back'),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      if (_currentStep < _steps.length - 1) {
-                                        setState(() => _currentStep++);
-                                        return;
-                                      }
-                                      Navigator.of(context).pop();
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF0B4A06),
-                                      foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 20,
-                                        vertical: 14,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(999),
-                                      ),
-                                    ),
-                                    child: Text(
-                                      _currentStep < _steps.length - 1
-                                          ? 'Next'
-                                          : 'Save Lead',
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            ),
-          ],
+              ],
+            );
+          },
         ),
       ),
     );
@@ -360,6 +308,196 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildLeadFormPanel(BuildContext context) {
+    final step = _steps[_currentStep];
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(22, 22, 22, 16),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      step.title,
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      _stepSubtitle(_currentStep),
+                      style: TextStyle(
+                        color: Colors.black.withValues(alpha: 0.6),
+                        fontSize: 13.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const Divider(height: 1, color: Color(0xFFE5E7EB)),
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(22, 20, 22, 22),
+            child: _buildCurrentStepForm(),
+          ),
+        ),
+        const Divider(height: 1, color: Color(0xFFE5E7EB)),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(22, 18, 22, 18),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton(
+                onPressed: _currentStep == 0
+                    ? null
+                    : () => setState(() => _currentStep--),
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFF9CA3AF),
+                  backgroundColor: const Color(0xFFF3F4F6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 14,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+                child: const Text('Back'),
+              ),
+              const SizedBox(width: 12),
+              ElevatedButton(
+                onPressed: () {
+                  if (_currentStep < _steps.length - 1) {
+                    setState(() => _currentStep++);
+                    return;
+                  }
+                  Navigator.of(context).pop();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0B4A06),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 14,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+                child: Text(
+                  _currentStep < _steps.length - 1 ? 'Next' : 'Save Lead',
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDesktopStepper() {
+    return Container(
+      color: const Color(0xFFFAFAFA),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 20, 16, 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Lead Steps',
+              style: TextStyle(
+                color: Color(0xFF0F172A),
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 18),
+            for (var i = 0; i < _steps.length; i++) ...[
+              _CircleStepTile(
+                index: i + 1,
+                title: _steps[i].title,
+                icon: _steps[i].icon,
+                selected: _currentStep == i,
+                completed: _currentStep > i,
+                onTap: () => setState(() => _currentStep = i),
+              ),
+              if (i != _steps.length - 1)
+                Container(
+                  margin: const EdgeInsets.only(left: 22),
+                  width: 2,
+                  height: 28,
+                  color: const Color(0xFFE5E7EB),
+                ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCompactStepper() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Lead Steps',
+          style: TextStyle(
+            color: Color(0xFF0F172A),
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: 14),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              for (var i = 0; i < _steps.length; i++) ...[
+                _CompactCircleStep(
+                  index: i + 1,
+                  title: _steps[i].title,
+                  icon: _steps[i].icon,
+                  selected: _currentStep == i,
+                  completed: _currentStep > i,
+                  onTap: () => setState(() => _currentStep = i),
+                ),
+                if (i != _steps.length - 1)
+                  Container(
+                    width: 32,
+                    height: 2,
+                    color: const Color(0xFFE5E7EB),
+                  ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _stepSubtitle(int step) {
+    switch (step) {
+      case 0:
+        return 'Lead identity, source, customer, and ownership.';
+      case 1:
+        return 'Contact details for the primary lead owner.';
+      case 2:
+        return 'Products, budget, and expected closure timing.';
+      case 3:
+      default:
+        return 'Notes and follow-up details before saving the lead.';
+    }
   }
 
   Widget _topIconButton(IconData icon) {
@@ -443,25 +581,7 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
           ),
         ]);
       case 2:
-        return _twoColumnForm([
-          _FormField(
-            label: 'Product Interest',
-            controller: _productController,
-            hintText: 'Enter product interest',
-            fullWidth: true,
-          ),
-          _FormField(
-            label: 'Expected Value',
-            controller: _expectedValueController,
-            hintText: '0',
-            keyboardType: TextInputType.number,
-          ),
-          _FormField(
-            label: 'Expected Closing Date',
-            controller: _closingDateController,
-            hintText: 'Select date',
-          ),
-        ]);
+        return _buildInterestDetailsStep();
       case 3:
       default:
         return _twoColumnForm([
@@ -474,6 +594,120 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
           ),
         ]);
     }
+  }
+
+  Widget _buildInterestDetailsStep() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isCompact = constraints.maxWidth < 820;
+        final cardWidth = isCompact
+            ? constraints.maxWidth
+            : (constraints.maxWidth - 24) / 3;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Interested Products',
+              style: TextStyle(
+                color: Color(0xFF0F172A),
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 12,
+              runSpacing: 14,
+              children: [
+                for (final product in _interestProducts)
+                  SizedBox(
+                    width: cardWidth,
+                    child: _InterestProductCard(
+                      label: product,
+                      selected: _selectedInterestProducts.contains(product),
+                      onTap: () {
+                        setState(() {
+                          if (_selectedInterestProducts.contains(product)) {
+                            _selectedInterestProducts.remove(product);
+                          } else {
+                            _selectedInterestProducts.add(product);
+                          }
+                        });
+                      },
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            LayoutBuilder(
+              builder: (context, innerConstraints) {
+                final stacked = innerConstraints.maxWidth < 700;
+
+                if (stacked) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _FormField(
+                        label: 'Expected Budget',
+                        controller: _expectedValueController,
+                        hintText: 'Estimated customer budget',
+                        keyboardType: TextInputType.number,
+                        fullWidth: true,
+                      ),
+                      const SizedBox(height: 18),
+                      _FormField(
+                        label: 'Expected Closing Date',
+                        controller: _closingDateController,
+                        hintText: 'dd-mm-yyyy',
+                        readOnly: true,
+                        onTap: _pickClosingDate,
+                        suffixIcon: const Icon(
+                          Icons.calendar_month_outlined,
+                          color: Color(0xFF94A3B8),
+                          size: 20,
+                        ),
+                        fullWidth: true,
+                      ),
+                    ],
+                  );
+                }
+
+                return Row(
+                  children: [
+                    Expanded(
+                      child: _FormField(
+                        label: 'Expected Budget',
+                        controller: _expectedValueController,
+                        hintText: 'Estimated customer budget',
+                        keyboardType: TextInputType.number,
+                        fullWidth: true,
+                      ),
+                    ),
+                    const SizedBox(width: 18),
+                    Expanded(
+                      child: _FormField(
+                        label: 'Expected Closing Date',
+                        controller: _closingDateController,
+                        hintText: 'dd-mm-yyyy',
+                        readOnly: true,
+                        onTap: _pickClosingDate,
+                        suffixIcon: const Icon(
+                          Icons.calendar_month_outlined,
+                          color: Color(0xFF94A3B8),
+                          size: 20,
+                        ),
+                        fullWidth: true,
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Widget _twoColumnForm(List<Widget> fields) {
@@ -535,53 +769,213 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
   }
 }
 
-class _StepTile extends StatelessWidget {
+class _CircleStepTile extends StatelessWidget {
+  final int index;
   final String title;
   final IconData icon;
   final bool selected;
+  final bool completed;
   final VoidCallback onTap;
 
-  const _StepTile({
+  const _CircleStepTile({
+    required this.index,
     required this.title,
     required this.icon,
+    required this.selected,
+    required this.completed,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final circleColor = selected || completed
+        ? const Color(0xFF0B4A06)
+        : const Color(0xFFE5E7EB);
+    final iconColor = selected || completed ? Colors.white : const Color(0xFF6B7280);
+    final textColor = selected ? const Color(0xFF0B4A06) : const Color(0xFF64748B);
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        decoration: BoxDecoration(
+          color: selected ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: selected ? const Color(0xFFD1D5DB) : Colors.transparent,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: circleColor,
+              ),
+              alignment: Alignment.center,
+              child: Icon(icon, size: 18, color: iconColor),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Step $index',
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 13.5,
+                      fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CompactCircleStep extends StatelessWidget {
+  final int index;
+  final String title;
+  final IconData icon;
+  final bool selected;
+  final bool completed;
+  final VoidCallback onTap;
+
+  const _CompactCircleStep({
+    required this.index,
+    required this.title,
+    required this.icon,
+    required this.selected,
+    required this.completed,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final circleColor = selected || completed
+        ? const Color(0xFF0B4A06)
+        : const Color(0xFFE5E7EB);
+    final iconColor = selected || completed ? Colors.white : const Color(0xFF6B7280);
+    final textColor = selected ? const Color(0xFF0B4A06) : const Color(0xFF64748B);
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(999),
+      child: Column(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: circleColor,
+            ),
+            alignment: Alignment.center,
+            child: Icon(icon, size: 18, color: iconColor),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Step $index',
+            style: TextStyle(
+              color: textColor,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 2),
+          SizedBox(
+            width: 88,
+            child: Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: textColor,
+                fontSize: 12.5,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InterestProductCard extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _InterestProductCard({
+    required this.label,
     required this.selected,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-          decoration: BoxDecoration(
-            color: selected ? Colors.white : Colors.transparent,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: selected ? const Color(0xFFD1D5DB) : Colors.transparent,
-            ),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: selected ? const Color(0xFF0B4A06) : const Color(0xFFDDE3EA),
           ),
-          child: Row(
-            children: [
-              Icon(
-                icon,
-                size: 18,
-                color: selected ? const Color(0xFF0B4A06) : const Color(0xFF6B7280),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                title,
-                style: TextStyle(
-                  color: selected ? const Color(0xFF0B4A06) : const Color(0xFF64748B),
-                  fontSize: 13.5,
-                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                color: selected ? const Color(0xFF0B4A06) : Colors.white,
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(
+                  color: selected ? const Color(0xFF0B4A06) : const Color(0xFF9CA3AF),
                 ),
               ),
-            ],
-          ),
+              child: selected
+                  ? const Icon(Icons.check, size: 13, color: Colors.white)
+                  : null,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Color(0xFF0F172A),
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -602,6 +996,9 @@ class _FormField extends StatelessWidget {
   final TextInputType? keyboardType;
   final int maxLines;
   final bool fullWidth;
+  final bool readOnly;
+  final VoidCallback? onTap;
+  final Widget? suffixIcon;
 
   const _FormField({
     required this.label,
@@ -610,6 +1007,9 @@ class _FormField extends StatelessWidget {
     this.keyboardType,
     this.maxLines = 1,
     this.fullWidth = false,
+    this.readOnly = false,
+    this.onTap,
+    this.suffixIcon,
   });
 
   @override
@@ -620,7 +1020,12 @@ class _FormField extends StatelessWidget {
         controller: controller,
         keyboardType: keyboardType,
         maxLines: maxLines,
-        decoration: _inputDecoration(hintText),
+        readOnly: readOnly,
+        onTap: onTap,
+        decoration: _inputDecoration(
+          hintText,
+          suffixIcon: suffixIcon,
+        ),
       ),
     );
   }
@@ -721,7 +1126,7 @@ class _LabeledField extends StatelessWidget {
   }
 }
 
-InputDecoration _inputDecoration(String hintText) {
+InputDecoration _inputDecoration(String hintText, {Widget? suffixIcon}) {
   return InputDecoration(
     hintText: hintText,
     hintStyle: const TextStyle(
@@ -743,5 +1148,6 @@ InputDecoration _inputDecoration(String hintText) {
       borderRadius: BorderRadius.circular(12),
       borderSide: const BorderSide(color: Color(0xFF0B4A06)),
     ),
+    suffixIcon: suffixIcon,
   );
 }
