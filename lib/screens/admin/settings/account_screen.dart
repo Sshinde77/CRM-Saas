@@ -127,8 +127,8 @@ class _AccountScreenState extends State<AccountScreen> {
                         expanded: _accountDetailsExpanded,
                         onToggle: () {
                           setState(
-                            () =>
-                                _accountDetailsExpanded = !_accountDetailsExpanded,
+                            () => _accountDetailsExpanded =
+                                !_accountDetailsExpanded,
                           );
                         },
                         child: _accountDetailsExpanded
@@ -151,7 +151,9 @@ class _AccountScreenState extends State<AccountScreen> {
                                       enabled: _isEditing,
                                       onChanged: (value) {
                                         if (value == null) return;
-                                        setState(() => _selectedIndustry = value);
+                                        setState(
+                                          () => _selectedIndustry = value,
+                                        );
                                       },
                                     ),
                                   ),
@@ -176,7 +178,8 @@ class _AccountScreenState extends State<AccountScreen> {
                       _SectionCard(
                         number: 2,
                         title: 'Authorized Person',
-                        subtitle: 'Authorized representative contact and identity.',
+                        subtitle:
+                            'Authorized representative contact and identity.',
                         expanded: _authorizedPersonExpanded,
                         onToggle: () {
                           setState(
@@ -294,9 +297,15 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   Widget _mobileOverviewCard() {
-    final company = _savedLegalName.trim().isEmpty ? 'Company' : _savedLegalName;
-    final industry = _savedIndustry?.trim().isNotEmpty == true ? _savedIndustry! : 'Beverages';
-    final companyType = _selectedDesignation.isEmpty ? 'LLP' : _selectedDesignation;
+    final company = _savedLegalName.trim().isEmpty
+        ? 'Company'
+        : _savedLegalName;
+    final industry = _savedIndustry?.trim().isNotEmpty == true
+        ? _savedIndustry!
+        : 'Beverages';
+    final companyType = _selectedDesignation.isEmpty
+        ? 'LLP'
+        : _selectedDesignation;
 
     return Container(
       width: double.infinity,
@@ -374,10 +383,7 @@ class _AccountScreenState extends State<AccountScreen> {
           const SizedBox(height: 16),
           const Divider(height: 1, color: Color(0xFFE5E7EB)),
           const SizedBox(height: 14),
-          _miniOverviewRow(
-            'Company Code',
-            'CMP-cc2af8a3-2114-4eb1-a89a...',
-          ),
+          _miniOverviewRow('Company Code', 'CMP-cc2af8a3-2114-4eb1-a89a...'),
           const SizedBox(height: 10),
           _miniOverviewRow('Industry', industry),
           const SizedBox(height: 10),
@@ -393,11 +399,46 @@ class _AccountScreenState extends State<AccountScreen> {
 
   Widget _mobileMetricsGrid() {
     final metrics = [
-      _MobileMetric('Employees', '0', 'Total Employees', Icons.groups_outlined, const Color(0xFFDCFCE7), const Color(0xFF16A34A)),
-      _MobileMetric('Branches', '0', 'Total Branches', Icons.apartment_outlined, const Color(0xFFFFEDD5), const Color(0xFFF97316)),
-      _MobileMetric('Active Users', '0', 'System Users', Icons.person_outline_rounded, const Color(0xFFE0F2FE), const Color(0xFF0284C7)),
-      _MobileMetric('Documents', '1', 'Uploaded Files', Icons.description_outlined, const Color(0xFFFEF3C7), const Color(0xFFF59E0B)),
-      _MobileMetric('Storage Used', '4 files', 'Company Documents', Icons.storage_rounded, const Color(0xFFF3E8FF), const Color(0xFF7C3AED)),
+      _MobileMetric(
+        'Employees',
+        '0',
+        'Total Employees',
+        Icons.groups_outlined,
+        const Color(0xFFDCFCE7),
+        const Color(0xFF16A34A),
+      ),
+      _MobileMetric(
+        'Branches',
+        '0',
+        'Total Branches',
+        Icons.apartment_outlined,
+        const Color(0xFFFFEDD5),
+        const Color(0xFFF97316),
+      ),
+      _MobileMetric(
+        'Active Users',
+        '0',
+        'System Users',
+        Icons.person_outline_rounded,
+        const Color(0xFFE0F2FE),
+        const Color(0xFF0284C7),
+      ),
+      _MobileMetric(
+        'Documents',
+        '1',
+        'Uploaded Files',
+        Icons.description_outlined,
+        const Color(0xFFFEF3C7),
+        const Color(0xFFF59E0B),
+      ),
+      _MobileMetric(
+        'Storage Used',
+        '4 files',
+        'Company Documents',
+        Icons.storage_rounded,
+        const Color(0xFFF3E8FF),
+        const Color(0xFF7C3AED),
+      ),
     ];
 
     return GridView.builder(
@@ -494,7 +535,9 @@ class _AccountScreenState extends State<AccountScreen> {
                   value: 0.89,
                   strokeWidth: 10,
                   backgroundColor: const Color(0xFFE5E7EB),
-                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF16A34A)),
+                  valueColor: const AlwaysStoppedAnimation<Color>(
+                    Color(0xFF16A34A),
+                  ),
                 ),
                 const Center(
                   child: Text(
@@ -543,8 +586,14 @@ class _AccountScreenState extends State<AccountScreen> {
                   ),
                 ),
                 SizedBox(height: 4),
-                Text('- GST Certificate', style: TextStyle(color: _mutedColor, fontSize: 11.5)),
-                Text('- PAN Card', style: TextStyle(color: _mutedColor, fontSize: 11.5)),
+                Text(
+                  '- GST Certificate',
+                  style: TextStyle(color: _mutedColor, fontSize: 11.5),
+                ),
+                Text(
+                  '- PAN Card',
+                  style: TextStyle(color: _mutedColor, fontSize: 11.5),
+                ),
                 SizedBox(height: 8),
                 Text(
                   'Complete Now',
@@ -575,7 +624,9 @@ class _AccountScreenState extends State<AccountScreen> {
                 radius: 22,
                 backgroundColor: const Color(0xFFF3F4F6),
                 child: Text(
-                  _savedOwnerName.isNotEmpty ? _savedOwnerName[0].toUpperCase() : 'S',
+                  _savedOwnerName.isNotEmpty
+                      ? _savedOwnerName[0].toUpperCase()
+                      : 'S',
                   style: const TextStyle(
                     color: _accent,
                     fontWeight: FontWeight.w800,
@@ -662,7 +713,11 @@ class _AccountScreenState extends State<AccountScreen> {
 
     return _dashboardCard(
       title: 'Documents Overview',
-      trailing: const Icon(Icons.content_copy_outlined, color: Color(0xFF94A3B8), size: 18),
+      trailing: const Icon(
+        Icons.content_copy_outlined,
+        color: Color(0xFF94A3B8),
+        size: 18,
+      ),
       child: Column(
         children: [
           ...docs.map(
@@ -670,7 +725,11 @@ class _AccountScreenState extends State<AccountScreen> {
               padding: const EdgeInsets.only(bottom: 10),
               child: Row(
                 children: [
-                  const Icon(Icons.description_outlined, size: 16, color: Color(0xFF64748B)),
+                  const Icon(
+                    Icons.description_outlined,
+                    size: 16,
+                    color: Color(0xFF64748B),
+                  ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
@@ -682,7 +741,11 @@ class _AccountScreenState extends State<AccountScreen> {
                       ),
                     ),
                   ),
-                  _statusChip(doc.$2, compact: true, accent: const Color(0xFFF97316)),
+                  _statusChip(
+                    doc.$2,
+                    compact: true,
+                    accent: const Color(0xFFF97316),
+                  ),
                 ],
               ),
             ),
@@ -704,7 +767,11 @@ class _AccountScreenState extends State<AccountScreen> {
   Widget _mobileCompanyAddressesCard() {
     return _dashboardCard(
       title: 'Company Addresses',
-      trailing: const Icon(Icons.location_on_outlined, color: Color(0xFF94A3B8), size: 18),
+      trailing: const Icon(
+        Icons.location_on_outlined,
+        color: Color(0xFF94A3B8),
+        size: 18,
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -761,7 +828,11 @@ class _AccountScreenState extends State<AccountScreen> {
               border: Border.all(color: const Color(0xFFE5E7EB)),
             ),
             child: const Center(
-              child: Icon(Icons.location_pin, color: Color(0xFFEF4444), size: 34),
+              child: Icon(
+                Icons.location_pin,
+                color: Color(0xFFEF4444),
+                size: 34,
+              ),
             ),
           ),
         ],
@@ -802,7 +873,11 @@ class _AccountScreenState extends State<AccountScreen> {
                       shape: BoxShape.circle,
                       border: Border.all(color: const Color(0xFFD1D5DB)),
                     ),
-                    child: const Icon(Icons.check_circle_outline, color: _accent, size: 15),
+                    child: const Icon(
+                      Icons.check_circle_outline,
+                      color: _accent,
+                      size: 15,
+                    ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -820,7 +895,10 @@ class _AccountScreenState extends State<AccountScreen> {
                         const SizedBox(height: 2),
                         Text(
                           item.$2,
-                          style: const TextStyle(color: _mutedColor, fontSize: 11.5),
+                          style: const TextStyle(
+                            color: _mutedColor,
+                            fontSize: 11.5,
+                          ),
                         ),
                       ],
                     ),
@@ -845,10 +923,30 @@ class _AccountScreenState extends State<AccountScreen> {
         crossAxisSpacing: 10,
         childAspectRatio: 1.15,
         children: [
-          _quickActionTile('Edit Profile', Icons.edit_outlined, const Color(0xFFDCFCE7), const Color(0xFF16A34A)),
-          _quickActionTile('Upload Document', Icons.cloud_upload_outlined, const Color(0xFFE0E7FF), const Color(0xFF4F46E5)),
-          _quickActionTile('Invite User', Icons.person_add_alt_1_outlined, const Color(0xFFF3E8FF), const Color(0xFF7C3AED)),
-          _quickActionTile('View Reports', Icons.bar_chart_outlined, const Color(0xFFFFEDD5), const Color(0xFFF97316)),
+          _quickActionTile(
+            'Edit Profile',
+            Icons.edit_outlined,
+            const Color(0xFFDCFCE7),
+            const Color(0xFF16A34A),
+          ),
+          _quickActionTile(
+            'Upload Document',
+            Icons.cloud_upload_outlined,
+            const Color(0xFFE0E7FF),
+            const Color(0xFF4F46E5),
+          ),
+          _quickActionTile(
+            'Invite User',
+            Icons.person_add_alt_1_outlined,
+            const Color(0xFFF3E8FF),
+            const Color(0xFF7C3AED),
+          ),
+          _quickActionTile(
+            'View Reports',
+            Icons.bar_chart_outlined,
+            const Color(0xFFFFEDD5),
+            const Color(0xFFF97316),
+          ),
         ],
       ),
     );

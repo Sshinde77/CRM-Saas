@@ -13,7 +13,8 @@ class NewAdminOrderScreen extends StatefulWidget {
 class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey _productButtonKey = GlobalKey();
-  final TextEditingController _companySearchController = TextEditingController();
+  final TextEditingController _companySearchController =
+      TextEditingController();
   final TextEditingController _companyController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
 
@@ -78,16 +79,21 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
         DateTime selectedDate = _deliveryDate ?? DateTime.now();
 
         return Dialog(
-          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 24,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
           child: Theme(
             data: Theme.of(context).copyWith(
               colorScheme: Theme.of(context).colorScheme.copyWith(
-                    primary: const Color(0xFF111827),
-                    onPrimary: Colors.white,
-                    surface: Colors.white,
-                    onSurface: AppColors.textPrimary,
-                  ),
+                primary: const Color(0xFF111827),
+                onPrimary: Colors.white,
+                surface: Colors.white,
+                onSurface: AppColors.textPrimary,
+              ),
             ),
             child: StatefulBuilder(
               builder: (context, setLocalState) {
@@ -110,7 +116,9 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
                         Align(
                           alignment: Alignment.centerRight,
                           child: TextButton(
-                            onPressed: () => setLocalState(() => selectedDate = DateTime.now()),
+                            onPressed: () => setLocalState(
+                              () => selectedDate = DateTime.now(),
+                            ),
                             child: const Text(
                               'Today',
                               style: TextStyle(
@@ -125,12 +133,14 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             TextButton(
-                              onPressed: () => Navigator.of(dialogContext).pop(),
+                              onPressed: () =>
+                                  Navigator.of(dialogContext).pop(),
                               child: const Text('Cancel'),
                             ),
                             const SizedBox(width: 8),
                             ElevatedButton(
-                              onPressed: () => Navigator.of(dialogContext).pop(selectedDate),
+                              onPressed: () =>
+                                  Navigator.of(dialogContext).pop(selectedDate),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF0B4A06),
                                 foregroundColor: Colors.white,
@@ -168,7 +178,8 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
 
   void _selectPaymentType(String value) => setState(() => _paymentType = value);
 
-  void _selectDeliveryMethod(String value) => setState(() => _deliveryMethod = value);
+  void _selectDeliveryMethod(String value) =>
+      setState(() => _deliveryMethod = value);
 
   void _selectProduct(String value) {
     setState(() => _selectedProduct = value);
@@ -196,8 +207,13 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
       barrierColor: Colors.black26,
       builder: (dialogContext) {
         return Dialog(
-          insetPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 18),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 18,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(22),
+          ),
           child: StatefulBuilder(
             builder: (context, setLocalState) {
               return ConstrainedBox(
@@ -318,13 +334,16 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
                                   ),
                                   const SizedBox(height: 14),
                                   SizedBox(
-                                    width: narrow ? double.infinity : constraints.maxWidth / 2 - 10,
+                                    width: narrow
+                                        ? double.infinity
+                                        : constraints.maxWidth / 2 - 10,
                                     child: _field(
                                       label: 'Status *',
                                       controller: statusController,
                                       hintText: 'Active',
                                       readOnly: true,
-                                      suffixIcon: Icons.keyboard_arrow_down_rounded,
+                                      suffixIcon:
+                                          Icons.keyboard_arrow_down_rounded,
                                     ),
                                   ),
                                 ],
@@ -384,13 +403,17 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
     final renderBox = buttonContext.findRenderObject() as RenderBox?;
     if (renderBox == null) return;
 
-    final overlay = Overlay.of(context).context.findRenderObject() as RenderBox?;
+    final overlay =
+        Overlay.of(context).context.findRenderObject() as RenderBox?;
     if (overlay == null) return;
 
     final position = RelativeRect.fromRect(
       Rect.fromPoints(
         renderBox.localToGlobal(Offset.zero, ancestor: overlay),
-        renderBox.localToGlobal(renderBox.size.bottomRight(Offset.zero), ancestor: overlay),
+        renderBox.localToGlobal(
+          renderBox.size.bottomRight(Offset.zero),
+          ancestor: overlay,
+        ),
       ),
       Offset.zero & overlay.size,
     );
@@ -457,13 +480,22 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
             return Column(
               children: [
                 Padding(
-                  padding: EdgeInsets.fromLTRB(isMobile ? 14 : 18, 14, isMobile ? 14 : 18, 10),
+                  padding: EdgeInsets.fromLTRB(
+                    isMobile ? 14 : 18,
+                    14,
+                    isMobile ? 14 : 18,
+                    10,
+                  ),
                   child: Row(
                     children: [
                       if (isMobile) ...[
                         IconButton(
-                          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-                          icon: const Icon(Icons.menu_rounded, color: AppColors.textPrimary),
+                          onPressed: () =>
+                              _scaffoldKey.currentState?.openDrawer(),
+                          icon: const Icon(
+                            Icons.menu_rounded,
+                            color: AppColors.textPrimary,
+                          ),
                         ),
                         const SizedBox(width: 4),
                       ],
@@ -523,7 +555,10 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
                             ],
                           ),
                           const SizedBox(width: 8),
-                          const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF9CA3AF)),
+                          const Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            color: Color(0xFF9CA3AF),
+                          ),
                         ],
                       ),
                     ],
@@ -531,12 +566,13 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
                 ),
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: EdgeInsets.fromLTRB(isMobile ? 14 : 18, 10, isMobile ? 14 : 18, 18),
-                    child: Column(
-                      children: [
-                        _mobileOrderForm(),
-                      ],
+                    padding: EdgeInsets.fromLTRB(
+                      isMobile ? 14 : 18,
+                      10,
+                      isMobile ? 14 : 18,
+                      18,
                     ),
+                    child: Column(children: [_mobileOrderForm()]),
                   ),
                 ),
               ],
@@ -559,9 +595,22 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
             children: [
               Row(
                 children: [
-                  Expanded(child: _radioOption('Select Existing Company', _useExistingCompany, true)),
+                  Expanded(
+                    child: _radioOption(
+                      'Select Existing Company',
+                      _useExistingCompany,
+                      true,
+                    ),
+                  ),
                   const SizedBox(width: 12),
-                  Expanded(child: _radioOption('Create New Company', !_useExistingCompany, false, onTap: _showCreateCompanyPopup)),
+                  Expanded(
+                    child: _radioOption(
+                      'Create New Company',
+                      !_useExistingCompany,
+                      false,
+                      onTap: _showCreateCompanyPopup,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 14),
@@ -572,10 +621,13 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
               ),
               const SizedBox(height: 10),
               _buildDropdownField(
-                hintText: _useExistingCompany ? 'Select a company' : 'Enter new company name',
+                hintText: _useExistingCompany
+                    ? 'Select a company'
+                    : 'Enter new company name',
                 trailingIcon: Icons.keyboard_arrow_down_rounded,
                 child: PopupMenuButton<String>(
-                  onSelected: (value) => setState(() => _companyController.text = value),
+                  onSelected: (value) =>
+                      setState(() => _companyController.text = value),
                   offset: const Offset(0, 46),
                   color: Colors.white,
                   shape: RoundedRectangleBorder(
@@ -593,7 +645,9 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
                   child: Container(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      _companyController.text.isEmpty ? 'Select a company' : _companyController.text,
+                      _companyController.text.isEmpty
+                          ? 'Select a company'
+                          : _companyController.text,
                       style: TextStyle(
                         color: _companyController.text.isEmpty
                             ? AppColors.textLightMuted
@@ -657,7 +711,9 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
                 children: [
                   Expanded(child: _miniStat('Total Quantity', '0 Items')),
                   const SizedBox(width: 12),
-                  Expanded(child: _miniStat('Subtotal (Before Discount & GST)', '₹0')),
+                  Expanded(
+                    child: _miniStat('Subtotal (Before Discount & GST)', '₹0'),
+                  ),
                 ],
               ),
             ],
@@ -671,17 +727,45 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
             children: [
               Row(
                 children: [
-                  Expanded(child: _choiceTile('UPI', _paymentType == 'UPI', () => _selectPaymentType('UPI'), Icons.phone_android_outlined)),
+                  Expanded(
+                    child: _choiceTile(
+                      'UPI',
+                      _paymentType == 'UPI',
+                      () => _selectPaymentType('UPI'),
+                      Icons.phone_android_outlined,
+                    ),
+                  ),
                   const SizedBox(width: 10),
-                  Expanded(child: _choiceTile('Card', _paymentType == 'Card', () => _selectPaymentType('Card'), Icons.credit_card_outlined)),
+                  Expanded(
+                    child: _choiceTile(
+                      'Card',
+                      _paymentType == 'Card',
+                      () => _selectPaymentType('Card'),
+                      Icons.credit_card_outlined,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 10),
               Row(
                 children: [
-                  Expanded(child: _choiceTile('Cash', _paymentType == 'Cash', () => _selectPaymentType('Cash'), Icons.payments_outlined)),
+                  Expanded(
+                    child: _choiceTile(
+                      'Cash',
+                      _paymentType == 'Cash',
+                      () => _selectPaymentType('Cash'),
+                      Icons.payments_outlined,
+                    ),
+                  ),
                   const SizedBox(width: 10),
-                  Expanded(child: _choiceTile('COD', _paymentType == 'COD', () => _selectPaymentType('COD'), Icons.local_shipping_outlined)),
+                  Expanded(
+                    child: _choiceTile(
+                      'COD',
+                      _paymentType == 'COD',
+                      () => _selectPaymentType('COD'),
+                      Icons.local_shipping_outlined,
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -729,7 +813,10 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
               const SizedBox(height: 10),
               _summaryRow('Delivery Boy', 'Takeaway / Not assigned'),
               const SizedBox(height: 10),
-              _summaryRow('Delivery Date', _deliveryDate == null ? '-' : _formatDate(_deliveryDate!)),
+              _summaryRow(
+                'Delivery Date',
+                _deliveryDate == null ? '-' : _formatDate(_deliveryDate!),
+              ),
               const SizedBox(height: 10),
               _summaryRow('Shipping / Delivery', 'Free'),
               const Divider(height: 22),
@@ -756,7 +843,9 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF0B4A06),
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(999),
+                    ),
                   ),
                   child: const Text(
                     'Create Order',
@@ -767,7 +856,10 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
               const SizedBox(height: 12),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(14),
@@ -775,7 +867,11 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
                 ),
                 child: const Row(
                   children: [
-                    Icon(Icons.info_outline_rounded, size: 18, color: Color(0xFF0B4A06)),
+                    Icon(
+                      Icons.info_outline_rounded,
+                      size: 18,
+                      color: Color(0xFF0B4A06),
+                    ),
                     SizedBox(width: 10),
                     Expanded(
                       child: Text(
@@ -813,16 +909,24 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
           children: [
             Expanded(
               child: Text(
-                _deliveryDate == null ? 'Select date' : _formatDate(_deliveryDate!),
+                _deliveryDate == null
+                    ? 'Select date'
+                    : _formatDate(_deliveryDate!),
                 style: TextStyle(
-                  color: _deliveryDate == null ? AppColors.textLightMuted : AppColors.textPrimary,
+                  color: _deliveryDate == null
+                      ? AppColors.textLightMuted
+                      : AppColors.textPrimary,
                   fontSize: 13.5,
                 ),
               ),
             ),
             IconButton(
               onPressed: _pickDeliveryDate,
-              icon: const Icon(Icons.calendar_month_outlined, size: 18, color: Color(0xFF94A3B8)),
+              icon: const Icon(
+                Icons.calendar_month_outlined,
+                size: 18,
+                color: Color(0xFF94A3B8),
+              ),
               constraints: const BoxConstraints.tightFor(width: 28, height: 28),
               padding: EdgeInsets.zero,
               splashRadius: 18,
@@ -853,22 +957,30 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
         decoration: BoxDecoration(
           color: selected ? const Color(0xFFF3FAF0) : Colors.white,
           borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: selected ? const Color(0xFF0B4A06) : AppColors.borderStrong),
+          border: Border.all(
+            color: selected ? const Color(0xFF0B4A06) : AppColors.borderStrong,
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              selected ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
+              selected
+                  ? Icons.radio_button_checked_rounded
+                  : Icons.radio_button_off_rounded,
               size: 18,
-              color: selected ? const Color(0xFF0B4A06) : AppColors.textLightMuted,
+              color: selected
+                  ? const Color(0xFF0B4A06)
+                  : AppColors.textLightMuted,
             ),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
                 label,
                 style: TextStyle(
-                  color: selected ? AppColors.textPrimary : AppColors.textSecondary,
+                  color: selected
+                      ? AppColors.textPrimary
+                      : AppColors.textSecondary,
                   fontSize: 12.5,
                   fontWeight: FontWeight.w600,
                 ),
@@ -910,19 +1022,32 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
           child: TextField(
             controller: controller,
             readOnly: readOnly,
-            style: const TextStyle(color: AppColors.textPrimary, fontSize: 13.5),
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 13.5,
+            ),
             decoration: InputDecoration(
               filled: true,
               fillColor: Colors.white,
               border: InputBorder.none,
               hintText: hintText,
-              hintStyle: const TextStyle(color: Color(0xFF9AA1AC), fontSize: 13),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+              hintStyle: const TextStyle(
+                color: Color(0xFF9AA1AC),
+                fontSize: 13,
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 11,
+              ),
               suffixIcon: suffixIcon == null
                   ? null
                   : IconButton(
                       onPressed: onSuffixTap,
-                      icon: Icon(suffixIcon, color: const Color(0xFF9AA1AC), size: 18),
+                      icon: Icon(
+                        suffixIcon,
+                        color: const Color(0xFF9AA1AC),
+                        size: 18,
+                      ),
                       splashRadius: 18,
                     ),
             ),
@@ -938,13 +1063,7 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
     required Widget right,
   }) {
     if (narrow) {
-      return Column(
-        children: [
-          left,
-          const SizedBox(height: 14),
-          right,
-        ],
-      );
+      return Column(children: [left, const SizedBox(height: 14), right]);
     }
 
     return Row(
@@ -973,7 +1092,11 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
         decoration: InputDecoration(
           filled: true,
           fillColor: Colors.white,
-          prefixIcon: Icon(prefixIcon, color: const Color(0xFF94A3B8), size: 20),
+          prefixIcon: Icon(
+            prefixIcon,
+            color: const Color(0xFF94A3B8),
+            size: 20,
+          ),
           hintText: hintText,
           hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13.5),
           border: OutlineInputBorder(
@@ -988,7 +1111,10 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
             borderRadius: BorderRadius.circular(14),
             borderSide: const BorderSide(color: Color(0xFF0B4A06), width: 1),
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 12,
+          ),
         ),
       ),
     );
@@ -1035,7 +1161,10 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
           border: InputBorder.none,
           enabledBorder: InputBorder.none,
           focusedBorder: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 12,
+          ),
         ),
       ),
     );
@@ -1058,11 +1187,19 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
         decoration: BoxDecoration(
           color: selected ? const Color(0xFFF3FAF0) : Colors.white,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: selected ? const Color(0xFF0B4A06) : AppColors.borderStrong),
+          border: Border.all(
+            color: selected ? const Color(0xFF0B4A06) : AppColors.borderStrong,
+          ),
         ),
         child: Row(
           children: [
-            Icon(icon, size: 18, color: selected ? const Color(0xFF0B4A06) : AppColors.textSecondary),
+            Icon(
+              icon,
+              size: 18,
+              color: selected
+                  ? const Color(0xFF0B4A06)
+                  : AppColors.textSecondary,
+            ),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
@@ -1092,9 +1229,13 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
             ),
             if (!fullWidth)
               Icon(
-                selected ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
+                selected
+                    ? Icons.radio_button_checked_rounded
+                    : Icons.radio_button_off_rounded,
                 size: 18,
-                color: selected ? const Color(0xFF0B4A06) : AppColors.textLightMuted,
+                color: selected
+                    ? const Color(0xFF0B4A06)
+                    : AppColors.textLightMuted,
               ),
           ],
         ),
@@ -1202,7 +1343,10 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
       children: [
         Text(
           label,
-          style: const TextStyle(color: AppColors.textLightMuted, fontSize: 11.5),
+          style: const TextStyle(
+            color: AppColors.textLightMuted,
+            fontSize: 11.5,
+          ),
         ),
         const SizedBox(height: 4),
         Text(
@@ -1228,16 +1372,15 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
         Expanded(
           child: Text(
             label,
-            style: labelStyle ??
-                const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 13.5,
-                ),
+            style:
+                labelStyle ??
+                const TextStyle(color: AppColors.textSecondary, fontSize: 13.5),
           ),
         ),
         Text(
           value,
-          style: valueStyle ??
+          style:
+              valueStyle ??
               const TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 13.5,
@@ -1264,7 +1407,6 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
       ),
     );
   }
-
 }
 
 class _ProductOption {

@@ -52,6 +52,8 @@ class AppUser {
     this.resumeCv,
     this.offerLetter,
     this.appointmentLetter,
+    this.experienceCertificates,
+    this.educationalCertificates,
     this.skills,
     this.language,
     this.timeZone,
@@ -110,6 +112,8 @@ class AppUser {
   final String? resumeCv;
   final String? offerLetter;
   final String? appointmentLetter;
+  final String? experienceCertificates;
+  final String? educationalCertificates;
   final List<String>? skills;
   final String? language;
   final String? timeZone;
@@ -177,6 +181,8 @@ class AppUser {
       resumeCv: json['resume_cv']?.toString(),
       offerLetter: json['offer_letter']?.toString(),
       appointmentLetter: json['appointment_letter']?.toString(),
+      experienceCertificates: json['experience_certificates']?.toString(),
+      educationalCertificates: json['educational_certificates']?.toString(),
       skills: (json['skills'] as List?)
           ?.map((value) => value?.toString())
           .whereType<String>()

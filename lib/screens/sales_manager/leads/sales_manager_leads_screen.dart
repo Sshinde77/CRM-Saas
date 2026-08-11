@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../constants/app_colors.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
+import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
 import '../customers/sales_manager_customers_screen.dart';
 import '../dashboard/sales_manager_dashboard_screen.dart';
 import '../orders/sales_manager_orders_screen.dart';
@@ -111,11 +111,9 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
   }
 
   Future<void> _openAddLeadPage() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => const AddLeadScreen(),
-      ),
-    );
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const AddLeadScreen()));
   }
 
   void _handleSidebarSelection(String action) {
@@ -123,12 +121,16 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
     switch (action) {
       case 'Dashboard':
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const SalesManagerDashboardScreen()),
+          MaterialPageRoute(
+            builder: (_) => const SalesManagerDashboardScreen(),
+          ),
         );
         return;
       case 'Customers':
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const SalesManagerCustomersScreen()),
+          MaterialPageRoute(
+            builder: (_) => const SalesManagerCustomersScreen(),
+          ),
         );
         return;
       case 'Create Order':
@@ -151,10 +153,7 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
 
   void _showSnack(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        behavior: SnackBarBehavior.floating,
-      ),
+      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
     );
   }
 
@@ -184,7 +183,7 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
 
             return Column(
               children: [
-                _buildTopBar(isMobile: isMobile),
+                SalesManagerTopBar(title: 'Leads'),
                 Expanded(
                   child: SingleChildScrollView(
                     padding: EdgeInsets.fromLTRB(
@@ -212,7 +211,8 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
           _statusFilter == 'All Status' || lead.status == _statusFilter;
       final sourceOk =
           _sourceFilter == 'All Sources' || lead.source == _sourceFilter;
-      final teamOk = _teamFilter == 'All Team' || lead.assignedTo == _teamFilter;
+      final teamOk =
+          _teamFilter == 'All Team' || lead.assignedTo == _teamFilter;
       return statusOk && sourceOk && teamOk;
     }).toList();
   }
@@ -224,88 +224,6 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
     return visible.where((lead) {
       return lead.product.toLowerCase().contains(productQuery);
     }).toList();
-  }
-
-  Widget _buildTopBar({required bool isMobile}) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(isMobile ? 14 : 18, 14, isMobile ? 14 : 18, 10),
-      child: Row(
-        children: [
-          if (isMobile) ...[
-            IconButton(
-              onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-              icon: const Icon(Icons.menu_rounded, color: Colors.black),
-            ),
-            const SizedBox(width: 4),
-          ],
-          const Text(
-            'Leads',
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const Spacer(),
-          _topIconButton(Icons.help_outline_rounded, () {}),
-          const SizedBox(width: 10),
-          _topIconButton(Icons.notifications_none_rounded, () {}),
-          const SizedBox(width: 10),
-          Container(
-            padding: const EdgeInsets.only(right: 4),
-            child: Row(
-              children: [
-                Container(
-                  width: 30,
-                  height: 30,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF0B4A06),
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: const Text(
-                    'SS',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Sunil Sales',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    SizedBox(height: 3),
-                    Text(
-                      'Sales Officer',
-                      style: TextStyle(
-                        color: Color(0xFF0B4A06),
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 8),
-                const Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  color: Color(0xFF9CA3AF),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   Widget _buildDesktopContent(List<_LeadRecord> shownLeads) {
@@ -337,10 +255,7 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
             child: Center(
               child: Text(
                 'No leads found.',
-                style: TextStyle(
-                  color: Color(0xFF6B7280),
-                  fontSize: 14,
-                ),
+                style: TextStyle(color: Color(0xFF6B7280), fontSize: 14),
               ),
             ),
           )
@@ -443,13 +358,8 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
         foregroundColor: const Color(0xFF111827),
         side: const BorderSide(color: Color(0xFFD1D5DB)),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(999),
-        ),
-        textStyle: const TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+        textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
       ),
     );
   }
@@ -487,10 +397,15 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
                 child: _dropdownFilter(
                   width: double.infinity,
                   value: '$_selectedPageSize / page',
-                  items: _pageSizeOptions.map((size) => '$size / page').toList(),
+                  items: _pageSizeOptions
+                      .map((size) => '$size / page')
+                      .toList(),
                   onChanged: (value) {
                     if (value == null) return;
-                    setState(() => _selectedPageSize = int.parse(value.split(' ').first));
+                    setState(
+                      () =>
+                          _selectedPageSize = int.parse(value.split(' ').first),
+                    );
                   },
                 ),
               ),
@@ -566,23 +481,6 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
     return const SizedBox(height: 4);
   }
 
-  Widget _topIconButton(IconData icon, VoidCallback onTap) {
-    return Container(
-      width: 38,
-      height: 38,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      child: IconButton(
-        onPressed: onTap,
-        icon: Icon(icon, size: 18, color: const Color(0xFF6B7280)),
-        padding: EdgeInsets.zero,
-      ),
-    );
-  }
-
   Widget _buildPanelHeader() {
     return Container(
       width: double.infinity,
@@ -604,9 +502,7 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
         children: [
           Row(
             children: [
-              const Expanded(
-                child: SizedBox.shrink(),
-              ),
+              const Expanded(child: SizedBox.shrink()),
               const Spacer(),
               Row(
                 children: [
@@ -636,7 +532,9 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
                       backgroundColor: const Color(0xFF0B4A06),
                       foregroundColor: Colors.white,
                       elevation: 8,
-                      shadowColor: const Color(0xFF0B4A06).withValues(alpha: 0.3),
+                      shadowColor: const Color(
+                        0xFF0B4A06,
+                      ).withValues(alpha: 0.3),
                       padding: const EdgeInsets.symmetric(
                         horizontal: 18,
                         vertical: 14,
@@ -670,13 +568,8 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
         foregroundColor: const Color(0xFF111827),
         side: const BorderSide(color: Color(0xFFD1D5DB)),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-        ),
-        textStyle: const TextStyle(
-          fontSize: 13.5,
-          fontWeight: FontWeight.w600,
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        textStyle: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600),
       ),
     );
   }
@@ -698,21 +591,24 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
           width: 160,
           value: _statusFilter,
           items: _statusOptions,
-          onChanged: (value) => setState(() => _statusFilter = value ?? _statusFilter),
+          onChanged: (value) =>
+              setState(() => _statusFilter = value ?? _statusFilter),
         ),
         const SizedBox(width: 10),
         _dropdownFilter(
           width: 160,
           value: _sourceFilter,
           items: _sourceOptions,
-          onChanged: (value) => setState(() => _sourceFilter = value ?? _sourceFilter),
+          onChanged: (value) =>
+              setState(() => _sourceFilter = value ?? _sourceFilter),
         ),
         const SizedBox(width: 10),
         _dropdownFilter(
           width: 150,
           value: _teamFilter,
           items: _teamOptions,
-          onChanged: (value) => setState(() => _teamFilter = value ?? _teamFilter),
+          onChanged: (value) =>
+              setState(() => _teamFilter = value ?? _teamFilter),
         ),
         const SizedBox(width: 10),
         _filterField(
@@ -741,7 +637,9 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
               items: _pageSizeOptions.map((size) => '$size / page').toList(),
               onChanged: (value) {
                 if (value == null) return;
-                setState(() => _selectedPageSize = int.parse(value.split(' ').first));
+                setState(
+                  () => _selectedPageSize = int.parse(value.split(' ').first),
+                );
               },
             ),
           ],
@@ -768,14 +666,18 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
         onChanged: (_) => setState(() {}),
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: const TextStyle(
-            color: Color(0xFF94A3B8),
-            fontSize: 13.5,
+          hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13.5),
+          prefixIcon: Icon(
+            prefixIcon,
+            size: 18,
+            color: const Color(0xFF94A3B8),
           ),
-          prefixIcon: Icon(prefixIcon, size: 18, color: const Color(0xFF94A3B8)),
           filled: true,
           fillColor: Colors.white,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 11,
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
@@ -806,7 +708,10 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 10,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
@@ -820,7 +725,10 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
           borderSide: const BorderSide(color: Color(0xFF0B4A06)),
         ),
       ),
-      icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF94A3B8)),
+      icon: const Icon(
+        Icons.keyboard_arrow_down_rounded,
+        color: Color(0xFF94A3B8),
+      ),
       items: items
           .map(
             (item) => DropdownMenuItem<String>(
@@ -889,10 +797,7 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
               padding: EdgeInsets.all(36),
               child: Text(
                 'No leads found.',
-                style: TextStyle(
-                  color: Color(0xFF6B7280),
-                  fontSize: 14,
-                ),
+                style: TextStyle(color: Color(0xFF6B7280), fontSize: 14),
               ),
             ),
         ],
@@ -1031,7 +936,11 @@ class _LeadRow extends StatelessWidget {
           ),
           Expanded(
             flex: 12,
-            child: _Chip(label: record.source, background: const Color(0xFFF3F4F6), foreground: const Color(0xFF334155)),
+            child: _Chip(
+              label: record.source,
+              background: const Color(0xFFF3F4F6),
+              foreground: const Color(0xFF334155),
+            ),
           ),
           Expanded(
             flex: 18,
@@ -1197,7 +1106,7 @@ class _LeadMobileCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${record.code} • ${record.amount}',
+                      '${record.code} Ã¢â‚¬Â¢ ${record.amount}',
                       style: const TextStyle(
                         color: Color(0xFF94A3B8),
                         fontSize: 11.5,
@@ -1245,13 +1154,9 @@ class _LeadMobileCard extends StatelessWidget {
           const SizedBox(height: 10),
           Row(
             children: [
-              Expanded(
-                child: _infoRow('Closing', record.closingDate),
-              ),
+              Expanded(child: _infoRow('Closing', record.closingDate)),
               const SizedBox(width: 12),
-              Expanded(
-                child: _infoRow('Created', record.createdAt),
-              ),
+              Expanded(child: _infoRow('Created', record.createdAt)),
             ],
           ),
         ],

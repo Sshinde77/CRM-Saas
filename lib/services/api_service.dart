@@ -283,6 +283,20 @@ class ApiService {
     return _extractUploadedUrl(_tryDecodeBody(response.body.trim()));
   }
 
+  Future<String?> uploadFile({
+    required Uint8List fileBytes,
+    required String fileName,
+  }) async {
+    final response = await _sendMultipart(
+      method: 'POST',
+      endpoint: ApiEndpoints.filesUpload,
+      requiresAuth: true,
+      fileBytes: fileBytes,
+      fileName: fileName,
+    );
+    return _extractUploadedUrl(_tryDecodeBody(response.body.trim()));
+  }
+
   Future<String?> uploadOrganizationLogo({
     required Uint8List fileBytes,
     required String fileName,
@@ -537,35 +551,6 @@ class ApiService {
       return decoded;
     }
     return const {};
-  }
-
-  Future<void> uploadUserIdentityProof({
-    required String userId,
-    required Uint8List fileBytes,
-    String fileName = 'identity_proof.png',
-  }) async {
-    await _sendMultipart(
-      method: 'POST',
-      endpoint: ApiEndpoints.usersIdentityProof(userId),
-      requiresAuth: true,
-      fileBytes: fileBytes,
-      fileName: fileName,
-    );
-  }
-
-  Future<void> uploadUserFile({
-    required String userId,
-    required String field,
-    required Uint8List fileBytes,
-    String fileName = 'document.png',
-  }) async {
-    await _sendMultipart(
-      method: 'POST',
-      endpoint: ApiEndpoints.usersFiles(userId, field),
-      requiresAuth: true,
-      fileBytes: fileBytes,
-      fileName: fileName,
-    );
   }
 
   Future<AppUser> updateUser({

@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:csc_picker/csc_picker.dart';
@@ -376,13 +375,6 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
     return _formatDateForInput(value.toLocal());
   }
 
-  String? _base64OrNull(Uint8List? bytes) {
-    if (bytes == null || bytes.isEmpty) {
-      return null;
-    }
-    return base64Encode(bytes);
-  }
-
   List<String>? _skillsList() {
     final skills = _skillsController.text
         .split(',')
@@ -593,7 +585,52 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
     }
   }
 
-  UpdateUserRequest _buildUpdateUserRequest() {
+  Future<Map<String, String?>> _uploadSelectedFiles() async {
+    Future<String?> uploadIfPresent(Uint8List? bytes, String fileName) async {
+      final fileBytes = bytes;
+      if (fileBytes == null || fileBytes.isEmpty) {
+        return null;
+      }
+
+      final uploadedUrl = await _apiService.uploadFile(
+        fileBytes: fileBytes,
+        fileName: fileName,
+      );
+      if (uploadedUrl == null || uploadedUrl.trim().isEmpty) {
+        throw const ApiException(message: 'File upload did not return a URL.');
+      }
+      return uploadedUrl.trim();
+    }
+
+    return {
+      'profile_photo': await uploadIfPresent(_photoBytes, 'profile-photo.png'),
+      'identity_proof_file': await uploadIfPresent(
+        _identityProofBytes,
+        'identity-proof.png',
+      ),
+      'resume_cv': await uploadIfPresent(_resumeBytes, 'resume-cv.png'),
+      'offer_letter': await uploadIfPresent(
+        _offerLetterBytes,
+        'offer-letter.png',
+      ),
+      'appointment_letter': await uploadIfPresent(
+        _appointmentLetterBytes,
+        'appointment-letter.png',
+      ),
+      'experience_certificates': await uploadIfPresent(
+        _experienceCertificatesBytes,
+        'experience-certificates.png',
+      ),
+      'educational_certificates': await uploadIfPresent(
+        _educationalCertificatesBytes,
+        'educational-certificates.png',
+      ),
+    };
+  }
+
+  UpdateUserRequest _buildUpdateUserRequest(
+    Map<String, String?> uploadedFiles,
+  ) {
     return UpdateUserRequest(
       name:
           _nullableText(_displayNameController.text) ??
@@ -644,12 +681,14 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
       ifscSwiftCode: _nullableText(_ifscCodeController.text),
       accountHolderName: _nullableText(_accountHolderController.text),
       upiId: _nullableText(_upiIdController.text),
-      profilePhoto: _base64OrNull(_photoBytes),
+      profilePhoto: uploadedFiles['profile_photo'],
       identityProofType: _nullableText(_selectedIdentityProofType),
-      identityProofFile: _base64OrNull(_identityProofBytes),
-      resumeCv: _base64OrNull(_resumeBytes),
-      offerLetter: _base64OrNull(_offerLetterBytes),
-      appointmentLetter: _base64OrNull(_appointmentLetterBytes),
+      identityProofFile: uploadedFiles['identity_proof_file'],
+      resumeCv: uploadedFiles['resume_cv'],
+      offerLetter: uploadedFiles['offer_letter'],
+      appointmentLetter: uploadedFiles['appointment_letter'],
+      experienceCertificates: uploadedFiles['experience_certificates'],
+      educationalCertificates: uploadedFiles['educational_certificates'],
       skills: _skillsList(),
       language: _nullableText(_selectedLanguage),
       timeZone: _nullableText(_selectedTimeZone),
@@ -660,20 +699,20 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
   Future<void> _submit() async {
     setState(() => _isSubmitting = true);
     try {
-      String userId;
+      final uploadedFiles = await _uploadSelectedFiles();
       if (widget.isEditMode) {
-        userId = _effectiveUserId;
+        final userId = _effectiveUserId;
         if (userId.isEmpty) {
           throw const ApiException(message: 'Missing user id.');
         }
 
         await _apiService.updateUser(
           userId: userId,
-          request: _buildUpdateUserRequest(),
+          request: _buildUpdateUserRequest(uploadedFiles),
         );
       } else {
         final selectedRole = _selectedRole;
-        final createdUser = await _apiService.createUser(
+        await _apiService.createUser(
           request: CreateUserRequest(
             name:
                 _nullableText(_displayNameController.text) ??
@@ -732,12 +771,14 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             ifscSwiftCode: _nullableText(_ifscCodeController.text),
             accountHolderName: _nullableText(_accountHolderController.text),
             upiId: _nullableText(_upiIdController.text),
-            profilePhoto: _base64OrNull(_photoBytes),
+            profilePhoto: uploadedFiles['profile_photo'],
             identityProofType: _nullableText(_selectedIdentityProofType),
-            identityProofFile: _base64OrNull(_identityProofBytes),
-            resumeCv: _base64OrNull(_resumeBytes),
-            offerLetter: _base64OrNull(_offerLetterBytes),
-            appointmentLetter: _base64OrNull(_appointmentLetterBytes),
+            identityProofFile: uploadedFiles['identity_proof_file'],
+            resumeCv: uploadedFiles['resume_cv'],
+            offerLetter: uploadedFiles['offer_letter'],
+            appointmentLetter: uploadedFiles['appointment_letter'],
+            experienceCertificates: uploadedFiles['experience_certificates'],
+            educationalCertificates: uploadedFiles['educational_certificates'],
             skills: _skillsList(),
             language: _nullableText(_selectedLanguage),
             timeZone: _nullableText(_selectedTimeZone),
@@ -748,13 +789,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                 : _nullableText(_roleSlugFromLabel(selectedRole.name)),
           ),
         );
-        userId = createdUser.id.trim();
-        if (userId.isEmpty) {
-          throw const ApiException(message: 'Created user id missing.');
-        }
       }
-
-      await _uploadStaffDocuments(userId);
 
       if (!mounted) return;
       _nameController.text = _displayNameController.text.trim().isEmpty
@@ -774,82 +809,6 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
         setState(() => _isSubmitting = false);
       }
     }
-  }
-
-  Future<void> _uploadStaffDocuments(String userId) async {
-    final trimmedUserId = userId.trim();
-    if (trimmedUserId.isEmpty) {
-      return;
-    }
-
-    Future<void> uploadIfPresent({
-      required Uint8List? bytes,
-      required String endpointField,
-      required String fileName,
-      required String errorLabel,
-      bool isIdentityProof = false,
-    }) async {
-      final fileBytes = bytes;
-      if (fileBytes == null) return;
-
-      try {
-        if (isIdentityProof) {
-          await _apiService.uploadUserIdentityProof(
-            userId: trimmedUserId,
-            fileBytes: fileBytes,
-            fileName: fileName,
-          );
-          return;
-        }
-
-        await _apiService.uploadUserFile(
-          userId: trimmedUserId,
-          field: endpointField,
-          fileBytes: fileBytes,
-          fileName: fileName,
-        );
-      } catch (error) {
-        throw ApiException(message: 'Failed to upload $errorLabel: $error');
-      }
-    }
-
-    await uploadIfPresent(
-      bytes: _identityProofBytes,
-      endpointField: 'identity_proof_file',
-      fileName: 'identity-proof.png',
-      errorLabel: 'identity proof',
-      isIdentityProof: true,
-    );
-    await uploadIfPresent(
-      bytes: _resumeBytes,
-      endpointField: 'resume_cv',
-      fileName: 'resume-cv.png',
-      errorLabel: 'resume/CV',
-    );
-    await uploadIfPresent(
-      bytes: _offerLetterBytes,
-      endpointField: 'offer_letter',
-      fileName: 'offer-letter.png',
-      errorLabel: 'offer letter',
-    );
-    await uploadIfPresent(
-      bytes: _appointmentLetterBytes,
-      endpointField: 'appointment_letter',
-      fileName: 'appointment-letter.png',
-      errorLabel: 'appointment letter',
-    );
-    await uploadIfPresent(
-      bytes: _experienceCertificatesBytes,
-      endpointField: 'experience_certificates',
-      fileName: 'experience-certificates.png',
-      errorLabel: 'experience certificates',
-    );
-    await uploadIfPresent(
-      bytes: _educationalCertificatesBytes,
-      endpointField: 'educational_certificates',
-      fileName: 'educational-certificates.png',
-      errorLabel: 'educational certificates',
-    );
   }
 
   void _nextStep() {

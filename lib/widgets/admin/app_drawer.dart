@@ -12,6 +12,7 @@ import '../../screens/admin/deliveries/deliveries_screen.dart';
 import '../../screens/admin/expenses/expenses_screen.dart';
 import '../../screens/admin/inventory/inventory_screen.dart';
 import '../../screens/admin/invoices/invoices_screen.dart';
+import '../../screens/admin/leads/admin_leads_screen.dart';
 import '../../screens/admin/notifications/notifications_screen.dart';
 import '../../screens/admin/orders/admin_orders_screen.dart';
 import '../../screens/admin/products/products_screen.dart';
@@ -235,10 +236,12 @@ class _AppDrawerState extends State<AppDrawer> {
         );
         break;
       case 'Leads':
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const AdminLeadsScreen()),
+        );
+        break;
       case 'Quotation':
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('${item.label} is coming soon.')),
         );
         break;

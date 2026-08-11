@@ -182,6 +182,8 @@ class CreateUserRequest {
   final String? resumeCv;
   final String? offerLetter;
   final String? appointmentLetter;
+  final String? experienceCertificates;
+  final String? educationalCertificates;
   final List<String>? skills;
   final String? language;
   final String? timeZone;
@@ -236,6 +238,8 @@ class CreateUserRequest {
     this.resumeCv,
     this.offerLetter,
     this.appointmentLetter,
+    this.experienceCertificates,
+    this.educationalCertificates,
     this.skills,
     this.language,
     this.timeZone,
@@ -304,6 +308,12 @@ class CreateUserRequest {
     _putIfNotBlank(payload, 'resume_cv', resumeCv);
     _putIfNotBlank(payload, 'offer_letter', offerLetter);
     _putIfNotBlank(payload, 'appointment_letter', appointmentLetter);
+    _putIfNotBlank(payload, 'experience_certificates', experienceCertificates);
+    _putIfNotBlank(
+      payload,
+      'educational_certificates',
+      educationalCertificates,
+    );
     if (skills != null && skills!.isNotEmpty) {
       payload['skills'] = skills;
     }
@@ -361,6 +371,8 @@ class UpdateUserRequest {
   final String? resumeCv;
   final String? offerLetter;
   final String? appointmentLetter;
+  final String? experienceCertificates;
+  final String? educationalCertificates;
   final List<String>? skills;
   final String? language;
   final String? timeZone;
@@ -411,6 +423,8 @@ class UpdateUserRequest {
     this.resumeCv,
     this.offerLetter,
     this.appointmentLetter,
+    this.experienceCertificates,
+    this.educationalCertificates,
     this.skills,
     this.language,
     this.timeZone,
@@ -475,6 +489,12 @@ class UpdateUserRequest {
     _putIfNotBlank(payload, 'resume_cv', resumeCv);
     _putIfNotBlank(payload, 'offer_letter', offerLetter);
     _putIfNotBlank(payload, 'appointment_letter', appointmentLetter);
+    _putIfNotBlank(payload, 'experience_certificates', experienceCertificates);
+    _putIfNotBlank(
+      payload,
+      'educational_certificates',
+      educationalCertificates,
+    );
     if (skills != null && skills!.isNotEmpty) {
       payload['skills'] = skills;
     }
@@ -531,12 +551,14 @@ class CurrentUserProfile {
   final String name;
   final String role;
   final String? email;
+  final String? profilePhoto;
 
   const CurrentUserProfile({
     this.id,
     required this.name,
     required this.role,
     this.email,
+    this.profilePhoto,
   });
 
   factory CurrentUserProfile.fromJson(Map<String, dynamic> json) {
@@ -545,6 +567,7 @@ class CurrentUserProfile {
         ?.toString();
     final rawRole = (json['role'] ?? json['user_role'])?.toString();
     final rawEmail = json['email']?.toString();
+    final rawProfilePhoto = json['profile_photo']?.toString();
 
     return CurrentUserProfile(
       id: rawId?.trim().isEmpty == true ? null : rawId?.trim(),
@@ -553,6 +576,9 @@ class CurrentUserProfile {
           : rawName.trim(),
       role: _formatRole(rawRole),
       email: rawEmail?.trim().isEmpty == true ? null : rawEmail?.trim(),
+      profilePhoto: rawProfilePhoto?.trim().isEmpty == true
+          ? null
+          : rawProfilePhoto?.trim(),
     );
   }
 

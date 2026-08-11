@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
+import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
 import '../customers/sales_manager_customers_screen.dart';
 import '../leads/sales_manager_leads_screen.dart';
 import '../orders/sales_manager_orders_screen.dart';
@@ -326,7 +327,10 @@ class _SalesManagerDashboardScreenState
       body: SafeArea(
         child: Column(
           children: [
-            _buildTopBar(context),
+            SalesManagerTopBar(
+              title: 'Dashboard',
+              onNotificationTap: () => _showSnack('Notifications'),
+            ),
             Expanded(
               child: RefreshIndicator(
                 onRefresh: _refresh,
@@ -348,71 +352,6 @@ class _SalesManagerDashboardScreenState
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildTopBar(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        border: Border(
-          bottom: BorderSide(color: AppColors.border.withValues(alpha: 0.8)),
-        ),
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-            icon: const Icon(Icons.menu_rounded, color: AppColors.textPrimary),
-          ),
-          const Expanded(
-            child: Text(
-              'Dashboard',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 16.5,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ),
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              IconButton(
-                onPressed: () => _showSnack('Notifications'),
-                icon: const Icon(
-                  Icons.notifications_none_rounded,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              Positioned(
-                right: 8,
-                top: 8,
-                child: Container(
-                  width: 11,
-                  height: 11,
-                  decoration: const BoxDecoration(
-                    color: AppColors.primary,
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: const Text(
-                    '5',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 7,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }

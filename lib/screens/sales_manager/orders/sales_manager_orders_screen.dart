@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
+import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
 import '../customers/sales_manager_customers_screen.dart';
 import '../leads/sales_manager_leads_screen.dart';
 import '../dashboard/sales_manager_dashboard_screen.dart';
@@ -189,7 +190,7 @@ class _SalesManagerOrdersScreenState extends State<SalesManagerOrdersScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            _buildTopBar(context),
+            SalesManagerTopBar(title: 'Sales Orders'),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(12, 10, 12, 18),
@@ -228,49 +229,6 @@ class _SalesManagerOrdersScreenState extends State<SalesManagerOrdersScreen> {
       default:
         return _orders;
     }
-  }
-
-  Widget _buildTopBar(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(6, 6, 10, 6),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        border: Border(
-          bottom: BorderSide(color: AppColors.border.withValues(alpha: 0.7)),
-        ),
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-            icon: const Icon(Icons.menu_rounded, color: AppColors.textPrimary),
-          ),
-          const SizedBox(width: 2),
-          const Text(
-            'Sales Orders',
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const Spacer(),
-          Material(
-            color: AppColors.primary,
-            borderRadius: BorderRadius.circular(8),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(8),
-              onTap: _openCreateSalesOrderPage,
-              child: const SizedBox(
-                width: 28,
-                height: 28,
-                child: Icon(Icons.add_rounded, color: Colors.white, size: 18),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   Widget _buildSearchRow() {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
+import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
 import '../customers/sales_manager_customers_screen.dart';
 import '../leads/sales_manager_leads_screen.dart';
 import '../dashboard/sales_manager_dashboard_screen.dart';
@@ -17,13 +18,6 @@ class SalesManagerVisitsScreen extends StatefulWidget {
 
 class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  final List<_VisitCustomer> _customers = const [
-    _VisitCustomer(name: 'Shree Ganesh Traders', location: 'Dadar, Mumbai'),
-    _VisitCustomer(name: 'Maa Durga Stores', location: 'Matunga, Mumbai'),
-    _VisitCustomer(name: 'Patel Retailers', location: 'Sion, Mumbai'),
-    _VisitCustomer(name: 'S.K. Enterprises', location: 'Ghatkopar, Mumbai'),
-    _VisitCustomer(name: 'New A One Traders', location: 'Kurla, Mumbai'),
-  ];
 
   final List<String> _tabs = const [
     'Today',
@@ -108,14 +102,6 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
     );
   }
 
-  Future<void> _openAddVisit() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => _RecordVisitPage(customers: _customers),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -128,7 +114,7 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            _buildTopBar(),
+            SalesManagerTopBar(title: 'Visits'),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(12, 12, 12, 18),
@@ -168,58 +154,6 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildTopBar() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(8, 8, 8, 10),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        border: Border(
-          bottom: BorderSide(color: AppColors.border.withValues(alpha: 0.7)),
-        ),
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-            icon: const Icon(Icons.menu_rounded, color: AppColors.textPrimary),
-          ),
-          const Expanded(
-            child: Text(
-              'Visits',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ),
-          Row(
-            children: [
-              Material(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(8),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(8),
-                  onTap: _openAddVisit,
-                  child: const SizedBox(
-                    width: 28,
-                    height: 28,
-                    child: Icon(
-                      Icons.add_rounded,
-                      color: Colors.white,
-                      size: 18,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }

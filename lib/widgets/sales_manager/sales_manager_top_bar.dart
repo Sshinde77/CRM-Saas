@@ -6,33 +6,27 @@ import '../../providers/api_provider.dart';
 import '../../screens/auth/login_screen.dart';
 import '../../services/api_service.dart';
 
-class AdminTopBar extends StatefulWidget {
+class SalesManagerTopBar extends StatefulWidget {
   final String title;
-  final IconData leadingIcon;
-  final VoidCallback? onLeadingTap;
   final VoidCallback? onNotificationTap;
-  final Widget? trailingAvatar;
   final String? profileName;
   final String? profileRole;
   final Future<void> Function()? onSignOut;
 
-  const AdminTopBar({
+  const SalesManagerTopBar({
     super.key,
     required this.title,
-    required this.leadingIcon,
-    this.onLeadingTap,
     this.onNotificationTap,
-    this.trailingAvatar,
     this.profileName,
     this.profileRole,
     this.onSignOut,
   });
 
   @override
-  State<AdminTopBar> createState() => _AdminTopBarState();
+  State<SalesManagerTopBar> createState() => _SalesManagerTopBarState();
 }
 
-class _AdminTopBarState extends State<AdminTopBar> {
+class _SalesManagerTopBarState extends State<SalesManagerTopBar> {
   late Future<CurrentUserProfile?> _profileFuture;
 
   @override
@@ -137,18 +131,22 @@ class _AdminTopBarState extends State<AdminTopBar> {
       ),
       child: Row(
         children: [
-          InkWell(
-            onTap: widget.onLeadingTap,
-            borderRadius: BorderRadius.circular(20),
-            child: SizedBox(
-              width: 40,
-              height: 40,
-              child: Icon(
-                widget.leadingIcon,
-                color: AppColors.primary,
-                size: 26,
-              ),
-            ),
+          Builder(
+            builder: (context) {
+              return InkWell(
+                onTap: () => Scaffold.of(context).openDrawer(),
+                borderRadius: BorderRadius.circular(20),
+                child: const SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: Icon(
+                    Icons.menu_rounded,
+                    color: AppColors.primary,
+                    size: 26,
+                  ),
+                ),
+              );
+            },
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -161,89 +159,104 @@ class _AdminTopBarState extends State<AdminTopBar> {
               ),
             ),
           ),
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              const Icon(
-                Icons.notifications_none_rounded,
-                color: AppColors.textPrimary,
-                size: 30,
-              ),
-              Positioned(
-                right: 1,
-                top: 1,
-                child: Container(
-                  width: 9,
-                  height: 9,
-                  decoration: const BoxDecoration(
-                    color: AppColors.red,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-            ],
-          ),
+          _NotificationButton(onTap: widget.onNotificationTap),
           const SizedBox(width: 16),
-          widget.trailingAvatar ??
-              FutureBuilder<CurrentUserProfile?>(
-                future: _profileFuture,
-                builder: (context, snapshot) {
-                  final profile = snapshot.data;
-                  return _DefaultAvatar(
-                    profileName:
-                        profile?.name ??
-                        widget.profileName ??
-                        (snapshot.connectionState == ConnectionState.waiting
-                            ? 'Loading...'
-                            : 'User'),
-                    profileRole: profile?.role ?? widget.profileRole ?? '',
-                    profilePhoto: profile?.profilePhoto,
-                    onSignOut: widget.onSignOut ?? _handleSignOut,
-                  );
-                },
-              ),
+          FutureBuilder<CurrentUserProfile?>(
+            future: _profileFuture,
+            builder: (context, snapshot) {
+              final profile = snapshot.data;
+              final name = profile?.name ?? widget.profileName ?? 'User';
+              final role = profile?.role ?? widget.profileRole ?? '';
+              final initials = _buildInitials(name);
+
+              return _DefaultAvatar(
+                initials: initials,
+                profileName: name,
+                profileRole: role,
+                onSignOut: widget.onSignOut ?? _handleSignOut,
+              );
+            },
+          ),
         ],
       ),
+    );
+  }
+
+  String _buildInitials(String name) {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty || trimmed == 'Loading...' || trimmed == 'User') {
+      return 'SM';
+    }
+
+    final parts = trimmed
+        .split(RegExp(r'\s+'))
+        .where((part) => part.isNotEmpty)
+        .toList();
+    if (parts.isEmpty) return 'SM';
+    if (parts.length == 1) {
+      final first = parts.first;
+      return first.isNotEmpty
+          ? first.substring(0, first.length >= 2 ? 2 : 1).toUpperCase()
+          : 'SM';
+    }
+
+    final first = parts[0].isNotEmpty ? parts[0][0] : '';
+    final second = parts[1].isNotEmpty ? parts[1][0] : '';
+    final initials = (first + second).trim();
+    return initials.isEmpty ? 'SM' : initials.toUpperCase();
+  }
+}
+
+class _NotificationButton extends StatelessWidget {
+  final VoidCallback? onTap;
+
+  const _NotificationButton({this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        IconButton(
+          onPressed: onTap,
+          icon: const Icon(
+            Icons.notifications_none_rounded,
+            color: AppColors.textPrimary,
+            size: 30,
+          ),
+        ),
+        Positioned(
+          right: 8,
+          top: 8,
+          child: Container(
+            width: 9,
+            height: 9,
+            decoration: const BoxDecoration(
+              color: AppColors.primary,
+              shape: BoxShape.circle,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
 
 class _DefaultAvatar extends StatelessWidget {
+  final String initials;
   final String profileName;
   final String profileRole;
-  final String? profilePhoto;
   final Future<void> Function()? onSignOut;
 
   const _DefaultAvatar({
+    required this.initials,
     required this.profileName,
     required this.profileRole,
-    this.profilePhoto,
     this.onSignOut,
   });
 
-  String get _initials {
-    final parts = profileName
-        .trim()
-        .split(RegExp(r'\s+'))
-        .where((part) => part.isNotEmpty)
-        .toList();
-    if (parts.isEmpty) {
-      return 'US';
-    }
-    if (parts.length == 1) {
-      final text = parts.first;
-      return text.length >= 2
-          ? text.substring(0, 2).toUpperCase()
-          : text.toUpperCase();
-    }
-    return '${parts.first[0]}${parts[1][0]}'.toUpperCase();
-  }
-
   @override
   Widget build(BuildContext context) {
-    final imageUrl = profilePhoto?.trim();
-    final hasProfilePhoto = imageUrl != null && imageUrl.isNotEmpty;
-
     return PopupMenuButton<_ProfileMenuAction>(
       tooltip: 'Profile',
       color: AppColors.surface,
@@ -296,32 +309,14 @@ class _DefaultAvatar extends StatelessWidget {
           border: Border.all(color: AppColors.border),
         ),
         alignment: Alignment.center,
-        clipBehavior: Clip.antiAlias,
-        child: hasProfilePhoto
-            ? Image.network(
-                imageUrl,
-                fit: BoxFit.cover,
-                width: 42,
-                height: 42,
-                errorBuilder: (context, error, stackTrace) {
-                  return Text(
-                    _initials,
-                    style: const TextStyle(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 12,
-                    ),
-                  );
-                },
-              )
-            : Text(
-                _initials,
-                style: const TextStyle(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 12,
-                ),
-              ),
+        child: Text(
+          initials,
+          style: const TextStyle(
+            color: AppColors.primary,
+            fontWeight: FontWeight.w700,
+            fontSize: 12,
+          ),
+        ),
       ),
     );
   }

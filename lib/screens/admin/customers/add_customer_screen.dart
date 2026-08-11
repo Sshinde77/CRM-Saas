@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:csc_picker/csc_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -25,28 +26,31 @@ class AddCustomerScreen extends StatefulWidget {
 
 class _AddCustomerScreenState extends State<AddCustomerScreen> {
   static const List<String> _baseCustomerTypes = [
-    'Retailer',
-    'Wholesale',
+    'Individual',
+    'Business',
+    'Government',
+    'Dealer',
     'Distributor',
-    'Manufacturer',
-    'Trader',
-    'Other',
+    'Vendor',
   ];
   static const List<String> _industryOptions = [
-    'Water Distribution',
-    'Beverages',
+    'Food & Beverage',
     'Retail',
+    'Wholesale',
+    'Corporate',
+    'Healthcare',
+    'Education',
+    'Hospitality',
     'Manufacturing',
     'Services',
-    'Other',
   ];
   static const List<String> _customerCategoryOptions = [
     'Retail',
     'Wholesale',
+    'Corporate',
+    'VIP',
+    'Dealer',
     'Distributor',
-    'Institution',
-    'Project',
-    'Other',
   ];
   static const List<String> _customerStatusOptions = [
     'Active',
@@ -62,19 +66,24 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     'Tamil Nadu',
     'Other',
   ];
-  static const List<String> _currencyOptions = ['INR', 'USD', 'EUR'];
+  static const List<String> _currencyOptions = [
+    'INR',
+    'USD',
+    'AED',
+    'SGD',
+    'GBP',
+  ];
   static const List<String> _taxCategoryOptions = [
     'Registered',
     'Unregistered',
-    'Composition',
     'Exempt',
   ];
   static const List<String> _paymentTermsOptions = [
-    'Advance',
-    'Net 7',
     'Net 15',
     'Net 30',
-    'Net 45',
+    'Advance',
+    'Immediate',
+    'Due on Receipt',
   ];
   static const List<String> _leadSourceOptions = [
     'Referral',
@@ -94,11 +103,10 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   static const List<String> _priorityOptions = ['High', 'Medium', 'Low'];
   static const List<String> _paymentOptions = [
     'Cash',
-    'Cheque',
+    'Card',
     'UPI',
     'Bank Transfer',
-    'Card',
-    'Other',
+    'Cheque',
   ];
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -1468,28 +1476,84 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             ),
           ),
           const SizedBox(height: 16),
+          Text(
+            'Country / State / City',
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 8),
+          CSCPicker(
+            layout: Layout.vertical,
+            showStates: true,
+            showCities: true,
+            flagState: CountryFlag.DISABLE,
+            currentCountry: _countryController.text,
+            currentState: _stateController.text,
+            currentCity: _cityController.text,
+            dropdownDecoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              color: AppColors.surfaceSoft.withValues(alpha: 0.28),
+              border: Border.all(
+                color: AppColors.borderStrong.withValues(alpha: 0.25),
+              ),
+            ),
+            disabledDropdownDecoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              color: AppColors.surfaceSoft.withValues(alpha: 0.28),
+              border: Border.all(
+                color: AppColors.borderStrong.withValues(alpha: 0.25),
+              ),
+            ),
+            selectedItemStyle: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 14,
+            ),
+            dropdownHeadingStyle: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
+            dropdownItemStyle: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 14,
+            ),
+            dropdownDialogRadius: 12,
+            searchBarRadius: 12,
+            countryDropdownLabel: 'Select Country',
+            stateDropdownLabel: 'Select State',
+            cityDropdownLabel: 'Select City',
+            countrySearchPlaceholder: 'Search country',
+            stateSearchPlaceholder: 'Search state',
+            citySearchPlaceholder: 'Search city',
+            onCountryChanged: (value) {
+              setState(() {
+                _selectedCountry = value;
+                _countryController.text = value;
+                _selectedState = null;
+                _stateController.clear();
+                _cityController.clear();
+              });
+            },
+            onStateChanged: (value) {
+              setState(() {
+                _selectedState = value;
+                _stateController.text = value ?? '';
+                _cityController.clear();
+              });
+            },
+            onCityChanged: (value) {
+              setState(() {
+                _cityController.text = value ?? '';
+              });
+            },
+          ),
+          const SizedBox(height: 16),
           _customerTwoColumnFields(
             wide: wide,
             children: [
-              _field(
-                label: 'City',
-                controller: _cityController,
-                hintText: 'Enter city',
-              ),
-              _customerDropdownBlock<String>(
-                label: 'State',
-                value: _selectedState,
-                hintText: 'Select state',
-                items: _stateOptions,
-                onChanged: (value) => setState(() => _selectedState = value),
-              ),
-              _customerDropdownBlock<String>(
-                label: 'Country',
-                value: _selectedCountry ?? 'India',
-                hintText: 'India',
-                items: const ['India'],
-                onChanged: (value) => setState(() => _selectedCountry = value),
-              ),
               _field(
                 label: 'PIN/ZIP Code',
                 controller: _pinCodeController,

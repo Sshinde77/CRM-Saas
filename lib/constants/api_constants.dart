@@ -40,6 +40,7 @@ class ApiEndpoints {
       '/organizations/settings/upload-file';
   static const String organizationsSettingsLogo =
       '/organizations/settings/logo';
+  static const String filesUpload = '/files/upload';
 
   static const String customersList = '/customers';
   static const String customersCreate = '/customers';

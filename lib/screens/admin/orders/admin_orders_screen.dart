@@ -35,19 +35,35 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     'Returned',
   ];
 
-  static const List<String> _paymentOptions = [
-    'Paid',
-    'Partial',
-    'Unpaid',
-  ];
+  static const List<String> _paymentOptions = ['Paid', 'Partial', 'Unpaid'];
 
   int _selectedTab = 0;
 
   final List<_OrderMetric> _metrics = const [
-    _OrderMetric('Total Orders', '21', Icons.shopping_cart_outlined, Color(0xFF0B4A06)),
-    _OrderMetric('Pending Orders', '7', Icons.schedule_rounded, Color(0xFFF59E0B)),
-    _OrderMetric('Total Value', '₹70,276', Icons.currency_rupee_rounded, Color(0xFF22C55E)),
-    _OrderMetric('Outstanding', '₹43,681', Icons.account_balance_wallet_outlined, Color(0xFFEF4444)),
+    _OrderMetric(
+      'Total Orders',
+      '21',
+      Icons.shopping_cart_outlined,
+      Color(0xFF0B4A06),
+    ),
+    _OrderMetric(
+      'Pending Orders',
+      '7',
+      Icons.schedule_rounded,
+      Color(0xFFF59E0B),
+    ),
+    _OrderMetric(
+      'Total Value',
+      '₹70,276',
+      Icons.currency_rupee_rounded,
+      Color(0xFF22C55E),
+    ),
+    _OrderMetric(
+      'Outstanding',
+      '₹43,681',
+      Icons.account_balance_wallet_outlined,
+      Color(0xFFEF4444),
+    ),
   ];
 
   final List<_OrderRecord> _orders = const [
@@ -229,8 +245,13 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
         DateTime selectedDate = initialDate;
 
         return Dialog(
-          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 24,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
           child: StatefulBuilder(
             builder: (context, setLocalState) {
               return Theme(
@@ -262,7 +283,9 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                           alignment: Alignment.centerRight,
                           child: TextButton(
                             onPressed: () {
-                              setLocalState(() => selectedDate = DateTime.now());
+                              setLocalState(
+                                () => selectedDate = DateTime.now(),
+                              );
                             },
                             child: const Text(
                               'Today',
@@ -278,12 +301,14 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             TextButton(
-                              onPressed: () => Navigator.of(dialogContext).pop(),
+                              onPressed: () =>
+                                  Navigator.of(dialogContext).pop(),
                               child: const Text('Cancel'),
                             ),
                             const SizedBox(width: 8),
                             ElevatedButton(
-                              onPressed: () => Navigator.of(dialogContext).pop(selectedDate),
+                              onPressed: () =>
+                                  Navigator.of(dialogContext).pop(selectedDate),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF0B4A06),
                                 foregroundColor: Colors.white,
@@ -317,16 +342,17 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
   }
 
   Future<void> _openNewOrder() async {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const NewAdminOrderScreen()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const NewAdminOrderScreen()));
   }
 
   @override
   Widget build(BuildContext context) {
     final query = _searchController.text.trim().toLowerCase();
     final orders = _filteredOrders().where((order) {
-      if (_selectedPayment != 'All payments' && order.payment != _selectedPayment) {
+      if (_selectedPayment != 'All payments' &&
+          order.payment != _selectedPayment) {
         return false;
       }
       if (query.isEmpty) return true;
@@ -376,7 +402,9 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
       case 3:
         return _orders.where((order) => order.status == 'Processing').toList();
       case 4:
-        return _orders.where((order) => order.status == 'Out for Delivery').toList();
+        return _orders
+            .where((order) => order.status == 'Out for Delivery')
+            .toList();
       case 5:
         return _orders.where((order) => order.status == 'Delivered').toList();
       case 6:
@@ -392,13 +420,21 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
 
   Widget _buildTopBar(bool isMobile) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(isMobile ? 14 : 18, 14, isMobile ? 14 : 18, 10),
+      padding: EdgeInsets.fromLTRB(
+        isMobile ? 14 : 18,
+        14,
+        isMobile ? 14 : 18,
+        10,
+      ),
       child: Row(
         children: [
           if (isMobile) ...[
             IconButton(
               onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-              icon: const Icon(Icons.menu_rounded, color: AppColors.textPrimary),
+              icon: const Icon(
+                Icons.menu_rounded,
+                color: AppColors.textPrimary,
+              ),
             ),
             const SizedBox(width: 4),
           ],
@@ -462,7 +498,10 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                 ],
               ),
               const SizedBox(width: 8),
-              const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF9CA3AF)),
+              const Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: Color(0xFF9CA3AF),
+              ),
             ],
           ),
         ],
@@ -673,7 +712,12 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
   Widget _contentCard(List<_OrderRecord> orders, {required bool desktop}) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.fromLTRB(desktop ? 18 : 14, desktop ? 18 : 14, desktop ? 18 : 14, desktop ? 18 : 14),
+      padding: EdgeInsets.fromLTRB(
+        desktop ? 18 : 14,
+        desktop ? 18 : 14,
+        desktop ? 18 : 14,
+        desktop ? 18 : 14,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
@@ -730,7 +774,9 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                   child: Text(
                     _tabs[index],
                     style: TextStyle(
-                      color: selected ? const Color(0xFF0B4A06) : AppColors.textSecondary,
+                      color: selected
+                          ? const Color(0xFF0B4A06)
+                          : AppColors.textSecondary,
                       fontSize: 13.5,
                       fontWeight: FontWeight.w600,
                     ),
@@ -763,9 +809,21 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
           const SizedBox(width: 12),
           Expanded(child: _dropdownFilter('All sales officers')),
           const SizedBox(width: 12),
-          Expanded(child: _dateField('From date', selectedDate: _fromDate, onCalendarTap: () => _pickDate(isFrom: true))),
+          Expanded(
+            child: _dateField(
+              'From date',
+              selectedDate: _fromDate,
+              onCalendarTap: () => _pickDate(isFrom: true),
+            ),
+          ),
           const SizedBox(width: 12),
-          Expanded(child: _dateField('To date', selectedDate: _toDate, onCalendarTap: () => _pickDate(isFrom: false))),
+          Expanded(
+            child: _dateField(
+              'To date',
+              selectedDate: _toDate,
+              onCalendarTap: () => _pickDate(isFrom: false),
+            ),
+          ),
         ],
       );
     }
@@ -784,9 +842,21 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
         const SizedBox(height: 10),
         Row(
           children: [
-            Expanded(child: _dateField('From date', selectedDate: _fromDate, onCalendarTap: () => _pickDate(isFrom: true))),
+            Expanded(
+              child: _dateField(
+                'From date',
+                selectedDate: _fromDate,
+                onCalendarTap: () => _pickDate(isFrom: true),
+              ),
+            ),
             const SizedBox(width: 10),
-            Expanded(child: _dateField('To date', selectedDate: _toDate, onCalendarTap: () => _pickDate(isFrom: false))),
+            Expanded(
+              child: _dateField(
+                'To date',
+                selectedDate: _toDate,
+                onCalendarTap: () => _pickDate(isFrom: false),
+              ),
+            ),
           ],
         ),
       ],
@@ -810,7 +880,11 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
         decoration: InputDecoration(
           filled: true,
           fillColor: Colors.white,
-          prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF94A3B8), size: 20),
+          prefixIcon: const Icon(
+            Icons.search_rounded,
+            color: Color(0xFF94A3B8),
+            size: 20,
+          ),
           hintText: 'Search order # or customer',
           hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13.5),
           border: OutlineInputBorder(
@@ -825,7 +899,10 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
             borderRadius: BorderRadius.circular(14),
             borderSide: const BorderSide(color: Color(0xFF0B4A06), width: 1),
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 12,
+          ),
         ),
       ),
     );
@@ -851,7 +928,10 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
               ),
             ),
           ),
-          const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF94A3B8)),
+          const Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: Color(0xFF94A3B8),
+          ),
         ],
       ),
     );
@@ -913,7 +993,10 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                 ),
               ),
             ),
-            const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF94A3B8)),
+            const Icon(
+              Icons.keyboard_arrow_down_rounded,
+              color: Color(0xFF94A3B8),
+            ),
           ],
         ),
       ),
@@ -948,7 +1031,11 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
           ),
           IconButton(
             onPressed: onCalendarTap,
-            icon: const Icon(Icons.calendar_month_outlined, color: Color(0xFF94A3B8), size: 18),
+            icon: const Icon(
+              Icons.calendar_month_outlined,
+              color: Color(0xFF94A3B8),
+              size: 18,
+            ),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints.tightFor(width: 28, height: 28),
             splashRadius: 18,
@@ -960,14 +1047,14 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
 
   Widget _desktopTableHeader() {
     Text header(String label) => Text(
-          label,
-          style: const TextStyle(
-            color: Color(0xFF94A3B8),
-            fontSize: 11,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 0.8,
-          ),
-        );
+      label,
+      style: const TextStyle(
+        color: Color(0xFF94A3B8),
+        fontSize: 11,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 0.8,
+      ),
+    );
 
     return Container(
       padding: const EdgeInsets.fromLTRB(8, 6, 8, 12),
@@ -1102,7 +1189,11 @@ class _DesktopOrderRow extends StatelessWidget {
           ),
           const SizedBox(
             width: 28,
-            child: Icon(Icons.more_vert_rounded, color: Color(0xFF94A3B8), size: 18),
+            child: Icon(
+              Icons.more_vert_rounded,
+              color: Color(0xFF94A3B8),
+              size: 18,
+            ),
           ),
         ],
       ),

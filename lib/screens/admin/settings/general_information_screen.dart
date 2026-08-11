@@ -188,9 +188,9 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
       });
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Unable to pick file: $error')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Unable to pick file: $error')));
     }
   }
 
@@ -212,9 +212,9 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
     required String? name,
   }) async {
     if (bytes == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No file selected yet.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('No file selected yet.')));
       return;
     }
 
@@ -248,10 +248,7 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
                 const SizedBox(height: 16),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Image.memory(
-                    bytes,
-                    fit: BoxFit.contain,
-                  ),
+                  child: Image.memory(bytes, fit: BoxFit.contain),
                 ),
                 const SizedBox(height: 14),
                 Align(
@@ -623,13 +620,17 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
                                             _fieldBlock(
                                               label: 'Designation *',
                                               child: _dropdownField<String>(
-                                                value: _designationController.text,
+                                                value:
+                                                    _designationController.text,
                                                 hintText: 'Select designation',
                                                 items: _designationOptions,
                                                 onChanged: (value) {
                                                   if (value == null) return;
                                                   setState(
-                                                    () => _designationController.text = value,
+                                                    () =>
+                                                        _designationController
+                                                                .text =
+                                                            value,
                                                   );
                                                 },
                                               ),
@@ -660,43 +661,46 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
                                           children: [
                                             _attachmentCard(
                                               title: 'Profile Picture',
-                                              subtitle: _profilePictureName ??
+                                              subtitle:
+                                                  _profilePictureName ??
                                                   'Tap upload to select a photo',
-                                              previewBytes: _profilePictureBytes,
+                                              previewBytes:
+                                                  _profilePictureBytes,
                                               previewName: _profilePictureName,
                                               previewLabel: 'Preview',
                                               uploadLabel: 'Upload Photo',
-                                              onPreview: () => _previewAttachment(
-                                                title: 'Profile Picture',
-                                                bytes: _profilePictureBytes,
-                                                name: _profilePictureName,
-                                              ),
+                                              onPreview: () =>
+                                                  _previewAttachment(
+                                                    title: 'Profile Picture',
+                                                    bytes: _profilePictureBytes,
+                                                    name: _profilePictureName,
+                                                  ),
                                               onUpload: () => _pickAttachment(
                                                 isSignature: false,
                                               ),
-                                              onRemove: () =>
-                                                  _removeAttachment(
+                                              onRemove: () => _removeAttachment(
                                                 isSignature: false,
                                               ),
                                             ),
                                             _attachmentCard(
                                               title: 'Digital Signature',
-                                              subtitle: _signatureName ??
+                                              subtitle:
+                                                  _signatureName ??
                                                   'Tap upload to select a signature',
                                               previewBytes: _signatureBytes,
                                               previewName: _signatureName,
                                               previewLabel: 'Preview',
                                               uploadLabel: 'Upload Signature',
-                                              onPreview: () => _previewAttachment(
-                                                title: 'Digital Signature',
-                                                bytes: _signatureBytes,
-                                                name: _signatureName,
-                                              ),
+                                              onPreview: () =>
+                                                  _previewAttachment(
+                                                    title: 'Digital Signature',
+                                                    bytes: _signatureBytes,
+                                                    name: _signatureName,
+                                                  ),
                                               onUpload: () => _pickAttachment(
                                                 isSignature: true,
                                               ),
-                                              onRemove: () =>
-                                                  _removeAttachment(
+                                              onRemove: () => _removeAttachment(
                                                 isSignature: true,
                                               ),
                                             ),
@@ -1245,12 +1249,16 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
                       runSpacing: 10,
                       children: [
                         _attachmentButton(
-                          label: previewBytes != null ? previewLabel : uploadLabel,
+                          label: previewBytes != null
+                              ? previewLabel
+                              : uploadLabel,
                           icon: previewBytes != null
                               ? Icons.remove_red_eye_outlined
                               : Icons.upload_outlined,
                           active: true,
-                          onPressed: previewBytes != null ? onPreview : onUpload,
+                          onPressed: previewBytes != null
+                              ? onPreview
+                              : onUpload,
                         ),
                         if (previewBytes != null)
                           _attachmentButton(
@@ -1289,13 +1297,13 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
       icon: Icon(icon, size: 16),
       label: Text(label),
       style: OutlinedButton.styleFrom(
-        foregroundColor: active ? kGeneralInfoTitleColor : const Color(0xFF98A2B3),
+        foregroundColor: active
+            ? kGeneralInfoTitleColor
+            : const Color(0xFF98A2B3),
         side: BorderSide(
           color: active ? const Color(0xFFD1D5DB) : const Color(0xFFE5E7EB),
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(999),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         textStyle: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
       ),

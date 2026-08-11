@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../constants/app_colors.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
+import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
 import '../customers/sales_manager_customers_screen.dart';
 import '../dashboard/sales_manager_dashboard_screen.dart';
 import '../orders/sales_manager_orders_screen.dart';
@@ -118,7 +118,7 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            _buildTopBar(),
+            SalesManagerTopBar(title: 'Add Lead'),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(18, 10, 18, 18),
@@ -142,9 +142,7 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
                         decoration: BoxDecoration(
                           color: const Color(0xFFFAFAFA),
                           border: Border(
-                            right: BorderSide(
-                              color: const Color(0xFFE5E7EB),
-                            ),
+                            right: BorderSide(color: const Color(0xFFE5E7EB)),
                           ),
                         ),
                         child: Column(
@@ -166,7 +164,12 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
                         child: Column(
                           children: [
                             Padding(
-                              padding: const EdgeInsets.fromLTRB(22, 22, 22, 16),
+                              padding: const EdgeInsets.fromLTRB(
+                                22,
+                                22,
+                                22,
+                                16,
+                              ),
                               child: Row(
                                 children: [
                                   Expanded(
@@ -196,14 +199,17 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
                                     ),
                                   ),
                                   OutlinedButton(
-                                    onPressed: () => Navigator.of(context).maybePop(),
+                                    onPressed: () =>
+                                        Navigator.of(context).maybePop(),
                                     style: OutlinedButton.styleFrom(
                                       foregroundColor: const Color(0xFF0F172A),
                                       side: const BorderSide(
                                         color: Color(0xFFD1D5DB),
                                       ),
                                       shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(999),
+                                        borderRadius: BorderRadius.circular(
+                                          999,
+                                        ),
                                       ),
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 16,
@@ -218,13 +224,23 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
                             const Divider(height: 1, color: Color(0xFFE5E7EB)),
                             Expanded(
                               child: SingleChildScrollView(
-                                padding: const EdgeInsets.fromLTRB(22, 20, 22, 22),
+                                padding: const EdgeInsets.fromLTRB(
+                                  22,
+                                  20,
+                                  22,
+                                  22,
+                                ),
                                 child: _buildCurrentStepForm(),
                               ),
                             ),
                             const Divider(height: 1, color: Color(0xFFE5E7EB)),
                             Padding(
-                              padding: const EdgeInsets.fromLTRB(22, 18, 22, 18),
+                              padding: const EdgeInsets.fromLTRB(
+                                22,
+                                18,
+                                22,
+                                18,
+                              ),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
@@ -240,7 +256,9 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
                                         vertical: 14,
                                       ),
                                       shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(999),
+                                        borderRadius: BorderRadius.circular(
+                                          999,
+                                        ),
                                       ),
                                     ),
                                     child: const Text('Back'),
@@ -262,7 +280,9 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
                                         vertical: 14,
                                       ),
                                       shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(999),
+                                        borderRadius: BorderRadius.circular(
+                                          999,
+                                        ),
                                       ),
                                     ),
                                     child: Text(
@@ -285,93 +305,6 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildTopBar() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(18, 14, 18, 10),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-            icon: const Icon(Icons.menu_rounded, color: Colors.black),
-          ),
-          const Text(
-            'Leads',
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const Spacer(),
-          _topIconButton(Icons.help_outline_rounded),
-          const SizedBox(width: 10),
-          _topIconButton(Icons.notifications_none_rounded),
-          const SizedBox(width: 10),
-          Row(
-            children: [
-              Container(
-                width: 30,
-                height: 30,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF0B4A06),
-                  shape: BoxShape.circle,
-                ),
-                alignment: Alignment.center,
-                child: const Text(
-                  'SS',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Sunil Sales',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  SizedBox(height: 3),
-                  Text(
-                    'Sales Officer',
-                    style: TextStyle(
-                      color: Color(0xFF0B4A06),
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(width: 8),
-              const Icon(Icons.keyboard_arrow_down_rounded,
-                  color: Color(0xFF9CA3AF)),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _topIconButton(IconData icon) {
-    return Container(
-      width: 38,
-      height: 38,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      child: Icon(icon, size: 18, color: const Color(0xFF6B7280)),
     );
   }
 
@@ -477,16 +410,21 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
   }
 
   Widget _twoColumnForm(List<Widget> fields) {
-    final fullWidth = fields.whereType<_FormField>().where((f) => f.fullWidth).toList();
-    final halfWidth = fields.whereType<_FormField>().where((f) => !f.fullWidth).toList();
+    final fullWidth = fields
+        .whereType<_FormField>()
+        .where((f) => f.fullWidth)
+        .toList();
+    final halfWidth = fields
+        .whereType<_FormField>()
+        .where((f) => !f.fullWidth)
+        .toList();
     final dropdowns = fields.whereType<_FormDropdown>().toList();
     final searches = fields.whereType<_FormSearchField>().toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (_currentStep == 0)
-          const SizedBox.shrink(),
+        if (_currentStep == 0) const SizedBox.shrink(),
         if (_currentStep == 0)
           Row(
             children: [
@@ -569,13 +507,17 @@ class _StepTile extends StatelessWidget {
               Icon(
                 icon,
                 size: 18,
-                color: selected ? const Color(0xFF0B4A06) : const Color(0xFF6B7280),
+                color: selected
+                    ? const Color(0xFF0B4A06)
+                    : const Color(0xFF6B7280),
               ),
               const SizedBox(width: 12),
               Text(
                 title,
                 style: TextStyle(
-                  color: selected ? const Color(0xFF0B4A06) : const Color(0xFF64748B),
+                  color: selected
+                      ? const Color(0xFF0B4A06)
+                      : const Color(0xFF64748B),
                   fontSize: 13.5,
                   fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                 ),
@@ -651,14 +593,15 @@ class _FormDropdown extends StatelessWidget {
         key: ValueKey<String?>(value),
         initialValue: value,
         isExpanded: true,
-        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF94A3B8)),
+        icon: const Icon(
+          Icons.keyboard_arrow_down_rounded,
+          color: Color(0xFF94A3B8),
+        ),
         decoration: _inputDecoration(hintText),
         items: items
             .map(
-              (item) => DropdownMenuItem<String>(
-                value: item,
-                child: Text(item),
-              ),
+              (item) =>
+                  DropdownMenuItem<String>(value: item, child: Text(item)),
             )
             .toList(),
         onChanged: onChanged,
@@ -694,10 +637,7 @@ class _LabeledField extends StatelessWidget {
   final String label;
   final Widget child;
 
-  const _LabeledField({
-    required this.label,
-    required this.child,
-  });
+  const _LabeledField({required this.label, required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -724,10 +664,7 @@ class _LabeledField extends StatelessWidget {
 InputDecoration _inputDecoration(String hintText) {
   return InputDecoration(
     hintText: hintText,
-    hintStyle: const TextStyle(
-      color: Color(0xFF94A3B8),
-      fontSize: 13.5,
-    ),
+    hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13.5),
     filled: true,
     fillColor: Colors.white,
     contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
