@@ -23,6 +23,7 @@ import '../../screens/admin/settings/plans_screen.dart';
 import '../../screens/admin/users/admin_user_list_screen.dart';
 import '../../screens/admin/vehicles/vehicle_stock_screen.dart';
 import '../../screens/admin/leads/admin_leads_screen.dart';
+import '../../screens/admin/quotations/admin_quotations_screen.dart';
 import '../../services/api_service.dart';
 
 class _NavItem {
@@ -243,10 +244,10 @@ class _AppDrawerState extends State<AppDrawer> {
         );
         break;
       case 'Quotation':
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(
-          SnackBar(content: Text('${item.label} is coming soon.')),
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => const AdminQuotationsScreen(),
+          ),
         );
         break;
       case 'Products':
