@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 
 import '../../constants/app_colors.dart';
@@ -23,7 +21,6 @@ import '../../screens/admin/settings/company_settings_screen.dart';
 import '../../screens/admin/settings/plans_screen.dart';
 import '../../screens/admin/users/admin_user_list_screen.dart';
 import '../../screens/admin/vehicles/vehicle_stock_screen.dart';
-import '../../screens/admin/leads/admin_leads_screen.dart';
 import '../../screens/admin/quotations/admin_quotations_screen.dart';
 import '../../services/api_service.dart';
 
@@ -69,24 +66,6 @@ class _DrawerMeta {
   }
 
   CurrentUserProfile? get user => authMe?.user;
-
-  static PlanModel? _topPlan(List<PlanModel> plans) {
-    if (plans.isEmpty) {
-      return null;
-    }
-
-    final sorted = List<PlanModel>.from(plans);
-    sorted.sort((a, b) {
-      final priceA = math.max(a.priceMonthly, a.priceYearly).toDouble();
-      final priceB = math.max(b.priceMonthly, b.priceYearly).toDouble();
-      final compared = priceB.compareTo(priceA);
-      if (compared != 0) {
-        return compared;
-      }
-      return a.name.toLowerCase().compareTo(b.name.toLowerCase());
-    });
-    return sorted.first;
-  }
 
   static bool _isFreePlan(PlanModel plan) {
     final planName = plan.name.trim().toLowerCase();
@@ -239,16 +218,12 @@ class _AppDrawerState extends State<AppDrawer> {
         break;
       case 'Leads':
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (_) => const AdminLeadsScreen(),
-          ),
+          MaterialPageRoute(builder: (_) => const AdminLeadsScreen()),
         );
         break;
       case 'Quotation':
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (_) => const AdminQuotationsScreen(),
-          ),
+          MaterialPageRoute(builder: (_) => const AdminQuotationsScreen()),
         );
         break;
       case 'Products':
@@ -308,8 +283,6 @@ class _AppDrawerState extends State<AppDrawer> {
 
   Widget _buildNavRow(_NavItem item) {
     final isActive = item.label == widget.activeItem;
-    final isStaffActive = item.label == 'Staff' && widget.activeSubItem != null;
-
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Material(

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
-import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
 import '../customers/sales_manager_customers_screen.dart';
 import '../dashboard/sales_manager_dashboard_screen.dart';
 import '../orders/sales_manager_orders_screen.dart';
@@ -208,10 +207,18 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
                           ? Column(
                               children: [
                                 Padding(
-                                  padding: const EdgeInsets.fromLTRB(18, 18, 18, 14),
+                                  padding: const EdgeInsets.fromLTRB(
+                                    18,
+                                    18,
+                                    18,
+                                    14,
+                                  ),
                                   child: _buildCompactStepper(),
                                 ),
-                                const Divider(height: 1, color: Color(0xFFE5E7EB)),
+                                const Divider(
+                                  height: 1,
+                                  color: Color(0xFFE5E7EB),
+                                ),
                                 Expanded(child: _buildLeadFormPanel(context)),
                               ],
                             )
@@ -221,7 +228,10 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
                                   width: 320,
                                   child: _buildDesktopStepper(),
                                 ),
-                                const VerticalDivider(width: 1, color: Color(0xFFE5E7EB)),
+                                const VerticalDivider(
+                                  width: 1,
+                                  color: Color(0xFFE5E7EB),
+                                ),
                                 Expanded(child: _buildLeadFormPanel(context)),
                               ],
                             ),
@@ -301,8 +311,10 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
                 ],
               ),
               const SizedBox(width: 8),
-              const Icon(Icons.keyboard_arrow_down_rounded,
-                  color: Color(0xFF9CA3AF)),
+              const Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: Color(0xFF9CA3AF),
+              ),
             ],
           ),
         ],
@@ -710,132 +722,7 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
     );
   }
 
-  Widget _buildInterestDetailsStep() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isCompact = constraints.maxWidth < 820;
-        final cardWidth = isCompact
-            ? constraints.maxWidth
-            : (constraints.maxWidth - 24) / 3;
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Interested Products',
-              style: TextStyle(
-                color: Color(0xFF0F172A),
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 14),
-            Wrap(
-              spacing: 12,
-              runSpacing: 14,
-              children: [
-                for (final product in _interestProducts)
-                  SizedBox(
-                    width: cardWidth,
-                    child: _InterestProductCard(
-                      label: product,
-                      selected: _selectedInterestProducts.contains(product),
-                      onTap: () {
-                        setState(() {
-                          if (_selectedInterestProducts.contains(product)) {
-                            _selectedInterestProducts.remove(product);
-                          } else {
-                            _selectedInterestProducts.add(product);
-                          }
-                        });
-                      },
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            LayoutBuilder(
-              builder: (context, innerConstraints) {
-                final stacked = innerConstraints.maxWidth < 700;
-
-                if (stacked) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _FormField(
-                        label: 'Expected Budget',
-                        controller: _expectedValueController,
-                        hintText: 'Estimated customer budget',
-                        keyboardType: TextInputType.number,
-                        fullWidth: true,
-                      ),
-                      const SizedBox(height: 18),
-                      _FormField(
-                        label: 'Expected Closing Date',
-                        controller: _closingDateController,
-                        hintText: 'dd-mm-yyyy',
-                        readOnly: true,
-                        onTap: _pickClosingDate,
-                        suffixIcon: const Icon(
-                          Icons.calendar_month_outlined,
-                          color: Color(0xFF94A3B8),
-                          size: 20,
-                        ),
-                        fullWidth: true,
-                      ),
-                    ],
-                  );
-                }
-
-                return Row(
-                  children: [
-                    Expanded(
-                      child: _FormField(
-                        label: 'Expected Budget',
-                        controller: _expectedValueController,
-                        hintText: 'Estimated customer budget',
-                        keyboardType: TextInputType.number,
-                        fullWidth: true,
-                      ),
-                    ),
-                    const SizedBox(width: 18),
-                    Expanded(
-                      child: _FormField(
-                        label: 'Expected Closing Date',
-                        controller: _closingDateController,
-                        hintText: 'dd-mm-yyyy',
-                        readOnly: true,
-                        onTap: _pickClosingDate,
-                        suffixIcon: const Icon(
-                          Icons.calendar_month_outlined,
-                          color: Color(0xFF94A3B8),
-                          size: 20,
-                        ),
-                        fullWidth: true,
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   Widget _twoColumnForm(List<Widget> fields) {
-    final fullWidth = fields
-        .whereType<_FormField>()
-        .where((f) => f.fullWidth)
-        .toList();
-    final halfWidth = fields
-        .whereType<_FormField>()
-        .where((f) => !f.fullWidth)
-        .toList();
-    final dropdowns = fields.whereType<_FormDropdown>().toList();
-    final searches = fields.whereType<_FormSearchField>().toList();
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -910,8 +797,12 @@ class _CircleStepTile extends StatelessWidget {
     final circleColor = selected || completed
         ? const Color(0xFF0B4A06)
         : const Color(0xFFE5E7EB);
-    final iconColor = selected || completed ? Colors.white : const Color(0xFF6B7280);
-    final textColor = selected ? const Color(0xFF0B4A06) : const Color(0xFF64748B);
+    final iconColor = selected || completed
+        ? Colors.white
+        : const Color(0xFF6B7280);
+    final textColor = selected
+        ? const Color(0xFF0B4A06)
+        : const Color(0xFF64748B);
 
     return InkWell(
       onTap: onTap,
@@ -992,8 +883,12 @@ class _CompactCircleStep extends StatelessWidget {
     final circleColor = selected || completed
         ? const Color(0xFF0B4A06)
         : const Color(0xFFE5E7EB);
-    final iconColor = selected || completed ? Colors.white : const Color(0xFF6B7280);
-    final textColor = selected ? const Color(0xFF0B4A06) : const Color(0xFF64748B);
+    final iconColor = selected || completed
+        ? Colors.white
+        : const Color(0xFF6B7280);
+    final textColor = selected
+        ? const Color(0xFF0B4A06)
+        : const Color(0xFF64748B);
 
     return InkWell(
       onTap: onTap,
@@ -1074,7 +969,9 @@ class _InterestProductCard extends StatelessWidget {
                 color: selected ? const Color(0xFF0B4A06) : Colors.white,
                 borderRadius: BorderRadius.circular(4),
                 border: Border.all(
-                  color: selected ? const Color(0xFF0B4A06) : const Color(0xFF9CA3AF),
+                  color: selected
+                      ? const Color(0xFF0B4A06)
+                      : const Color(0xFF9CA3AF),
                 ),
               ),
               child: selected
@@ -1141,10 +1038,7 @@ class _FormField extends StatelessWidget {
         maxLines: maxLines,
         readOnly: readOnly,
         onTap: onTap,
-        decoration: _inputDecoration(
-          hintText,
-          suffixIcon: suffixIcon,
-        ),
+        decoration: _inputDecoration(hintText, suffixIcon: suffixIcon),
       ),
     );
   }

@@ -107,19 +107,14 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
   }
 
   Future<void> _openAddLeadPage() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => const AddLeadScreen(),
-      ),
-    );
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const AddLeadScreen()));
   }
 
   void _showSnack(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        behavior: SnackBarBehavior.floating,
-      ),
+      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
     );
   }
 
@@ -178,7 +173,8 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
           _statusFilter == 'All Status' || lead.status == _statusFilter;
       final sourceOk =
           _sourceFilter == 'All Sources' || lead.source == _sourceFilter;
-      final teamOk = _teamFilter == 'All Team' || lead.assignedTo == _teamFilter;
+      final teamOk =
+          _teamFilter == 'All Team' || lead.assignedTo == _teamFilter;
       return statusOk && sourceOk && teamOk;
     }).toList();
   }
@@ -223,21 +219,18 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
             child: const Center(
               child: Text(
                 'No leads found.',
-                style: TextStyle(
-                  color: Color(0xFF6B7280),
-                  fontSize: 14,
-                ),
+                style: TextStyle(color: Color(0xFF6B7280), fontSize: 14),
               ),
             ),
           )
-          else
-            Column(
-              children: [
-                for (var i = 0; i < shownLeads.length; i++) ...[
-                  _buildMobileLeadCard(shownLeads[i]),
-                  if (i != shownLeads.length - 1) const SizedBox(height: 12),
-                ],
+        else
+          Column(
+            children: [
+              for (var i = 0; i < shownLeads.length; i++) ...[
+                _buildMobileLeadCard(shownLeads[i]),
+                if (i != shownLeads.length - 1) const SizedBox(height: 12),
               ],
+            ],
           ),
       ],
     );
@@ -324,7 +317,8 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                   onChanged: (value) {
                     if (value == null) return;
                     setState(
-                      () => _selectedPageSize = int.parse(value.split(' ').first),
+                      () =>
+                          _selectedPageSize = int.parse(value.split(' ').first),
                     );
                   },
                 ),
@@ -345,11 +339,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
               if (isCompact) {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    summaryText,
-                    const SizedBox(height: 8),
-                    dropdown,
-                  ],
+                  children: [summaryText, const SizedBox(height: 8), dropdown],
                 );
               }
 
@@ -411,6 +401,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildMobileTableCard(List<_LeadRecord> leads, int totalLeads) {
     return Container(
       width: double.infinity,
@@ -461,10 +452,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
               child: Center(
                 child: Text(
                   'No leads found.',
-                  style: TextStyle(
-                    color: Color(0xFF6B7280),
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(color: Color(0xFF6B7280), fontSize: 14),
                 ),
               ),
             )
@@ -603,9 +591,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                 child: _mobileInfoLine('Closing Date', record.closingDate),
               ),
               const SizedBox(width: 12),
-              Expanded(
-                child: _mobileInfoLine('Created', record.createdAt),
-              ),
+              Expanded(child: _mobileInfoLine('Created', record.createdAt)),
             ],
           ),
         ],
@@ -641,6 +627,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
     );
   }
 
+  // ignore: unused_element
   Widget _topIconButton(IconData icon, VoidCallback onTap) {
     return Container(
       width: 38,
@@ -679,9 +666,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
         children: [
           Row(
             children: [
-              const Expanded(
-                child: SizedBox.shrink(),
-              ),
+              const Expanded(child: SizedBox.shrink()),
               const Spacer(),
               Row(
                 children: [
@@ -711,7 +696,9 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                       backgroundColor: const Color(0xFF0B4A06),
                       foregroundColor: Colors.white,
                       elevation: 8,
-                      shadowColor: const Color(0xFF0B4A06).withValues(alpha: 0.3),
+                      shadowColor: const Color(
+                        0xFF0B4A06,
+                      ).withValues(alpha: 0.3),
                       padding: const EdgeInsets.symmetric(
                         horizontal: 18,
                         vertical: 14,
@@ -745,13 +732,8 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
         foregroundColor: const Color(0xFF111827),
         side: const BorderSide(color: Color(0xFFD1D5DB)),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-        ),
-        textStyle: const TextStyle(
-          fontSize: 13.5,
-          fontWeight: FontWeight.w600,
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        textStyle: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600),
       ),
     );
   }
@@ -773,21 +755,24 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
           width: 160,
           value: _statusFilter,
           items: _statusOptions,
-          onChanged: (value) => setState(() => _statusFilter = value ?? _statusFilter),
+          onChanged: (value) =>
+              setState(() => _statusFilter = value ?? _statusFilter),
         ),
         const SizedBox(width: 10),
         _dropdownFilter(
           width: 160,
           value: _sourceFilter,
           items: _sourceOptions,
-          onChanged: (value) => setState(() => _sourceFilter = value ?? _sourceFilter),
+          onChanged: (value) =>
+              setState(() => _sourceFilter = value ?? _sourceFilter),
         ),
         const SizedBox(width: 10),
         _dropdownFilter(
           width: 150,
           value: _teamFilter,
           items: _teamOptions,
-          onChanged: (value) => setState(() => _teamFilter = value ?? _teamFilter),
+          onChanged: (value) =>
+              setState(() => _teamFilter = value ?? _teamFilter),
         ),
         const SizedBox(width: 10),
         _filterField(
@@ -816,7 +801,9 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
               items: _pageSizeOptions.map((size) => '$size / page').toList(),
               onChanged: (value) {
                 if (value == null) return;
-                setState(() => _selectedPageSize = int.parse(value.split(' ').first));
+                setState(
+                  () => _selectedPageSize = int.parse(value.split(' ').first),
+                );
               },
             ),
           ],
@@ -840,10 +827,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
         onChanged: (_) => setState(() {}),
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: const TextStyle(
-            color: Color(0xFF94A3B8),
-            fontSize: 13.5,
-          ),
+          hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13.5),
           prefixIcon: const Icon(
             Icons.search_rounded,
             size: 18,
@@ -851,7 +835,10 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
           ),
           filled: true,
           fillColor: Colors.white,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 11,
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
@@ -895,13 +882,8 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
         foregroundColor: const Color(0xFF111827),
         side: const BorderSide(color: Color(0xFFD1D5DB)),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(999),
-        ),
-        textStyle: const TextStyle(
-          fontSize: 12.5,
-          fontWeight: FontWeight.w600,
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+        textStyle: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
       ),
     );
   }
@@ -920,14 +902,18 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
         onChanged: (_) => setState(() {}),
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: const TextStyle(
-            color: Color(0xFF94A3B8),
-            fontSize: 13.5,
+          hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13.5),
+          prefixIcon: Icon(
+            prefixIcon,
+            size: 18,
+            color: const Color(0xFF94A3B8),
           ),
-          prefixIcon: Icon(prefixIcon, size: 18, color: const Color(0xFF94A3B8)),
           filled: true,
           fillColor: Colors.white,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 11,
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
@@ -975,21 +961,21 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
           borderSide: const BorderSide(color: Color(0xFF0B4A06)),
         ),
       ),
-      icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF94A3B8)),
+      icon: const Icon(
+        Icons.keyboard_arrow_down_rounded,
+        color: Color(0xFF94A3B8),
+      ),
       items: items
           .map(
-                (item) => DropdownMenuItem<String>(
-                  value: item,
-                  child: Text(
-                    item,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Color(0xFF111827),
-                      fontSize: 13,
-                    ),
-                  ),
-                ),
-              )
+            (item) => DropdownMenuItem<String>(
+              value: item,
+              child: Text(
+                item,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(color: Color(0xFF111827), fontSize: 13),
+              ),
+            ),
+          )
           .toList(),
     );
 
@@ -1045,10 +1031,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
               padding: EdgeInsets.all(36),
               child: Text(
                 'No leads found.',
-                style: TextStyle(
-                  color: Color(0xFF6B7280),
-                  fontSize: 14,
-                ),
+                style: TextStyle(color: Color(0xFF6B7280), fontSize: 14),
               ),
             ),
         ],
@@ -1187,7 +1170,11 @@ class _LeadRow extends StatelessWidget {
           ),
           Expanded(
             flex: 12,
-            child: _Chip(label: record.source, background: const Color(0xFFF3F4F6), foreground: const Color(0xFF334155)),
+            child: _Chip(
+              label: record.source,
+              background: const Color(0xFFF3F4F6),
+              foreground: const Color(0xFF334155),
+            ),
           ),
           Expanded(
             flex: 18,
@@ -1279,6 +1266,7 @@ class _LeadRow extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _LeadMobileCard extends StatelessWidget {
   final _LeadRecord record;
 
@@ -1401,13 +1389,9 @@ class _LeadMobileCard extends StatelessWidget {
           const SizedBox(height: 10),
           Row(
             children: [
-              Expanded(
-                child: _infoRow('Closing', record.closingDate),
-              ),
+              Expanded(child: _infoRow('Closing', record.closingDate)),
               const SizedBox(width: 12),
-              Expanded(
-                child: _infoRow('Created', record.createdAt),
-              ),
+              Expanded(child: _infoRow('Created', record.createdAt)),
             ],
           ),
         ],

@@ -406,10 +406,7 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
               child: Center(
                 child: Text(
                   'No leads found.',
-                  style: TextStyle(
-                    color: Color(0xFF6B7280),
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(color: Color(0xFF6B7280), fontSize: 14),
                 ),
               ),
             )
@@ -426,6 +423,7 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
     );
   }
 
+  // ignore: unused_element
   Widget _topIconButton(IconData icon, VoidCallback onTap) {
     return Container(
       width: 38,
@@ -625,10 +623,7 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
         onChanged: (_) => setState(() {}),
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: const TextStyle(
-            color: Color(0xFF94A3B8),
-            fontSize: 13.5,
-          ),
+          hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13.5),
           prefixIcon: const Icon(
             Icons.search_rounded,
             size: 18,
@@ -636,7 +631,10 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
           ),
           filled: true,
           fillColor: Colors.white,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 11,
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
@@ -1047,6 +1045,7 @@ class _LeadRow extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _LeadMobileCard extends StatelessWidget {
   final _LeadRecord record;
 

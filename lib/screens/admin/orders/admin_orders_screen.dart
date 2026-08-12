@@ -2,11 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
 import '../../../widgets/admin/app_drawer.dart';
-import '../customers/customers_screen.dart';
-import '../dashboard/admin_dashboard_screen.dart';
-import '../deliveries/deliveries_screen.dart';
-import '../inventory/inventory_screen.dart';
-import '../purchases/purchases_screen.dart';
 import 'new_admin_order_screen.dart';
 
 class AdminOrdersScreen extends StatefulWidget {
@@ -171,48 +166,6 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
-  }
-
-  void _handleSidebarSelection(String action) {
-    Navigator.of(context).maybePop();
-    if (action == 'Orders') return;
-    if (action == 'Dashboard') {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
-      );
-      return;
-    }
-    if (action == 'Customers') {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const CustomersScreen()),
-      );
-      return;
-    }
-    if (action == 'Inventory') {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const InventoryScreen()),
-      );
-      return;
-    }
-    if (action == 'Purchases') {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const PurchasesScreen()),
-      );
-      return;
-    }
-    if (action == 'Deliveries') {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const DeliveriesScreen()),
-      );
-      return;
-    }
-    _showSnack('$action is not wired yet');
-  }
-
-  void _showSnack(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
-    );
   }
 
   String _formatDate(DateTime date) {

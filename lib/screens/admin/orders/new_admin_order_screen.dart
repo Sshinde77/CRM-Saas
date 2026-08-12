@@ -22,8 +22,6 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
   bool _useExistingCompany = true;
   String _paymentType = 'UPI';
   String _deliveryMethod = 'Takeaway Order';
-  String? _selectedProduct;
-
   static const List<String> _companyOptions = [
     'Hotel Grand Meridian',
     'Spice Route Restaurant',
@@ -182,7 +180,6 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
       setState(() => _deliveryMethod = value);
 
   void _selectProduct(String value) {
-    setState(() => _selectedProduct = value);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Selected product: $value'),
@@ -1306,19 +1303,6 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
           if (title.isNotEmpty) const SizedBox(height: 14),
           child,
         ],
-      ),
-    );
-  }
-
-  Widget _headerAction(String label, IconData icon) {
-    return OutlinedButton.icon(
-      onPressed: () {},
-      icon: Icon(icon, size: 16),
-      label: Text(label),
-      style: OutlinedButton.styleFrom(
-        foregroundColor: AppColors.textPrimary,
-        side: const BorderSide(color: Color(0xFFD1D5DB)),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
       ),
     );
   }

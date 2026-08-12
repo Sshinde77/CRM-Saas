@@ -434,17 +434,15 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   Widget _authorizedPersonAvatar() {
-    final initial =
-        _savedOwnerName.isNotEmpty ? _savedOwnerName[0].toUpperCase() : 'S';
+    final initial = _savedOwnerName.isNotEmpty
+        ? _savedOwnerName[0].toUpperCase()
+        : 'S';
     final photoUrl = _savedAuthorizedPhotoUrl?.trim();
 
     if (photoUrl == null || photoUrl.isEmpty) {
       return Text(
         initial,
-        style: const TextStyle(
-          color: _accent,
-          fontWeight: FontWeight.w800,
-        ),
+        style: const TextStyle(color: _accent, fontWeight: FontWeight.w800),
       );
     }
 
@@ -457,10 +455,7 @@ class _AccountScreenState extends State<AccountScreen> {
         errorBuilder: (context, error, stackTrace) {
           return Text(
             initial,
-            style: const TextStyle(
-              color: _accent,
-              fontWeight: FontWeight.w800,
-            ),
+            style: const TextStyle(color: _accent, fontWeight: FontWeight.w800),
           );
         },
       ),
@@ -605,7 +600,9 @@ class _AccountScreenState extends State<AccountScreen> {
                   value: 0.89,
                   strokeWidth: 10,
                   backgroundColor: const Color(0xFFE5E7EB),
-                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF16A34A)),
+                  valueColor: const AlwaysStoppedAnimation<Color>(
+                    Color(0xFF16A34A),
+                  ),
                 ),
                 const Center(
                   child: Text(
@@ -685,7 +682,9 @@ class _AccountScreenState extends State<AccountScreen> {
                 radius: 28,
                 backgroundColor: const Color(0xFFF3F4F6),
                 child: Text(
-                  _savedOwnerName.isNotEmpty ? _savedOwnerName[0].toUpperCase() : 'S',
+                  _savedOwnerName.isNotEmpty
+                      ? _savedOwnerName[0].toUpperCase()
+                      : 'S',
                   style: const TextStyle(
                     color: _accent,
                     fontWeight: FontWeight.w800,
@@ -997,10 +996,34 @@ class _AccountScreenState extends State<AccountScreen> {
         crossAxisSpacing: 10,
         childAspectRatio: 1.15,
         children: [
-          _quickActionTile('Edit Profile', Icons.edit_outlined, const Color(0xFFDCFCE7), const Color(0xFF16A34A)),
-          _quickActionTile('Upload Document', Icons.cloud_upload_outlined, const Color(0xFFE0E7FF), const Color(0xFF4F46E5)),
-          _quickActionTile('Invite User', Icons.person_add_alt_1_outlined, const Color(0xFFF3E8FF), const Color(0xFF7C3AED)),
-          _quickActionTile('View Reports', Icons.bar_chart_outlined, const Color(0xFFFFEDD5), const Color(0xFFF97316)),
+          _quickActionTile(
+            'Edit Profile',
+            Icons.edit_outlined,
+            const Color(0xFFDCFCE7),
+            const Color(0xFF16A34A),
+            onTap: () {},
+          ),
+          _quickActionTile(
+            'Upload Document',
+            Icons.cloud_upload_outlined,
+            const Color(0xFFE0E7FF),
+            const Color(0xFF4F46E5),
+            onTap: () {},
+          ),
+          _quickActionTile(
+            'Invite User',
+            Icons.person_add_alt_1_outlined,
+            const Color(0xFFF3E8FF),
+            const Color(0xFF7C3AED),
+            onTap: () {},
+          ),
+          _quickActionTile(
+            'View Reports',
+            Icons.bar_chart_outlined,
+            const Color(0xFFFFEDD5),
+            const Color(0xFFF97316),
+            onTap: () {},
+          ),
         ],
       ),
     );
@@ -1010,9 +1033,9 @@ class _AccountScreenState extends State<AccountScreen> {
     String label,
     IconData icon,
     Color background,
-    Color color,
-    {required VoidCallback onTap}
-  ) {
+    Color color, {
+    required VoidCallback onTap,
+  }) {
     return Material(
       color: Colors.white,
       borderRadius: BorderRadius.circular(16),
@@ -1054,37 +1077,29 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   Future<void> _openGeneralInformation() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const GeneralInformationScreen(),
-      ),
-    );
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const GeneralInformationScreen()));
     if (!mounted) return;
     await _loadOrganizationSettings();
   }
 
   void _openDocuments() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const DocumentsScreen(),
-      ),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const DocumentsScreen()));
   }
 
   void _openAdditionalInformation() {
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const AdditionalInformationScreen(),
-      ),
+      MaterialPageRoute(builder: (_) => const AdditionalInformationScreen()),
     );
   }
 
   void _openBusinessSettings() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const BusinessSettingsScreen(),
-      ),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const BusinessSettingsScreen()));
   }
 
   Widget _miniOverviewRow(String label, String value) {

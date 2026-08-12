@@ -88,8 +88,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         SnackBar(content: Text('Failed to change password: $error')),
       );
     } finally {
-      if (!mounted) return;
-      setState(() => _saving = false);
+      if (mounted) {
+        setState(() => _saving = false);
+      }
     }
   }
 

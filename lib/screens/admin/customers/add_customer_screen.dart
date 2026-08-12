@@ -58,6 +58,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     'Suspended',
     'Locked',
   ];
+  // ignore: unused_field
   static const List<String> _stateOptions = [
     'Maharashtra',
     'Gujarat',
@@ -170,8 +171,11 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   String? _selectedLeadSource;
   String? _selectedTerritory;
   String? _selectedCustomerPriority;
+  // ignore: unused_field
   String? _selectedCountry;
+  // ignore: unused_field
   String? _selectedState;
+  // ignore: unused_field
   String? _selectedPaymentTerm;
   bool _taxExempt = false;
   bool _sameAsBilling = false;
@@ -677,6 +681,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildIntroPanel() {
     return Container(
       width: double.infinity,
@@ -1978,7 +1983,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                       fontWeight: FontWeight.w600,
                     ),
                   )
-                : Image.memory(bytes!, fit: BoxFit.cover),
+                : Image.memory(bytes, fit: BoxFit.cover),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -2070,6 +2075,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildFormPanel({
     required List<AppUser> users,
     required AppUser? selectedSalesOfficer,
@@ -2564,6 +2570,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     );
   }
 
+  // ignore: unused_element
   Widget _dropdownField<T>({
     T? value,
     required List<T> items,

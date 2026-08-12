@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../constants/app_colors.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
-import 'new_quotation_screen.dart';
+import 'create_quotation_screen.dart';
 
 class AdminQuotationsScreen extends StatefulWidget {
   const AdminQuotationsScreen({super.key});
@@ -59,17 +59,12 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
     super.dispose();
   }
 
-  void _showSnack(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
-    );
-  }
-
   List<_QuotationRecord> _filteredQuotations() {
     final query = _searchController.text.trim().toLowerCase();
     return _quotations.where((quotation) {
       final statusOk =
-          _selectedStatus == 'All status' || quotation.status == _selectedStatus;
+          _selectedStatus == 'All status' ||
+          quotation.status == _selectedStatus;
       if (!statusOk) return false;
       if (query.isEmpty) return true;
       return quotation.number.toLowerCase().contains(query) ||
@@ -171,7 +166,10 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0B4A06),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 14,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(999),
                   ),
@@ -251,7 +249,10 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF0B4A06),
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 13,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(999),
                       ),
@@ -328,14 +329,14 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
       onChanged: (_) => setState(() {}),
       decoration: InputDecoration(
         hintText: 'Search quotations',
-        hintStyle: const TextStyle(
-          color: Color(0xFF94A3B8),
-          fontSize: 13.5,
-        ),
+        hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13.5),
         prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF94A3B8)),
         filled: true,
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 12,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
@@ -370,7 +371,10 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 11,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
@@ -384,7 +388,10 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
           borderSide: const BorderSide(color: Color(0xFF0B4A06)),
         ),
       ),
-      icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF94A3B8)),
+      icon: const Icon(
+        Icons.keyboard_arrow_down_rounded,
+        color: Color(0xFF94A3B8),
+      ),
       items: _statusOptions
           .map(
             (status) => DropdownMenuItem<String>(
@@ -428,107 +435,110 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
             ),
           ]
         : quotations
-            .map(
-              (record) => Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 190,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            record.number,
-                            style: const TextStyle(
-                              color: Color(0xFF0F172A),
-                              fontSize: 15,
-                              fontWeight: FontWeight.w800,
+              .map(
+                (record) => Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 16,
+                  ),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 190,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              record.number,
+                              style: const TextStyle(
+                                color: Color(0xFF0F172A),
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            record.itemCount,
-                            style: const TextStyle(
-                              color: Color(0xFF94A3B8),
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
+                            const SizedBox(height: 4),
+                            Text(
+                              record.itemCount,
+                              style: const TextStyle(
+                                color: Color(0xFF94A3B8),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(
+                        width: 260,
+                        child: Text(
+                          record.customer,
+                          style: const TextStyle(
+                            color: Color(0xFF334155),
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
                           ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      width: 260,
-                      child: Text(
-                        record.customer,
-                        style: const TextStyle(
-                          color: Color(0xFF334155),
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                    ),
-                    SizedBox(
-                      width: 180,
-                      child: Text(
-                        record.salesperson,
-                        style: const TextStyle(
-                          color: Color(0xFF334155),
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
+                      SizedBox(
+                        width: 180,
+                        child: Text(
+                          record.salesperson,
+                          style: const TextStyle(
+                            color: Color(0xFF334155),
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
-                    ),
-                    SizedBox(
-                      width: 150,
-                      child: Text(
-                        record.date,
-                        style: const TextStyle(
-                          color: Color(0xFF334155),
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
+                      SizedBox(
+                        width: 150,
+                        child: Text(
+                          record.date,
+                          style: const TextStyle(
+                            color: Color(0xFF334155),
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
-                    ),
-                    SizedBox(
-                      width: 150,
-                      child: Text(
-                        record.validUntil,
-                        style: const TextStyle(
-                          color: Color(0xFF334155),
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
+                      SizedBox(
+                        width: 150,
+                        child: Text(
+                          record.validUntil,
+                          style: const TextStyle(
+                            color: Color(0xFF334155),
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
-                    ),
-                    SizedBox(
-                      width: 120,
-                      child: Text(
-                        record.amount,
-                        style: const TextStyle(
-                          color: Color(0xFF0F172A),
-                          fontSize: 15,
-                          fontWeight: FontWeight.w800,
+                      SizedBox(
+                        width: 120,
+                        child: Text(
+                          record.amount,
+                          style: const TextStyle(
+                            color: Color(0xFF0F172A),
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
                       ),
-                    ),
-                    SizedBox(
-                      width: 110,
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: _StatusChip(
-                          label: record.status,
-                          background: record.statusBackground,
-                          foreground: record.statusColor,
+                      SizedBox(
+                        width: 110,
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: _StatusChip(
+                            label: record.status,
+                            background: record.statusBackground,
+                            foreground: record.statusColor,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            )
-            .toList();
+              )
+              .toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

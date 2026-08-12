@@ -126,9 +126,9 @@ class _SalesManagerCustomersScreenState
       return;
     }
     if (action == 'Visits') {
-      Navigator.of(
-        context,
-      ).push(MaterialPageRoute(builder: (_) => const SalesManagerVisitsScreen()));
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const SalesManagerVisitsScreen()),
+      );
       return;
     }
     _showMessage('$action is not wired yet');
