@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
 
 import '../../../constants/app_colors.dart';
 import '../../../models/auth_models.dart';
@@ -127,6 +128,7 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
   bool _savedShippingSameAsBilling = false;
   Uint8List? _profilePictureBytes;
   String? _profilePictureName;
+  String? _profilePictureUrl;
   Uint8List? _signatureBytes;
   String? _signatureName;
 
@@ -177,6 +179,13 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
       if (picked == null || !mounted) return;
       final bytes = await picked.readAsBytes();
       if (!mounted) return;
+      String? uploadedUrl;
+      if (!isSignature) {
+        uploadedUrl = await _apiService.uploadOrganizationSettingsFile(
+          fileBytes: bytes,
+          fileName: picked.name,
+        );
+      }
       setState(() {
         if (isSignature) {
           _signatureBytes = bytes;
@@ -184,6 +193,9 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
         } else {
           _profilePictureBytes = bytes;
           _profilePictureName = picked.name;
+          if (uploadedUrl != null && uploadedUrl.trim().isNotEmpty) {
+            _profilePictureUrl = uploadedUrl.trim();
+          }
         }
       });
     } catch (error) {
@@ -306,6 +318,9 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
     final officialEmail = _readString(data, 'email');
     final website = _readString(data, 'website');
     final supportNumber = _readString(data, 'customer_support_number');
+    final profilePictureUrl =
+        _readString(data, 'auth_person_photo_url') ??
+        _readString(data, 'profile_picture_url');
     final registeredAddress =
         _readString(data, 'registered_address') ?? _readString(data, 'address');
     final city = _readString(data, 'city');
@@ -377,6 +392,16 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
     if (supportNumber != null) {
       _supportNumberController.text = supportNumber;
       _savedSupportNumber = supportNumber;
+    }
+    if (profilePictureUrl != null) {
+      _profilePictureUrl = profilePictureUrl;
+      _profilePictureName = _extractFileName(profilePictureUrl);
+      _loadRemoteBytes(profilePictureUrl).then((bytes) {
+        if (!mounted || bytes == null) return;
+        setState(() {
+          _profilePictureBytes = bytes;
+        });
+      });
     }
     if (registeredAddress != null) {
       _registeredAddressController.text = registeredAddress;
@@ -1005,6 +1030,7 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
       _putIfNotBlank(payload, 'pan_number', _panController.text);
       _putIfNotBlank(payload, 'description', _descriptionController.text);
       _putIfNotBlank(payload, 'primary_mobile', _primaryMobileController.text);
+      _putIfNotBlank(payload, 'auth_person_photo_url', _profilePictureUrl);
       _putIfNotBlank(
         payload,
         'alternate_mobile',
@@ -1065,6 +1091,24 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
     if (trimmed != null && trimmed.isNotEmpty) {
       payload[key] = trimmed;
     }
+  }
+
+  String _extractFileName(String url) {
+    final uri = Uri.tryParse(url);
+    if (uri == null || uri.pathSegments.isEmpty) return url;
+    return uri.pathSegments.last;
+  }
+
+  Future<Uint8List?> _loadRemoteBytes(String url) async {
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return response.bodyBytes;
+      }
+    } catch (_) {
+      // Ignore preview loading failures.
+    }
+    return null;
   }
 
   Widget _fieldBlock({
@@ -1260,20 +1304,12 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
                               ? onPreview
                               : onUpload,
                         ),
-                        if (previewBytes != null)
-                          _attachmentButton(
-                            label: uploadLabel,
-                            icon: Icons.upload_outlined,
-                            active: true,
-                            onPressed: onUpload,
-                          ),
-                        if (previewBytes != null)
-                          _attachmentButton(
-                            label: 'Remove',
-                            icon: Icons.delete_outline_rounded,
-                            active: true,
-                            onPressed: onRemove,
-                          ),
+                        _attachmentButton(
+                          label: 'Remove',
+                          icon: Icons.delete_outline_rounded,
+                          active: previewBytes != null,
+                          onPressed: onRemove,
+                        ),
                       ],
                     ),
                   ],

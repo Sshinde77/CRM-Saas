@@ -199,10 +199,17 @@ class _BrandingIdentityScreenState extends State<BrandingIdentityScreen> {
     String fileName,
   ) async {
     if (type == _BrandAssetType.logo) {
-      return _apiService.uploadOrganizationLogo(
-        fileBytes: bytes,
-        fileName: fileName,
-      );
+      try {
+        return await _apiService.uploadOrganizationLogo(
+          fileBytes: bytes,
+          fileName: fileName,
+        );
+      } catch (_) {
+        return _apiService.uploadOrganizationSettingsFile(
+          fileBytes: bytes,
+          fileName: fileName,
+        );
+      }
     }
 
     return _apiService.uploadOrganizationSettingsFile(

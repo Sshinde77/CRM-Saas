@@ -243,38 +243,14 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildMobilePanelHeader(totalLeads),
+        _buildMobilePanelHeader(shownLeads.length, totalLeads),
         const SizedBox(height: 12),
-        _buildMobileFilters(),
-        const SizedBox(height: 12),
-        _buildMobileSummaryRow(shownLeads.length, totalLeads),
-        const SizedBox(height: 12),
-        if (shownLeads.isEmpty)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 24),
-            child: Center(
-              child: Text(
-                'No leads found.',
-                style: TextStyle(color: Color(0xFF6B7280), fontSize: 14),
-              ),
-            ),
-          )
-        else
-          Column(
-            children: [
-              for (var i = 0; i < shownLeads.length; i++) ...[
-                _LeadMobileCard(record: shownLeads[i]),
-                if (i != shownLeads.length - 1) const SizedBox(height: 12),
-              ],
-            ],
-          ),
-        const SizedBox(height: 12),
-        _buildMobileFooter(),
+        _buildMobileTableCard(shownLeads, totalLeads),
       ],
     );
   }
 
-  Widget _buildMobilePanelHeader(int totalLeads) {
+  Widget _buildMobilePanelHeader(int shownLeads, int totalLeads) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
@@ -296,189 +272,175 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
           Row(
             children: [
               Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () => _showSnack('Manage is not wired yet'),
-                  icon: const Icon(Icons.tune_rounded, size: 16),
-                  label: const Text('Manage'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF0F172A),
-                    side: const BorderSide(color: Color(0xFFD1D5DB)),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 12,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: _openAddLeadPage,
-                  icon: const Icon(Icons.add, size: 18),
-                  label: const Text('Add Lead'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0B4A06),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 12,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: [
-              _miniActionButton('Bulk Upload', Icons.upload_rounded),
-              _miniActionButton('Export', Icons.download_rounded),
-              _miniActionButton('Refresh', Icons.refresh_rounded),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _miniActionButton(String label, IconData icon) {
-    return OutlinedButton.icon(
-      onPressed: () => _showSnack('$label is not wired yet'),
-      icon: Icon(icon, size: 16, color: const Color(0xFF475569)),
-      label: Text(label),
-      style: OutlinedButton.styleFrom(
-        foregroundColor: const Color(0xFF111827),
-        side: const BorderSide(color: Color(0xFFD1D5DB)),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-        textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-      ),
-    );
-  }
-
-  Widget _buildMobileFilters() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      child: Column(
-        children: [
-          _filterField(
-            width: double.infinity,
-            hintText: 'Search leads...',
-            controller: _searchController,
-            prefixIcon: Icons.search_rounded,
-          ),
-          const SizedBox(height: 10),
-          _filterDropdownRow(),
-          const SizedBox(height: 10),
-          _filterField(
-            width: double.infinity,
-            hintText: 'Filter by product...',
-            controller: _productFilterController,
-            prefixIcon: Icons.search_rounded,
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                child: _dropdownFilter(
-                  width: double.infinity,
-                  value: '$_selectedPageSize / page',
-                  items: _pageSizeOptions
-                      .map((size) => '$size / page')
-                      .toList(),
-                  onChanged: (value) {
-                    if (value == null) return;
-                    setState(
-                      () =>
-                          _selectedPageSize = int.parse(value.split(' ').first),
-                    );
-                  },
+                child: _searchField(
+                  controller: _searchController,
+                  hintText: 'Search leads...',
                 ),
               ),
               const SizedBox(width: 10),
               _iconBox(Icons.refresh_rounded, () => setState(() {})),
             ],
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _filterDropdownRow() {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: _dropdownFilter(
-                width: double.infinity,
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              _pillFilter(
                 value: _statusFilter,
                 items: _statusOptions,
                 onChanged: (value) =>
                     setState(() => _statusFilter = value ?? _statusFilter),
               ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _dropdownFilter(
-                width: double.infinity,
+              _pillFilter(
                 value: _sourceFilter,
                 items: _sourceOptions,
                 onChanged: (value) =>
                     setState(() => _sourceFilter = value ?? _sourceFilter),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(
-              child: _dropdownFilter(
-                width: double.infinity,
+              _pillFilter(
                 value: _teamFilter,
                 items: _teamOptions,
                 onChanged: (value) =>
                     setState(() => _teamFilter = value ?? _teamFilter),
               ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMobileSummaryRow(int shownCount, int totalCount) {
-    return Row(
-      children: [
-        Text(
-          'Showing $shownCount of $totalCount leads',
-          style: const TextStyle(
-            color: Color(0xFF6B7280),
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
+              _pillFilter(
+                value: '$_selectedPageSize / page',
+                items: _pageSizeOptions.map((e) => '$e / page').toList(),
+                onChanged: (value) {
+                  if (value == null) return;
+                  setState(
+                    () => _selectedPageSize = int.parse(value.split(' ').first),
+                  );
+                },
+              ),
+            ],
           ),
-        ),
-      ],
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Showing $shownLeads of $totalLeads leads',
+                  style: const TextStyle(
+                    color: Color(0xFF64748B),
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              ElevatedButton.icon(
+                onPressed: _openAddLeadPage,
+                icon: const Icon(Icons.add, size: 18),
+                label: const Text('Add Lead'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0B4A06),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  textStyle: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildMobileFooter() {
-    return const SizedBox(height: 4);
+  Widget _buildMobileTableCard(List<_LeadRecord> leads, int totalLeads) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 14,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+            child: Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    'Lead List',
+                    style: TextStyle(
+                      color: Color(0xFF0F172A),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                Text(
+                  '$totalLeads leads',
+                  style: const TextStyle(
+                    color: Color(0xFF64748B),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1, color: Color(0xFFE5E7EB)),
+          if (leads.isEmpty)
+            const Padding(
+              padding: EdgeInsets.all(28),
+              child: Center(
+                child: Text(
+                  'No leads found.',
+                  style: TextStyle(
+                    color: Color(0xFF6B7280),
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            )
+          else
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 1200),
+                child: _buildTableCard(leads),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _topIconButton(IconData icon, VoidCallback onTap) {
+    return Container(
+      width: 38,
+      height: 38,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        shape: BoxShape.circle,
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: IconButton(
+        onPressed: onTap,
+        icon: Icon(icon, size: 18, color: const Color(0xFF6B7280)),
+        padding: EdgeInsets.zero,
+      ),
+    );
   }
 
   Widget _buildPanelHeader() {
@@ -650,6 +612,59 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
 
   Widget _buildFilterChipsRow() {
     return const SizedBox.shrink();
+  }
+
+  Widget _searchField({
+    required TextEditingController controller,
+    required String hintText,
+  }) {
+    return SizedBox(
+      height: 38,
+      child: TextField(
+        controller: controller,
+        onChanged: (_) => setState(() {}),
+        decoration: InputDecoration(
+          hintText: hintText,
+          hintStyle: const TextStyle(
+            color: Color(0xFF94A3B8),
+            fontSize: 13.5,
+          ),
+          prefixIcon: const Icon(
+            Icons.search_rounded,
+            size: 18,
+            color: Color(0xFF94A3B8),
+          ),
+          filled: true,
+          fillColor: Colors.white,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Color(0xFF0B4A06)),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _pillFilter({
+    required String value,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return _dropdownFilter(
+      width: double.infinity,
+      value: value,
+      items: items,
+      onChanged: onChanged,
+    );
   }
 
   Widget _filterField({

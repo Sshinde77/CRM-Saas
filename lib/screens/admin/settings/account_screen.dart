@@ -7,6 +7,10 @@ import '../../../models/auth_models.dart';
 import '../../../providers/api_provider.dart';
 import '../../../services/api_service.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
+import 'additional_information_screen.dart';
+import 'business_settings_screen.dart';
+import 'documents_screen.dart';
+import 'general_information_screen.dart';
 import 'company_settings_constants.dart';
 
 class AccountScreen extends StatefulWidget {
@@ -50,6 +54,8 @@ class _AccountScreenState extends State<AccountScreen> {
   String? _savedIndustry;
   String _savedStatus = 'Active';
   String _savedDesignation = 'Admin';
+  String? _savedAuthorizedPhotoUrl;
+  String? _savedLogoUrl;
   bool _isEditing = false;
   bool _accountDetailsExpanded = true;
   bool _authorizedPersonExpanded = true;
@@ -337,14 +343,7 @@ class _AccountScreenState extends State<AccountScreen> {
                   color: const Color(0xFFF8FAFC),
                 ),
                 alignment: Alignment.center,
-                child: Text(
-                  company.isNotEmpty ? company[0].toUpperCase() : 'C',
-                  style: const TextStyle(
-                    color: _accent,
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
+                child: _companyAvatar(company),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -393,6 +392,77 @@ class _AccountScreenState extends State<AccountScreen> {
           const SizedBox(height: 10),
           _miniOverviewRow('Plan', 'Enterprise'),
         ],
+      ),
+    );
+  }
+
+  Widget _companyAvatar(String company) {
+    final initial = company.isNotEmpty ? company[0].toUpperCase() : 'C';
+    final logoUrl = _savedLogoUrl?.trim();
+
+    if (logoUrl == null || logoUrl.isEmpty) {
+      return Text(
+        initial,
+        style: const TextStyle(
+          color: _accent,
+          fontSize: 24,
+          fontWeight: FontWeight.w800,
+        ),
+      );
+    }
+
+    return ClipOval(
+      child: Image.network(
+        logoUrl,
+        width: 72,
+        height: 72,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Center(
+            child: Text(
+              initial,
+              style: const TextStyle(
+                color: _accent,
+                fontSize: 24,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _authorizedPersonAvatar() {
+    final initial =
+        _savedOwnerName.isNotEmpty ? _savedOwnerName[0].toUpperCase() : 'S';
+    final photoUrl = _savedAuthorizedPhotoUrl?.trim();
+
+    if (photoUrl == null || photoUrl.isEmpty) {
+      return Text(
+        initial,
+        style: const TextStyle(
+          color: _accent,
+          fontWeight: FontWeight.w800,
+        ),
+      );
+    }
+
+    return ClipOval(
+      child: Image.network(
+        photoUrl,
+        width: 56,
+        height: 56,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Text(
+            initial,
+            style: const TextStyle(
+              color: _accent,
+              fontWeight: FontWeight.w800,
+            ),
+          );
+        },
       ),
     );
   }
@@ -526,8 +596,8 @@ class _AccountScreenState extends State<AccountScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 92,
-            height: 92,
+            width: 100,
+            height: 100,
             child: Stack(
               alignment: Alignment.center,
               children: [
@@ -535,9 +605,7 @@ class _AccountScreenState extends State<AccountScreen> {
                   value: 0.89,
                   strokeWidth: 10,
                   backgroundColor: const Color(0xFFE5E7EB),
-                  valueColor: const AlwaysStoppedAnimation<Color>(
-                    Color(0xFF16A34A),
-                  ),
+                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF16A34A)),
                 ),
                 const Center(
                   child: Text(
@@ -555,7 +623,7 @@ class _AccountScreenState extends State<AccountScreen> {
             ),
           ),
           const SizedBox(width: 14),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -595,14 +663,7 @@ class _AccountScreenState extends State<AccountScreen> {
                   style: TextStyle(color: _mutedColor, fontSize: 11.5),
                 ),
                 SizedBox(height: 8),
-                Text(
-                  'Complete Now',
-                  style: TextStyle(
-                    color: _accent,
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
+                _profileCompletionAction(),
               ],
             ),
           ),
@@ -621,12 +682,10 @@ class _AccountScreenState extends State<AccountScreen> {
           Row(
             children: [
               CircleAvatar(
-                radius: 22,
+                radius: 28,
                 backgroundColor: const Color(0xFFF3F4F6),
                 child: Text(
-                  _savedOwnerName.isNotEmpty
-                      ? _savedOwnerName[0].toUpperCase()
-                      : 'S',
+                  _savedOwnerName.isNotEmpty ? _savedOwnerName[0].toUpperCase() : 'S',
                   style: const TextStyle(
                     color: _accent,
                     fontWeight: FontWeight.w800,
@@ -684,6 +743,7 @@ class _AccountScreenState extends State<AccountScreen> {
                   foreground: _titleColor,
                   background: Colors.white,
                   borderColor: const Color(0xFFD8DFD8),
+                  onTap: () => _openGeneralInformation(),
                 ),
               ),
               const SizedBox(width: 10),
@@ -751,12 +811,19 @@ class _AccountScreenState extends State<AccountScreen> {
             ),
           ),
           const Divider(height: 20),
-          const Text(
-            'View All Documents',
-            style: TextStyle(
-              color: _accent,
-              fontSize: 12.5,
-              fontWeight: FontWeight.w800,
+          InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: _openDocuments,
+            child: const Padding(
+              padding: EdgeInsets.symmetric(vertical: 2, horizontal: 4),
+              child: Text(
+                'View All Documents',
+                style: TextStyle(
+                  color: _accent,
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
             ),
           ),
         ],
@@ -850,12 +917,19 @@ class _AccountScreenState extends State<AccountScreen> {
 
     return _dashboardCard(
       title: 'Recent Activity',
-      trailing: const Text(
-        'View All',
-        style: TextStyle(
-          color: _accent,
-          fontSize: 12,
-          fontWeight: FontWeight.w800,
+      trailing: InkWell(
+        borderRadius: BorderRadius.circular(8),
+        onTap: _openAdditionalInformation,
+        child: const Padding(
+          padding: EdgeInsets.symmetric(vertical: 2, horizontal: 4),
+          child: Text(
+            'View All',
+            style: TextStyle(
+              color: _accent,
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
         ),
       ),
       child: Column(
@@ -923,30 +997,10 @@ class _AccountScreenState extends State<AccountScreen> {
         crossAxisSpacing: 10,
         childAspectRatio: 1.15,
         children: [
-          _quickActionTile(
-            'Edit Profile',
-            Icons.edit_outlined,
-            const Color(0xFFDCFCE7),
-            const Color(0xFF16A34A),
-          ),
-          _quickActionTile(
-            'Upload Document',
-            Icons.cloud_upload_outlined,
-            const Color(0xFFE0E7FF),
-            const Color(0xFF4F46E5),
-          ),
-          _quickActionTile(
-            'Invite User',
-            Icons.person_add_alt_1_outlined,
-            const Color(0xFFF3E8FF),
-            const Color(0xFF7C3AED),
-          ),
-          _quickActionTile(
-            'View Reports',
-            Icons.bar_chart_outlined,
-            const Color(0xFFFFEDD5),
-            const Color(0xFFF97316),
-          ),
+          _quickActionTile('Edit Profile', Icons.edit_outlined, const Color(0xFFDCFCE7), const Color(0xFF16A34A)),
+          _quickActionTile('Upload Document', Icons.cloud_upload_outlined, const Color(0xFFE0E7FF), const Color(0xFF4F46E5)),
+          _quickActionTile('Invite User', Icons.person_add_alt_1_outlined, const Color(0xFFF3E8FF), const Color(0xFF7C3AED)),
+          _quickActionTile('View Reports', Icons.bar_chart_outlined, const Color(0xFFFFEDD5), const Color(0xFFF97316)),
         ],
       ),
     );
@@ -957,36 +1011,78 @@ class _AccountScreenState extends State<AccountScreen> {
     IconData icon,
     Color background,
     Color color,
+    {required VoidCallback onTap}
   ) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFDDE3EA)),
+        onTap: onTap,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFDDE3EA)),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: background,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: color, size: 18),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: _titleColor,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: background,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: color, size: 18),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: _titleColor,
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
+    );
+  }
+
+  Future<void> _openGeneralInformation() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const GeneralInformationScreen(),
+      ),
+    );
+    if (!mounted) return;
+    await _loadOrganizationSettings();
+  }
+
+  void _openDocuments() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const DocumentsScreen(),
+      ),
+    );
+  }
+
+  void _openAdditionalInformation() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const AdditionalInformationScreen(),
+      ),
+    );
+  }
+
+  void _openBusinessSettings() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const BusinessSettingsScreen(),
       ),
     );
   }
@@ -1046,21 +1142,47 @@ class _AccountScreenState extends State<AccountScreen> {
     required Color foreground,
     required Color background,
     required Color borderColor,
+    VoidCallback? onTap,
   }) {
-    return Container(
-      height: 38,
-      decoration: BoxDecoration(
-        color: background,
+    return Material(
+      color: background,
+      borderRadius: BorderRadius.circular(999),
+      child: InkWell(
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: borderColor),
+        onTap: onTap,
+        child: Container(
+          height: 38,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(color: borderColor),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            label,
+            style: TextStyle(
+              color: foreground,
+              fontSize: 12.5,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
       ),
-      alignment: Alignment.center,
-      child: Text(
-        label,
-        style: TextStyle(
-          color: foreground,
-          fontSize: 12.5,
-          fontWeight: FontWeight.w700,
+    );
+  }
+
+  Widget _profileCompletionAction() {
+    return InkWell(
+      borderRadius: BorderRadius.circular(8),
+      onTap: () => _openGeneralInformation(),
+      child: const Padding(
+        padding: EdgeInsets.symmetric(vertical: 2, horizontal: 4),
+        child: Text(
+          'Complete Now',
+          style: TextStyle(
+            color: _accent,
+            fontSize: 12.5,
+            fontWeight: FontWeight.w800,
+          ),
         ),
       ),
     );
@@ -1270,6 +1392,10 @@ class _AccountScreenState extends State<AccountScreen> {
     final email =
         _readString(data, 'auth_person_email') ?? _readString(data, 'email');
     final companyStatus = _readString(data, 'company_status');
+    final authorizedPhotoUrl =
+        _readString(data, 'auth_person_photo_url') ??
+        _readString(data, 'profile_picture_url');
+    final logoUrl = _readString(data, 'logo_url');
 
     if (legalName != null) {
       _legalNameController.text = legalName;
@@ -1306,6 +1432,8 @@ class _AccountScreenState extends State<AccountScreen> {
       }
       _savedStatus = _selectedStatus;
     }
+    _savedAuthorizedPhotoUrl = authorizedPhotoUrl;
+    _savedLogoUrl = logoUrl;
   }
 
   String? _readString(Map<String, dynamic> data, String key) {
