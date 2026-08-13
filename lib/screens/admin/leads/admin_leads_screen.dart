@@ -22,6 +22,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
   String _statusFilter = 'All Status';
   String _sourceFilter = 'All Sources';
   String _teamFilter = 'All Team';
+  bool _showMobileFilters = false;
 
   final List<String> _statusOptions = const [
     'All Status',
@@ -264,43 +265,48 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                 ),
               ),
               const SizedBox(width: 10),
+              _mobileFilterToggleButton(),
+              const SizedBox(width: 10),
               _iconBox(Icons.refresh_rounded, () => setState(() {})),
             ],
           ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: [
-              _pillFilter(
-                value: _statusFilter,
-                items: _statusOptions,
-                onChanged: (value) =>
-                    setState(() => _statusFilter = value ?? _statusFilter),
-              ),
-              _pillFilter(
-                value: _sourceFilter,
-                items: _sourceOptions,
-                onChanged: (value) =>
-                    setState(() => _sourceFilter = value ?? _sourceFilter),
-              ),
-              _pillFilter(
-                value: _teamFilter,
-                items: _teamOptions,
-                onChanged: (value) =>
-                    setState(() => _teamFilter = value ?? _teamFilter),
-              ),
-              _pillFilter(
-                value: '$_selectedPageSize / page',
-                items: _pageSizeOptions.map((e) => '$e / page').toList(),
-                onChanged: (value) {
-                  if (value == null) return;
-                  setState(
-                    () => _selectedPageSize = int.parse(value.split(' ').first),
-                  );
-                },
-              ),
-            ],
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 220),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.easeInCubic,
+            child: _showMobileFilters
+                ? Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: Column(
+                      key: const ValueKey('mobile-filters-open'),
+                      children: [
+                        _pillFilter(
+                          value: _statusFilter,
+                          items: _statusOptions,
+                          onChanged: (value) => setState(
+                            () => _statusFilter = value ?? _statusFilter,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        _pillFilter(
+                          value: _sourceFilter,
+                          items: _sourceOptions,
+                          onChanged: (value) => setState(
+                            () => _sourceFilter = value ?? _sourceFilter,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        _pillFilter(
+                          value: _teamFilter,
+                          items: _teamOptions,
+                          onChanged: (value) => setState(
+                            () => _teamFilter = value ?? _teamFilter,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : const SizedBox.shrink(key: ValueKey('mobile-filters-closed')),
           ),
           const SizedBox(height: 12),
           LayoutBuilder(
@@ -926,6 +932,45 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
             borderRadius: BorderRadius.circular(12),
             borderSide: const BorderSide(color: Color(0xFF0B4A06)),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _mobileFilterToggleButton() {
+    final hasActiveFilters =
+        _statusFilter != 'All Status' ||
+        _sourceFilter != 'All Sources' ||
+        _teamFilter != 'All Team';
+
+    return SizedBox(
+      height: 38,
+      child: OutlinedButton.icon(
+        onPressed: () {
+          setState(() => _showMobileFilters = !_showMobileFilters);
+        },
+        icon: Icon(
+          _showMobileFilters ? Icons.close_rounded : Icons.tune_rounded,
+          size: 18,
+        ),
+        label: const Text('Filter'),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: hasActiveFilters
+              ? const Color(0xFF0B4A06)
+              : const Color(0xFF475569),
+          side: BorderSide(
+            color: hasActiveFilters
+                ? const Color(0xFF0B4A06)
+                : const Color(0xFFD1D5DB),
+          ),
+          backgroundColor: hasActiveFilters
+              ? const Color(0xFFF0FDF4)
+              : Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
         ),
       ),
     );
