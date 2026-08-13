@@ -19,6 +19,7 @@ import '../../screens/admin/reports/reports_screen.dart';
 import '../../screens/admin/settings/admin_settings_screen.dart';
 import '../../screens/admin/settings/company_settings_screen.dart';
 import '../../screens/admin/settings/plans_screen.dart';
+import '../../screens/admin/suppliers/suppliers_screen.dart';
 import '../../screens/admin/users/admin_user_list_screen.dart';
 import '../../screens/admin/vehicles/vehicle_stock_screen.dart';
 import '../../screens/admin/quotations/admin_quotations_screen.dart';
@@ -96,7 +97,7 @@ class AppDrawer extends StatefulWidget {
       _NavItem('Customers', Icons.groups_2_outlined),
       _NavItem('Leads', Icons.person_add_alt_1_outlined),
       _NavItem('Quotation', Icons.description_outlined),
-      _NavItem('Suppliers', Icons.local_shipping_outlined, enabled: false),
+      _NavItem('Suppliers', Icons.local_shipping_outlined),
       _NavItem('Categories', Icons.category_outlined, enabled: false),
       _NavItem('Products', Icons.inventory_2_outlined),
     ]),
@@ -224,6 +225,11 @@ class _AppDrawerState extends State<AppDrawer> {
       case 'Quotation':
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const AdminQuotationsScreen()),
+        );
+        break;
+      case 'Suppliers':
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const SuppliersScreen()),
         );
         break;
       case 'Products':
