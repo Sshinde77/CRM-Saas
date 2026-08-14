@@ -29,10 +29,10 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
   static const List<String> _categories = [
     'Select category',
     'Manufacturer',
-    'Distributor',
-    'Wholesaler',
-    'Retailer',
-    'Service Provider',
+    'Packaging',
+    'Raw Materials',
+    'Logistics',
+    'Other',
   ];
 
   @override

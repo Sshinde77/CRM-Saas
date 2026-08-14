@@ -14,8 +14,11 @@ import '../../screens/admin/leads/admin_leads_screen.dart';
 import '../../screens/admin/notifications/notifications_screen.dart';
 import '../../screens/admin/orders/admin_orders_screen.dart';
 import '../../screens/admin/products/products_screen.dart';
+import '../../screens/admin/categories/categories_screen.dart';
+import '../../screens/admin/attendance/attendance_screen.dart';
 import '../../screens/admin/purchases/purchases_screen.dart';
 import '../../screens/admin/reports/reports_screen.dart';
+import '../../screens/admin/roles/roles_permissions_screen.dart';
 import '../../screens/admin/settings/admin_settings_screen.dart';
 import '../../screens/admin/settings/company_settings_screen.dart';
 import '../../screens/admin/settings/plans_screen.dart';
@@ -98,7 +101,7 @@ class AppDrawer extends StatefulWidget {
       _NavItem('Leads', Icons.person_add_alt_1_outlined),
       _NavItem('Quotation', Icons.description_outlined),
       _NavItem('Suppliers', Icons.local_shipping_outlined),
-      _NavItem('Categories', Icons.category_outlined, enabled: false),
+      _NavItem('Categories', Icons.category_outlined),
       _NavItem('Products', Icons.inventory_2_outlined),
     ]),
     _NavSection('Operations', [
@@ -120,9 +123,8 @@ class AppDrawer extends StatefulWidget {
       _NavItem(
         'Roles & Permissions',
         Icons.admin_panel_settings_outlined,
-        enabled: false,
       ),
-      _NavItem('Attendance', Icons.fact_check_outlined, enabled: false),
+      _NavItem('Attendance', Icons.fact_check_outlined),
       _NavItem('Notifications', Icons.notifications_none_rounded),
       _NavItem('Audit Logs', Icons.history_rounded),
       _NavItem('Settings', Icons.settings_outlined),
@@ -207,6 +209,18 @@ class _AppDrawerState extends State<AppDrawer> {
           MaterialPageRoute(builder: (_) => const AdminUserListScreen()),
         );
         break;
+      case 'Roles & Permissions':
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => const RolesPermissionsScreen(),
+          ),
+        );
+        break;
+      case 'Attendance':
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const AttendanceScreen()),
+        );
+        break;
       case 'Customers':
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const CustomersScreen()),
@@ -235,6 +249,11 @@ class _AppDrawerState extends State<AppDrawer> {
       case 'Products':
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const ProductsScreen()),
+        );
+        break;
+      case 'Categories':
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const CategoriesScreen()),
         );
         break;
       case 'Vehicle Stock':

@@ -21,11 +21,12 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
 
   static const List<String> _tabs = ['All', 'Active', 'Inactive'];
   static const List<String> _categories = [
+    'All categories',
     'Manufacturer',
     'Packaging',
     'Raw Materials',
     'Logistics',
-    'thers',
+    'Others',
   ];
 
   final List<_SupplierRecord> _suppliers = const [

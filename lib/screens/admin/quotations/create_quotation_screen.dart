@@ -72,12 +72,66 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
     'Delivery within 2 business days',
   ];
 
+  final List<_QuotationCatalogItem> _productOptions = const [
+    _QuotationCatalogItem(
+      name: 'Conference Setup',
+      sku: 'SRV-1001',
+      description: 'End-to-end event support and coordination.',
+      uom: 'Service',
+    ),
+    _QuotationCatalogItem(
+      name: 'Projector Rental',
+      sku: 'EQP-2044',
+      description: 'Full-day projector rental with basic cabling.',
+      uom: 'Day',
+    ),
+    _QuotationCatalogItem(
+      name: 'Premium Chair',
+      sku: 'FUR-3012',
+      description: 'Comfort seating for premium spaces and events.',
+      uom: 'Nos',
+    ),
+    _QuotationCatalogItem(
+      name: 'Office Stationery Pack',
+      sku: 'STY-1180',
+      description: 'Standard stationery bundle for daily office use.',
+      uom: 'Pack',
+    ),
+  ];
+
+  final List<String> _uomOptions = const [
+    'Nos',
+    'Pack',
+    'Box',
+    'Kg',
+    'Ltr',
+    'Hour',
+    'Day',
+    'Service',
+  ];
+
+  final List<String> _taxOptions = const [
+    '0%',
+    '5%',
+    '12%',
+    '18%',
+  ];
+
   String? _selectedCustomer;
   String? _selectedSalesperson;
   String _selectedCurrency = 'INR';
   String _selectedPaymentTerm = 'Net 15';
 
   final List<_QuotationItemDraft> _items = [_QuotationItemDraft()];
+
+  @override
+  void initState() {
+    super.initState();
+    for (final item in _items) {
+      item.attachRebuild(_onItemChanged);
+    }
+    _syncComputedFields();
+  }
 
   @override
   void dispose() {
@@ -149,18 +203,91 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
     );
   }
 
+  void _onItemChanged() {
+    _syncComputedFields();
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
   void _addItem() {
     setState(() {
-      _items.add(_QuotationItemDraft());
+      final item = _QuotationItemDraft();
+      item.attachRebuild(_onItemChanged);
+      _items.add(item);
+      _syncComputedFields();
     });
   }
 
   void _removeItem(int index) {
     if (_items.length == 1) return;
     setState(() {
-      _items[index].dispose();
-      _items.removeAt(index);
+      final item = _items.removeAt(index);
+      item.dispose();
     });
+  }
+
+  void _handleProductSelection(_QuotationItemDraft item, String? productName) {
+    _QuotationCatalogItem? product;
+    for (final option in _productOptions) {
+      if (option.name == productName) {
+        product = option;
+        break;
+      }
+    }
+
+    item.productController.text = product?.name ?? '';
+    item.skuController.text = product?.sku ?? '';
+    item.descriptionController.text = product?.description ?? '';
+    if (product != null) {
+      item.uomController.text = product.uom;
+    }
+    _syncComputedFields();
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  String _currencyPrefix() {
+    switch (_selectedCurrency) {
+      case 'USD':
+        return '\$';
+      case 'EUR':
+        return '€';
+      case 'INR':
+      default:
+        return '₹';
+    }
+  }
+
+  double _parseNumber(String text) {
+    return double.tryParse(text.trim()) ?? 0;
+  }
+
+  double _parsePercent(String text) {
+    return double.tryParse(text.replaceAll('%', '').trim()) ?? 0;
+  }
+
+  void _syncComputedFields() {
+    for (final item in _items) {
+      item.lineTotalController.text =
+          '${_currencyPrefix()}${_lineTotal(item).toStringAsFixed(2)}';
+    }
+  }
+
+  double _lineTotal(_QuotationItemDraft item) {
+    final quantity = _parseNumber(item.quantityController.text);
+    final unitPrice = _parseNumber(item.unitPriceController.text);
+    final discount = _parsePercent(item.discountController.text);
+    final tax = _parsePercent(item.taxController.text);
+    final subtotal = quantity * unitPrice;
+    final discounted = subtotal - (subtotal * discount / 100);
+    final taxed = discounted + (discounted * tax / 100);
+    return taxed < 0 ? 0 : taxed;
+  }
+
+  double get _quotationTotal {
+    return _items.fold<double>(0, (sum, item) => sum + _lineTotal(item));
   }
 
   @override
@@ -623,16 +750,31 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Quotation Items',
-              style: TextStyle(
-                color: Color(0xFF0F172A),
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  Text(
+                    'Quotation Items',
+                    style: TextStyle(
+                      color: Color(0xFF0F172A),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'Add products or services for this estimate.',
+                    style: TextStyle(
+                      color: Color(0xFF64748B),
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
               ),
             ),
-            const Spacer(),
             OutlinedButton.icon(
               onPressed: _addItem,
               icon: const Icon(Icons.add, size: 18),
@@ -652,10 +794,51 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
           _QuotationItemCard(
             index: i + 1,
             item: _items[i],
+            productOptions: _productOptions,
+            uomOptions: _uomOptions,
+            taxOptions: _taxOptions,
+            currencyPrefix: _currencyPrefix(),
+            canRemove: _items.length > 1,
+            onProductChanged: (value) => _handleProductSelection(_items[i], value),
             onRemove: () => _removeItem(i),
           ),
           if (i != _items.length - 1) const SizedBox(height: 14),
         ],
+        const SizedBox(height: 16),
+        Align(
+          alignment: Alignment.centerRight,
+          child: Container(
+            width: 170,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE5E7EB)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Quotation Total',
+                  style: TextStyle(
+                    color: Color(0xFF0F172A),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '${_currencyPrefix()}${_quotationTotal.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    color: Color(0xFF0B4A06),
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -822,24 +1005,77 @@ class _CompactCircleStep extends StatelessWidget {
 
 class _QuotationItemDraft {
   final TextEditingController productController = TextEditingController();
+  final TextEditingController skuController = TextEditingController();
+  final TextEditingController descriptionController = TextEditingController();
   final TextEditingController quantityController = TextEditingController(text: '1');
+  final TextEditingController uomController = TextEditingController();
   final TextEditingController unitPriceController = TextEditingController();
+  final TextEditingController discountController = TextEditingController(text: '0');
+  final TextEditingController taxController = TextEditingController();
+  final TextEditingController lineTotalController = TextEditingController();
+
+  VoidCallback? _listener;
+
+  void attachRebuild(VoidCallback listener) {
+    _listener = listener;
+    productController.addListener(listener);
+    skuController.addListener(listener);
+    descriptionController.addListener(listener);
+    quantityController.addListener(listener);
+    uomController.addListener(listener);
+    unitPriceController.addListener(listener);
+    discountController.addListener(listener);
+    taxController.addListener(listener);
+  }
+
+  void detachRebuild() {
+    final listener = _listener;
+    if (listener == null) return;
+    productController.removeListener(listener);
+    skuController.removeListener(listener);
+    descriptionController.removeListener(listener);
+    quantityController.removeListener(listener);
+    uomController.removeListener(listener);
+    unitPriceController.removeListener(listener);
+    discountController.removeListener(listener);
+    taxController.removeListener(listener);
+    _listener = null;
+  }
 
   void dispose() {
+    detachRebuild();
     productController.dispose();
+    skuController.dispose();
+    descriptionController.dispose();
     quantityController.dispose();
+    uomController.dispose();
     unitPriceController.dispose();
+    discountController.dispose();
+    taxController.dispose();
+    lineTotalController.dispose();
   }
 }
 
 class _QuotationItemCard extends StatelessWidget {
   final int index;
   final _QuotationItemDraft item;
+  final List<_QuotationCatalogItem> productOptions;
+  final List<String> uomOptions;
+  final List<String> taxOptions;
+  final String currencyPrefix;
+  final bool canRemove;
+  final ValueChanged<String?> onProductChanged;
   final VoidCallback onRemove;
 
   const _QuotationItemCard({
     required this.index,
     required this.item,
+    required this.productOptions,
+    required this.uomOptions,
+    required this.taxOptions,
+    required this.currencyPrefix,
+    required this.canRemove,
+    required this.onProductChanged,
     required this.onRemove,
   });
 
@@ -847,10 +1083,10 @@ class _QuotationItemCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        color: const Color(0xFFFCFCFD),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: const Color(0xFFE5E7EB)),
       ),
       child: Column(
@@ -862,62 +1098,177 @@ class _QuotationItemCard extends StatelessWidget {
                 'Item $index',
                 style: const TextStyle(
                   color: Color(0xFF0F172A),
-                  fontSize: 14.5,
+                  fontSize: 15,
                   fontWeight: FontWeight.w800,
                 ),
               ),
               const Spacer(),
-              IconButton(
-                onPressed: onRemove,
-                icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444)),
+              TextButton.icon(
+                onPressed: canRemove ? onRemove : null,
+                icon: Icon(
+                  Icons.delete_outline_rounded,
+                  size: 18,
+                  color: canRemove ? const Color(0xFFEF4444) : const Color(0xFF9CA3AF),
+                ),
+                label: Text(
+                  'Remove',
+                  style: TextStyle(
+                    color: canRemove ? const Color(0xFF9CA3AF) : const Color(0xFFD1D5DB),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 16),
           LayoutBuilder(
             builder: (context, constraints) {
-              final stacked = constraints.maxWidth < 700;
-              final productField = _FormField(
-                label: 'Product / Service',
-                controller: item.productController,
-                hintText: 'Enter item name',
+              final stacked = constraints.maxWidth < 840;
+              final skuField = _FormField(
+                label: 'SKU',
+                controller: item.skuController,
+                hintText: 'Auto-filled product code',
+                readOnly: true,
+              );
+              final descriptionField = _FormField(
+                label: 'Description',
+                controller: item.descriptionController,
+                hintText: 'Product description',
+                maxLines: 3,
               );
               final qtyField = _FormField(
-                label: 'Qty',
+                label: 'Quantity *',
                 controller: item.quantityController,
-                hintText: '1',
+                hintText: '0',
                 keyboardType: TextInputType.number,
               );
+              final uomField = _FormDropdown(
+                label: 'UOM *',
+                value: item.uomController.text.isEmpty ? null : item.uomController.text,
+                hintText: 'Select UOM',
+                items: uomOptions,
+                onChanged: (value) => item.uomController.text = value ?? '',
+              );
               final unitField = _FormField(
-                label: 'Unit Price',
+                label: 'Unit Price *',
                 controller: item.unitPriceController,
                 hintText: '0',
                 keyboardType: TextInputType.number,
+              );
+              final discountField = _FormField(
+                label: 'Discount (%)',
+                controller: item.discountController,
+                hintText: '0',
+                keyboardType: TextInputType.number,
+              );
+              final taxField = _FormDropdown(
+                label: 'Tax (%)',
+                value: item.taxController.text.isEmpty ? null : item.taxController.text,
+                hintText: 'Select tax',
+                items: taxOptions,
+                onChanged: (value) => item.taxController.text = value ?? '',
+              );
+              final lineTotalField = _FormField(
+                label: 'Line Total',
+                controller: item.lineTotalController,
+                hintText: '0.00',
+                readOnly: true,
+                prefixText: currencyPrefix,
               );
 
               if (stacked) {
                 return Column(
                   children: [
-                    productField,
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: _FormDropdown(
+                            label: 'Product *',
+                            value: item.productController.text.isEmpty ? null : item.productController.text,
+                            hintText: 'Select product or service',
+                            items: productOptions.map((product) => product.name).toList(),
+                            onChanged: onProductChanged,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(child: skuField),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    descriptionField,
                     const SizedBox(height: 14),
                     Row(
                       children: [
                         Expanded(child: qtyField),
                         const SizedBox(width: 12),
+                        Expanded(child: uomField),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
                         Expanded(child: unitField),
+                        const SizedBox(width: 12),
+                        Expanded(child: discountField),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Expanded(child: taxField),
+                        const SizedBox(width: 12),
+                        Expanded(child: lineTotalField),
                       ],
                     ),
                   ],
                 );
               }
 
-              return Row(
+              return Column(
                 children: [
-                  Expanded(flex: 4, child: productField),
-                  const SizedBox(width: 14),
-                  Expanded(child: qtyField),
-                  const SizedBox(width: 14),
-                  Expanded(child: unitField),
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 4,
+                        child: _FormDropdown(
+                          label: 'Product *',
+                          value: item.productController.text.isEmpty ? null : item.productController.text,
+                          hintText: 'Select product or service',
+                          items: productOptions.map((product) => product.name).toList(),
+                          onChanged: onProductChanged,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(flex: 4, child: skuField),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  descriptionField,
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Expanded(child: qtyField),
+                      const SizedBox(width: 14),
+                      Expanded(child: uomField),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Expanded(child: unitField),
+                      const SizedBox(width: 14),
+                      Expanded(child: discountField),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Expanded(child: taxField),
+                      const SizedBox(width: 14),
+                      Expanded(child: lineTotalField),
+                    ],
+                  ),
                 ],
               );
             },
@@ -926,6 +1277,20 @@ class _QuotationItemCard extends StatelessWidget {
       ),
     );
   }
+}
+
+class _QuotationCatalogItem {
+  final String name;
+  final String sku;
+  final String description;
+  final String uom;
+
+  const _QuotationCatalogItem({
+    required this.name,
+    required this.sku,
+    required this.description,
+    required this.uom,
+  });
 }
 
 class _FormField extends StatelessWidget {
@@ -937,6 +1302,7 @@ class _FormField extends StatelessWidget {
   final bool readOnly;
   final VoidCallback? onTap;
   final Widget? suffixIcon;
+  final String? prefixText;
 
   const _FormField({
     required this.label,
@@ -947,6 +1313,7 @@ class _FormField extends StatelessWidget {
     this.readOnly = false,
     this.onTap,
     this.suffixIcon,
+    this.prefixText,
   });
 
   @override
@@ -962,6 +1329,7 @@ class _FormField extends StatelessWidget {
         decoration: _inputDecoration(
           hintText,
           suffixIcon: suffixIcon,
+          prefixText: prefixText,
         ),
       ),
     );
@@ -1076,7 +1444,11 @@ class _LabeledField extends StatelessWidget {
   }
 }
 
-InputDecoration _inputDecoration(String hintText, {Widget? suffixIcon}) {
+InputDecoration _inputDecoration(
+  String hintText, {
+  Widget? suffixIcon,
+  String? prefixText,
+}) {
   return InputDecoration(
     hintText: hintText,
     hintStyle: const TextStyle(
@@ -1098,6 +1470,7 @@ InputDecoration _inputDecoration(String hintText, {Widget? suffixIcon}) {
       borderRadius: BorderRadius.circular(12),
       borderSide: const BorderSide(color: Color(0xFF0B4A06)),
     ),
+    prefixText: prefixText,
     suffixIcon: suffixIcon,
   );
 }
