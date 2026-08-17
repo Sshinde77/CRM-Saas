@@ -4,8 +4,12 @@ import '../../../constants/app_colors.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
 import '../customers/sales_manager_customers_screen.dart';
+import '../attendance/sales_manager_attendance_screen.dart';
 import '../dashboard/sales_manager_dashboard_screen.dart';
+import '../follow_ups/sales_manager_follow_ups_screen.dart';
 import '../orders/sales_manager_orders_screen.dart';
+import '../performance/sales_manager_performance_screen.dart';
+import '../stock/sales_manager_stock_screen.dart';
 import '../visits/sales_manager_visits_screen.dart';
 import 'add_lead_screen.dart';
 
@@ -231,6 +235,33 @@ class _SalesManagerLeadsScreenState extends State<SalesManagerLeadsScreen> {
       case 'Visits':
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const SalesManagerVisitsScreen()),
+        );
+        return;
+      case 'Stock':
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const SalesManagerStockScreen()),
+        );
+        return;
+      case 'Follow-Ups':
+      case 'Follow-ups':
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => const SalesManagerFollowUpsScreen(),
+          ),
+        );
+        return;
+      case 'My Performance':
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => const SalesManagerPerformanceScreen(),
+          ),
+        );
+        return;
+      case 'Attendance':
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => const SalesManagerAttendanceScreen(),
+          ),
         );
         return;
       case 'Leads':

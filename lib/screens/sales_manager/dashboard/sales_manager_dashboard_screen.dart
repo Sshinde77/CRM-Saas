@@ -4,8 +4,12 @@ import '../../../constants/app_colors.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
 import '../customers/sales_manager_customers_screen.dart';
+import '../attendance/sales_manager_attendance_screen.dart';
+import '../follow_ups/sales_manager_follow_ups_screen.dart';
 import '../leads/sales_manager_leads_screen.dart';
 import '../orders/sales_manager_orders_screen.dart';
+import '../performance/sales_manager_performance_screen.dart';
+import '../stock/sales_manager_stock_screen.dart';
 import '../visits/sales_manager_visits_screen.dart';
 
 class SalesManagerDashboardScreen extends StatefulWidget {
@@ -302,6 +306,40 @@ class _SalesManagerDashboardScreenState
 
     if (action == 'Create Order' || action == 'Sales Orders') {
       _openSalesOrdersScreen();
+      return;
+    }
+
+    if (action == 'Stock') {
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const SalesManagerStockScreen()),
+      );
+      return;
+    }
+
+    if (action == 'Follow-Ups' || action == 'Follow-ups') {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const SalesManagerFollowUpsScreen(),
+        ),
+      );
+      return;
+    }
+
+    if (action == 'My Performance') {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const SalesManagerPerformanceScreen(),
+        ),
+      );
+      return;
+    }
+
+    if (action == 'Attendance') {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const SalesManagerAttendanceScreen(),
+        ),
+      );
       return;
     }
 
@@ -1101,7 +1139,16 @@ class _SalesManagerDashboardScreenState
             if (product != _products.last) const SizedBox(height: 10),
           ],
           const SizedBox(height: 12),
-          _footerButton('View Product Stock Board'),
+          _footerButton(
+            'View Product Stock Board',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const SalesManagerStockScreen(),
+                ),
+              );
+            },
+          ),
         ],
       ),
     );

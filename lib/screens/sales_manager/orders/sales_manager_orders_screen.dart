@@ -4,8 +4,12 @@ import '../../../constants/app_colors.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
 import '../customers/sales_manager_customers_screen.dart';
+import '../attendance/sales_manager_attendance_screen.dart';
+import '../follow_ups/sales_manager_follow_ups_screen.dart';
 import '../leads/sales_manager_leads_screen.dart';
 import '../dashboard/sales_manager_dashboard_screen.dart';
+import '../performance/sales_manager_performance_screen.dart';
+import '../stock/sales_manager_stock_screen.dart';
 import '../visits/sales_manager_visits_screen.dart';
 
 class SalesManagerOrdersScreen extends StatefulWidget {
@@ -155,6 +159,36 @@ class _SalesManagerOrdersScreenState extends State<SalesManagerOrdersScreen> {
     if (action == 'Visits') {
       Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => const SalesManagerVisitsScreen()),
+      );
+      return;
+    }
+    if (action == 'Stock') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerStockScreen()),
+      );
+      return;
+    }
+    if (action == 'Follow-Ups' || action == 'Follow-ups') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const SalesManagerFollowUpsScreen(),
+        ),
+      );
+      return;
+    }
+    if (action == 'My Performance' || action == 'Targets & Performance') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const SalesManagerPerformanceScreen(),
+        ),
+      );
+      return;
+    }
+    if (action == 'Attendance') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const SalesManagerAttendanceScreen(),
+        ),
       );
       return;
     }

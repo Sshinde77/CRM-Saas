@@ -7,9 +7,13 @@ import '../../../models/customer_model.dart';
 import '../../../providers/api_provider.dart';
 import '../../admin/customers/add_customer_screen.dart';
 import '../../admin/customers/customer_details_screen.dart';
+import '../attendance/sales_manager_attendance_screen.dart';
 import '../dashboard/sales_manager_dashboard_screen.dart';
+import '../follow_ups/sales_manager_follow_ups_screen.dart';
 import '../leads/sales_manager_leads_screen.dart';
 import '../orders/sales_manager_orders_screen.dart';
+import '../performance/sales_manager_performance_screen.dart';
+import '../stock/sales_manager_stock_screen.dart';
 import '../visits/sales_manager_visits_screen.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
@@ -122,6 +126,36 @@ class _SalesManagerCustomersScreenState
     if (action == 'Leads') {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const SalesManagerLeadsScreen()),
+      );
+      return;
+    }
+    if (action == 'Stock') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerStockScreen()),
+      );
+      return;
+    }
+    if (action == 'Follow-Ups' || action == 'Follow-ups') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const SalesManagerFollowUpsScreen(),
+        ),
+      );
+      return;
+    }
+    if (action == 'My Performance') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const SalesManagerPerformanceScreen(),
+        ),
+      );
+      return;
+    }
+    if (action == 'Attendance') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const SalesManagerAttendanceScreen(),
+        ),
       );
       return;
     }
