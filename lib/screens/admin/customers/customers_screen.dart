@@ -754,7 +754,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
       mainAxisSize: MainAxisSize.min,
       children: [
         _actionButton(
-          icon: Icons.person_search_outlined,
+          icon: Icons.visibility_outlined,
           label: 'View Details',
           color: AppColors.primary,
           backgroundColor: const Color(0xFFF3F5F8),

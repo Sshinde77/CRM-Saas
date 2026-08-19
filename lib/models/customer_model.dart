@@ -5,19 +5,38 @@ class CustomerModel {
   final String? category;
   final String? email;
   final String? phone;
+  final String? contactPerson;
+  final String? designation;
+  final String? alternatePhone;
+  final String? website;
+  final String? communicationPreference;
   final String? gstNumber;
+  final String? panNumber;
+  final String? taxCategory;
+  final bool? taxExempt;
+  final String? currency;
   final String? billingAddress;
   final String? deliveryAddress;
+  final String? country;
+  final String? state;
+  final String? city;
+  final String? pinCode;
   final String? assignedSalesOfficerId;
   final String? assignedSalesOfficerName;
+  final String? leadSource;
+  final String? territory;
+  final String? customerPriority;
+  final String? customerTags;
   final bool? isActive;
   final int? creditLimit;
   final int? openingBalance;
   final int? totalBilled;
   final int? totalReceived;
   final int? outstanding;
+  final String? paymentMethod;
   final String? notes;
   final String? address;
+  final DateTime? customerSince;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -28,95 +47,247 @@ class CustomerModel {
     required this.category,
     required this.email,
     required this.phone,
+    required this.contactPerson,
+    required this.designation,
+    required this.alternatePhone,
+    required this.website,
+    required this.communicationPreference,
     required this.gstNumber,
+    required this.panNumber,
+    required this.taxCategory,
+    required this.taxExempt,
+    required this.currency,
     required this.billingAddress,
     required this.deliveryAddress,
+    required this.country,
+    required this.state,
+    required this.city,
+    required this.pinCode,
     required this.assignedSalesOfficerId,
     required this.assignedSalesOfficerName,
+    required this.leadSource,
+    required this.territory,
+    required this.customerPriority,
+    required this.customerTags,
     required this.isActive,
     required this.creditLimit,
     required this.openingBalance,
     required this.totalBilled,
     required this.totalReceived,
     required this.outstanding,
+    required this.paymentMethod,
     required this.notes,
     required this.address,
+    required this.customerSince,
     required this.createdAt,
     required this.updatedAt,
   });
 
   factory CustomerModel.fromJson(Map<String, dynamic> json) {
+    final basicInformation = _asMap(json['basic_information']);
+    final contactInformation = _asMap(json['contact_information']);
+    final addressInformation = _asMap(json['address_information']);
+    final businessTaxInformation = _asMap(json['business_tax_information']);
+    final paymentInformation = _asMap(json['payment_information']);
+    final salesCrmInformation = _asMap(json['sales_crm_information']);
+    final financialSummary = _asMap(json['financial_summary']);
+    final salesSummary = _asMap(json['sales_summary']);
+    final additionalInformation = _asMap(json['additional_information']);
     final assignedSalesOfficer =
         _asMap(json['assigned_sales_officer']) ??
         _asMap(json['sales_officer']) ??
-        _asMap(json['assigned_sales_officer_detail']);
+        _asMap(json['assigned_sales_officer_detail']) ??
+        _asMap(salesCrmInformation?['sales_representative']);
+    final stringSources = <Map<String, dynamic>>[
+      json,
+      if (basicInformation != null) basicInformation,
+      if (contactInformation != null) contactInformation,
+      if (addressInformation != null) addressInformation,
+      if (businessTaxInformation != null) businessTaxInformation,
+      if (paymentInformation != null) paymentInformation,
+      if (salesCrmInformation != null) salesCrmInformation,
+      if (financialSummary != null) financialSummary,
+      if (salesSummary != null) salesSummary,
+      if (additionalInformation != null) additionalInformation,
+    ];
+    final numericSources = <Map<String, dynamic>>[
+      json,
+      if (paymentInformation != null) paymentInformation,
+      if (financialSummary != null) financialSummary,
+      if (salesSummary != null) salesSummary,
+    ];
 
     return CustomerModel(
       id: json['id']?.toString() ?? '',
-      name: _stringValue(json, const [
+      name: _stringValueFromSources(stringSources, const [
         'name',
         'customer_name',
         'full_name',
         'contact_person',
       ]),
-      businessName: _nullableStringValue(json, const [
+      businessName: _nullableStringValueFromSources(stringSources, const [
         'business_name',
         'business',
         'company_name',
         'organization_name',
+        'legal_business_name',
+        'display_name',
       ]),
-      category: _nullableStringValue(json, const [
+      category: _nullableStringValueFromSources(stringSources, const [
         'category',
         'customer_category',
         'type',
         'business_type',
+        'industry',
       ]),
-      email: _nullableStringValue(json, const ['email']),
-      phone: _nullableStringValue(json, const [
+      email: _nullableStringValueFromSources(stringSources, const [
+        'email',
+        'email_address',
+      ]),
+      phone: _nullableStringValueFromSources(stringSources, const [
         'phone',
         'phone_number',
         'mobile',
         'mobile_no',
+        'mobile_number',
+        'alternate_mobile_number',
       ]),
-      gstNumber: _nullableStringValue(json, const [
+      contactPerson: _nullableStringValueFromSources(stringSources, const [
+        'contact_person',
+        'primary_contact_person',
+      ]),
+      designation: _nullableStringValueFromSources(stringSources, const [
+        'designation',
+        'job_title',
+      ]),
+      alternatePhone: _nullableStringValueFromSources(stringSources, const [
+        'alternate_mobile_number',
+        'alternate_mobile',
+        'alternate_phone',
+        'secondary_phone',
+      ]),
+      website: _nullableStringValueFromSources(stringSources, const [
+        'website',
+        'website_url',
+      ]),
+      communicationPreference: _nullableStringValueFromSources(
+        stringSources,
+        const [
+          'communication_preference',
+          'preferred_communication',
+          'preferred_communication_mode',
+        ],
+      ),
+      gstNumber: _nullableStringValueFromSources(stringSources, const [
         'gst_number',
         'gst',
         'gstin',
+        'gstin_tax_id',
       ]),
-      billingAddress: _nullableStringValue(json, const [
+      panNumber: _nullableStringValueFromSources(stringSources, const [
+        'pan_number',
+        'pan',
+        'registration_number',
+        'business_registration_number',
+      ]),
+      taxCategory: _nullableStringValueFromSources(stringSources, const [
+        'tax_category',
+      ]),
+      taxExempt: _boolValueFromSources(stringSources, const [
+        'tax_exempt',
+        'is_tax_exempt',
+      ]),
+      currency: _nullableStringValueFromSources(stringSources, const [
+        'currency',
+        'currency_code',
+      ]),
+      billingAddress: _nullableStringValueFromSources(stringSources, const [
         'billing_address',
         'billingAddress',
       ]),
-      deliveryAddress: _nullableStringValue(json, const [
+      deliveryAddress: _nullableStringValueFromSources(stringSources, const [
         'delivery_address',
         'deliveryAddress',
+        'shipping_address',
+      ]),
+      country: _nullableStringValueFromSources(stringSources, const ['country']),
+      state: _nullableStringValueFromSources(stringSources, const ['state']),
+      city: _nullableStringValueFromSources(stringSources, const ['city']),
+      pinCode: _nullableStringValueFromSources(stringSources, const [
+        'pin_code',
+        'postal_code',
+        'zip_code',
       ]),
       assignedSalesOfficerId: _stringFromNested(
-        json,
+        salesCrmInformation ?? json,
         assignedSalesOfficer,
-        const ['assigned_sales_officer_id', 'sales_officer_id'],
+        const [
+          'assigned_sales_officer_id',
+          'sales_officer_id',
+          'sales_representative_id',
+        ],
       ),
       assignedSalesOfficerName: _stringFromNested(
-        json,
+        salesCrmInformation ?? json,
         assignedSalesOfficer,
-        const ['assigned_sales_officer_name', 'sales_officer_name', 'name'],
+        const [
+          'assigned_sales_officer_name',
+          'sales_officer_name',
+          'name',
+        ],
       ),
+      leadSource: _nullableStringValueFromSources(stringSources, const [
+        'lead_source',
+      ]),
+      territory: _nullableStringValueFromSources(stringSources, const [
+        'territory',
+      ]),
+      customerPriority: _nullableStringValueFromSources(stringSources, const [
+        'customer_priority',
+        'priority',
+      ]),
+      customerTags: _nullableStringValueFromSources(stringSources, const [
+        'customer_tags',
+        'tags',
+      ]),
       isActive: _boolFromJson(json),
-      creditLimit: _intValue(json, const ['credit_limit', 'limit']),
-      openingBalance: _intValue(json, const ['opening_balance']),
-      totalBilled: _intValue(json, const ['total_billed']),
-      totalReceived: _intValue(json, const ['total_received']),
-      outstanding: _intValue(json, const [
+      creditLimit: _intValueFromSources(numericSources, const [
+        'credit_limit',
+        'limit',
+      ]),
+      openingBalance: _intValueFromSources(numericSources, const [
+        'opening_balance',
+      ]),
+      totalBilled: _intValueFromSources(numericSources, const [
+        'total_billed',
+        'customer_lifetime_value',
+      ]),
+      totalReceived: _intValueFromSources(numericSources, const [
+        'total_received',
+      ]),
+      outstanding: _intValueFromSources(numericSources, const [
         'outstanding_balance',
         'outstanding',
         'due_amount',
       ]),
-      notes: _nullableStringValue(json, const ['notes']),
-      address: _nullableStringValue(json, const [
+      paymentMethod: _nullableStringValueFromSources(stringSources, const [
+        'payment_method',
+        'preferred_payment_method',
+      ]),
+      notes: _nullableStringValueFromSources(stringSources, const ['notes']),
+      address: _nullableStringValueFromSources(stringSources, const [
         'address',
         'billing_address',
         'delivery_address',
         'shipping_address',
+        'city',
+        'state',
+        'country',
+      ]),
+      customerSince: _dateTimeFromSources(stringSources, const [
+        'customer_since',
+        'customer_since_date',
+        'onboarded_at',
       ]),
       createdAt: _tryParseDateTime(
         json['created_at']?.toString() ?? json['createdAt']?.toString(),
@@ -155,19 +326,38 @@ class CustomerModel {
       'category': category,
       'email': email,
       'phone': phone,
+      'contact_person': contactPerson,
+      'designation': designation,
+      'alternate_mobile_number': alternatePhone,
+      'website': website,
+      'communication_preference': communicationPreference,
       'gst_number': gstNumber,
+      'pan_number': panNumber,
+      'tax_category': taxCategory,
+      'tax_exempt': taxExempt,
+      'currency': currency,
       'billing_address': billingAddress,
       'delivery_address': deliveryAddress,
+      'country': country,
+      'state': state,
+      'city': city,
+      'pin_code': pinCode,
       'assigned_sales_officer_id': assignedSalesOfficerId,
       'assigned_sales_officer_name': assignedSalesOfficerName,
+      'lead_source': leadSource,
+      'territory': territory,
+      'customer_priority': customerPriority,
+      'customer_tags': customerTags,
       'is_active': isActive,
       'credit_limit': creditLimit,
       'opening_balance': openingBalance,
       'total_billed': totalBilled,
       'total_received': totalReceived,
       'outstanding': outstanding,
+      'payment_method': paymentMethod,
       'notes': notes,
       'address': address,
+      'customer_since': customerSince?.toIso8601String(),
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
     };
@@ -204,6 +394,33 @@ class CustomerModel {
     return null;
   }
 
+  static String _stringValueFromSources(
+    List<Map<String, dynamic>> sources,
+    List<String> keys, {
+    String fallback = 'Customer',
+  }) {
+    for (final source in sources) {
+      final value = _nullableStringValue(source, keys);
+      if (value != null) {
+        return value;
+      }
+    }
+    return fallback;
+  }
+
+  static String? _nullableStringValueFromSources(
+    List<Map<String, dynamic>> sources,
+    List<String> keys,
+  ) {
+    for (final source in sources) {
+      final value = _nullableStringValue(source, keys);
+      if (value != null) {
+        return value;
+      }
+    }
+    return null;
+  }
+
   static String? _stringFromNested(
     Map<String, dynamic> json,
     Map<String, dynamic>? nested,
@@ -224,6 +441,35 @@ class CustomerModel {
     return null;
   }
 
+  static bool? _boolValueFromSources(
+    List<Map<String, dynamic>> sources,
+    List<String> keys,
+  ) {
+    for (final source in sources) {
+      for (final key in keys) {
+        final value = source[key];
+        if (value is bool) return value;
+        final text = value?.toString().trim().toLowerCase();
+        if (text == 'true' || text == 'yes' || text == '1') return true;
+        if (text == 'false' || text == 'no' || text == '0') return false;
+      }
+    }
+    return null;
+  }
+
+  static DateTime? _dateTimeFromSources(
+    List<Map<String, dynamic>> sources,
+    List<String> keys,
+  ) {
+    for (final source in sources) {
+      for (final key in keys) {
+        final parsed = _tryParseDateTime(source[key]?.toString());
+        if (parsed != null) return parsed;
+      }
+    }
+    return null;
+  }
+
   static int? _intValue(Map<String, dynamic> json, List<String> keys) {
     for (final key in keys) {
       final value = json[key];
@@ -231,6 +477,19 @@ class CustomerModel {
       if (value is num) return value.toInt();
       final parsed = int.tryParse(value?.toString() ?? '');
       if (parsed != null) return parsed;
+    }
+    return null;
+  }
+
+  static int? _intValueFromSources(
+    List<Map<String, dynamic>> sources,
+    List<String> keys,
+  ) {
+    for (final source in sources) {
+      final value = _intValue(source, keys);
+      if (value != null) {
+        return value;
+      }
     }
     return null;
   }
