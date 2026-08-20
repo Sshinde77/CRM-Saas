@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import '../models/api_response.dart';
+import '../models/customer_activity_models.dart';
 import '../models/customer_model.dart';
 import '../models/app_user.dart';
 import '../models/auth_models.dart';
@@ -168,6 +169,59 @@ class ApiProvider extends ChangeNotifier {
       final customer = await _apiService.fetchCustomerById(customerId);
       notifyListeners();
       return customer;
+    } catch (error) {
+      _errorMessage = error.toString();
+      notifyListeners();
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<CustomerLedger> fetchCustomerLedger(String customerId) async {
+    _setLoading(true);
+    _errorMessage = null;
+
+    try {
+      final ledger = await _apiService.fetchCustomerLedger(customerId);
+      notifyListeners();
+      return ledger;
+    } catch (error) {
+      _errorMessage = error.toString();
+      notifyListeners();
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<List<CustomerOrderRecord>> fetchCustomerOrders(String customerId) async {
+    _setLoading(true);
+    _errorMessage = null;
+
+    try {
+      final orders = await _apiService.fetchCustomerOrders(customerId);
+      notifyListeners();
+      return orders;
+    } catch (error) {
+      _errorMessage = error.toString();
+      notifyListeners();
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<List<CustomerPaymentRecord>> fetchCustomerPayments(
+    String customerId,
+  ) async {
+    _setLoading(true);
+    _errorMessage = null;
+
+    try {
+      final payments = await _apiService.fetchCustomerPayments(customerId);
+      notifyListeners();
+      return payments;
     } catch (error) {
       _errorMessage = error.toString();
       notifyListeners();

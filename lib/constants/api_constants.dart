@@ -49,6 +49,11 @@ class ApiEndpoints {
   static const String customersDeleteTemplate = '/customers/{customer_id}';
   static const String customersStatusTemplate =
       '/customers/{customer_id}/status';
+  static const String customersLedgerTemplate =
+      '/customers/{customer_id}/ledger';
+  static const String customersPaymentsTemplate =
+      '/customers/{customer_id}/payments';
+  static const String ordersList = '/orders';
 
   static const String usersList = '/users';
   static const String usersCreate = '/users';
@@ -78,6 +83,12 @@ class ApiEndpoints {
 
   static String customersStatus(String customerId) =>
       customersStatusTemplate.replaceFirst('{customer_id}', customerId);
+
+  static String customersLedger(String customerId) =>
+      customersLedgerTemplate.replaceFirst('{customer_id}', customerId);
+
+  static String customersPayments(String customerId) =>
+      customersPaymentsTemplate.replaceFirst('{customer_id}', customerId);
 
   static String usersDetail(String userId) =>
       usersDetailTemplate.replaceFirst('{user_id}', userId);

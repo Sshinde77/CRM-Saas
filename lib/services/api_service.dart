@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../constants/api_constants.dart';
 import '../models/api_response.dart';
+import '../models/customer_activity_models.dart';
 import '../models/customer_model.dart';
 import '../models/auth_models.dart';
 import '../models/app_user.dart';
@@ -410,6 +411,77 @@ class ApiService {
     );
 
     return CustomerModel.fromJson(decoded);
+  }
+
+  Future<CustomerLedger> fetchCustomerLedger(String customerId) async {
+    final id = customerId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing customer id.');
+    }
+
+    final response = await _send(
+      method: 'GET',
+      endpoint: ApiEndpoints.customersLedger(id),
+      requiresAuth: true,
+    );
+
+    final decoded = _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid customer ledger response.',
+    );
+
+    return CustomerLedger.fromJson(decoded);
+  }
+
+  Future<List<CustomerOrderRecord>> fetchCustomerOrders(String customerId) async {
+    final id = customerId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing customer id.');
+    }
+
+    final response = await _send(
+      method: 'GET',
+      endpoint: ApiEndpoints.ordersList,
+      requiresAuth: true,
+      queryParameters: {'customer_id': id},
+    );
+
+    final decoded = _tryDecodeBody(response.body.trim());
+    final rawOrders = _extractGenericList(
+      decoded,
+      const ['orders', 'data', 'results', 'items'],
+      fallbackMessage: 'Invalid customer orders response.',
+    );
+
+    return rawOrders
+        .whereType<Map<String, dynamic>>()
+        .map(CustomerOrderRecord.fromJson)
+        .toList();
+  }
+
+  Future<List<CustomerPaymentRecord>> fetchCustomerPayments(String customerId) async {
+    final id = customerId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing customer id.');
+    }
+
+    final response = await _send(
+      method: 'GET',
+      endpoint: ApiEndpoints.customersPayments(id),
+      requiresAuth: true,
+    );
+
+    final decoded = _tryDecodeBody(response.body.trim());
+    final rawPayments = _extractGenericList(
+      decoded,
+      const ['payments', 'data', 'results', 'items'],
+      fallbackMessage: 'Invalid customer payments response.',
+    );
+
+    return rawPayments
+        .whereType<Map<String, dynamic>>()
+        .map(CustomerPaymentRecord.fromJson)
+        .toList();
   }
 
   Future<CustomerModel> createCustomer({
@@ -948,6 +1020,27 @@ class ApiService {
     }
 
     throw const ApiException(message: 'Invalid customers response.');
+  }
+
+  List<dynamic> _extractGenericList(
+    dynamic decoded,
+    List<String> candidateKeys, {
+    required String fallbackMessage,
+  }) {
+    if (decoded is List) {
+      return decoded;
+    }
+
+    if (decoded is Map<String, dynamic>) {
+      for (final key in candidateKeys) {
+        final candidate = decoded[key];
+        if (candidate is List) {
+          return candidate;
+        }
+      }
+    }
+
+    throw ApiException(message: fallbackMessage);
   }
 
   Map<String, dynamic> _requireDecodedMap(

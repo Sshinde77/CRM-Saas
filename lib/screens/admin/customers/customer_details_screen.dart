@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../models/customer_activity_models.dart';
 import '../../../models/customer_model.dart';
 import '../../../providers/api_provider.dart';
 import 'add_customer_screen.dart';
@@ -69,6 +71,21 @@ String _formatDate(DateTime? date) {
   return '${date.day.toString().padLeft(2, '0')} ${months[date.month - 1]} ${date.year}';
 }
 
+String _formatIsoDate(DateTime? date) {
+  if (date == null) return '-';
+  return '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+}
+
+String _titleCaseText(String value) {
+  final normalized = value.trim();
+  if (normalized.isEmpty) return '-';
+  return normalized
+      .split(RegExp(r'[_\s]+'))
+      .where((part) => part.isNotEmpty)
+      .map((part) => part[0].toUpperCase() + part.substring(1).toLowerCase())
+      .join(' ');
+}
+
 class CustomerDetailsScreen extends StatefulWidget {
   final String customerId;
   final CustomerModel? initialCustomer;
@@ -89,6 +106,15 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
   bool _isLoading = true;
   String? _errorMessage;
   CustomerModel? _customer;
+  bool _isLedgerLoading = false;
+  String? _ledgerErrorMessage;
+  CustomerLedger? _ledger;
+  bool _isPaymentsLoading = false;
+  String? _paymentsErrorMessage;
+  List<CustomerPaymentRecord> _payments = const [];
+  bool _isOrdersLoading = false;
+  String? _ordersErrorMessage;
+  List<CustomerOrderRecord> _orders = const [];
   final Set<String> _expandedSections = {
     'contact',
     'business',
@@ -119,6 +145,12 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
+      _ledger = null;
+      _ledgerErrorMessage = null;
+      _payments = const [];
+      _paymentsErrorMessage = null;
+      _orders = const [];
+      _ordersErrorMessage = null;
     });
 
     try {
@@ -128,11 +160,82 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
         _customer = customer;
         _isLoading = false;
       });
+      await Future.wait([
+        _loadLedger(customer.id),
+        _loadPayments(customer.id),
+        _loadOrders(customer.id),
+      ]);
     } catch (error) {
       if (!mounted) return;
       setState(() {
         _errorMessage = error.toString();
         _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadPayments(String customerId) async {
+    setState(() {
+      _isPaymentsLoading = true;
+      _paymentsErrorMessage = null;
+    });
+
+    try {
+      final payments = await _apiProvider.fetchCustomerPayments(customerId);
+      if (!mounted) return;
+      setState(() {
+        _payments = payments;
+        _isPaymentsLoading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _paymentsErrorMessage = error.toString();
+        _isPaymentsLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadOrders(String customerId) async {
+    setState(() {
+      _isOrdersLoading = true;
+      _ordersErrorMessage = null;
+    });
+
+    try {
+      final orders = await _apiProvider.fetchCustomerOrders(customerId);
+      if (!mounted) return;
+      setState(() {
+        _orders = orders;
+        _isOrdersLoading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _ordersErrorMessage = error.toString();
+        _isOrdersLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadLedger(String customerId) async {
+    setState(() {
+      _isLedgerLoading = true;
+      _ledgerErrorMessage = null;
+    });
+
+    try {
+      final ledger = await _apiProvider.fetchCustomerLedger(customerId);
+      if (!mounted) return;
+      setState(() {
+        _ledger = ledger;
+        _isLedgerLoading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _ledgerErrorMessage = error.toString();
+        _isLedgerLoading = false;
       });
     }
   }
@@ -162,6 +265,20 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('$label copied')),
     );
+  }
+
+  Future<void> _openMapLocation(CustomerModel customer) async {
+    final latitude = customer.mapLatitude;
+    final longitude = customer.mapLongitude;
+    if (latitude == null || longitude == null) {
+      return;
+    }
+
+    final uri = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude',
+    );
+    final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!launched || !mounted) return;
   }
 
   String _visibleCustomerId(CustomerModel customer) {
@@ -290,7 +407,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                 ),
                 _FieldItem(
                   label: 'Industry',
-                  value: _displayText(customer.businessName),
+                  value: _displayText(customer.industry),
                 ),
                 _FieldItem(
                   label: 'GST Number',
@@ -314,7 +431,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                 ),
                 _FieldItem(
                   label: 'Currency',
-                  value: _displayText(customer.currency ?? 'INR'),
+                  value: _displayText(customer.currency),
                 ),
               ],
             ),
@@ -338,6 +455,14 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                   label: 'Shipping Address',
                   value: _displayText(customer.deliveryAddress ?? customer.billingAddress),
                   trailingIcon: Icons.location_on_rounded,
+                ),
+                _FieldItem(
+                  label: 'Google Maps Location',
+                  value: customer.mapLatitude != null && customer.mapLongitude != null
+                      ? '${customer.mapLatitude}, ${customer.mapLongitude}'
+                      : '-',
+                  trailingIcon: Icons.map_outlined,
+                  onTrailingTap: () => _openMapLocation(customer),
                 ),
                 _FieldItem(label: 'Country', value: _displayText(customer.country)),
                 _FieldItem(label: 'City', value: _displayText(customer.city)),
@@ -400,18 +525,22 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
         id: 'payments',
         title: '6. Payment History',
         icon: Icons.account_balance_wallet_outlined,
-        child: _EmptySectionState(
-          title: 'Payment records are not exposed by this customer detail API.',
-          subtitle: 'Totals above are live. Transaction rows need a dedicated payments endpoint.',
+        child: _CustomerPaymentsSection(
+          payments: _payments,
+          isLoading: _isPaymentsLoading,
+          errorMessage: _paymentsErrorMessage,
+          onRetry: () => _loadPayments(customer.id),
         ),
       ),
       _SectionConfig(
         id: 'orders',
         title: '7. Order & Transaction History',
         icon: Icons.inventory_2_outlined,
-        child: _EmptySectionState(
-          title: 'Order history is not connected yet.',
-          subtitle: 'The current API provides summary values but not line-level orders for this customer.',
+        child: _CustomerOrdersSection(
+          orders: _orders,
+          isLoading: _isOrdersLoading,
+          errorMessage: _ordersErrorMessage,
+          onRetry: () => _loadOrders(customer.id),
         ),
       ),
       _SectionConfig(
@@ -440,7 +569,13 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
         id: 'statement',
         title: '9. Account Statement',
         icon: Icons.account_balance_outlined,
-        child: _AccountStatementCard(customer: customer),
+        child: _AccountStatementCard(
+          customer: customer,
+          ledger: _ledger,
+          isLoading: _isLedgerLoading,
+          errorMessage: _ledgerErrorMessage,
+          onRetry: () => _loadLedger(customer.id),
+        ),
       ),
     ];
 
@@ -975,7 +1110,7 @@ class _MetricCard extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -1008,7 +1143,7 @@ class _MetricCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox.shrink(),
+          const SizedBox(height: 10),
           Text(
             data.title,
             maxLines: 1,
@@ -1241,41 +1376,70 @@ class _FinancialSummary extends StatelessWidget {
   Widget build(BuildContext context) {
     final creditLimit = _safeMoneyNumber(customer.creditLimit);
     final outstanding = _safeMoneyNumber(customer.outstanding);
+    final totalReceived = _safeMoneyNumber(customer.totalReceived);
+    final totalBilled = _safeMoneyNumber(customer.totalBilled);
+    final openingBalance = _safeMoneyNumber(customer.openingBalance);
     final availableCredit =
         (creditLimit - outstanding).clamp(-999999999.0, 999999999.0);
+    final cards = [
+      _SummaryCardData(
+        label: 'Credit Limit',
+        value: _formatMoneyValue(creditLimit),
+      ),
+      _SummaryCardData(
+        label: 'Outstanding Balance',
+        value: _formatMoneyValue(outstanding),
+      ),
+      _SummaryCardData(
+        label: 'Available Credit',
+        value: _formatMoneyValue(availableCredit),
+      ),
+      _SummaryCardData(
+        label: 'Total Received',
+        value: _formatMoneyValue(totalReceived),
+      ),
+      _SummaryCardData(
+        label: 'Total Billed',
+        value: _formatMoneyValue(totalBilled),
+      ),
+      _SummaryCardData(
+        label: 'Opening Balance',
+        value: _formatMoneyValue(openingBalance),
+      ),
+    ];
 
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 2,
-      mainAxisSpacing: 12,
-      crossAxisSpacing: 12,
-      childAspectRatio: 1.55,
-      children: [
-        _SummaryBox(label: 'Credit Limit', value: _formatMoneyValue(creditLimit)),
-        _SummaryBox(
-          label: 'Outstanding Balance',
-          value: _formatMoneyValue(outstanding),
-        ),
-        _SummaryBox(
-          label: 'Available Credit',
-          value: _formatMoneyValue(availableCredit),
-        ),
-        _SummaryBox(
-          label: 'Total Received',
-          value: _formatMoneyValue(customer.totalReceived ?? 0),
-        ),
-        _SummaryBox(
-          label: 'Total Billed',
-          value: _formatMoneyValue(customer.totalBilled ?? 0),
-        ),
-        _SummaryBox(
-          label: 'Opening Balance',
-          value: _formatMoneyValue(customer.openingBalance ?? 0),
-        ),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final spacing = 12.0;
+        final cardWidth = constraints.maxWidth >= 420
+            ? (constraints.maxWidth - spacing) / 2
+            : constraints.maxWidth;
+
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: cards
+              .map(
+                (card) => SizedBox(
+                  width: cardWidth,
+                  child: _SummaryBox(label: card.label, value: card.value),
+                ),
+              )
+              .toList(),
+        );
+      },
     );
   }
+}
+
+class _SummaryCardData {
+  final String label;
+  final String value;
+
+  const _SummaryCardData({
+    required this.label,
+    required this.value,
+  });
 }
 
 class _SummaryBox extends StatelessWidget {
@@ -1320,14 +1484,818 @@ class _SummaryBox extends StatelessWidget {
 
 class _AccountStatementCard extends StatelessWidget {
   final CustomerModel customer;
+  final CustomerLedger? ledger;
+  final bool isLoading;
+  final String? errorMessage;
+  final Future<void> Function() onRetry;
 
-  const _AccountStatementCard({required this.customer});
+  const _AccountStatementCard({
+    required this.customer,
+    required this.ledger,
+    required this.isLoading,
+    required this.errorMessage,
+    required this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading && ledger == null) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FBF8),
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: const Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
+      );
+    }
+
+    if (errorMessage != null && ledger == null) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FBF8),
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Unable to load account statement.',
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              errorMessage!,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 13,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 14),
+            OutlinedButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final ledgerData = ledger;
+    if (ledgerData == null) {
+      return const _EmptySectionState(
+        title: 'No account statement available.',
+        subtitle: 'Ledger data was not returned for this customer.',
+      );
+    }
+
+    final summary = ledgerData.summary;
+    final ageing = ledgerData.ageing;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FBF8),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Statement Overview',
+            style: TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 14),
+          _StatementMetricGrid(
+            cards: [
+              _StatementMetricData(
+                label: 'Outstanding',
+                value: _formatMoneyValue(summary.outstanding),
+              ),
+              _StatementMetricData(
+                label: 'Overdue',
+                value: _formatMoneyValue(summary.overdueAmount),
+                accentColor: Colors.red,
+              ),
+              _StatementMetricData(
+                label: 'Available Credit',
+                value: _formatMoneyValue(summary.availableCredit),
+              ),
+              _StatementMetricData(
+                label: 'Credit Limit',
+                value: _formatMoneyValue(summary.creditLimit),
+              ),
+            ],
+          ),
+          const SizedBox(height: 22),
+          const Text(
+            'AGEING ANALYSIS',
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 12.5,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.2,
+            ),
+          ),
+          const SizedBox(height: 12),
+          _StatementMetricGrid(
+            cards: [
+              _StatementMetricData(
+                label: '0-30 days',
+                value: _formatMoneyValue(ageing.zeroTo30),
+              ),
+              _StatementMetricData(
+                label: '31-60 days',
+                value: _formatMoneyValue(ageing.days31To60),
+              ),
+              _StatementMetricData(
+                label: '61-90 days',
+                value: _formatMoneyValue(ageing.days61To90),
+              ),
+              _StatementMetricData(
+                label: '90+ days',
+                value: _formatMoneyValue(ageing.days90Plus),
+              ),
+            ],
+          ),
+          const SizedBox(height: 22),
+          const Text(
+            'TRANSACTION HISTORY',
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 12.5,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.2,
+            ),
+          ),
+          const SizedBox(height: 12),
+          _StatementTransactionsTable(transactions: ledgerData.transactions),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatementMetricData {
+  final String label;
+  final String value;
+  final Color? accentColor;
+
+  const _StatementMetricData({
+    required this.label,
+    required this.value,
+    this.accentColor,
+  });
+}
+
+class _StatementMetricGrid extends StatelessWidget {
+  final List<_StatementMetricData> cards;
+
+  const _StatementMetricGrid({required this.cards});
+
+  @override
+  Widget build(BuildContext context) {
+    final rows = <List<_StatementMetricData>>[];
+    for (var i = 0; i < cards.length; i += 2) {
+      rows.add(cards.sublist(i, i + 2 > cards.length ? cards.length : i + 2));
+    }
+
+    return Column(
+      children: [
+        for (var rowIndex = 0; rowIndex < rows.length; rowIndex++) ...[
+          Row(
+            children: [
+              for (var i = 0; i < rows[rowIndex].length; i++) ...[
+                Expanded(
+                  child: _StatementMetricCard(data: rows[rowIndex][i]),
+                ),
+                if (i != rows[rowIndex].length - 1) const SizedBox(width: 12),
+              ],
+              if (rows[rowIndex].length == 1) ...[
+                const SizedBox(width: 12),
+                const Expanded(child: SizedBox.shrink()),
+              ],
+            ],
+          ),
+          if (rowIndex != rows.length - 1) const SizedBox(height: 12),
+        ],
+      ],
+    );
+  }
+}
+
+class _StatementMetricCard extends StatelessWidget {
+  final _StatementMetricData data;
+
+  const _StatementMetricCard({required this.data});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.9)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            data.label,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 12.5,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            data.value,
+            style: TextStyle(
+              color: data.accentColor ?? AppColors.textPrimary,
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatementTransactionsTable extends StatelessWidget {
+  final List<CustomerLedgerTransaction> transactions;
+
+  const _StatementTransactionsTable({required this.transactions});
+
+  @override
+  Widget build(BuildContext context) {
+    if (transactions.isEmpty) {
+      return const _EmptySectionState(
+        title: 'No ledger transactions found.',
+        subtitle: 'This customer has no ledger transaction history yet.',
+      );
+    }
+
+    return Column(
+      children: [
+        for (var i = 0; i < transactions.length; i++) ...[
+          _StatementTransactionCard(transaction: transactions[i]),
+          if (i != transactions.length - 1) const SizedBox(height: 12),
+        ],
+      ],
+    );
+  }
+}
+
+class _StatementTransactionCard extends StatelessWidget {
+  final CustomerLedgerTransaction transaction;
+
+  const _StatementTransactionCard({required this.transaction});
+
+  bool get _isCredit => transaction.credit > 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final amount = _isCredit ? transaction.credit : transaction.debit;
+    final amountColor = _isCredit ? const Color(0xFF0A8F3D) : const Color(0xFFC53030);
+    final amountPrefix = _isCredit ? '+' : '-';
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.9)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.025),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    _TypeChip(label: _titleCaseText(transaction.type)),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  transaction.description,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 14.5,
+                    fontWeight: FontWeight.w700,
+                    height: 1.25,
+                  ),
+                ),
+                const SizedBox(height: 7),
+                Text(
+                  _formatIsoDate(transaction.date),
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '$amountPrefix${_formatMoneyValue(amount)}',
+                    style: TextStyle(
+                      color: amountColor,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(width: 5),
+                  Icon(
+                    _isCredit
+                        ? Icons.arrow_outward_rounded
+                        : Icons.call_received_rounded,
+                    color: amountColor,
+                    size: 17,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Balance: ${_formatMoneyValue(transaction.balance)}',
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              if (transaction.referenceNumber != null &&
+                  transaction.referenceNumber!.trim().isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Text(
+                  transaction.referenceNumber!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CustomerPaymentsSection extends StatelessWidget {
+  final List<CustomerPaymentRecord> payments;
+  final bool isLoading;
+  final String? errorMessage;
+  final Future<void> Function() onRetry;
+
+  const _CustomerPaymentsSection({
+    required this.payments,
+    required this.isLoading,
+    required this.errorMessage,
+    required this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading && payments.isEmpty) {
+      return const _SectionLoader();
+    }
+    if (errorMessage != null && payments.isEmpty) {
+      return _SectionError(message: errorMessage!, onRetry: onRetry);
+    }
+    if (payments.isEmpty) {
+      return const _EmptySectionState(
+        title: 'No payment history found.',
+        subtitle: 'This customer has no recorded payments yet.',
+      );
+    }
+
+    return Column(
+      children: [
+        for (var i = 0; i < payments.length; i++) ...[
+          _PaymentHistoryCard(payment: payments[i]),
+          if (i != payments.length - 1) const SizedBox(height: 12),
+        ],
+      ],
+    );
+  }
+}
+
+class _PaymentHistoryCard extends StatelessWidget {
+  final CustomerPaymentRecord payment;
+
+  const _PaymentHistoryCard({required this.payment});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.9)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  _formatMoneyValue(payment.amount),
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              _InfoPill(
+                label: _titleCaseText(payment.method),
+                foreground: AppColors.textPrimary,
+                background: const Color(0xFFF7F9FC),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '${_formatIsoDate(payment.date)} · ${payment.referenceNumber}',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 12.5,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          if (payment.status.trim() != '-' && payment.status.trim().isNotEmpty) ...[
+            const SizedBox(height: 8),
+            _InfoPill(
+              label: _titleCaseText(payment.status),
+              foreground: AppColors.primary,
+              background: const Color(0xFFEFF7EA),
+            ),
+          ],
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: const [
+              _ActionText(
+                icon: Icons.receipt_long_outlined,
+                label: 'Receipt',
+                compact: true,
+              ),
+              SizedBox(width: 14),
+              _ActionText(
+                icon: Icons.undo_rounded,
+                label: 'Void',
+                compact: true,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CustomerOrdersSection extends StatelessWidget {
+  final List<CustomerOrderRecord> orders;
+  final bool isLoading;
+  final String? errorMessage;
+  final Future<void> Function() onRetry;
+
+  const _CustomerOrdersSection({
+    required this.orders,
+    required this.isLoading,
+    required this.errorMessage,
+    required this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading && orders.isEmpty) {
+      return const _SectionLoader();
+    }
+    if (errorMessage != null && orders.isEmpty) {
+      return _SectionError(message: errorMessage!, onRetry: onRetry);
+    }
+    if (orders.isEmpty) {
+      return const _EmptySectionState(
+        title: 'No orders found.',
+        subtitle: 'This customer has no sales orders yet.',
+      );
+    }
+
+    return Column(
+      children: [
+        for (var i = 0; i < orders.length; i++) ...[
+          _OrderHistoryCard(order: orders[i]),
+          if (i != orders.length - 1) const SizedBox(height: 12),
+        ],
+      ],
+    );
+  }
+}
+
+class _OrderHistoryCard extends StatelessWidget {
+  final CustomerOrderRecord order;
+
+  const _OrderHistoryCard({required this.order});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.9)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.025),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      order.orderNumber,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 15.5,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _formatIsoDate(order.date),
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                _formatMoneyValue(order.total),
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 19,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _InfoPill(
+                label: _titleCaseText(order.status),
+                foreground: _statusTextColor(order.status),
+                background: _statusBackgroundColor(order.status),
+              ),
+              _InfoPill(
+                label: _titleCaseText(order.fulfillment),
+                foreground: AppColors.textPrimary,
+                background: const Color(0xFFF7F9FC),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+Color _statusTextColor(String status) {
+  final normalized = status.trim().toLowerCase();
+  if (normalized == 'completed' || normalized == 'delivered') {
+    return const Color(0xFF04844B);
+  }
+  if (normalized == 'placed' || normalized == 'pending' || normalized == 'reserved') {
+    return const Color(0xFF1256F3);
+  }
+  if (normalized == 'cancelled' || normalized == 'void') {
+    return const Color(0xFFC53030);
+  }
+  return AppColors.textPrimary;
+}
+
+Color _statusBackgroundColor(String status) {
+  final normalized = status.trim().toLowerCase();
+  if (normalized == 'completed' || normalized == 'delivered') {
+    return const Color(0xFFE9F8EF);
+  }
+  if (normalized == 'placed' || normalized == 'pending' || normalized == 'reserved') {
+    return const Color(0xFFECF3FF);
+  }
+  if (normalized == 'cancelled' || normalized == 'void') {
+    return const Color(0xFFFDECEC);
+  }
+  return const Color(0xFFF4F6F8);
+}
+
+class _StatusBadge extends StatelessWidget {
+  final String label;
+  final Color foreground;
+  final Color background;
+
+  const _StatusBadge({
+    required this.label,
+    required this.foreground,
+    required this.background,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: background,
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: foreground,
+            fontSize: 12.5,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _InfoPill extends StatelessWidget {
+  final String label;
+  final Color foreground;
+  final Color background;
+
+  const _InfoPill({
+    required this.label,
+    required this.foreground,
+    required this.background,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.75)),
+      ),
+      child: Text(
+        label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: foreground,
+          fontSize: 12.5,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+class _ActionText extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool compact;
+
+  const _ActionText({
+    required this.icon,
+    required this.label,
+    this.compact = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: compact ? 16 : 18, color: AppColors.textPrimary),
+        SizedBox(width: compact ? 5 : 6),
+        Text(
+          label,
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: compact ? 13 : 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SectionLoader extends StatelessWidget {
+  const _SectionLoader();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FBF8),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: const Center(
+        child: CircularProgressIndicator(color: AppColors.primary),
+      ),
+    );
+  }
+}
+
+class _SectionError extends StatelessWidget {
+  final String message;
+  final Future<void> Function() onRetry;
+
+  const _SectionError({
+    required this.message,
+    required this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: const Color(0xFFF8FBF8),
         borderRadius: BorderRadius.circular(18),
@@ -1336,30 +2304,29 @@ class _AccountStatementCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Live Balance Snapshot',
+            'Unable to load this section.',
             style: TextStyle(
               color: AppColors.textPrimary,
               fontSize: 15,
               fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 12),
-          _StatementRow(
-            label: 'Opening Balance',
-            value: _formatMoneyValue(customer.openingBalance ?? 0),
+          const SizedBox(height: 8),
+          Text(
+            message,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 13,
+              height: 1.4,
+            ),
           ),
-          _StatementRow(
-            label: 'Billed Amount',
-            value: _formatMoneyValue(customer.totalBilled ?? 0),
-          ),
-          _StatementRow(
-            label: 'Received Amount',
-            value: _formatMoneyValue(customer.totalReceived ?? 0),
-          ),
-          _StatementRow(
-            label: 'Outstanding Amount',
-            value: _formatMoneyValue(customer.outstanding ?? 0),
-            emphasized: true,
+          const SizedBox(height: 14),
+          OutlinedButton.icon(
+            onPressed: () {
+              onRetry();
+            },
+            icon: const Icon(Icons.refresh_rounded),
+            label: const Text('Retry'),
           ),
         ],
       ),
@@ -1367,41 +2334,26 @@ class _AccountStatementCard extends StatelessWidget {
   }
 }
 
-class _StatementRow extends StatelessWidget {
+class _TypeChip extends StatelessWidget {
   final String label;
-  final String value;
-  final bool emphasized;
 
-  const _StatementRow({
-    required this.label,
-    required this.value,
-    this.emphasized = false,
-  });
+  const _TypeChip({required this.label});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 13.5,
-              ),
-            ),
-          ),
-          Text(
-            value,
-            style: TextStyle(
-              color: emphasized ? AppColors.primary : AppColors.textPrimary,
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF2F5FA),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: AppColors.textPrimary,
+          fontSize: 12.5,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }

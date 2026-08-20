@@ -3,6 +3,7 @@ class CustomerModel {
   final String? customerId;
   final String name;
   final String? businessName;
+  final String? industry;
   final String? category;
   final String? email;
   final String? phone;
@@ -22,6 +23,8 @@ class CustomerModel {
   final String? state;
   final String? city;
   final String? pinCode;
+  final double? mapLatitude;
+  final double? mapLongitude;
   final String? assignedSalesOfficerId;
   final String? assignedSalesOfficerName;
   final String? leadSource;
@@ -46,6 +49,7 @@ class CustomerModel {
     required this.customerId,
     required this.name,
     required this.businessName,
+    required this.industry,
     required this.category,
     required this.email,
     required this.phone,
@@ -65,6 +69,8 @@ class CustomerModel {
     required this.state,
     required this.city,
     required this.pinCode,
+    required this.mapLatitude,
+    required this.mapLongitude,
     required this.assignedSalesOfficerId,
     required this.assignedSalesOfficerName,
     required this.leadSource,
@@ -95,6 +101,7 @@ class CustomerModel {
     final financialSummary = _asMap(json['financial_summary']);
     final salesSummary = _asMap(json['sales_summary']);
     final additionalInformation = _asMap(json['additional_information']);
+    final googleMapsLocation = _asMap(addressInformation?['google_maps_location']);
     final assignedSalesOfficer =
         _asMap(json['assigned_sales_officer']) ??
         _asMap(json['sales_officer']) ??
@@ -139,12 +146,14 @@ class CustomerModel {
         'legal_business_name',
         'display_name',
       ]),
+      industry: _nullableStringValueFromSources(stringSources, const [
+        'industry',
+      ]),
       category: _nullableStringValueFromSources(stringSources, const [
         'category',
         'customer_category',
         'type',
         'business_type',
-        'industry',
       ]),
       email: _nullableStringValueFromSources(stringSources, const [
         'email',
@@ -176,7 +185,7 @@ class CustomerModel {
         'website',
         'website_url',
       ]),
-      communicationPreference: _nullableStringValueFromSources(
+      communicationPreference: _listOrStringValueFromSources(
         stringSources,
         const [
           'communication_preference',
@@ -223,7 +232,10 @@ class CustomerModel {
         'pin_code',
         'postal_code',
         'zip_code',
+        'pin_zip_code',
       ]),
+      mapLatitude: _doubleFromMap(googleMapsLocation, 'latitude'),
+      mapLongitude: _doubleFromMap(googleMapsLocation, 'longitude'),
       assignedSalesOfficerId: _stringFromNested(
         salesCrmInformation ?? json,
         assignedSalesOfficer,
@@ -252,7 +264,7 @@ class CustomerModel {
         'customer_priority',
         'priority',
       ]),
-      customerTags: _nullableStringValueFromSources(stringSources, const [
+      customerTags: _listOrStringValueFromSources(stringSources, const [
         'customer_tags',
         'tags',
       ]),
@@ -330,6 +342,7 @@ class CustomerModel {
       'customer_id': customerId,
       'name': name,
       'business_name': businessName,
+      'industry': industry,
       'category': category,
       'email': email,
       'phone': phone,
@@ -349,6 +362,8 @@ class CustomerModel {
       'state': state,
       'city': city,
       'pin_code': pinCode,
+      'map_latitude': mapLatitude,
+      'map_longitude': mapLongitude,
       'assigned_sales_officer_id': assignedSalesOfficerId,
       'assigned_sales_officer_name': assignedSalesOfficerName,
       'lead_source': leadSource,
@@ -428,6 +443,32 @@ class CustomerModel {
     return null;
   }
 
+  static String? _listOrStringValueFromSources(
+    List<Map<String, dynamic>> sources,
+    List<String> keys,
+  ) {
+    for (final source in sources) {
+      for (final key in keys) {
+        final value = source[key];
+        if (value is List) {
+          final items = value
+              .map((item) => item.toString().trim())
+              .where((item) => item.isNotEmpty)
+              .toList();
+          if (items.isNotEmpty) {
+            return items.join(', ');
+          }
+          continue;
+        }
+        final text = value?.toString().trim();
+        if (text != null && text.isNotEmpty && text != '[]') {
+          return text;
+        }
+      }
+    }
+    return null;
+  }
+
   static String? _stringFromNested(
     Map<String, dynamic> json,
     Map<String, dynamic>? nested,
@@ -501,6 +542,17 @@ class CustomerModel {
     return null;
   }
 
+  static double? _doubleFromMap(Map<String, dynamic>? source, String key) {
+    if (source == null) {
+      return null;
+    }
+    final value = source[key];
+    if (value is num) {
+      return value.toDouble();
+    }
+    return double.tryParse(value?.toString() ?? '');
+  }
+
   static bool? _boolFromJson(Map<String, dynamic> json) {
     final direct = json['is_active'];
     if (direct is bool) return direct;
@@ -527,6 +579,167 @@ class CustomerModel {
     }
     return DateTime.tryParse(value);
   }
+}
+
+class CustomerLedgerSummary {
+  final double totalBilled;
+  final double totalReceived;
+  final double openingBalance;
+  final double outstanding;
+  final double creditLimit;
+  final double availableCredit;
+  final double overdueAmount;
+
+  const CustomerLedgerSummary({
+    required this.totalBilled,
+    required this.totalReceived,
+    required this.openingBalance,
+    required this.outstanding,
+    required this.creditLimit,
+    required this.availableCredit,
+    required this.overdueAmount,
+  });
+
+  factory CustomerLedgerSummary.fromJson(Map<String, dynamic>? json) {
+    return CustomerLedgerSummary(
+      totalBilled: _readDouble(json?['total_billed']),
+      totalReceived: _readDouble(json?['total_received']),
+      openingBalance: _readDouble(json?['opening_balance']),
+      outstanding: _readDouble(json?['outstanding']),
+      creditLimit: _readDouble(json?['credit_limit']),
+      availableCredit: _readDouble(json?['available_credit']),
+      overdueAmount: _readDouble(json?['overdue_amount']),
+    );
+  }
+}
+
+class CustomerLedgerAgeing {
+  final double zeroTo30;
+  final double days31To60;
+  final double days61To90;
+  final double days90Plus;
+
+  const CustomerLedgerAgeing({
+    required this.zeroTo30,
+    required this.days31To60,
+    required this.days61To90,
+    required this.days90Plus,
+  });
+
+  factory CustomerLedgerAgeing.fromJson(Map<String, dynamic>? json) {
+    return CustomerLedgerAgeing(
+      zeroTo30: _readDouble(json?['0_30']),
+      days31To60: _readDouble(json?['31_60']),
+      days61To90: _readDouble(json?['61_90']),
+      days90Plus: _readDouble(json?['90_plus']),
+    );
+  }
+}
+
+class CustomerLedgerTransaction {
+  final String type;
+  final String? referenceId;
+  final String? referenceNumber;
+  final DateTime? date;
+  final String description;
+  final double debit;
+  final double credit;
+  final double balance;
+  final DateTime? dueDate;
+  final String? status;
+
+  const CustomerLedgerTransaction({
+    required this.type,
+    required this.referenceId,
+    required this.referenceNumber,
+    required this.date,
+    required this.description,
+    required this.debit,
+    required this.credit,
+    required this.balance,
+    required this.dueDate,
+    required this.status,
+  });
+
+  factory CustomerLedgerTransaction.fromJson(Map<String, dynamic> json) {
+    return CustomerLedgerTransaction(
+      type: json['type']?.toString().trim().isNotEmpty == true
+          ? json['type'].toString().trim()
+          : '-',
+      referenceId: _readNullableString(json['reference_id']),
+      referenceNumber: _readNullableString(json['reference_number']),
+      date: _readDate(json['date']),
+      description: _readNullableString(json['description']) ?? '-',
+      debit: _readDouble(json['debit']),
+      credit: _readDouble(json['credit']),
+      balance: _readDouble(json['balance']),
+      dueDate: _readDate(json['due_date']),
+      status: _readNullableString(json['status']),
+    );
+  }
+}
+
+class CustomerLedger {
+  final String customerId;
+  final String customerName;
+  final CustomerLedgerSummary summary;
+  final CustomerLedgerAgeing ageing;
+  final List<CustomerLedgerTransaction> transactions;
+
+  const CustomerLedger({
+    required this.customerId,
+    required this.customerName,
+    required this.summary,
+    required this.ageing,
+    required this.transactions,
+  });
+
+  factory CustomerLedger.fromJson(Map<String, dynamic> json) {
+    final transactions = json['transactions'];
+    return CustomerLedger(
+      customerId: _readNullableString(json['customer_id']) ?? '',
+      customerName: _readNullableString(json['customer_name']) ?? 'Customer',
+      summary: CustomerLedgerSummary.fromJson(
+        json['summary'] is Map<String, dynamic>
+            ? json['summary'] as Map<String, dynamic>
+            : null,
+      ),
+      ageing: CustomerLedgerAgeing.fromJson(
+        json['ageing'] is Map<String, dynamic>
+            ? json['ageing'] as Map<String, dynamic>
+            : null,
+      ),
+      transactions: transactions is List
+          ? transactions
+                .whereType<Map<String, dynamic>>()
+                .map(CustomerLedgerTransaction.fromJson)
+                .toList()
+          : const [],
+    );
+  }
+}
+
+double _readDouble(Object? value) {
+  if (value is num) {
+    return value.toDouble();
+  }
+  if (value is bool || value == null) {
+    return 0;
+  }
+  return double.tryParse(value.toString().trim()) ?? 0;
+}
+
+String? _readNullableString(Object? value) {
+  final text = value?.toString().trim();
+  return text == null || text.isEmpty ? null : text;
+}
+
+DateTime? _readDate(Object? value) {
+  final text = value?.toString().trim();
+  if (text == null || text.isEmpty) {
+    return null;
+  }
+  return DateTime.tryParse(text);
 }
 
 class CustomerListQuery {
