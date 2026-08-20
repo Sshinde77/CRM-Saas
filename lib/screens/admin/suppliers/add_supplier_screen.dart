@@ -365,7 +365,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
-          value: value,
+          initialValue: value,
           isExpanded: true,
           icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF94A3B8)),
           decoration: InputDecoration(

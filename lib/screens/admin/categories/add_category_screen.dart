@@ -25,7 +25,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
   Uint8List? _selectedImageBytes;
   String? _selectedImageName;
 
-  String _status = 'Draft';
+  final String _status = 'Draft';
 
   @override
   void initState() {

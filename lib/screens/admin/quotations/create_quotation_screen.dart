@@ -1300,8 +1300,6 @@ class _FormField extends StatelessWidget {
   final TextInputType? keyboardType;
   final int maxLines;
   final bool readOnly;
-  final VoidCallback? onTap;
-  final Widget? suffixIcon;
   final String? prefixText;
 
   const _FormField({
@@ -1311,8 +1309,6 @@ class _FormField extends StatelessWidget {
     this.keyboardType,
     this.maxLines = 1,
     this.readOnly = false,
-    this.onTap,
-    this.suffixIcon,
     this.prefixText,
   });
 
@@ -1325,10 +1321,8 @@ class _FormField extends StatelessWidget {
         keyboardType: keyboardType,
         maxLines: maxLines,
         readOnly: readOnly,
-        onTap: onTap,
         decoration: _inputDecoration(
           hintText,
-          suffixIcon: suffixIcon,
           prefixText: prefixText,
         ),
       ),

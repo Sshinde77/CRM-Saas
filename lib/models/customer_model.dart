@@ -109,21 +109,21 @@ class CustomerModel {
         _asMap(salesCrmInformation?['sales_representative']);
     final stringSources = <Map<String, dynamic>>[
       json,
-      if (basicInformation != null) basicInformation,
-      if (contactInformation != null) contactInformation,
-      if (addressInformation != null) addressInformation,
-      if (businessTaxInformation != null) businessTaxInformation,
-      if (paymentInformation != null) paymentInformation,
-      if (salesCrmInformation != null) salesCrmInformation,
-      if (financialSummary != null) financialSummary,
-      if (salesSummary != null) salesSummary,
-      if (additionalInformation != null) additionalInformation,
+      ..._nonNullMaps([
+        basicInformation,
+        contactInformation,
+        addressInformation,
+        businessTaxInformation,
+        paymentInformation,
+        salesCrmInformation,
+        financialSummary,
+        salesSummary,
+        additionalInformation,
+      ]),
     ];
     final numericSources = <Map<String, dynamic>>[
       json,
-      if (paymentInformation != null) paymentInformation,
-      if (financialSummary != null) financialSummary,
-      if (salesSummary != null) salesSummary,
+      ..._nonNullMaps([paymentInformation, financialSummary, salesSummary]),
     ];
 
     return CustomerModel(
@@ -389,18 +389,10 @@ class CustomerModel {
     return value is Map<String, dynamic> ? value : null;
   }
 
-  static String _stringValue(
-    Map<String, dynamic> json,
-    List<String> keys, {
-    String fallback = 'Customer',
-  }) {
-    for (final key in keys) {
-      final value = json[key]?.toString().trim();
-      if (value != null && value.isNotEmpty) {
-        return value;
-      }
-    }
-    return fallback;
+  static List<Map<String, dynamic>> _nonNullMaps(
+    List<Map<String, dynamic>?> values,
+  ) {
+    return values.whereType<Map<String, dynamic>>().toList();
   }
 
   static String? _nullableStringValue(

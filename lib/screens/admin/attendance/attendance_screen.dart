@@ -49,7 +49,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   String _selectedDate = 'Today';
   String _selectedStatus = 'Status: All';
   String _query = '';
-  int _currentPage = 0;
 
   final List<_AttendanceRecord> _records = const [
     _AttendanceRecord(
@@ -417,7 +416,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       width: 170,
       height: 42,
       child: DropdownButtonFormField<String>(
-        value: label,
+        initialValue: label,
         items: items
             .map((item) => DropdownMenuItem(value: item, child: Text(item)))
             .toList(),
@@ -531,7 +530,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     return SizedBox(
       width: 120,
       child: DropdownButtonFormField<String>(
-        value: '10 / page',
+        initialValue: '10 / page',
         items: const [
           DropdownMenuItem(value: '10 / page', child: Text('10 / page')),
           DropdownMenuItem(value: '25 / page', child: Text('25 / page')),

@@ -15,7 +15,6 @@ class RolesPermissionsScreen extends StatefulWidget {
 class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
-  final TextEditingController _roleNameController = TextEditingController();
 
   final List<_RoleRecord> _roles = [
     const _RoleRecord(
@@ -49,12 +48,10 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
   ];
 
   String _query = '';
-  String _newRoleAccessLevel = 'Limited';
 
   @override
   void dispose() {
     _searchController.dispose();
-    _roleNameController.dispose();
     super.dispose();
   }
 
@@ -68,180 +65,6 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
       return role.name.toLowerCase().contains(query) ||
           role.accessSummary.toLowerCase().contains(query);
     }).toList();
-  }
-
-  Future<void> _openNewRoleDialog() async {
-    _roleNameController.clear();
-    _newRoleAccessLevel = 'Limited';
-
-    final created = await showDialog<_RoleRecord>(
-      context: context,
-      builder: (dialogContext) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              backgroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24),
-              ),
-              titlePadding: const EdgeInsets.fromLTRB(24, 22, 16, 12),
-              contentPadding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
-              actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-              title: Row(
-                children: [
-                  const Expanded(
-                    child: Text(
-                      'Create Role',
-                      style: TextStyle(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                  InkWell(
-                    onTap: () => Navigator.of(dialogContext).pop(),
-                    borderRadius: BorderRadius.circular(999),
-                    child: const Padding(
-                      padding: EdgeInsets.all(4),
-                      child: Icon(Icons.close_rounded, size: 18),
-                    ),
-                  ),
-                ],
-              ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Role name',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _roleNameController,
-                    decoration: InputDecoration(
-                      hintText: 'Enter role name',
-                      hintStyle: const TextStyle(
-                        color: Color(0xFF94A3B8),
-                        fontSize: 13.5,
-                      ),
-                      filled: true,
-                      fillColor: const Color(0xFFF8FAFC),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: const BorderSide(
-                          color: Color(0xFFE2E8F0),
-                        ),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: const BorderSide(
-                          color: Color(0xFFE2E8F0),
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: const BorderSide(
-                          color: Color(0xFF0B4A06),
-                          width: 1.2,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Access level',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  DropdownButtonFormField<String>(
-                    value: _newRoleAccessLevel,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: const Color(0xFFF8FAFC),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: const BorderSide(
-                          color: Color(0xFFE2E8F0),
-                        ),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: const BorderSide(
-                          color: Color(0xFFE2E8F0),
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: const BorderSide(
-                          color: Color(0xFF0B4A06),
-                          width: 1.2,
-                        ),
-                      ),
-                    ),
-                    icon: const Icon(Icons.keyboard_arrow_down_rounded),
-                    items: const [
-                      DropdownMenuItem(value: 'Limited', child: Text('Limited')),
-                      DropdownMenuItem(value: 'Full', child: Text('Full')),
-                    ],
-                    onChanged: (value) {
-                      if (value == null) return;
-                      setDialogState(() => _newRoleAccessLevel = value);
-                    },
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(),
-                  child: const Text('Cancel'),
-                ),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    final name = _roleNameController.text.trim();
-                    if (name.isEmpty) return;
-
-                    Navigator.of(dialogContext).pop(
-                      _RoleRecord(
-                        name: name,
-                        accessSummary: '1 module - $_newRoleAccessLevel',
-                        isDefault: false,
-                        icon: Icons.admin_panel_settings_outlined,
-                        accentColor: const Color(0xFF1F6D2A),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.add, size: 18),
-                  label: const Text('Create'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0B4A06),
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-
-    if (created != null && mounted) {
-      setState(() {
-        _roles.insert(0, created);
-      });
-    }
   }
 
   Future<void> _openNewRoleScreen() async {

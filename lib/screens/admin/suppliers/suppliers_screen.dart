@@ -286,7 +286,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
 
   Widget _categoryDropdown() {
     return DropdownButtonFormField<String>(
-      value: _selectedCategory,
+      initialValue: _selectedCategory,
       isExpanded: true,
       icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF94A3B8)),
       decoration: InputDecoration(

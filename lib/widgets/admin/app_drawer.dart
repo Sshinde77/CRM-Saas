@@ -31,9 +31,8 @@ import '../../services/api_service.dart';
 class _NavItem {
   final String label;
   final IconData icon;
-  final bool enabled;
 
-  const _NavItem(this.label, this.icon, {this.enabled = true});
+  const _NavItem(this.label, this.icon);
 }
 
 class _NavSection {
@@ -172,14 +171,6 @@ class _AppDrawerState extends State<AppDrawer> {
   }
 
   void _handleTap(_NavItem item) {
-    if (!item.enabled) {
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('${item.label} is coming soon.')));
-      return;
-    }
-
     Navigator.of(context).pop();
     if (item.label == widget.activeItem) return;
 

@@ -90,11 +90,6 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
     super.dispose();
   }
 
-  bool _isModuleFullySelected(String module) {
-    final selected = _modulePermissions[module] ?? <String>{};
-    return selected.length == _permissionColumns.length;
-  }
-
   bool? _allSelectionValue(String module) {
     final selected = _modulePermissions[module] ?? <String>{};
     if (selected.isEmpty) return false;
@@ -516,7 +511,7 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
-          value: value,
+          initialValue: value,
           decoration: InputDecoration(
             filled: true,
             fillColor: const Color(0xFFF8FAFC),

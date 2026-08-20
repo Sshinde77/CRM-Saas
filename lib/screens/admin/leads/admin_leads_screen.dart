@@ -141,12 +141,6 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
     ).push(MaterialPageRoute<void>(builder: (_) => const AddLeadScreen()));
   }
 
-  void _showSnack(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final leads = _filteredLeads();
@@ -838,51 +832,6 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
     );
   }
 
-  Widget _buildIconSurface({
-    required IconData icon,
-    String? badgeText,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
-      child: Ink(
-        width: 36,
-        height: 36,
-        decoration: _glassDecoration(radius: 14),
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Center(child: Icon(icon, color: AppColors.textSecondary, size: 18)),
-            if (badgeText != null && badgeText != '0')
-              Positioned(
-                top: -4,
-                right: -2,
-                child: Container(
-                  width: 18,
-                  height: 18,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    badgeText,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 8,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildFloatingAddButton() {
     return FloatingActionButton(
       onPressed: _openAddLeadPage,
@@ -1138,7 +1087,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
     required ValueChanged<String?> onChanged,
   }) {
     return DropdownButtonFormField<String>(
-      value: value,
+      initialValue: value,
       onChanged: onChanged,
       decoration: InputDecoration(
         labelText: label,

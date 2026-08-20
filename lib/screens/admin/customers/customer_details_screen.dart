@@ -286,12 +286,6 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
     return externalId == null || externalId.isEmpty ? customer.id : externalId;
   }
 
-  void _showRecordPaymentMessage() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Record payment flow is not connected yet.')),
-    );
-  }
-
   void _showMoreActions() {
     final customer = _customer;
     if (customer == null) return;
@@ -2111,7 +2105,7 @@ class _OrderHistoryCard extends StatelessWidget {
                   fontWeight: FontWeight.w800,
                 ),
               ),
-            ),
+            ],
           ),
           const SizedBox(height: 12),
           Wrap(
@@ -2162,40 +2156,6 @@ Color _statusBackgroundColor(String status) {
     return const Color(0xFFFDECEC);
   }
   return const Color(0xFFF4F6F8);
-}
-
-class _StatusBadge extends StatelessWidget {
-  final String label;
-  final Color foreground;
-  final Color background;
-
-  const _StatusBadge({
-    required this.label,
-    required this.foreground,
-    required this.background,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: background,
-          borderRadius: BorderRadius.circular(999),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: foreground,
-            fontSize: 12.5,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 class _InfoPill extends StatelessWidget {

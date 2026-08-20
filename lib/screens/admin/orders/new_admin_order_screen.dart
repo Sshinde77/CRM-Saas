@@ -1297,7 +1297,7 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
                   ],
                 ),
               ),
-              if (action != null) action,
+              ...(action == null ? const <Widget>[] : <Widget>[action]),
             ],
           ),
           if (title.isNotEmpty) const SizedBox(height: 14),

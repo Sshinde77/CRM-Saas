@@ -1238,7 +1238,7 @@ class _AccountScreenState extends State<AccountScreen> {
                   ),
                 ),
               ),
-              if (trailing != null) trailing,
+              ...(trailing == null ? const <Widget>[] : <Widget>[trailing]),
             ],
           ),
           const SizedBox(height: 12),
