@@ -1,5 +1,6 @@
 class CustomerModel {
   final String id;
+  final String? customerId;
   final String name;
   final String? businessName;
   final String? category;
@@ -42,6 +43,7 @@ class CustomerModel {
 
   const CustomerModel({
     required this.id,
+    required this.customerId,
     required this.name,
     required this.businessName,
     required this.category,
@@ -119,6 +121,10 @@ class CustomerModel {
 
     return CustomerModel(
       id: json['id']?.toString() ?? '',
+      customerId: _nullableStringValueFromSources(stringSources, const [
+        'customer_id',
+        'customerId',
+      ]),
       name: _stringValueFromSources(stringSources, const [
         'name',
         'customer_name',
@@ -321,6 +327,7 @@ class CustomerModel {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'customer_id': customerId,
       'name': name,
       'business_name': businessName,
       'category': category,

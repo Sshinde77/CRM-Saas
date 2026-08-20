@@ -6,8 +6,26 @@ import '../../../models/customer_model.dart';
 import '../../../providers/api_provider.dart';
 import 'add_customer_screen.dart';
 
-String _formatMoneyValue(num value) {
-  final absolute = value.abs().toStringAsFixed(value % 1 == 0 ? 0 : 2);
+double _safeMoneyNumber(Object? value) {
+  if (value is num) {
+    return value.toDouble();
+  }
+  if (value is bool || value == null) {
+    return 0;
+  }
+
+  final normalized = value.toString().trim();
+  if (normalized.isEmpty) {
+    return 0;
+  }
+
+  final sanitized = normalized.replaceAll(RegExp(r'[^0-9.\-]'), '');
+  return double.tryParse(sanitized) ?? 0;
+}
+
+String _formatMoneyValue(Object? value) {
+  final amount = _safeMoneyNumber(value);
+  final absolute = amount.abs().toStringAsFixed(amount % 1 == 0 ? 0 : 2);
   final parts = absolute.split('.');
   final whole = parts.first;
   final fraction = parts.length > 1 ? '.${parts.last}' : '';
@@ -23,7 +41,7 @@ String _formatMoneyValue(num value) {
     chunks.insert(0, rest);
   }
   final grouped = chunks.isEmpty ? lastThree : '${chunks.join(',')},$lastThree';
-  final sign = value < 0 ? '-' : '';
+  final sign = amount < 0 ? '-' : '';
   return '$sign\u20B9$grouped$fraction';
 }
 
@@ -51,8 +69,6 @@ String _formatDate(DateTime? date) {
   return '${date.day.toString().padLeft(2, '0')} ${months[date.month - 1]} ${date.year}';
 }
 
-enum _CustomerTab { overview, financial, documents, more }
-
 class CustomerDetailsScreen extends StatefulWidget {
   final String customerId;
   final CustomerModel? initialCustomer;
@@ -73,7 +89,6 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
   bool _isLoading = true;
   String? _errorMessage;
   CustomerModel? _customer;
-  _CustomerTab _activeTab = _CustomerTab.overview;
   final Set<String> _expandedSections = {
     'contact',
     'business',
@@ -149,6 +164,11 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
     );
   }
 
+  String _visibleCustomerId(CustomerModel customer) {
+    final externalId = customer.customerId?.trim();
+    return externalId == null || externalId.isEmpty ? customer.id : externalId;
+  }
+
   void _showRecordPaymentMessage() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Record payment flow is not connected yet.')),
@@ -193,7 +213,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                   label: 'Copy customer ID',
                   onTap: () {
                     Navigator.of(context).pop();
-                    _copyValue('Customer ID', customer.id);
+                    _copyValue('Customer ID', _visibleCustomerId(customer));
                   },
                 ),
                 _ActionSheetTile(
@@ -424,36 +444,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
       ),
     ];
 
-    switch (_activeTab) {
-      case _CustomerTab.overview:
-        return all;
-      case _CustomerTab.financial:
-        return all
-            .where((section) =>
-                section.id == 'financial' ||
-                section.id == 'payments' ||
-                section.id == 'statement')
-            .toList();
-      case _CustomerTab.documents:
-        return [
-          _SectionConfig(
-            id: 'documents',
-            title: 'Documents',
-            icon: Icons.description_outlined,
-            child: const _EmptySectionState(
-              title: 'No document links are returned by the customer API.',
-              subtitle: 'GST, PAN, address proof, and agreement uploads need backend document fields before they can appear here.',
-            ),
-          ),
-        ];
-      case _CustomerTab.more:
-        return all
-            .where((section) =>
-                section.id == 'sales' ||
-                section.id == 'notes' ||
-                section.id == 'statement')
-            .toList();
-    }
+    return all;
   }
 
   @override
@@ -496,13 +487,6 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                                   const SizedBox(height: 14),
                                   _MetricsGrid(customer: customer),
                                   const SizedBox(height: 14),
-                                  _TabStrip(
-                                    activeTab: _activeTab,
-                                    onChanged: (tab) {
-                                      setState(() => _activeTab = tab);
-                                    },
-                                  ),
-                                  const SizedBox(height: 14),
                                   ..._sectionsFor(customer).map(
                                     (section) => Padding(
                                       padding: const EdgeInsets.only(bottom: 12),
@@ -522,12 +506,6 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                                         child: section.child,
                                       ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  _BottomActions(
-                                    onEdit: _openEdit,
-                                    onRecordPayment: _showRecordPaymentMessage,
-                                    onMore: _showMoreActions,
                                   ),
                                 ],
                               ),
@@ -590,140 +568,169 @@ class _HeaderCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final statusActive = customer.isActive != false;
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Colors.white, Color(0xFFF4FAF2)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.border.withValues(alpha: 0.9)),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF063B00).withValues(alpha: 0.05),
-            blurRadius: 24,
-            offset: const Offset(0, 12),
-          ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 76,
-            height: 76,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [Color(0xFFF1F8EE), Color(0xFFE4F1DE)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              customer.initials,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 540;
+
+        final infoSection = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              customer.name,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                fontSize: 28,
+                fontSize: 18,
                 fontWeight: FontWeight.w800,
-                color: AppColors.primary,
+                color: AppColors.textPrimary,
+                height: 1.15,
               ),
             ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            const SizedBox(height: 8),
+            Text(
+              'Customer ID: ${customer.customerId ?? customer.id}',
+              style: const TextStyle(
+                fontSize: 13.5,
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
               children: [
-                Text(
-                  customer.name,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
-                  ),
+                _Badge(
+                  label: statusActive ? 'Active' : 'Inactive',
+                  backgroundColor: statusActive
+                      ? const Color(0xFFE8F6E5)
+                      : AppColors.statusInactiveBg,
+                  textColor: statusActive
+                      ? AppColors.statusActiveText
+                      : AppColors.statusInactiveText,
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  'Customer ID: ${customer.id}',
-                  style: const TextStyle(
-                    fontSize: 13.5,
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    _Badge(
-                      label: statusActive ? 'Active' : 'Inactive',
-                      backgroundColor: statusActive
-                          ? const Color(0xFFE6F8E7)
-                          : AppColors.statusInactiveBg,
-                      textColor: statusActive
-                          ? AppColors.statusActiveText
-                          : AppColors.statusInactiveText,
-                    ),
-                    _Badge(
-                      label: _displayText(customer.category, fallback: 'Customer'),
-                      backgroundColor: const Color(0xFFEAF7EA),
-                      textColor: AppColors.primary,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                _HeaderRow(
-                  icon: Icons.call_outlined,
-                  text: _displayText(customer.phone),
-                ),
-                const SizedBox(height: 8),
-                _HeaderRow(
-                  icon: Icons.mail_outline_rounded,
-                  text: _displayText(customer.email),
+                _Badge(
+                  label: _displayText(customer.category, fallback: 'Customer'),
+                  backgroundColor: const Color(0xFFEFF7EA),
+                  textColor: AppColors.primary,
                 ),
               ],
             ),
-          ),
-          const SizedBox(width: 12),
-          Column(
-            children: [
-              InkWell(
+            const SizedBox(height: 16),
+            _HeaderRow(
+              icon: Icons.call_outlined,
+              text: _displayText(customer.phone),
+              trailing: InkWell(
                 onTap: onCallTap,
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(999),
                 child: Container(
-                  width: 64,
-                  height: 64,
+                  width: 34,
+                  height: 34,
                   decoration: BoxDecoration(
-                    shape: BoxShape.circle,
+                    color: const Color(0xFFEFF7EA),
+                    borderRadius: BorderRadius.circular(999),
                     border: Border.all(
-                      color: AppColors.primary.withValues(alpha: 0.18),
+                      color: AppColors.primary.withValues(alpha: 0.12),
                     ),
-                    color: Colors.white,
                   ),
                   alignment: Alignment.center,
                   child: const Icon(
                     Icons.call_rounded,
+                    size: 18,
                     color: AppColors.primary,
-                    size: 30,
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
-              const Text(
-                'Call',
-                style: TextStyle(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w600,
-                ),
+            ),
+            const SizedBox(height: 10),
+            _HeaderRow(
+              icon: Icons.mail_outline_rounded,
+              text: _displayText(customer.email),
+            ),
+          ],
+        );
+
+        return Container(
+          width: double.infinity,
+          padding: EdgeInsets.fromLTRB(22, compact ? 20 : 24, 22, 22),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFFFFFFFF), Color(0xFFF7FBF4), Color(0xFFF1F8EC)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: const Color(0xFFDDE8D8)),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF0A3C02).withValues(alpha: 0.045),
+                blurRadius: 24,
+                offset: const Offset(0, 14),
               ),
             ],
           ),
+          child: compact
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _CustomerAvatar(initials: customer.initials),
+                        const SizedBox(width: 16),
+                        Expanded(child: infoSection),
+                      ],
+                    ),
+                  ],
+                )
+              : Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _CustomerAvatar(initials: customer.initials),
+                    const SizedBox(width: 18),
+                    Expanded(child: infoSection),
+                  ],
+                ),
+        );
+      },
+    );
+  }
+}
+
+class _CustomerAvatar extends StatelessWidget {
+  final String initials;
+
+  const _CustomerAvatar({required this.initials});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 78,
+      height: 78,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: const LinearGradient(
+          colors: [Color(0xFFF0F7E9), Color(0xFFE2EFD8)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.08),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
         ],
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        initials,
+        style: const TextStyle(
+          fontSize: 26,
+          fontWeight: FontWeight.w800,
+          color: AppColors.primary,
+          letterSpacing: 0.4,
+        ),
       ),
     );
   }
@@ -732,25 +739,40 @@ class _HeaderCard extends StatelessWidget {
 class _HeaderRow extends StatelessWidget {
   final IconData icon;
   final String text;
+  final Widget? trailing;
 
-  const _HeaderRow({required this.icon, required this.text});
+  const _HeaderRow({
+    required this.icon,
+    required this.text,
+    this.trailing,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 18, color: AppColors.textSecondary),
-        const SizedBox(width: 8),
+        Container(
+          width: 24,
+          alignment: Alignment.topLeft,
+          child: Icon(icon, size: 18, color: AppColors.textSecondary),
+        ),
+        const SizedBox(width: 10),
         Expanded(
           child: Text(
             text,
             style: const TextStyle(
               color: AppColors.textSecondary,
-              fontSize: 13.5,
+              fontSize: 14,
               fontWeight: FontWeight.w500,
+              height: 1.25,
             ),
           ),
         ),
+        if (trailing != null) ...[
+          const SizedBox(width: 10),
+          trailing!,
+        ],
       ],
     );
   }
@@ -770,7 +792,7 @@ class _Badge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(999),
@@ -780,7 +802,7 @@ class _Badge extends StatelessWidget {
         style: TextStyle(
           color: textColor,
           fontWeight: FontWeight.w700,
-          fontSize: 12.5,
+          fontSize: 13,
         ),
       ),
     );
@@ -802,68 +824,131 @@ class _MetricsGrid extends StatelessWidget {
       _MetricCardData(
         title: 'Total Orders',
         value: '$totalOrders',
-        actionLabel: 'View Orders',
         icon: Icons.inventory_2_outlined,
       ),
       _MetricCardData(
         title: 'Total Received',
         value: _formatMoneyValue(customer.totalReceived ?? 0),
-        actionLabel: 'View Payments',
         icon: Icons.account_balance_wallet_outlined,
       ),
       _MetricCardData(
         title: 'Outstanding Balance',
         value: _formatMoneyValue(customer.outstanding ?? 0),
-        actionLabel: 'View Payments',
         icon: Icons.wallet_outlined,
       ),
       _MetricCardData(
         title: 'Credit Limit',
         value: _formatMoneyValue(customer.creditLimit ?? 0),
-        actionLabel: 'Edit Limit',
         icon: Icons.credit_card_rounded,
       ),
       _MetricCardData(
         title: 'Last Order Date',
         value: lastOrderDate,
-        actionLabel: 'View Orders',
         icon: Icons.calendar_month_outlined,
       ),
       _MetricCardData(
         title: 'Avg. Order Value',
         value: _formatMoneyValue(avgOrderValue),
-        actionLabel: null,
         icon: Icons.trending_up_rounded,
       ),
     ];
 
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: cards.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-        childAspectRatio: 1.18,
-      ),
-      itemBuilder: (context, index) => _MetricCard(data: cards[index]),
-    );
+    return _SlidingMetricsStrip(cards: cards);
   }
 }
 
 class _MetricCardData {
   final String title;
   final String value;
-  final String? actionLabel;
   final IconData icon;
 
   const _MetricCardData({
     required this.title,
     required this.value,
-    required this.actionLabel,
     required this.icon,
   });
+
+  String? get actionLabel => null;
+}
+
+class _SlidingMetricsStrip extends StatefulWidget {
+  final List<_MetricCardData> cards;
+
+  const _SlidingMetricsStrip({required this.cards});
+
+  @override
+  State<_SlidingMetricsStrip> createState() => _SlidingMetricsStripState();
+}
+
+class _SlidingMetricsStripState extends State<_SlidingMetricsStrip>
+    with SingleTickerProviderStateMixin {
+  static const double _cardWidth = 210;
+  static const double _gap = 12;
+  late final AnimationController _controller;
+  bool _isPaused = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 26),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _togglePaused() {
+    setState(() {
+      _isPaused = !_isPaused;
+      if (_isPaused) {
+        _controller.stop();
+      } else {
+        _controller.repeat();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final loopWidth = widget.cards.length * (_cardWidth + _gap);
+    final marqueeCards = [...widget.cards, ...widget.cards];
+
+    return SizedBox(
+      height: 116,
+      child: ClipRect(
+        child: AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            final offset = -(loopWidth * _controller.value);
+            return Transform.translate(
+              offset: Offset(offset, 0),
+              child: child,
+            );
+          },
+          child: Row(
+            children: [
+              for (final card in marqueeCards) ...[
+                GestureDetector(
+                  onTap: _togglePaused,
+                  behavior: HitTestBehavior.opaque,
+                  child: SizedBox(
+                    width: _cardWidth,
+                    child: _MetricCard(data: card),
+                  ),
+                ),
+                const SizedBox(width: _gap),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _MetricCard extends StatelessWidget {
@@ -874,148 +959,80 @@ class _MetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      height: 104,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.border.withValues(alpha: 0.85)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.025),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
+            color: Colors.black.withValues(alpha: 0.022),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1F7EF),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                alignment: Alignment.center,
+                child: Icon(data.icon, size: 18, color: AppColors.primary),
+              ),
+              const SizedBox(width: 10),
               Expanded(
-                child: Text(
-                  data.title,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w500,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    data.value,
+                    maxLines: 1,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
               ),
-              Icon(data.icon, size: 22, color: AppColors.primary),
             ],
           ),
-          const Spacer(),
+          const SizedBox.shrink(),
           Text(
-            data.value,
+            data.title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 17,
-              fontWeight: FontWeight.w800,
+              color: AppColors.textSecondary,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              height: 1.2,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 0),
           Text(
             data.actionLabel == null ? ' ' : '${data.actionLabel}  →',
             style: TextStyle(
               color: data.actionLabel == null
                   ? Colors.transparent
                   : AppColors.primary,
-              fontSize: 13.5,
+              fontSize: 0,
               fontWeight: FontWeight.w600,
+              height: 0,
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _TabStrip extends StatelessWidget {
-  final _CustomerTab activeTab;
-  final ValueChanged<_CustomerTab> onChanged;
-
-  const _TabStrip({required this.activeTab, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(6),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border.withValues(alpha: 0.9)),
-      ),
-      child: Row(
-        children: [
-          _TabButton(
-            label: 'Overview',
-            active: activeTab == _CustomerTab.overview,
-            onTap: () => onChanged(_CustomerTab.overview),
-          ),
-          _TabButton(
-            label: 'Financial',
-            active: activeTab == _CustomerTab.financial,
-            onTap: () => onChanged(_CustomerTab.financial),
-          ),
-          _TabButton(
-            label: 'Documents',
-            active: activeTab == _CustomerTab.documents,
-            onTap: () => onChanged(_CustomerTab.documents),
-          ),
-          _TabButton(
-            label: 'More',
-            active: activeTab == _CustomerTab.more,
-            onTap: () => onChanged(_CustomerTab.more),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TabButton extends StatelessWidget {
-  final String label;
-  final bool active;
-  final VoidCallback onTap;
-
-  const _TabButton({
-    required this.label,
-    required this.active,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          decoration: BoxDecoration(
-            color: active ? const Color(0xFFF0F7EE) : Colors.transparent,
-            borderRadius: BorderRadius.circular(14),
-            boxShadow: active
-                ? [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.08),
-                      blurRadius: 16,
-                      offset: const Offset(0, 8),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: active ? AppColors.primary : AppColors.textSecondary,
-              fontSize: 13.5,
-              fontWeight: active ? FontWeight.w700 : FontWeight.w500,
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -1222,9 +1239,10 @@ class _FinancialSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final creditLimit = customer.creditLimit ?? 0;
-    final outstanding = customer.outstanding ?? 0;
-    final availableCredit = (creditLimit - outstanding).clamp(-999999999, 999999999);
+    final creditLimit = _safeMoneyNumber(customer.creditLimit);
+    final outstanding = _safeMoneyNumber(customer.outstanding);
+    final availableCredit =
+        (creditLimit - outstanding).clamp(-999999999.0, 999999999.0);
 
     return GridView.count(
       shrinkWrap: true,
@@ -1425,111 +1443,6 @@ class _EmptySectionState extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _BottomActions extends StatelessWidget {
-  final VoidCallback onEdit;
-  final VoidCallback onRecordPayment;
-  final VoidCallback onMore;
-
-  const _BottomActions({
-    required this.onEdit,
-    required this.onRecordPayment,
-    required this.onMore,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: _BottomButton(
-            label: 'Edit Customer',
-            icon: Icons.edit_rounded,
-            filled: false,
-            onTap: onEdit,
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: _BottomButton(
-            label: 'Record Payment',
-            icon: Icons.add_circle_outline_rounded,
-            filled: false,
-            onTap: onRecordPayment,
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: _BottomButton(
-            label: 'More Actions',
-            icon: Icons.menu_rounded,
-            filled: true,
-            onTap: onMore,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _BottomButton extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final bool filled;
-  final VoidCallback onTap;
-
-  const _BottomButton({
-    required this.label,
-    required this.icon,
-    required this.filled,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(18),
-      child: Ink(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 18),
-        decoration: BoxDecoration(
-          gradient: filled
-              ? const LinearGradient(
-                  colors: [Color(0xFF0B5D08), AppColors.primary],
-                )
-              : const LinearGradient(
-                  colors: [Color(0xFFF9FCF8), Color(0xFFEFF7ED)],
-                ),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: filled
-                ? Colors.transparent
-                : AppColors.border.withValues(alpha: 0.9),
-          ),
-        ),
-        child: Column(
-          children: [
-            Icon(
-              icon,
-              color: filled ? Colors.white : AppColors.primary,
-              size: 24,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: filled ? Colors.white : AppColors.primary,
-                fontSize: 12.5,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
