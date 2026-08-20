@@ -9,6 +9,7 @@ import '../follow_ups/sales_manager_follow_ups_screen.dart';
 import '../leads/sales_manager_leads_screen.dart';
 import '../dashboard/sales_manager_dashboard_screen.dart';
 import '../performance/sales_manager_performance_screen.dart';
+import 'sales_manager_create_order_screen.dart';
 import '../stock/sales_manager_stock_screen.dart';
 import '../visits/sales_manager_visits_screen.dart';
 
@@ -100,9 +101,8 @@ class _SalesManagerOrdersScreenState extends State<SalesManagerOrdersScreen> {
 
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => _CreateSalesOrderPage(
-          customer: _customers.first,
-          customers: _customers,
+        builder: (_) => SalesManagerCreateOrderScreen(
+          initialCustomerName: _customers.first.name,
         ),
       ),
     );
@@ -130,7 +130,7 @@ class _SalesManagerOrdersScreenState extends State<SalesManagerOrdersScreen> {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) =>
-            _CreateSalesOrderPage(customer: customer, customers: _customers),
+            SalesManagerCreateOrderScreen(initialCustomerName: customer.name),
       ),
     );
   }

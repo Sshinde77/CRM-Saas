@@ -268,23 +268,13 @@ class _SalesManagerAttendanceScreenState
             ),
           ),
           const SizedBox(height: 16),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: SizedBox(
-              width: 1280,
-              child: Column(
-                children: [
-                  const _AttendanceHeaderRow(),
-                  const Divider(height: 1, color: Color(0xFFE5E7EB)),
-                  for (var i = 0; i < _records.length; i++) ...[
-                    _AttendanceRow(record: _records[i]),
-                    if (i != _records.length - 1)
-                      const Divider(height: 1, color: Color(0xFFE5E7EB)),
-                  ],
-                ],
-              ),
-            ),
-          ),
+          const _AttendanceHeaderRow(),
+          const Divider(height: 1, color: Color(0xFFE5E7EB)),
+          for (var i = 0; i < _records.length; i++) ...[
+            _AttendanceRow(record: _records[i]),
+            if (i != _records.length - 1)
+              const Divider(height: 1, color: Color(0xFFE5E7EB)),
+          ],
         ],
       ),
     );
@@ -402,10 +392,10 @@ class _AttendanceHeaderRow extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 14),
       child: Row(
         children: [
-          SizedBox(width: 260, child: Text('DATE', style: labelStyle)),
-          SizedBox(width: 220, child: Text('STATUS', style: labelStyle)),
-          SizedBox(width: 220, child: Text('CHECK IN', style: labelStyle)),
-          SizedBox(width: 220, child: Text('CHECK OUT', style: labelStyle)),
+          Expanded(flex: 3, child: Text('DATE', style: labelStyle)),
+          Expanded(flex: 2, child: Text('STATUS', style: labelStyle)),
+          Expanded(flex: 2, child: Text('CHECK IN', style: labelStyle)),
+          Expanded(flex: 2, child: Text('CHECK OUT', style: labelStyle)),
         ],
       ),
     );
@@ -420,11 +410,11 @@ class _AttendanceRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
       child: Row(
         children: [
-          SizedBox(
-            width: 260,
+          Expanded(
+            flex: 3,
             child: Text(
               record.date,
               style: const TextStyle(
@@ -434,12 +424,12 @@ class _AttendanceRow extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(
-            width: 220,
+          Expanded(
+            flex: 2,
             child: _StatusPill(label: record.status, color: AppColors.green),
           ),
-          SizedBox(
-            width: 220,
+          Expanded(
+            flex: 2,
             child: Text(
               record.checkIn,
               style: const TextStyle(
@@ -449,8 +439,8 @@ class _AttendanceRow extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(
-            width: 220,
+          Expanded(
+            flex: 2,
             child: Text(
               record.checkOut,
               style: const TextStyle(
