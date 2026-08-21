@@ -535,11 +535,18 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
   Widget _supplierCard(_SupplierRecord supplier) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFFAFAFA),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFF1F5F9)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -551,7 +558,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                 width: 42,
                 height: 42,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.surfaceSoft,
                   shape: BoxShape.circle,
                   border: Border.all(color: const Color(0xFFE5E7EB)),
                 ),
@@ -559,7 +566,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                 child: Text(
                   supplier.name.isNotEmpty ? supplier.name[0].toUpperCase() : 'S',
                   style: const TextStyle(
-                    color: Color(0xFF111827),
+                    color: AppColors.primary,
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                   ),
@@ -572,16 +579,16 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                   children: [
                     Text(
                       supplier.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Color(0xFF111827),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Color(0xFF111827),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
+                      const SizedBox(height: 4),
+                      Text(
                       supplier.category,
                       style: const TextStyle(
                         color: Color(0xFF94A3B8),
@@ -598,32 +605,43 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          _mobileInfoRow('Contact', supplier.contact),
-          const SizedBox(height: 8),
-          _mobileInfoRow('City', supplier.city),
-          const SizedBox(height: 8),
+          const SizedBox(height: 14),
           Row(
             children: [
-              Expanded(child: _mobileInfoRow('Purchases', supplier.totalPurchases)),
-              const SizedBox(width: 10),
-              Expanded(child: _mobileInfoRow('Payable', supplier.outstandingPayable)),
+              Expanded(child: _supplierInfoBlock('Contact', supplier.contact)),
+              const SizedBox(width: 18),
+              Expanded(child: _supplierInfoBlock('City', supplier.city)),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: _supplierInfoBlock('Purchases', supplier.totalPurchases),
+              ),
+              const SizedBox(width: 18),
+              Expanded(
+                child: _supplierInfoBlock('Payable', supplier.outstandingPayable),
+              ),
             ],
           ),
           const SizedBox(height: 12),
           Align(
             alignment: Alignment.centerLeft,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
               decoration: BoxDecoration(
                 color: supplier.statusBg,
                 borderRadius: BorderRadius.circular(999),
+                border: Border.all(
+                  color: supplier.statusColor.withValues(alpha: 0.10),
+                ),
               ),
               child: Text(
                 supplier.status,
                 style: TextStyle(
                   color: supplier.statusColor,
-                  fontSize: 12,
+                  fontSize: 12.5,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -634,7 +652,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
     );
   }
 
-  Widget _mobileInfoRow(String label, String value) {
+  Widget _supplierInfoBlock(String label, String value) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -647,15 +665,15 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
             letterSpacing: 0.8,
           ),
         ),
-        const SizedBox(height: 3),
+        const SizedBox(height: 5),
         Text(
           value,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(
             color: Color(0xFF111827),
-            fontSize: 13.5,
-            fontWeight: FontWeight.w600,
+            fontSize: 13.8,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ],

@@ -13,6 +13,7 @@ import '../../screens/admin/invoices/invoices_screen.dart';
 import '../../screens/admin/leads/admin_leads_screen.dart';
 import '../../screens/admin/notifications/notifications_screen.dart';
 import '../../screens/admin/orders/admin_orders_screen.dart';
+import '../../screens/admin/sales_returns/sales_returns_screen.dart';
 import '../../screens/admin/products/products_screen.dart';
 import '../../screens/admin/categories/categories_screen.dart';
 import '../../screens/admin/attendance/attendance_screen.dart';
@@ -106,6 +107,7 @@ class AppDrawer extends StatefulWidget {
     _NavSection('Operations', [
       _NavItem('Inventory', Icons.warehouse_outlined),
       _NavItem('Orders', Icons.shopping_cart_outlined),
+      _NavItem('Sales Returns', Icons.keyboard_return_rounded),
       _NavItem('Vehicle Stock', Icons.local_shipping_outlined),
       _NavItem('Purchases', Icons.inventory_2_outlined),
       _NavItem('Deliveries', Icons.local_shipping_outlined),
@@ -220,6 +222,11 @@ class _AppDrawerState extends State<AppDrawer> {
       case 'Orders':
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const AdminOrdersScreen()),
+        );
+        break;
+      case 'Sales Returns':
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const SalesReturnsScreen()),
         );
         break;
       case 'Leads':

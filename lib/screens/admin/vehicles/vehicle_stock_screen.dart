@@ -181,7 +181,14 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
               .map(
                 (p) => DropdownMenuItem(
                   value: p,
-                  child: Text(p, overflow: TextOverflow.ellipsis),
+                  child: Text(
+                    p,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               )
               .toList(),

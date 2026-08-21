@@ -365,7 +365,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
         child: Text(
           label,
           style: TextStyle(
-            color: selected ? AppColors.purple : textSecondary,
+            color: selected ? Colors.white : textSecondary,
             fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
           ),
         ),

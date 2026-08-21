@@ -309,6 +309,34 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       initialDate: initialDate,
       firstDate: DateTime(2000),
       lastDate: DateTime(now.year + 10),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: AppColors.primary,
+              onPrimary: Colors.white,
+              surface: Colors.white,
+              onSurface: AppColors.textPrimary,
+            ),
+            datePickerTheme: const DatePickerThemeData(
+              backgroundColor: Colors.white,
+              headerBackgroundColor: Colors.white,
+              headerForegroundColor: AppColors.textPrimary,
+              dayBackgroundColor: WidgetStatePropertyAll<Color>(
+                Colors.transparent,
+              ),
+              dayForegroundColor: WidgetStatePropertyAll<Color>(
+                AppColors.textPrimary,
+              ),
+              todayBackgroundColor: WidgetStatePropertyAll<Color>(
+                AppColors.primary,
+              ),
+              todayForegroundColor: WidgetStatePropertyAll<Color>(Colors.white),
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
     if (picked == null || !mounted) return;
 
