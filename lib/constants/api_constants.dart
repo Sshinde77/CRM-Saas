@@ -1,7 +1,7 @@
 class ApiConstants {
   const ApiConstants._();
 
-  static const String baseUrl = 'https://crm-saas-backend-9nom.onrender.com';
+  static const String baseUrl = 'https://saasbackend-1-f6v3.onrender.com';
   static const Duration requestTimeout = Duration(seconds: 20);
   static const Duration loginRequestTimeout = Duration(seconds: 60);
 

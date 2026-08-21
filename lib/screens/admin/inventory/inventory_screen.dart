@@ -474,11 +474,11 @@ class _InventoryScreenState extends State<InventoryScreen> {
               width: 150,
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
-                color: selected ? AppColors.secondary : AppColors.surfaceSoft,
+                color: selected ? AppColors.primary : AppColors.surfaceSoft,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: selected
-                      ? AppColors.secondary
+                      ? AppColors.primary
                       : AppColors.secondary.withValues(alpha: 0.2),
                 ),
               ),
@@ -491,7 +491,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: selected ? AppColors.primary : textPrimary,
+                      color: selected ? Colors.white : textPrimary,
                       fontWeight: FontWeight.w700,
                       fontSize: 13,
                     ),
@@ -501,7 +501,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                     '$count item${count == 1 ? '' : 's'}',
                     style: TextStyle(
                       color: selected
-                          ? AppColors.primary.withValues(alpha: 0.85)
+                          ? Colors.white.withValues(alpha: 0.85)
                           : textSecondary,
                       fontSize: 11.5,
                     ),

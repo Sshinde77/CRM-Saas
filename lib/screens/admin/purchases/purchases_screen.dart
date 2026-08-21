@@ -311,32 +311,6 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                   ],
                 ),
               ),
-              IconButton(
-                onPressed: () =>
-                    _openInvoiceFormDialog(existing: invoice, index: index),
-                icon: const Icon(
-                  Icons.edit_outlined,
-                  size: 20,
-                  color: AppColors.purple,
-                ),
-                style: IconButton.styleFrom(
-                  backgroundColor: AppColors.purple.withValues(alpha: 0.08),
-                  padding: const EdgeInsets.all(8),
-                ),
-              ),
-              const SizedBox(width: 6),
-              IconButton(
-                onPressed: () => _confirmDelete(invoice, index),
-                icon: const Icon(
-                  Icons.delete_outline_rounded,
-                  size: 20,
-                  color: AppColors.red,
-                ),
-                style: IconButton.styleFrom(
-                  backgroundColor: AppColors.red.withValues(alpha: 0.08),
-                  padding: const EdgeInsets.all(8),
-                ),
-              ),
             ],
           ),
           const SizedBox(height: 14),
@@ -440,7 +414,48 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
               ),
             ],
           ),
+          const SizedBox(height: 14),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              _actionButton(
+                icon: Icons.edit_outlined,
+                backgroundColor: AppColors.surfaceSoft,
+                iconColor: AppColors.textPrimary,
+                onPressed: () =>
+                    _openInvoiceFormDialog(existing: invoice, index: index),
+              ),
+              const SizedBox(width: 10),
+              _actionButton(
+                icon: Icons.delete_outline_rounded,
+                backgroundColor: AppColors.red.withValues(alpha: 0.12),
+                iconColor: AppColors.red,
+                onPressed: () => _confirmDelete(invoice, index),
+              ),
+            ],
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _actionButton({
+    required IconData icon,
+    required Color backgroundColor,
+    required Color iconColor,
+    required VoidCallback onPressed,
+  }) {
+    return Material(
+      color: backgroundColor,
+      shape: const CircleBorder(),
+      child: InkWell(
+        onTap: onPressed,
+        customBorder: const CircleBorder(),
+        child: SizedBox(
+          width: 44,
+          height: 44,
+          child: Icon(icon, size: 20, color: iconColor),
+        ),
       ),
     );
   }
