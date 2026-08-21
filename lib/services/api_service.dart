@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../constants/api_constants.dart';
@@ -321,6 +322,38 @@ class ApiService {
       fallbackMessage: 'Invalid customer document upload response.',
     );
     return CustomerDocument.fromJson(decoded);
+  }
+
+  Future<List<CustomerDocument>> fetchCustomerDocuments(
+    String customerId, {
+    String? documentType,
+  }) async {
+    final id = customerId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing customer id.');
+    }
+
+    final type = documentType?.trim();
+    final response = await _send(
+      method: 'GET',
+      endpoint: ApiEndpoints.customersDocuments(id),
+      requiresAuth: true,
+      queryParameters: type == null || type.isEmpty
+          ? null
+          : {'document_type': type},
+    );
+
+    final decoded = _tryDecodeBody(response.body.trim());
+    final rawDocuments = _extractGenericList(
+      decoded,
+      const ['documents', 'data', 'items', 'results'],
+      fallbackMessage: 'Invalid customer documents response.',
+    );
+
+    return rawDocuments
+        .whereType<Map<String, dynamic>>()
+        .map(CustomerDocument.fromJson)
+        .toList();
   }
 
   Future<String?> uploadOrganizationLogo({
@@ -1232,7 +1265,12 @@ class ApiService {
           request.fields.addAll(fields);
         }
         request.files.add(
-          http.MultipartFile.fromBytes('file', fileBytes, filename: fileName),
+          http.MultipartFile.fromBytes(
+            'file',
+            fileBytes,
+            filename: fileName,
+            contentType: _mediaTypeForFileName(fileName),
+          ),
         );
 
         final streamedResponse = await request.send().timeout(effectiveTimeout);
@@ -1418,6 +1456,32 @@ class ApiService {
       default:
         throw ApiException(message: 'Unsupported HTTP method: $method');
     }
+  }
+
+  MediaType _mediaTypeForFileName(String fileName) {
+    final extension = fileName.trim().split('.').last.toLowerCase();
+    return switch (extension) {
+      'png' => MediaType('image', 'png'),
+      'jpg' || 'jpeg' => MediaType('image', 'jpeg'),
+      'webp' => MediaType('image', 'webp'),
+      'gif' => MediaType('image', 'gif'),
+      'bmp' => MediaType('image', 'bmp'),
+      'svg' => MediaType('image', 'svg+xml'),
+      'pdf' => MediaType('application', 'pdf'),
+      'doc' => MediaType('application', 'msword'),
+      'docx' => MediaType(
+          'application',
+          'vnd.openxmlformats-officedocument.wordprocessingml.document',
+        ),
+      'xls' => MediaType('application', 'vnd.ms-excel'),
+      'xlsx' => MediaType(
+          'application',
+          'vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ),
+      'txt' => MediaType('text', 'plain'),
+      'csv' => MediaType('text', 'csv'),
+      _ => MediaType('application', 'octet-stream'),
+    };
   }
 
   void _logRequest({

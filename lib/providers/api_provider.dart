@@ -333,6 +333,29 @@ class ApiProvider extends ChangeNotifier {
     }
   }
 
+  Future<List<CustomerDocument>> fetchCustomerDocuments(
+    String customerId, {
+    String? documentType,
+  }) async {
+    _setLoading(true);
+    _errorMessage = null;
+
+    try {
+      final documents = await _apiService.fetchCustomerDocuments(
+        customerId,
+        documentType: documentType,
+      );
+      notifyListeners();
+      return documents;
+    } catch (error) {
+      _errorMessage = error.toString();
+      notifyListeners();
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   Future<void> deleteCustomer(String customerId) async {
     _setLoading(true);
     _errorMessage = null;

@@ -9,9 +9,22 @@ import 'customer_details_screen.dart';
 import 'add_customer_screen.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
+import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
+import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
+import '../../sales_manager/attendance/sales_manager_attendance_screen.dart';
+import '../../sales_manager/dashboard/sales_manager_dashboard_screen.dart';
+import '../../sales_manager/follow_ups/sales_manager_follow_ups_screen.dart';
+import '../../sales_manager/performance/sales_manager_performance_screen.dart';
+import '../../sales_manager/stock/sales_manager_stock_screen.dart';
+import '../../sales_manager/visits/sales_manager_visits_screen.dart';
+import '../leads/admin_leads_screen.dart';
+import '../orders/admin_orders_screen.dart';
+import '../orders/new_admin_order_screen.dart';
 
 class CustomersScreen extends StatefulWidget {
-  const CustomersScreen({super.key});
+  final bool useSalesManagerShell;
+
+  const CustomersScreen({super.key, this.useSalesManagerShell = false});
 
   @override
   State<CustomersScreen> createState() => _CustomersScreenState();
@@ -58,6 +71,10 @@ class _CustomersScreenState extends State<CustomersScreen> {
   }
 
   Future<void> _loadCustomers() async {
+    final assignedSalesOfficerId = widget.useSalesManagerShell
+        ? _apiProvider.currentUser?.id
+        : _assignedSalesOfficerId;
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -68,7 +85,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
         search: _search,
         category: _category,
         isActive: _isActive,
-        assignedSalesOfficerId: _assignedSalesOfficerId,
+        assignedSalesOfficerId: assignedSalesOfficerId,
       );
 
       if (!mounted) return;
@@ -99,6 +116,70 @@ class _CustomersScreenState extends State<CustomersScreen> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  void _handleSalesManagerSidebarSelection(String action) {
+    Navigator.of(context).maybePop();
+    if (action == 'Customers') return;
+    if (action == 'Dashboard') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerDashboardScreen()),
+      );
+      return;
+    }
+    if (action == 'Leads') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const AdminLeadsScreen(useSalesManagerShell: true),
+        ),
+      );
+      return;
+    }
+    if (action == 'Create Order') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const NewAdminOrderScreen(useSalesManagerShell: true),
+        ),
+      );
+      return;
+    }
+    if (action == 'Sales Orders') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const AdminOrdersScreen(useSalesManagerShell: true),
+        ),
+      );
+      return;
+    }
+    if (action == 'Stock') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerStockScreen()),
+      );
+      return;
+    }
+    if (action == 'Follow-ups' || action == 'Follow-Ups') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerFollowUpsScreen()),
+      );
+      return;
+    }
+    if (action == 'Attendance') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerAttendanceScreen()),
+      );
+      return;
+    }
+    if (action == 'Visits') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerVisitsScreen()),
+      );
+      return;
+    }
+    if (action == 'My Performance') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerPerformanceScreen()),
+      );
+    }
   }
 
   Future<bool> _confirmDeleteCustomer(CustomerModel customer) async {
@@ -211,12 +292,14 @@ class _CustomersScreenState extends State<CustomersScreen> {
                       controller: categoryController,
                     ),
                     const SizedBox(height: 14),
-                    _filterField(
-                      label: 'Assigned Sales Officer ID',
-                      hint: 'assigned_sales_officer_id',
-                      controller: assignedSalesOfficerController,
-                    ),
-                    const SizedBox(height: 14),
+                    if (!widget.useSalesManagerShell) ...[
+                      _filterField(
+                        label: 'Assigned Sales Officer ID',
+                        hint: 'assigned_sales_officer_id',
+                        controller: assignedSalesOfficerController,
+                      ),
+                      const SizedBox(height: 14),
+                    ],
                     DropdownButtonFormField<bool?>(
                       key: ValueKey<bool?>(selectedIsActive),
                       initialValue: selectedIsActive,
@@ -247,7 +330,9 @@ class _CustomersScreenState extends State<CustomersScreen> {
                             onPressed: () {
                               setSheetState(() {
                                 categoryController.clear();
-                                assignedSalesOfficerController.clear();
+                                if (!widget.useSalesManagerShell) {
+                                  assignedSalesOfficerController.clear();
+                                }
                                 selectedIsActive = null;
                               });
                             },
@@ -300,10 +385,12 @@ class _CustomersScreenState extends State<CustomersScreen> {
       _category = categoryController.text.trim().isEmpty
           ? null
           : categoryController.text.trim();
-      _assignedSalesOfficerId =
-          assignedSalesOfficerController.text.trim().isEmpty
-          ? null
-          : assignedSalesOfficerController.text.trim();
+      if (!widget.useSalesManagerShell) {
+        _assignedSalesOfficerId =
+            assignedSalesOfficerController.text.trim().isEmpty
+            ? null
+            : assignedSalesOfficerController.text.trim();
+      }
       _isActive = selectedIsActive;
     });
 
@@ -315,15 +402,23 @@ class _CustomersScreenState extends State<CustomersScreen> {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
-      drawer: const AppDrawer(activeItem: 'Customers'),
+      drawer: widget.useSalesManagerShell
+          ? SalesManagerSidebarDrawer(
+              currentPage: 'Customers',
+              onSelect: _handleSalesManagerSidebarSelection,
+            )
+          : const AppDrawer(activeItem: 'Customers'),
       body: SafeArea(
         child: Column(
           children: [
-            AdminTopBar(
-              title: 'Customers',
-              leadingIcon: Icons.menu_rounded,
-              onLeadingTap: () => _scaffoldKey.currentState?.openDrawer(),
-            ),
+            widget.useSalesManagerShell
+                ? const SalesManagerTopBar(title: 'Customers')
+                : AdminTopBar(
+                    title: 'Customers',
+                    leadingIcon: Icons.menu_rounded,
+                    onLeadingTap: () =>
+                        _scaffoldKey.currentState?.openDrawer(),
+                  ),
             Expanded(
               child: RefreshIndicator(
                 onRefresh: _loadCustomers,
@@ -514,7 +609,8 @@ class _CustomersScreenState extends State<CustomersScreen> {
         _filterChip('Status: ${_isActive == true ? 'Active' : 'Inactive'}'),
       );
     }
-    if (_assignedSalesOfficerId != null &&
+    if (!widget.useSalesManagerShell &&
+        _assignedSalesOfficerId != null &&
         _assignedSalesOfficerId!.isNotEmpty) {
       chips.add(_filterChip('Sales Officer: $_assignedSalesOfficerId'));
     }
@@ -534,7 +630,9 @@ class _CustomersScreenState extends State<CustomersScreen> {
             setState(() {
               _category = null;
               _isActive = null;
-              _assignedSalesOfficerId = null;
+              if (!widget.useSalesManagerShell) {
+                _assignedSalesOfficerId = null;
+              }
               _search = '';
               _searchController.clear();
             });

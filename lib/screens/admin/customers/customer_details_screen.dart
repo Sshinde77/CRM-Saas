@@ -115,6 +115,10 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
   bool _isOrdersLoading = false;
   String? _ordersErrorMessage;
   List<CustomerOrderRecord> _orders = const [];
+  bool _isDocumentsLoading = false;
+  bool _hasLoadedDocuments = false;
+  String? _documentsErrorMessage;
+  List<CustomerDocument> _documents = const [];
   final Set<String> _expandedSections = {
     'contact',
     'business',
@@ -152,6 +156,9 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
       _paymentsErrorMessage = null;
       _orders = const [];
       _ordersErrorMessage = null;
+      _documents = const [];
+      _hasLoadedDocuments = false;
+      _documentsErrorMessage = null;
     });
 
     try {
@@ -165,6 +172,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
         _loadLedger(customer.id),
         _loadPayments(customer.id),
         _loadOrders(customer.id),
+        _loadDocuments(customer.id),
       ]);
     } catch (error) {
       if (!mounted) return;
@@ -193,6 +201,30 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
       setState(() {
         _paymentsErrorMessage = error.toString();
         _isPaymentsLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadDocuments(String customerId) async {
+    setState(() {
+      _isDocumentsLoading = true;
+      _documentsErrorMessage = null;
+    });
+
+    try {
+      final documents = await _apiProvider.fetchCustomerDocuments(customerId);
+      if (!mounted) return;
+      setState(() {
+        _documents = documents;
+        _hasLoadedDocuments = true;
+        _isDocumentsLoading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _documents = const [];
+        _documentsErrorMessage = error.toString();
+        _isDocumentsLoading = false;
       });
     }
   }
@@ -285,6 +317,27 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
   String _visibleCustomerId(CustomerModel customer) {
     final externalId = customer.customerId?.trim();
     return externalId == null || externalId.isEmpty ? customer.id : externalId;
+  }
+
+  Future<void> _downloadDocument(CustomerDocument document) async {
+    final url = document.url?.trim();
+    if (url == null || url.isEmpty) {
+      _copyValue('Document name', document.name);
+      return;
+    }
+
+    final uri = Uri.tryParse(url);
+    if (uri == null) {
+      _copyValue('Document URL', url);
+      return;
+    }
+
+    final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!launched && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to download document.')),
+      );
+    }
   }
 
   void _showMoreActions() {
@@ -420,16 +473,9 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                     Align(
                       alignment: Alignment.centerRight,
                       child: ElevatedButton.icon(
-                        onPressed: () async {
-                          final uri = Uri.tryParse(document.url!.trim());
-                          if (uri == null) return;
-                          await launchUrl(
-                            uri,
-                            mode: LaunchMode.externalApplication,
-                          );
-                        },
-                        icon: const Icon(Icons.open_in_new_rounded, size: 18),
-                        label: const Text('Open Document'),
+                        onPressed: () => _downloadDocument(document),
+                        icon: const Icon(Icons.download_rounded, size: 18),
+                        label: const Text('Download Document'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
@@ -649,7 +695,10 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
         title: '8. Documents',
         icon: Icons.folder_copy_outlined,
         child: _CustomerDocumentsDropdown(
-          documents: customer.documents,
+          documents: _hasLoadedDocuments ? _documents : customer.documents,
+          isLoading: _isDocumentsLoading,
+          errorMessage: _documentsErrorMessage,
+          onRetry: () => _loadDocuments(customer.id),
           onDocumentSelected: _openDocumentPreview,
         ),
       ),
@@ -1594,15 +1643,86 @@ class _SummaryBox extends StatelessWidget {
 
 class _CustomerDocumentsDropdown extends StatelessWidget {
   final List<CustomerDocument> documents;
+  final bool isLoading;
+  final String? errorMessage;
+  final VoidCallback onRetry;
   final ValueChanged<CustomerDocument> onDocumentSelected;
 
   const _CustomerDocumentsDropdown({
     required this.documents,
+    required this.isLoading,
+    required this.errorMessage,
+    required this.onRetry,
     required this.onDocumentSelected,
   });
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FBF8),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppColors.border.withValues(alpha: 0.75)),
+        ),
+        child: const Row(
+          children: [
+            SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.4,
+                color: AppColors.primary,
+              ),
+            ),
+            SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Loading customer documents...',
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final message = errorMessage?.trim();
+    if (message != null && message.isNotEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFFBFA),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppColors.red.withValues(alpha: 0.22)),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.error_outline_rounded, color: AppColors.red),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            TextButton(onPressed: onRetry, child: const Text('Retry')),
+          ],
+        ),
+      );
+    }
+
     if (documents.isEmpty) {
       return Container(
         width: double.infinity,
@@ -1631,76 +1751,136 @@ class _CustomerDocumentsDropdown extends StatelessWidget {
       );
     }
 
-    return DropdownButtonFormField<CustomerDocument>(
-      initialValue: null,
-      isExpanded: true,
-      menuMaxHeight: 320,
-      hint: const Text(
-        'Select document to preview',
-        style: TextStyle(color: AppColors.textSecondary),
-      ),
-      icon: const Icon(
-        Icons.keyboard_arrow_down_rounded,
-        color: AppColors.primary,
-      ),
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: const Color(0xFFF8FBF8),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 14,
-          vertical: 14,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: AppColors.border.withValues(alpha: 0.9)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: AppColors.border.withValues(alpha: 0.9)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.primary),
-        ),
-      ),
-      items: documents
-          .map(
-            (document) => DropdownMenuItem<CustomerDocument>(
-              value: document,
-              child: Row(
-                children: [
-                  Icon(
-                    document.isImage
-                        ? Icons.image_outlined
-                        : document.isPdf
-                            ? Icons.picture_as_pdf_outlined
-                            : Icons.description_outlined,
-                    color: AppColors.primary,
-                    size: 20,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 520;
+
+        return Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: AppColors.border.withValues(alpha: 0.75)),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.textPrimary.withValues(alpha: 0.035),
+                blurRadius: 14,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              for (var index = 0; index < documents.length; index++) ...[
+                _DocumentListRow(
+                  document: documents[index],
+                  compact: compact,
+                  onPreview: () => onDocumentSelected(documents[index]),
+                ),
+                if (index != documents.length - 1)
+                  Divider(
+                    height: 1,
+                    color: AppColors.border.withValues(alpha: 0.65),
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      document.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _DocumentListRow extends StatelessWidget {
+  final CustomerDocument document;
+  final bool compact;
+  final VoidCallback onPreview;
+
+  const _DocumentListRow({
+    required this.document,
+    required this.compact,
+    required this.onPreview,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final documentType = _titleCaseText(
+      document.documentType ?? document.type ?? 'Other',
+    );
+    final icon = document.isImage
+        ? Icons.image_outlined
+        : document.isPdf
+            ? Icons.picture_as_pdf_outlined
+            : Icons.description_outlined;
+
+    final typeChip = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEFF7EA),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.12)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: AppColors.primary),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              documentType,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: AppColors.primary,
+                fontSize: 12.5,
+                fontWeight: FontWeight.w800,
               ),
             ),
-          )
-          .toList(),
-      onChanged: (document) {
-        if (document != null) {
-          onDocumentSelected(document);
-        }
-      },
+          ),
+        ],
+      ),
+    );
+
+    final nameText = Text(
+      document.name,
+      maxLines: compact ? 2 : 1,
+      overflow: TextOverflow.ellipsis,
+      style: const TextStyle(
+        color: AppColors.textPrimary,
+        fontSize: 14,
+        fontWeight: FontWeight.w700,
+      ),
+    );
+
+    final previewButton = OutlinedButton.icon(
+      onPressed: onPreview,
+      icon: const Icon(Icons.visibility_outlined, size: 17),
+      label: const Text('Preview'),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: AppColors.primary,
+        side: BorderSide(color: AppColors.primary.withValues(alpha: 0.35)),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+      ),
+    );
+
+    return Padding(
+      padding: EdgeInsets.all(compact ? 14 : 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Flexible(child: typeChip),
+              const Spacer(),
+              const SizedBox(width: 12),
+              previewButton,
+            ],
+          ),
+          const SizedBox(height: 12),
+          nameText,
+        ],
+      ),
     );
   }
 }
@@ -1745,7 +1925,7 @@ class _DocumentPreviewBody extends StatelessWidget {
           ? Icons.picture_as_pdf_outlined
           : Icons.insert_drive_file_outlined,
       title: document.isPdf ? 'PDF document' : 'Document preview',
-      subtitle: 'Use Open Document to view this file.',
+      subtitle: 'Use Download Document to view this file.',
     );
   }
 }

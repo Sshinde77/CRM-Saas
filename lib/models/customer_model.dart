@@ -2,11 +2,13 @@ class CustomerDocument {
   final String name;
   final String? url;
   final String? type;
+  final String? documentType;
 
   const CustomerDocument({
     required this.name,
     required this.url,
     required this.type,
+    this.documentType,
   });
 
   factory CustomerDocument.fromJson(Map<String, dynamic> json) {
@@ -41,8 +43,8 @@ class CustomerDocument {
         'mimeType',
         'file_type',
         'extension',
-        'document_type',
       ]),
+      documentType: _readString(json, const ['document_type', 'documentType']),
     );
   }
 
@@ -68,6 +70,7 @@ class CustomerDocument {
       'name': name,
       'url': url,
       'type': type,
+      'document_type': documentType,
     };
   }
 

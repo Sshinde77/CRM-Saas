@@ -2,9 +2,21 @@ import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
 import '../../../widgets/admin/app_drawer.dart';
+import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
+import '../../sales_manager/attendance/sales_manager_attendance_screen.dart';
+import '../../sales_manager/dashboard/sales_manager_dashboard_screen.dart';
+import '../../sales_manager/follow_ups/sales_manager_follow_ups_screen.dart';
+import '../../sales_manager/performance/sales_manager_performance_screen.dart';
+import '../../sales_manager/stock/sales_manager_stock_screen.dart';
+import '../../sales_manager/visits/sales_manager_visits_screen.dart';
+import '../customers/customers_screen.dart';
+import '../leads/admin_leads_screen.dart';
+import 'admin_orders_screen.dart';
 
 class NewAdminOrderScreen extends StatefulWidget {
-  const NewAdminOrderScreen({super.key});
+  final bool useSalesManagerShell;
+
+  const NewAdminOrderScreen({super.key, this.useSalesManagerShell = false});
 
   @override
   State<NewAdminOrderScreen> createState() => _NewAdminOrderScreenState();
@@ -178,6 +190,70 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
 
   void _selectDeliveryMethod(String value) =>
       setState(() => _deliveryMethod = value);
+
+  void _handleSalesManagerSidebarSelection(String action) {
+    Navigator.of(context).maybePop();
+    if (action == 'Create Order') return;
+    if (action == 'Dashboard') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerDashboardScreen()),
+      );
+      return;
+    }
+    if (action == 'Customers') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const CustomersScreen(useSalesManagerShell: true),
+        ),
+      );
+      return;
+    }
+    if (action == 'Leads') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const AdminLeadsScreen(useSalesManagerShell: true),
+        ),
+      );
+      return;
+    }
+    if (action == 'Sales Orders') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const AdminOrdersScreen(useSalesManagerShell: true),
+        ),
+      );
+      return;
+    }
+    if (action == 'Stock') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerStockScreen()),
+      );
+      return;
+    }
+    if (action == 'Follow-ups' || action == 'Follow-Ups') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerFollowUpsScreen()),
+      );
+      return;
+    }
+    if (action == 'Attendance') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerAttendanceScreen()),
+      );
+      return;
+    }
+    if (action == 'Visits') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerVisitsScreen()),
+      );
+      return;
+    }
+    if (action == 'My Performance') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerPerformanceScreen()),
+      );
+    }
+  }
 
   void _selectProduct(String value) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -468,7 +544,12 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
-      drawer: const AppDrawer(activeItem: 'Orders'),
+      drawer: widget.useSalesManagerShell
+          ? SalesManagerSidebarDrawer(
+              currentPage: 'Create Order',
+              onSelect: _handleSalesManagerSidebarSelection,
+            )
+          : const AppDrawer(activeItem: 'Orders'),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {

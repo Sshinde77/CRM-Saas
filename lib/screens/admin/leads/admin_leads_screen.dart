@@ -3,10 +3,23 @@ import 'package:flutter/material.dart';
 import '../../../constants/app_colors.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
+import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
+import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
+import '../../sales_manager/attendance/sales_manager_attendance_screen.dart';
+import '../../sales_manager/dashboard/sales_manager_dashboard_screen.dart';
+import '../../sales_manager/follow_ups/sales_manager_follow_ups_screen.dart';
 import '../../sales_manager/leads/add_lead_screen.dart';
+import '../../sales_manager/performance/sales_manager_performance_screen.dart';
+import '../../sales_manager/stock/sales_manager_stock_screen.dart';
+import '../../sales_manager/visits/sales_manager_visits_screen.dart';
+import '../customers/customers_screen.dart';
+import '../orders/admin_orders_screen.dart';
+import '../orders/new_admin_order_screen.dart';
 
 class AdminLeadsScreen extends StatefulWidget {
-  const AdminLeadsScreen({super.key});
+  final bool useSalesManagerShell;
+
+  const AdminLeadsScreen({super.key, this.useSalesManagerShell = false});
 
   @override
   State<AdminLeadsScreen> createState() => _AdminLeadsScreenState();
@@ -141,6 +154,72 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
     ).push(MaterialPageRoute<void>(builder: (_) => const AddLeadScreen()));
   }
 
+  void _handleSalesManagerSidebarSelection(String action) {
+    Navigator.of(context).maybePop();
+    if (action == 'Leads') return;
+    if (action == 'Dashboard') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerDashboardScreen()),
+      );
+      return;
+    }
+    if (action == 'Customers') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const CustomersScreen(useSalesManagerShell: true),
+        ),
+      );
+      return;
+    }
+    if (action == 'Create Order') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const NewAdminOrderScreen(useSalesManagerShell: true),
+        ),
+      );
+      return;
+    }
+    if (action == 'Sales Orders') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const AdminOrdersScreen(useSalesManagerShell: true),
+        ),
+      );
+      return;
+    }
+    if (action == 'Stock') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerStockScreen()),
+      );
+      return;
+    }
+    if (action == 'Follow-ups' || action == 'Follow-Ups') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerFollowUpsScreen()),
+      );
+      return;
+    }
+    if (action == 'Attendance') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerAttendanceScreen()),
+      );
+      return;
+    }
+    if (action == 'Visits') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerVisitsScreen()),
+      );
+      return;
+    }
+    if (action == 'My Performance') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const SalesManagerPerformanceScreen(),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final leads = _filteredLeads();
@@ -149,7 +228,12 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
-      drawer: const AppDrawer(activeItem: 'Leads'),
+      drawer: widget.useSalesManagerShell
+          ? SalesManagerSidebarDrawer(
+              currentPage: 'Leads',
+              onSelect: _handleSalesManagerSidebarSelection,
+            )
+          : const AppDrawer(activeItem: 'Leads'),
       floatingActionButton: _buildFloatingAddButton(),
       body: SafeArea(
         child: LayoutBuilder(
@@ -158,11 +242,14 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
 
             return Column(
               children: [
-                AdminTopBar(
-                  title: 'Leads',
-                  leadingIcon: Icons.menu_rounded,
-                  onLeadingTap: () => _scaffoldKey.currentState?.openDrawer(),
-                ),
+                widget.useSalesManagerShell
+                    ? const SalesManagerTopBar(title: 'Leads')
+                    : AdminTopBar(
+                        title: 'Leads',
+                        leadingIcon: Icons.menu_rounded,
+                        onLeadingTap: () =>
+                            _scaffoldKey.currentState?.openDrawer(),
+                      ),
                 Expanded(
                   child: SingleChildScrollView(
                     padding: EdgeInsets.fromLTRB(

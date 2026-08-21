@@ -2,10 +2,21 @@ import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
 import '../../../widgets/admin/app_drawer.dart';
+import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
+import '../../sales_manager/attendance/sales_manager_attendance_screen.dart';
+import '../../sales_manager/dashboard/sales_manager_dashboard_screen.dart';
+import '../../sales_manager/follow_ups/sales_manager_follow_ups_screen.dart';
+import '../../sales_manager/performance/sales_manager_performance_screen.dart';
+import '../../sales_manager/stock/sales_manager_stock_screen.dart';
+import '../../sales_manager/visits/sales_manager_visits_screen.dart';
+import '../customers/customers_screen.dart';
+import '../leads/admin_leads_screen.dart';
 import 'new_admin_order_screen.dart';
 
 class AdminOrdersScreen extends StatefulWidget {
-  const AdminOrdersScreen({super.key});
+  final bool useSalesManagerShell;
+
+  const AdminOrdersScreen({super.key, this.useSalesManagerShell = false});
 
   @override
   State<AdminOrdersScreen> createState() => _AdminOrdersScreenState();
@@ -297,7 +308,77 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
   Future<void> _openNewOrder() async {
     Navigator.of(
       context,
-    ).push(MaterialPageRoute(builder: (_) => const NewAdminOrderScreen()));
+    ).push(
+      MaterialPageRoute(
+        builder: (_) => NewAdminOrderScreen(
+          useSalesManagerShell: widget.useSalesManagerShell,
+        ),
+      ),
+    );
+  }
+
+  void _handleSalesManagerSidebarSelection(String action) {
+    Navigator.of(context).maybePop();
+    if (action == 'Sales Orders') return;
+    if (action == 'Create Order') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const NewAdminOrderScreen(useSalesManagerShell: true),
+        ),
+      );
+      return;
+    }
+    if (action == 'Dashboard') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerDashboardScreen()),
+      );
+      return;
+    }
+    if (action == 'Customers') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const CustomersScreen(useSalesManagerShell: true),
+        ),
+      );
+      return;
+    }
+    if (action == 'Leads') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const AdminLeadsScreen(useSalesManagerShell: true),
+        ),
+      );
+      return;
+    }
+    if (action == 'Stock') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerStockScreen()),
+      );
+      return;
+    }
+    if (action == 'Follow-ups' || action == 'Follow-Ups') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerFollowUpsScreen()),
+      );
+      return;
+    }
+    if (action == 'Attendance') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerAttendanceScreen()),
+      );
+      return;
+    }
+    if (action == 'Visits') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerVisitsScreen()),
+      );
+      return;
+    }
+    if (action == 'My Performance') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerPerformanceScreen()),
+      );
+    }
   }
 
   @override
@@ -316,7 +397,12 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
-      drawer: const AppDrawer(activeItem: 'Orders'),
+      drawer: widget.useSalesManagerShell
+          ? SalesManagerSidebarDrawer(
+              currentPage: 'Sales Orders',
+              onSelect: _handleSalesManagerSidebarSelection,
+            )
+          : const AppDrawer(activeItem: 'Orders'),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {

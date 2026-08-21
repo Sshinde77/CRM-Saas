@@ -293,21 +293,27 @@ class _SalesManagerDashboardScreenState
     Navigator.of(context).pop();
     if (action == 'Customers') {
       Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => const CustomersScreen()),
+        MaterialPageRoute(
+          builder: (_) => const CustomersScreen(useSalesManagerShell: true),
+        ),
       );
       return;
     }
 
     if (action == 'Leads') {
       Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => const AdminLeadsScreen()),
+        MaterialPageRoute(
+          builder: (_) => const AdminLeadsScreen(useSalesManagerShell: true),
+        ),
       );
       return;
     }
 
     if (action == 'Create Order') {
       Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => const NewAdminOrderScreen()),
+        MaterialPageRoute(
+          builder: (_) => const NewAdminOrderScreen(useSalesManagerShell: true),
+        ),
       );
       return;
     }
@@ -442,6 +448,27 @@ class _SalesManagerDashboardScreenState
           _HeaderDatePill(
             icon: Icons.calendar_month_rounded,
             label: '20 May 2024, Monday',
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _openAttendanceScreen,
+              icon: const Icon(Icons.fact_check_outlined, size: 19),
+              label: const Text('Mark Attendance'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -1623,7 +1650,17 @@ class _SalesManagerDashboardScreenState
   void _openSalesOrdersScreen() {
     Navigator.of(
       context,
-    ).push(MaterialPageRoute(builder: (_) => const AdminOrdersScreen()));
+    ).push(
+      MaterialPageRoute(
+        builder: (_) => const AdminOrdersScreen(useSalesManagerShell: true),
+      ),
+    );
+  }
+
+  void _openAttendanceScreen() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const SalesManagerAttendanceScreen()),
+    );
   }
 
   Widget _footerButton(String label, {VoidCallback? onPressed}) {

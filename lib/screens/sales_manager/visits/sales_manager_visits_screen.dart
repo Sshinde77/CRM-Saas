@@ -70,25 +70,33 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
     }
     if (action == 'Leads') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const AdminLeadsScreen()),
+        MaterialPageRoute(
+          builder: (_) => const AdminLeadsScreen(useSalesManagerShell: true),
+        ),
       );
       return;
     }
     if (action == 'Customers') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const CustomersScreen()),
+        MaterialPageRoute(
+          builder: (_) => const CustomersScreen(useSalesManagerShell: true),
+        ),
       );
       return;
     }
     if (action == 'Create Order') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const NewAdminOrderScreen()),
+        MaterialPageRoute(
+          builder: (_) => const NewAdminOrderScreen(useSalesManagerShell: true),
+        ),
       );
       return;
     }
     if (action == 'Sales Orders') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const AdminOrdersScreen()),
+        MaterialPageRoute(
+          builder: (_) => const AdminOrdersScreen(useSalesManagerShell: true),
+        ),
       );
       return;
     }
