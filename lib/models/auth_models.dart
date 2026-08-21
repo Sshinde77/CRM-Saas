@@ -704,12 +704,14 @@ class AuthMeResponse {
   final CurrentUserProfile? user;
   final AuthMeOrganization? organization;
   final bool fullAccess;
+  final String? dataScope;
   final Map<String, dynamic> permissions;
 
   const AuthMeResponse({
     required this.user,
     required this.organization,
     required this.fullAccess,
+    required this.dataScope,
     required this.permissions,
   });
 
@@ -725,6 +727,7 @@ class AuthMeResponse {
           ? AuthMeOrganization.fromJson(organizationJson)
           : null,
       fullAccess: json['full_access'] == true,
+      dataScope: json['data_scope']?.toString(),
       permissions: json['permissions'] is Map<String, dynamic>
           ? Map<String, dynamic>.from(
               json['permissions'] as Map<String, dynamic>,
@@ -732,6 +735,19 @@ class AuthMeResponse {
           : const {},
     );
   }
+
+  bool can(String module, String action) {
+    if (fullAccess) return true;
+
+    final modulePermissions = permissions[module];
+    if (modulePermissions is! Map) return false;
+
+    final permission = modulePermissions[action];
+    if (permission is bool) return permission;
+    return permission?.toString().trim().toLowerCase() == 'true';
+  }
+
+  bool canView(String module) => can(module, 'view');
 }
 
 class AuthSession {

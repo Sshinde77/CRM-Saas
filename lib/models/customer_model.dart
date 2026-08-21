@@ -1,3 +1,96 @@
+class CustomerDocument {
+  final String name;
+  final String? url;
+  final String? type;
+
+  const CustomerDocument({
+    required this.name,
+    required this.url,
+    required this.type,
+  });
+
+  factory CustomerDocument.fromJson(Map<String, dynamic> json) {
+    final url = _readString(json, const [
+      'url',
+      'file_url',
+      'fileUrl',
+      'document_url',
+      'preview_url',
+      'download_url',
+      'attachment_url',
+      'path',
+      'file_path',
+    ]);
+    final name =
+        _readString(json, const [
+          'name',
+          'document_name',
+          'file_name',
+          'filename',
+          'title',
+          'label',
+        ]) ??
+        (url == null ? 'Document' : fileNameFromUrl(url));
+
+    return CustomerDocument(
+      name: name,
+      url: url,
+      type: _readString(json, const [
+        'content_type',
+        'mime_type',
+        'mimeType',
+        'file_type',
+        'extension',
+        'document_type',
+      ]),
+    );
+  }
+
+  bool get hasUrl => url?.trim().isNotEmpty == true;
+
+  bool get isImage {
+    final value = '${type ?? ''} ${url ?? ''}'.toLowerCase();
+    return value.contains('image/') ||
+        value.endsWith('.png') ||
+        value.endsWith('.jpg') ||
+        value.endsWith('.jpeg') ||
+        value.endsWith('.webp') ||
+        value.endsWith('.gif');
+  }
+
+  bool get isPdf {
+    final value = '${type ?? ''} ${url ?? ''}'.toLowerCase();
+    return value.contains('pdf') || value.endsWith('.pdf');
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'url': url,
+      'type': type,
+    };
+  }
+
+  static String fileNameFromUrl(String url) {
+    final uri = Uri.tryParse(url);
+    final segment = uri?.pathSegments.isNotEmpty == true
+        ? uri!.pathSegments.last
+        : url.split('/').last;
+    final decoded = Uri.decodeComponent(segment).trim();
+    return decoded.isEmpty ? 'Document' : decoded;
+  }
+
+  static String? _readString(Map<String, dynamic> json, List<String> keys) {
+    for (final key in keys) {
+      final value = json[key]?.toString().trim();
+      if (value != null && value.isNotEmpty) {
+        return value;
+      }
+    }
+    return null;
+  }
+}
+
 class CustomerModel {
   final String id;
   final String? customerId;
@@ -43,6 +136,7 @@ class CustomerModel {
   final DateTime? customerSince;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  final List<CustomerDocument> documents;
 
   const CustomerModel({
     required this.id,
@@ -89,6 +183,7 @@ class CustomerModel {
     required this.customerSince,
     required this.createdAt,
     required this.updatedAt,
+    required this.documents,
   });
 
   factory CustomerModel.fromJson(Map<String, dynamic> json) {
@@ -313,6 +408,7 @@ class CustomerModel {
       updatedAt: _tryParseDateTime(
         json['updated_at']?.toString() ?? json['updatedAt']?.toString(),
       ),
+      documents: _documentsFromSources(json, stringSources),
     );
   }
 
@@ -382,6 +478,7 @@ class CustomerModel {
       'customer_since': customerSince?.toIso8601String(),
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
+      'documents': documents.map((document) => document.toJson()).toList(),
     };
   }
 
@@ -433,6 +530,149 @@ class CustomerModel {
       }
     }
     return null;
+  }
+
+  static List<CustomerDocument> _documentsFromSources(
+    Map<String, dynamic> root,
+    List<Map<String, dynamic>> sources,
+  ) {
+    final documents = <CustomerDocument>[];
+    final seen = <String>{};
+
+    void addDocument({
+      required String name,
+      String? url,
+      String? type,
+    }) {
+      final normalizedName = name.trim();
+      final normalizedUrl = url?.trim();
+      if (normalizedName.isEmpty && (normalizedUrl == null || normalizedUrl.isEmpty)) {
+        return;
+      }
+
+      final document = CustomerDocument(
+        name: normalizedName.isEmpty
+            ? CustomerDocument.fileNameFromUrl(normalizedUrl!)
+            : normalizedName,
+        url: normalizedUrl?.isEmpty == true ? null : normalizedUrl,
+        type: type?.trim().isEmpty == true ? null : type?.trim(),
+      );
+      final key = '${document.name}|${document.url ?? ''}'.toLowerCase();
+      if (seen.add(key)) {
+        documents.add(document);
+      }
+    }
+
+    void parseDocument(dynamic value, String fallbackName) {
+      if (value == null) return;
+      if (value is List) {
+        for (final item in value) {
+          parseDocument(item, fallbackName);
+        }
+        return;
+      }
+      if (value is Map) {
+        final map = value.map(
+          (key, mapValue) => MapEntry(key.toString(), mapValue),
+        );
+        final name = _nullableStringValue(map, const [
+              'name',
+              'document_name',
+              'file_name',
+              'filename',
+              'title',
+              'label',
+              'document_type',
+              'type',
+            ]) ??
+            fallbackName;
+        final url = _nullableStringValue(map, const [
+          'url',
+          'file_url',
+          'fileUrl',
+          'document_url',
+          'preview_url',
+          'download_url',
+          'attachment_url',
+          'path',
+          'file_path',
+        ]);
+        final type = _nullableStringValue(map, const [
+          'mime_type',
+          'mimeType',
+          'content_type',
+          'file_type',
+          'extension',
+        ]);
+
+        final addedDirectDocument = url != null || name.trim() != fallbackName.trim();
+        if (addedDirectDocument) {
+          addDocument(name: name, url: url, type: type);
+        }
+
+        for (final entry in map.entries) {
+          if (entry.value is List || entry.value is Map) {
+            parseDocument(entry.value, _documentLabelFromKey(entry.key));
+          } else if (!addedDirectDocument) {
+            parseDocument(entry.value, _documentLabelFromKey(entry.key));
+          }
+        }
+        return;
+      }
+
+      final text = value.toString().trim();
+      if (text.isEmpty || text == '[]') return;
+      final looksLikeFile = text.startsWith('http') ||
+          text.contains('/') ||
+          RegExp(r'\.(pdf|png|jpe?g|webp|docx?|xlsx?)$', caseSensitive: false)
+              .hasMatch(text);
+      if (looksLikeFile) {
+        addDocument(name: fallbackName, url: text);
+      }
+    }
+
+    const documentKeys = [
+      'documents',
+      'document',
+      'document_information',
+      'documents_information',
+      'document_uploads',
+      'uploaded_documents',
+      'customer_documents',
+      'attachments',
+      'files',
+      'gst_certificate',
+      'gst_certificate_file',
+      'pan_card',
+      'pan_card_file',
+      'business_registration_certificate',
+      'business_registration_file',
+      'address_proof',
+      'address_proof_file',
+      'purchase_agreement',
+      'purchase_agreement_file',
+      'other_documents',
+      'other_document',
+    ];
+
+    for (final source in [root, ...sources]) {
+      for (final key in documentKeys) {
+        if (source.containsKey(key)) {
+          parseDocument(source[key], _documentLabelFromKey(key));
+        }
+      }
+    }
+
+    return documents;
+  }
+
+  static String _documentLabelFromKey(String key) {
+    return key
+        .replaceAll(RegExp(r'_?file$'), '')
+        .split(RegExp(r'[_\s]+'))
+        .where((part) => part.isNotEmpty)
+        .map((part) => part[0].toUpperCase() + part.substring(1).toLowerCase())
+        .join(' ');
   }
 
   static String? _listOrStringValueFromSources(

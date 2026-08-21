@@ -120,6 +120,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
     'business',
     'address',
     'financial',
+    'documents',
   };
 
   @override
@@ -343,6 +344,112 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
     );
   }
 
+  Future<void> _openDocumentPreview(CustomerDocument document) async {
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return Dialog(
+          insetPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(22),
+          ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 620, maxHeight: 720),
+            child: Padding(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF1F7EF),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        alignment: Alignment.center,
+                        child: Icon(
+                          document.isImage
+                              ? Icons.image_outlined
+                              : document.isPdf
+                                  ? Icons.picture_as_pdf_outlined
+                                  : Icons.description_outlined,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          document.name,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.of(dialogContext).pop(),
+                        icon: const Icon(Icons.close_rounded),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Flexible(
+                    child: Container(
+                      width: double.infinity,
+                      constraints: const BoxConstraints(minHeight: 220),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8FBF8),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: AppColors.border.withValues(alpha: 0.75),
+                        ),
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: _DocumentPreviewBody(document: document),
+                    ),
+                  ),
+                  if (document.hasUrl) ...[
+                    const SizedBox(height: 14),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: ElevatedButton.icon(
+                        onPressed: () async {
+                          final uri = Uri.tryParse(document.url!.trim());
+                          if (uri == null) return;
+                          await launchUrl(
+                            uri,
+                            mode: LaunchMode.externalApplication,
+                          );
+                        },
+                        icon: const Icon(Icons.open_in_new_rounded, size: 18),
+                        label: const Text('Open Document'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   List<_SectionConfig> _sectionsFor(CustomerModel customer) {
     final all = <_SectionConfig>[
       _SectionConfig(
@@ -538,8 +645,17 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
         ),
       ),
       _SectionConfig(
+        id: 'documents',
+        title: '8. Documents',
+        icon: Icons.folder_copy_outlined,
+        child: _CustomerDocumentsDropdown(
+          documents: customer.documents,
+          onDocumentSelected: _openDocumentPreview,
+        ),
+      ),
+      _SectionConfig(
         id: 'notes',
-        title: '8. Notes & Preferences',
+        title: '9. Notes & Preferences',
         icon: Icons.note_alt_outlined,
         child: _DetailsSection(
           columns: [
@@ -561,7 +677,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
       ),
       _SectionConfig(
         id: 'statement',
-        title: '9. Account Statement',
+        title: '10. Account Statement',
         icon: Icons.account_balance_outlined,
         child: _AccountStatementCard(
           customer: customer,
@@ -1471,6 +1587,211 @@ class _SummaryBox extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _CustomerDocumentsDropdown extends StatelessWidget {
+  final List<CustomerDocument> documents;
+  final ValueChanged<CustomerDocument> onDocumentSelected;
+
+  const _CustomerDocumentsDropdown({
+    required this.documents,
+    required this.onDocumentSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (documents.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FBF8),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppColors.border.withValues(alpha: 0.75)),
+        ),
+        child: const Row(
+          children: [
+            Icon(Icons.folder_off_outlined, color: AppColors.textSecondary),
+            SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'No documents available for this customer.',
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return DropdownButtonFormField<CustomerDocument>(
+      initialValue: null,
+      isExpanded: true,
+      menuMaxHeight: 320,
+      hint: const Text(
+        'Select document to preview',
+        style: TextStyle(color: AppColors.textSecondary),
+      ),
+      icon: const Icon(
+        Icons.keyboard_arrow_down_rounded,
+        color: AppColors.primary,
+      ),
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: const Color(0xFFF8FBF8),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 14,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: AppColors.border.withValues(alpha: 0.9)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: AppColors.border.withValues(alpha: 0.9)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: AppColors.primary),
+        ),
+      ),
+      items: documents
+          .map(
+            (document) => DropdownMenuItem<CustomerDocument>(
+              value: document,
+              child: Row(
+                children: [
+                  Icon(
+                    document.isImage
+                        ? Icons.image_outlined
+                        : document.isPdf
+                            ? Icons.picture_as_pdf_outlined
+                            : Icons.description_outlined,
+                    color: AppColors.primary,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      document.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )
+          .toList(),
+      onChanged: (document) {
+        if (document != null) {
+          onDocumentSelected(document);
+        }
+      },
+    );
+  }
+}
+
+class _DocumentPreviewBody extends StatelessWidget {
+  final CustomerDocument document;
+
+  const _DocumentPreviewBody({required this.document});
+
+  @override
+  Widget build(BuildContext context) {
+    if (document.isImage && document.hasUrl) {
+      return Image.network(
+        document.url!,
+        fit: BoxFit.contain,
+        loadingBuilder: (context, child, progress) {
+          if (progress == null) return child;
+          return const Center(
+            child: CircularProgressIndicator(color: AppColors.primary),
+          );
+        },
+        errorBuilder: (context, error, stackTrace) {
+          return const _DocumentPreviewMessage(
+            icon: Icons.broken_image_outlined,
+            title: 'Preview unavailable',
+            subtitle: 'The image could not be loaded.',
+          );
+        },
+      );
+    }
+
+    if (!document.hasUrl) {
+      return const _DocumentPreviewMessage(
+        icon: Icons.insert_drive_file_outlined,
+        title: 'Document name available',
+        subtitle: 'No preview URL was provided by the API.',
+      );
+    }
+
+    return _DocumentPreviewMessage(
+      icon: document.isPdf
+          ? Icons.picture_as_pdf_outlined
+          : Icons.insert_drive_file_outlined,
+      title: document.isPdf ? 'PDF document' : 'Document preview',
+      subtitle: 'Use Open Document to view this file.',
+    );
+  }
+}
+
+class _DocumentPreviewMessage extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  const _DocumentPreviewMessage({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 46, color: AppColors.primary),
+            const SizedBox(height: 14),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              subtitle,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 13,
+                height: 1.35,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

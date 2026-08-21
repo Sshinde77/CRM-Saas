@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/widgets.dart';
 
 import '../models/api_response.dart';
@@ -18,15 +20,20 @@ class ApiProvider extends ChangeNotifier {
   String? _errorMessage;
   AuthSession? _session;
   CurrentUserProfile? _currentUser;
+  AuthMeResponse? _authMe;
   List<RoleModel>? _roles;
 
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   AuthSession? get session => _session;
   CurrentUserProfile? get currentUser => _currentUser;
+  AuthMeResponse? get authMe => _authMe;
   List<RoleModel>? get roles => _roles;
   bool get isAuthenticated => (_session?.accessToken ?? '').trim().isNotEmpty;
   ApiService get service => _apiService;
+
+  bool can(String module, String action) => _authMe?.can(module, action) ?? true;
+  bool canView(String module) => can(module, 'view');
 
   Future<AuthSession> login({
     required String email,
@@ -41,6 +48,9 @@ class ApiProvider extends ChangeNotifier {
       );
       _session = session;
       _currentUser = session.user;
+      final authMe = await _apiService.fetchAuthMeDetails();
+      _authMe = authMe;
+      _currentUser = authMe.user ?? session.user;
       notifyListeners();
       return session;
     } catch (error) {
@@ -86,6 +96,29 @@ class ApiProvider extends ChangeNotifier {
       _currentUser = profile;
       notifyListeners();
       return profile;
+    } catch (error) {
+      _errorMessage = error.toString();
+      notifyListeners();
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<AuthMeResponse?> fetchAuthMe({bool force = false}) async {
+    if (!force && _authMe != null) {
+      return _authMe;
+    }
+
+    _setLoading(true);
+    _errorMessage = null;
+
+    try {
+      final authMe = await _apiService.fetchAuthMeDetails();
+      _authMe = authMe;
+      _currentUser = authMe.user ?? _currentUser;
+      notifyListeners();
+      return authMe;
     } catch (error) {
       _errorMessage = error.toString();
       notifyListeners();
@@ -264,6 +297,33 @@ class ApiProvider extends ChangeNotifier {
       );
       notifyListeners();
       return customer;
+    } catch (error) {
+      _errorMessage = error.toString();
+      notifyListeners();
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<CustomerDocument> uploadCustomerDocument({
+    required String customerId,
+    required String documentType,
+    required Uint8List fileBytes,
+    required String fileName,
+  }) async {
+    _setLoading(true);
+    _errorMessage = null;
+
+    try {
+      final document = await _apiService.uploadCustomerDocument(
+        customerId: customerId,
+        documentType: documentType,
+        fileBytes: fileBytes,
+        fileName: fileName,
+      );
+      notifyListeners();
+      return document;
     } catch (error) {
       _errorMessage = error.toString();
       notifyListeners();

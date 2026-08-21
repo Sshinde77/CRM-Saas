@@ -297,6 +297,32 @@ class ApiService {
     return _extractUploadedUrl(_tryDecodeBody(response.body.trim()));
   }
 
+  Future<CustomerDocument> uploadCustomerDocument({
+    required String customerId,
+    required String documentType,
+    required Uint8List fileBytes,
+    required String fileName,
+  }) async {
+    final id = customerId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing customer id.');
+    }
+
+    final response = await _sendMultipart(
+      method: 'POST',
+      endpoint: ApiEndpoints.customersDocuments(id),
+      requiresAuth: true,
+      fileBytes: fileBytes,
+      fileName: fileName,
+      fields: {'document_type': documentType},
+    );
+    final decoded = _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid customer document upload response.',
+    );
+    return CustomerDocument.fromJson(decoded);
+  }
+
   Future<String?> uploadOrganizationLogo({
     required Uint8List fileBytes,
     required String fileName,

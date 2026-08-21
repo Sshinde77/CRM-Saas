@@ -175,7 +175,6 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   String? _selectedCountry;
   // ignore: unused_field
   String? _selectedState;
-  // ignore: unused_field
   String? _selectedPaymentTerm;
   bool _taxExempt = false;
   bool _sameAsBilling = false;
@@ -237,7 +236,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     super.didChangeDependencies();
     if (_providerReady) return;
     _apiProvider = ApiProviderScope.of(context);
-    _usersFuture = _apiProvider.fetchAssignableUsers();
+    _usersFuture = _loadAssignableUsersForForm();
     _providerReady = true;
 
     if (widget.isEditMode && !_customerLoaded) {
@@ -322,6 +321,13 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     return normalized.isEmpty ? null : normalized;
   }
 
+  T? _optionValueOrNull<T>(T? value, List<T> options) {
+    if (value == null) return null;
+    return options.where((option) => option == value).length == 1
+        ? value
+        : null;
+  }
+
   int? _nullableInt(String value) {
     final normalized = value.trim();
     if (normalized.isEmpty) return null;
@@ -355,7 +361,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   }
 
   void _applyCustomer(CustomerModel customer) {
-    _customerIdController.text = customer.id;
+    _customerIdController.text = customer.customerId ?? customer.id;
     _nameController.text = customer.name;
     _businessNameController.text = customer.businessName ?? '';
     _displayNameController.text = customer.name;
@@ -370,8 +376,11 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     _openingBalanceController.text = (customer.openingBalance ?? 0).toString();
     _categoryController.text = customer.category ?? '';
     _notesController.text = customer.notes ?? '';
-    _selectedType = customer.category;
-    _selectedCustomerCategory = customer.category;
+    _selectedType = _optionValueOrNull(customer.category, _baseCustomerTypes);
+    _selectedCustomerCategory = _optionValueOrNull(
+      customer.category,
+      _customerCategoryOptions,
+    );
     _isActive = customer.isActive ?? true;
     _selectedCustomerStatus = _isActive ? 'Active' : 'Inactive';
     _sameAsBilling =
@@ -455,13 +464,47 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     });
   }
 
+  List<AppUser> _currentUserAsAssignableUser() {
+    final user = _apiProvider.currentUser;
+    final id = user?.id?.trim();
+    if (id == null || id.isEmpty) {
+      return const <AppUser>[];
+    }
+
+    return [
+      AppUser(
+        id: id,
+        name: user!.name,
+        email: user.email ?? '',
+        role: user.role,
+      ),
+    ];
+  }
+
+  Future<List<AppUser>> _loadAssignableUsersForForm() async {
+    if (_apiProvider.authMe?.canView('users') == false) {
+      return _currentUserAsAssignableUser();
+    }
+
+    try {
+      return await _apiProvider.service.fetchAssignableUsers();
+    } catch (error) {
+      if (error.toString().contains('403')) {
+        return _currentUserAsAssignableUser();
+      }
+      rethrow;
+    }
+  }
+
   AppUser? _effectiveSalesOfficer(List<AppUser> users) {
     final selected = _selectedSalesOfficer;
     if (selected != null) return selected;
 
     final customer = _loadedCustomer ?? widget.existingCustomer;
     final officerId = customer?.assignedSalesOfficerId?.trim();
-    if (officerId == null || officerId.isEmpty) return null;
+    if (officerId == null || officerId.isEmpty) {
+      return !widget.isEditMode && users.length == 1 ? users.first : null;
+    }
 
     for (final user in users) {
       if (user.id.trim() == officerId) {
@@ -481,6 +524,55 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       options.add(current);
     }
     return options;
+  }
+
+  List<_PendingCustomerDocument> _pendingCustomerDocuments() {
+    return [
+      _PendingCustomerDocument(
+        documentType: 'gst_certificate',
+        bytes: _gstCertificateBytes,
+        fileName: _gstCertificateName,
+      ),
+      _PendingCustomerDocument(
+        documentType: 'pan_card',
+        bytes: _panCardBytes,
+        fileName: _panCardName,
+      ),
+      _PendingCustomerDocument(
+        documentType: 'business_registration_certificate',
+        bytes: _businessRegistrationBytes,
+        fileName: _businessRegistrationName,
+      ),
+      _PendingCustomerDocument(
+        documentType: 'address_proof',
+        bytes: _addressProofBytes,
+        fileName: _addressProofName,
+      ),
+      _PendingCustomerDocument(
+        documentType: 'purchase_agreement',
+        bytes: _purchaseAgreementBytes,
+        fileName: _purchaseAgreementName,
+      ),
+      _PendingCustomerDocument(
+        documentType: 'other',
+        bytes: _otherDocBytes,
+        fileName: _otherDocName,
+      ),
+    ].where((document) => document.canUpload).toList();
+  }
+
+  Future<void> _uploadPendingCustomerDocuments(String customerId) async {
+    final documents = _pendingCustomerDocuments();
+    if (documents.isEmpty) return;
+
+    for (final document in documents) {
+      await _apiProvider.uploadCustomerDocument(
+        customerId: customerId,
+        documentType: document.documentType,
+        fileBytes: document.bytes!,
+        fileName: document.fileName!,
+      );
+    }
   }
 
   Future<void> _submit(List<AppUser> users) async {
@@ -537,6 +629,9 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
         debugPrint(
           '[CUSTOMER UPDATE RESPONSE] ${jsonEncode(updated.toJson())}',
         );
+        await _uploadPendingCustomerDocuments(
+          updated.id.trim().isEmpty ? customerId : updated.id,
+        );
 
         if (!mounted) return;
         Navigator.of(context).pop(updated);
@@ -560,6 +655,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
         debugPrint(
           '[CUSTOMER CREATE RESPONSE] ${jsonEncode(created.toJson())}',
         );
+        await _uploadPendingCustomerDocuments(created.id);
 
         if (!mounted) return;
         Navigator.of(context).pop(created);
@@ -1495,9 +1591,15 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             showStates: true,
             showCities: true,
             flagState: CountryFlag.DISABLE,
-            currentCountry: _countryController.text,
-            currentState: _stateController.text,
-            currentCity: _cityController.text,
+            currentCountry: _countryController.text.trim().isEmpty
+                ? null
+                : _countryController.text,
+            currentState: _stateController.text.trim().isEmpty
+                ? null
+                : _stateController.text,
+            currentCity: _cityController.text.trim().isEmpty
+                ? null
+                : _cityController.text,
             dropdownDecoration: BoxDecoration(
               borderRadius: BorderRadius.circular(14),
               color: AppColors.surfaceSoft.withValues(alpha: 0.28),
@@ -1667,11 +1769,11 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
         children: [
           _customerDropdownBlock<String>(
             label: 'Payment Terms',
-            value: _selectedPaymentMethod,
+            value: _selectedPaymentTerm,
             hintText: 'Select payment terms',
             items: _paymentTermsOptions,
             onChanged: (value) =>
-                setState(() => _selectedPaymentMethod = value),
+                setState(() => _selectedPaymentTerm = value),
           ),
           _field(
             label: 'Credit Limit',
@@ -2655,6 +2757,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     required List<T> items,
     required ValueChanged<T?> onChanged,
   }) {
+    final effectiveValue = _optionValueOrNull(value, items);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -2670,8 +2774,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           ),
         ),
         DropdownButtonFormField<T>(
-          key: ValueKey<String?>('$label-$value'),
-          initialValue: value,
+          key: ValueKey<String?>('$label-$effectiveValue'),
+          initialValue: effectiveValue,
           isExpanded: true,
           menuMaxHeight: 280,
           icon: const Icon(
@@ -2765,6 +2869,21 @@ class _CustomerWizardStep {
   final IconData icon;
 
   const _CustomerWizardStep(this.title, this.icon);
+}
+
+class _PendingCustomerDocument {
+  final String documentType;
+  final Uint8List? bytes;
+  final String? fileName;
+
+  const _PendingCustomerDocument({
+    required this.documentType,
+    required this.bytes,
+    required this.fileName,
+  });
+
+  bool get canUpload =>
+      bytes != null && fileName != null && fileName!.trim().isNotEmpty;
 }
 
 enum _CustomerDocSlot {

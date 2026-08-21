@@ -54,7 +54,10 @@ class _SalesManagerCustomersScreenState
     if (_providerReady) return;
     _apiProvider = ApiProviderScope.of(context);
     _providerReady = true;
-    _loadCustomers();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _loadCustomers();
+    });
   }
 
   @override

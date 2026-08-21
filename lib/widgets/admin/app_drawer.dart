@@ -70,6 +70,73 @@ class _DrawerMeta {
 
   CurrentUserProfile? get user => authMe?.user;
 
+  bool canViewNavItem(_NavItem item) {
+    final auth = authMe;
+    if (auth == null) return true;
+    final module = _permissionModuleForLabel(item.label);
+    if (module == null) return true;
+    return auth.canView(module);
+  }
+
+  List<_NavSection> visibleSections(List<_NavSection> sections) {
+    return sections
+        .map(
+          (section) => _NavSection(
+            section.title,
+            section.items.where(canViewNavItem).toList(),
+          ),
+        )
+        .where((section) => section.items.isNotEmpty)
+        .toList();
+  }
+
+  static String? _permissionModuleForLabel(String label) {
+    switch (label) {
+      case 'Dashboard':
+        return 'dashboard';
+      case 'Customers':
+        return 'customers';
+      case 'Leads':
+        return 'leads';
+      case 'Quotation':
+        return 'quotations';
+      case 'Suppliers':
+        return 'suppliers';
+      case 'Categories':
+      case 'Products':
+        return 'products';
+      case 'Inventory':
+        return 'inventory';
+      case 'Orders':
+        return 'sales_orders';
+      case 'Vehicle Stock':
+        return 'vehicle_stock';
+      case 'Purchases':
+        return 'purchases';
+      case 'Deliveries':
+        return 'deliveries';
+      case 'Invoices':
+        return 'invoices';
+      case 'Expenses':
+        return 'expenses';
+      case 'Reports':
+        return 'reports';
+      case 'Staff':
+      case 'Roles & Permissions':
+        return 'users';
+      case 'Attendance':
+        return 'attendance';
+      case 'Company Settings':
+      case 'Plans':
+      case 'Notifications':
+      case 'Audit Logs':
+      case 'Settings':
+        return 'settings';
+      default:
+        return null;
+    }
+  }
+
   static bool _isFreePlan(PlanModel plan) {
     final planName = plan.name.trim().toLowerCase();
     return planName == 'free' ||
@@ -621,9 +688,19 @@ class _AppDrawerState extends State<AppDrawer> {
               height: 1,
             ),
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(10, 10, 10, 12),
-                children: AppDrawer._sections.map(_buildSection).toList(),
+              child: FutureBuilder<_DrawerMeta>(
+                future: _drawerMetaFuture,
+                builder: (context, snapshot) {
+                  final meta = snapshot.data;
+                  final sections =
+                      meta?.visibleSections(AppDrawer._sections) ??
+                      AppDrawer._sections;
+
+                  return ListView(
+                    padding: const EdgeInsets.fromLTRB(10, 10, 10, 12),
+                    children: sections.map(_buildSection).toList(),
+                  );
+                },
               ),
             ),
             Divider(

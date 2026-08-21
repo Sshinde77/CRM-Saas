@@ -485,17 +485,14 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
                   ),
                   child: Row(
                     children: [
-                      if (isMobile) ...[
-                        IconButton(
-                          onPressed: () =>
-                              _scaffoldKey.currentState?.openDrawer(),
-                          icon: const Icon(
-                            Icons.menu_rounded,
-                            color: AppColors.textPrimary,
-                          ),
+                      IconButton(
+                        onPressed: () => Navigator.of(context).maybePop(),
+                        icon: const Icon(
+                          Icons.arrow_back_rounded,
+                          color: AppColors.textPrimary,
                         ),
-                        const SizedBox(width: 4),
-                      ],
+                      ),
+                      const SizedBox(width: 4),
                       const Text(
                         'Orders',
                         style: TextStyle(

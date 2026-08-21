@@ -252,8 +252,8 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
       child: Row(
         children: [
           IconButton(
-            onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-            icon: const Icon(Icons.menu_rounded, color: Colors.black),
+            onPressed: () => Navigator.of(context).maybePop(),
+            icon: const Icon(Icons.arrow_back_rounded, color: Colors.black),
           ),
           const Text(
             'Leads',

@@ -105,7 +105,9 @@ class _LoginScreenState extends State<LoginScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => RoleHomeScreen.forRole(session.user?.role),
+          builder: (_) => RoleHomeScreen.forRole(
+            apiProvider.currentUser?.role ?? session.user?.role,
+          ),
         ),
       );
     } on ApiException catch (error) {

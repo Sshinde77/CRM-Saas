@@ -53,6 +53,8 @@ class ApiEndpoints {
       '/customers/{customer_id}/ledger';
   static const String customersPaymentsTemplate =
       '/customers/{customer_id}/payments';
+  static const String customersDocumentsTemplate =
+      '/customers/{customer_id}/documents';
   static const String ordersList = '/orders';
 
   static const String usersList = '/users';
@@ -89,6 +91,9 @@ class ApiEndpoints {
 
   static String customersPayments(String customerId) =>
       customersPaymentsTemplate.replaceFirst('{customer_id}', customerId);
+
+  static String customersDocuments(String customerId) =>
+      customersDocumentsTemplate.replaceFirst('{customer_id}', customerId);
 
   static String usersDetail(String userId) =>
       usersDetailTemplate.replaceFirst('{user_id}', userId);
