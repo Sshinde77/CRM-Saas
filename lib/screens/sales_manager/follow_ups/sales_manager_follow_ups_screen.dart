@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../admin/customers/customers_screen.dart';
+import '../../admin/leads/admin_leads_screen.dart';
+import '../../admin/orders/admin_orders_screen.dart';
+import '../../admin/orders/new_admin_order_screen.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
-import '../customers/sales_manager_customers_screen.dart';
 import '../attendance/sales_manager_attendance_screen.dart';
 import '../dashboard/sales_manager_dashboard_screen.dart';
-import '../leads/sales_manager_leads_screen.dart';
-import '../orders/sales_manager_orders_screen.dart';
 import '../performance/sales_manager_performance_screen.dart';
 import '../stock/sales_manager_stock_screen.dart';
 import '../visits/sales_manager_visits_screen.dart';
@@ -71,19 +72,25 @@ class _SalesManagerFollowUpsScreenState
     }
     if (action == 'Customers') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const SalesManagerCustomersScreen()),
+        MaterialPageRoute(builder: (_) => const CustomersScreen()),
       );
       return;
     }
     if (action == 'Leads') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const SalesManagerLeadsScreen()),
+        MaterialPageRoute(builder: (_) => const AdminLeadsScreen()),
       );
       return;
     }
-    if (action == 'Create Order' || action == 'Sales Orders') {
+    if (action == 'Create Order') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const SalesManagerOrdersScreen()),
+        MaterialPageRoute(builder: (_) => const NewAdminOrderScreen()),
+      );
+      return;
+    }
+    if (action == 'Sales Orders') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const AdminOrdersScreen()),
       );
       return;
     }
