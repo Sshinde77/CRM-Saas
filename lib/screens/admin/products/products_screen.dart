@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../providers/api_provider.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
 
@@ -23,8 +24,12 @@ class _ProductsScreenState extends State<ProductsScreen> {
   String _selectedBrand = 'All Brands';
   String _sortBy = 'Latest';
   int _currentPage = 1;
+  late ApiProvider _apiProvider;
+  bool _providerReady = false;
+  bool _isLoading = true;
+  String? _errorMessage;
 
-  final List<String> _categories = const [
+  List<String> _categories = const [
     'All Categories',
     'Packaged Water',
     'Mineral Water',
@@ -35,7 +40,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
     'Accessories',
   ];
 
-  final List<String> _brands = const [
+  List<String> _brands = const [
     'All Brands',
     'AquaPure',
     'HydroMax',
@@ -45,7 +50,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
   final List<String> _sortOptions = const ['Latest', 'Name', 'Price', 'Stock'];
 
-  final List<_ProductItem> _products = [
+  List<_ProductItem> _products = [
     _ProductItem(
       name: 'Packaged Drinking Water (250ml)',
       brand: 'AquaPure',
@@ -137,9 +142,66 @@ class _ProductsScreenState extends State<ProductsScreen> {
   ];
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_providerReady) return;
+    _apiProvider = ApiProviderScope.of(context);
+    _providerReady = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _loadProducts();
+    });
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadProducts() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    try {
+      final results = await Future.wait([
+        _apiProvider.fetchProducts(),
+        _apiProvider.fetchCategories(),
+        _apiProvider.fetchBrands(),
+      ]);
+      final products = results[0].map(_ProductItem.fromJson).toList();
+      final categories = results[1]
+          .map((item) => _productText(item, const ['name', 'category_name']))
+          .where((value) => value.trim().isNotEmpty)
+          .toSet()
+          .toList()
+        ..sort();
+      final brands = results[2]
+          .map((item) => _productText(item, const ['name']))
+          .where((value) => value.trim().isNotEmpty)
+          .toSet()
+          .toList()
+        ..sort();
+      if (!mounted) return;
+      setState(() {
+        _products = products;
+        _categories = ['All Categories', ...categories];
+        _brands = ['All Brands', ...brands];
+        if (!_categories.contains(_selectedCategory)) {
+          _selectedCategory = 'All Categories';
+        }
+        if (!_brands.contains(_selectedBrand)) {
+          _selectedBrand = 'All Brands';
+        }
+        _isLoading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = error.toString();
+        _isLoading = false;
+      });
+    }
   }
 
   List<_ProductItem> get _filteredProducts {
@@ -328,7 +390,21 @@ class _ProductsScreenState extends State<ProductsScreen> {
                     const SizedBox(height: 18),
                     _buildCountAndSortRow(filtered.length),
                     const SizedBox(height: 16),
-                    if (filtered.isEmpty)
+                    if (_isLoading)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 56),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      )
+                    else if (_errorMessage != null)
+                      _ProductErrorState(
+                        message: _errorMessage!,
+                        onRetry: _loadProducts,
+                      )
+                    else if (filtered.isEmpty)
                       _emptyState()
                     else
                       ...filtered.map((product) {
@@ -1023,6 +1099,111 @@ class _ProductItem {
     required this.icon,
     required this.accent,
   });
+
+  factory _ProductItem.fromJson(Map<String, dynamic> json) {
+    final category = _productText(
+      json,
+      const ['category_label', 'categoryLabel', 'category'],
+      nestedKeys: const ['category'],
+      fallback: '-',
+    );
+    final stock = _productInt(
+      json,
+      const ['stock', 'current_stock', 'currentStock', 'inventory'],
+    );
+    return _ProductItem(
+      name: _productText(json, const ['name'], fallback: '-'),
+      brand: _productText(
+        json,
+        const ['brand'],
+        nestedKeys: const ['brand'],
+        fallback: '-',
+      ),
+      category: category,
+      hsn: _productText(json, const ['hsn', 'hsn_sac', 'sku'], fallback: '-'),
+      price: _productNum(
+        json,
+        const ['price', 'selling_price', 'sellingPrice', 'mrp'],
+      ),
+      stock: stock,
+      status: _productBool(json['is_active']) ? 'Active' : 'Inactive',
+      icon: Icons.inventory_2_rounded,
+      accent: AppColors.primary,
+    );
+  }
+}
+
+class _ProductErrorState extends StatelessWidget {
+  final String message;
+  final VoidCallback onRetry;
+
+  const _ProductErrorState({required this.message, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 40),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(message, textAlign: TextAlign.center),
+            const SizedBox(height: 12),
+            OutlinedButton(onPressed: onRetry, child: const Text('Retry')),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+String _productText(
+  Map<String, dynamic> json,
+  List<String> keys, {
+  List<String> nestedKeys = const [],
+  String fallback = '',
+}) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value is Map<String, dynamic>) {
+      final nested = _productText(value, const ['name'], fallback: '');
+      if (nested.isNotEmpty) return nested;
+    }
+    final text = value?.toString().trim();
+    if (text != null && text.isNotEmpty) return text;
+  }
+  for (final key in nestedKeys) {
+    final value = json[key];
+    if (value is Map<String, dynamic>) {
+      final text = _productText(value, const ['name'], fallback: '');
+      if (text.isNotEmpty) return text;
+    }
+  }
+  return fallback;
+}
+
+double _productNum(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value is num) return value.toDouble();
+    if (value != null) {
+      final parsed = double.tryParse(value.toString());
+      if (parsed != null) return parsed;
+    }
+  }
+  return 0;
+}
+
+int _productInt(Map<String, dynamic> json, List<String> keys) {
+  return _productNum(json, keys).round();
+}
+
+bool _productBool(Object? value) {
+  if (value == null) return true;
+  if (value is bool) return value;
+  if (value is num) return value != 0;
+  final text = value.toString().toLowerCase().trim();
+  return text != 'false' && text != 'inactive' && text != '0';
 }
 
 class _ProductFormDialog extends StatefulWidget {

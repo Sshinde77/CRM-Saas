@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../providers/api_provider.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
 import 'add_supplier_screen.dart';
@@ -18,9 +19,13 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
 
   String _selectedTab = 'All';
   String _selectedCategory = 'All categories';
+  late ApiProvider _apiProvider;
+  bool _providerReady = false;
+  bool _isLoading = true;
+  String? _errorMessage;
 
   static const List<String> _tabs = ['All', 'Active', 'Inactive'];
-  static const List<String> _categories = [
+  List<String> _categories = const [
     'All categories',
     'Manufacturer',
     'Packaging',
@@ -29,7 +34,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
     'Others',
   ];
 
-  final List<_SupplierRecord> _suppliers = const [
+  List<_SupplierRecord> _suppliers = const [
     _SupplierRecord(
       name: 'information',
       category: 'Manufacturer',
@@ -44,9 +49,52 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
   ];
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_providerReady) return;
+    _apiProvider = ApiProviderScope.of(context);
+    _providerReady = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _loadSuppliers();
+    });
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadSuppliers() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    try {
+      final items = await _apiProvider.fetchSuppliers();
+      final suppliers = items.map(_SupplierRecord.fromJson).toList();
+      final categories = suppliers
+          .map((supplier) => supplier.category)
+          .where((category) => category.trim().isNotEmpty)
+          .toSet()
+          .toList()
+        ..sort();
+      if (!mounted) return;
+      setState(() {
+        _suppliers = suppliers;
+        _categories = ['All categories', ...categories];
+        if (!_categories.contains(_selectedCategory)) {
+          _selectedCategory = 'All categories';
+        }
+        _isLoading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = error.toString();
+        _isLoading = false;
+      });
+    }
   }
 
   List<_SupplierRecord> _filteredSuppliers() {
@@ -184,8 +232,16 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                           Padding(
                             padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
                             child: isCompact
-                                ? _buildCompactList(suppliers)
-                                : _buildTable(suppliers),
+                                ? _isLoading
+                                    ? _loadingState()
+                                    : _errorMessage != null
+                                        ? _errorState(_errorMessage!, _loadSuppliers)
+                                        : _buildCompactList(suppliers)
+                                : _isLoading
+                                    ? _loadingState()
+                                    : _errorMessage != null
+                                        ? _errorState(_errorMessage!, _loadSuppliers)
+                                        : _buildTable(suppliers),
                           ),
                           const Divider(height: 1, color: Color(0xFFE5E7EB)),
                           Padding(
@@ -254,6 +310,29 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
             borderRadius: BorderRadius.circular(14),
             borderSide: const BorderSide(color: Color(0xFF0B4A06)),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _loadingState() {
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: 56),
+      child: Center(child: CircularProgressIndicator(color: Color(0xFF0B4A06))),
+    );
+  }
+
+  Widget _errorState(String message, VoidCallback onRetry) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 40),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(message, textAlign: TextAlign.center),
+            const SizedBox(height: 12),
+            OutlinedButton(onPressed: onRetry, child: const Text('Retry')),
+          ],
         ),
       ),
     );
@@ -768,4 +847,59 @@ class _SupplierRecord {
     required this.statusColor,
     required this.statusBg,
   });
+
+  factory _SupplierRecord.fromJson(Map<String, dynamic> json) {
+    final active = _boolValue(json['is_active']);
+    final status = active ? 'active' : 'inactive';
+    return _SupplierRecord(
+      name: _readString(json, const ['name'], fallback: '-'),
+      category: _readString(json, const ['category'], fallback: 'Others'),
+      contact: _readString(
+        json,
+        const ['contact_person', 'contactPerson', 'phone'],
+        fallback: '-',
+      ),
+      city: _readString(json, const ['city'], fallback: '-'),
+      totalPurchases: _money(_readNum(json, const ['total_purchases', 'totalPurchases'])),
+      outstandingPayable: _money(
+        _readNum(json, const ['outstanding_payable', 'outstandingPayable']),
+      ),
+      status: status,
+      statusColor: active ? const Color(0xFF15803D) : const Color(0xFFDC2626),
+      statusBg: active ? const Color(0xFFF0FDF4) : const Color(0xFFFEE2E2),
+    );
+  }
 }
+
+String _readString(
+  Map<String, dynamic> json,
+  List<String> keys, {
+  String fallback = '',
+}) {
+  for (final key in keys) {
+    final value = json[key]?.toString().trim();
+    if (value != null && value.isNotEmpty) return value;
+  }
+  return fallback;
+}
+
+double _readNum(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value is num) return value.toDouble();
+    if (value != null) {
+      final parsed = double.tryParse(value.toString());
+      if (parsed != null) return parsed;
+    }
+  }
+  return 0;
+}
+
+bool _boolValue(Object? value) {
+  if (value is bool) return value;
+  if (value is num) return value != 0;
+  final text = value?.toString().toLowerCase().trim();
+  return text != 'false' && text != 'inactive' && text != '0';
+}
+
+String _money(double value) => 'Rs ${value.toStringAsFixed(value % 1 == 0 ? 0 : 2)}';

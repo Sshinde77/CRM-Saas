@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../providers/api_provider.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
 import 'create_quotation_screen.dart';
@@ -17,6 +18,10 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
   final TextEditingController _searchController = TextEditingController();
 
   String _selectedStatus = 'All status';
+  late ApiProvider _apiProvider;
+  bool _providerReady = false;
+  bool _isLoading = true;
+  String? _errorMessage;
 
   final List<String> _statusOptions = const [
     'All status',
@@ -26,7 +31,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
     'Rejected',
   ];
 
-  final List<_QuotationRecord> _quotations = const [
+  List<_QuotationRecord> _quotations = const [
     _QuotationRecord(
       number: 'QT-2026-1003',
       customer: 'Hotel Grand Meridian',
@@ -54,9 +59,41 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
   ];
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_providerReady) return;
+    _apiProvider = ApiProviderScope.of(context);
+    _providerReady = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _loadQuotations();
+    });
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadQuotations() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    try {
+      final items = await _apiProvider.fetchQuotations();
+      if (!mounted) return;
+      setState(() {
+        _quotations = items.map(_QuotationRecord.fromJson).toList();
+        _isLoading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = error.toString();
+        _isLoading = false;
+      });
+    }
   }
 
   List<_QuotationRecord> _filteredQuotations() {
@@ -120,8 +157,16 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
                         ],
                       ),
                       child: isMobile
-                          ? _buildMobileContent(quotations)
-                          : _buildDesktopContent(quotations),
+                          ? _isLoading
+                              ? _loadingState()
+                              : _errorMessage != null
+                                  ? _errorState(_errorMessage!, _loadQuotations)
+                                  : _buildMobileContent(quotations)
+                          : _isLoading
+                              ? _loadingState()
+                              : _errorMessage != null
+                                  ? _errorState(_errorMessage!, _loadQuotations)
+                                  : _buildDesktopContent(quotations),
                     ),
                   ),
                 ),
@@ -213,6 +258,29 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _loadingState() {
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: 80),
+      child: Center(child: CircularProgressIndicator(color: Color(0xFF0B4A06))),
+    );
+  }
+
+  Widget _errorState(String message, VoidCallback onRetry) {
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(message, textAlign: TextAlign.center),
+            const SizedBox(height: 12),
+            OutlinedButton(onPressed: onRetry, child: const Text('Retry')),
+          ],
+        ),
+      ),
     );
   }
 
@@ -603,6 +671,97 @@ class _QuotationRecord {
     required this.statusColor,
     required this.statusBackground,
   });
+
+  factory _QuotationRecord.fromJson(Map<String, dynamic> json) {
+    final status = _stringValue(json, const ['status'], fallback: 'Draft');
+    final itemCount = _numValue(json, const ['item_count', 'itemCount']);
+    return _QuotationRecord(
+      number: _stringValue(
+        json,
+        const ['quotation_number', 'quotationNumber', 'number', 'id'],
+      ),
+      customer: _stringValue(
+        json,
+        const ['customer_name', 'customerName'],
+        nestedKeys: const ['customer'],
+      ),
+      salesperson: _stringValue(
+        json,
+        const ['salesperson_name', 'salespersonName'],
+        nestedKeys: const ['salesperson', 'user'],
+      ),
+      date: _formatApiDate(
+        _stringValue(json, const ['quotation_date', 'quotationDate', 'date']),
+      ),
+      validUntil: _formatApiDate(
+        _stringValue(json, const ['valid_until', 'validUntil']),
+      ),
+      amount: _formatMoney(_numValue(json, const ['total', 'amount'])),
+      status: status,
+      itemCount: '${itemCount.toStringAsFixed(0)} item(s)',
+      statusColor: _quotationStatusColor(status),
+      statusBackground: _quotationStatusBackground(status),
+    );
+  }
+}
+
+String _stringValue(
+  Map<String, dynamic> json,
+  List<String> keys, {
+  List<String> nestedKeys = const [],
+  String fallback = '-',
+}) {
+  for (final key in keys) {
+    final value = json[key]?.toString().trim();
+    if (value != null && value.isNotEmpty) return value;
+  }
+  for (final nestedKey in nestedKeys) {
+    final nested = json[nestedKey];
+    if (nested is Map<String, dynamic>) {
+      final value = _stringValue(nested, const ['name', 'full_name'], fallback: '');
+      if (value.isNotEmpty) return value;
+    }
+  }
+  return fallback;
+}
+
+double _numValue(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value is num) return value.toDouble();
+    if (value != null) {
+      final parsed = double.tryParse(value.toString());
+      if (parsed != null) return parsed;
+    }
+  }
+  return 0;
+}
+
+String _formatMoney(double value) => 'Rs. ${value.toStringAsFixed(value % 1 == 0 ? 0 : 2)}';
+
+String _formatApiDate(String value) {
+  final parsed = DateTime.tryParse(value);
+  if (parsed == null) return value.isEmpty ? '-' : value;
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return '${parsed.day.toString().padLeft(2, '0')} ${months[parsed.month - 1]} ${parsed.year}';
+}
+
+Color _quotationStatusColor(String status) {
+  return switch (status.toLowerCase()) {
+    'sent' => const Color(0xFF2563EB),
+    'accepted' => const Color(0xFF16A34A),
+    'rejected' => const Color(0xFFDC2626),
+    _ => const Color(0xFF6B7280),
+  };
+}
+
+Color _quotationStatusBackground(String status) {
+  return switch (status.toLowerCase()) {
+    'sent' => const Color(0xFFEFF6FF),
+    'accepted' => const Color(0xFFE8F8EE),
+    'rejected' => const Color(0xFFFEE2E2),
+    _ => const Color(0xFFF3F4F6),
+  };
 }
 
 class _QuotationCard extends StatelessWidget {

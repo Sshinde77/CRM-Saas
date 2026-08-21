@@ -452,6 +452,98 @@ class ApiService {
         .toList();
   }
 
+  Future<List<Map<String, dynamic>>> fetchRawList({
+    required String endpoint,
+    Map<String, String>? queryParameters,
+    List<String> candidateKeys = const ['data', 'items', 'results'],
+    String fallbackMessage = 'Invalid list response.',
+  }) async {
+    final response = await _send(
+      method: 'GET',
+      endpoint: endpoint,
+      requiresAuth: true,
+      queryParameters: queryParameters,
+    );
+    final decoded = _tryDecodeBody(response.body.trim());
+    final rawItems = _extractGenericList(
+      decoded,
+      candidateKeys,
+      fallbackMessage: fallbackMessage,
+    );
+    return rawItems.whereType<Map<String, dynamic>>().toList();
+  }
+
+  Future<List<Map<String, dynamic>>> fetchLeads({String? status}) {
+    return fetchRawList(
+      endpoint: ApiEndpoints.leadsList,
+      queryParameters: _cleanQuery({'status': status}),
+      candidateKeys: const ['leads', 'data', 'items', 'results'],
+      fallbackMessage: 'Invalid leads response.',
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> fetchQuotations() {
+    return fetchRawList(
+      endpoint: ApiEndpoints.quotationsList,
+      candidateKeys: const ['quotations', 'data', 'items', 'results'],
+      fallbackMessage: 'Invalid quotations response.',
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> fetchSuppliers({
+    String? search,
+    String? category,
+    bool? isActive,
+  }) {
+    return fetchRawList(
+      endpoint: ApiEndpoints.suppliersList,
+      queryParameters: _cleanQuery({
+        'search': search,
+        'category': category,
+        'is_active': isActive?.toString(),
+      }),
+      candidateKeys: const ['suppliers', 'data', 'items', 'results'],
+      fallbackMessage: 'Invalid suppliers response.',
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> fetchCategories({String? search}) {
+    return fetchRawList(
+      endpoint: ApiEndpoints.categoriesList,
+      queryParameters: _cleanQuery({'search': search}),
+      candidateKeys: const ['categories', 'data', 'items', 'results'],
+      fallbackMessage: 'Invalid categories response.',
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> fetchBrands({String? search}) {
+    return fetchRawList(
+      endpoint: ApiEndpoints.brandsList,
+      queryParameters: _cleanQuery({'search': search}),
+      candidateKeys: const ['brands', 'data', 'items', 'results'],
+      fallbackMessage: 'Invalid brands response.',
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> fetchProducts({
+    String? search,
+    String? categoryId,
+    bool? isActive,
+    String? barcode,
+  }) {
+    return fetchRawList(
+      endpoint: ApiEndpoints.productsList,
+      queryParameters: _cleanQuery({
+        'search': search,
+        'category_id': categoryId,
+        'is_active': isActive?.toString(),
+        'barcode': barcode,
+      }),
+      candidateKeys: const ['products', 'data', 'items', 'results'],
+      fallbackMessage: 'Invalid products response.',
+    );
+  }
+
   Future<CustomerModel> fetchCustomerById(String customerId) async {
     final id = customerId.trim();
     if (id.isEmpty) {
@@ -1035,6 +1127,17 @@ class ApiService {
     }
 
     return fallback;
+  }
+
+  Map<String, String>? _cleanQuery(Map<String, String?> values) {
+    final query = <String, String>{};
+    for (final entry in values.entries) {
+      final value = entry.value?.trim();
+      if (value != null && value.isNotEmpty) {
+        query[entry.key] = value;
+      }
+    }
+    return query.isEmpty ? null : query;
   }
 
   List<dynamic> _extractUsersList(dynamic decoded) {

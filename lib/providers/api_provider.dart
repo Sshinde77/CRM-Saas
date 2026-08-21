@@ -194,6 +194,48 @@ class ApiProvider extends ChangeNotifier {
     }
   }
 
+  Future<List<Map<String, dynamic>>> fetchLeads({String? status}) {
+    return _apiService.fetchLeads(status: status);
+  }
+
+  Future<List<Map<String, dynamic>>> fetchQuotations() {
+    return _apiService.fetchQuotations();
+  }
+
+  Future<List<Map<String, dynamic>>> fetchSuppliers({
+    String? search,
+    String? category,
+    bool? isActive,
+  }) {
+    return _apiService.fetchSuppliers(
+      search: search,
+      category: category,
+      isActive: isActive,
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> fetchCategories({String? search}) {
+    return _apiService.fetchCategories(search: search);
+  }
+
+  Future<List<Map<String, dynamic>>> fetchBrands({String? search}) {
+    return _apiService.fetchBrands(search: search);
+  }
+
+  Future<List<Map<String, dynamic>>> fetchProducts({
+    String? search,
+    String? categoryId,
+    bool? isActive,
+    String? barcode,
+  }) {
+    return _apiService.fetchProducts(
+      search: search,
+      categoryId: categoryId,
+      isActive: isActive,
+      barcode: barcode,
+    );
+  }
+
   Future<CustomerModel> fetchCustomerById(String customerId) async {
     _setLoading(true);
     _errorMessage = null;

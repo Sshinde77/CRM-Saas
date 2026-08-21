@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../providers/api_provider.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
@@ -35,15 +36,19 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
   String _statusFilter = 'All Status';
   String _sourceFilter = 'All Sources';
   String _teamFilter = 'All Team';
+  late ApiProvider _apiProvider;
+  bool _providerReady = false;
+  bool _isLoading = true;
+  String? _errorMessage;
 
-  final List<String> _statusOptions = const [
+  List<String> _statusOptions = const [
     'All Status',
     'New',
     'Follow Up',
     'Hot',
   ];
 
-  final List<String> _sourceOptions = const [
+  List<String> _sourceOptions = const [
     'All Sources',
     'Website',
     'Facebook Ads',
@@ -51,7 +56,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
     'Instagram',
   ];
 
-  final List<String> _teamOptions = const [
+  List<String> _teamOptions = const [
     'All Team',
     'Sunil Sales',
     'Neha Sharma',
@@ -63,7 +68,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
   // NOTE: avatarUrl points at placeholder photo URLs (pravatar.cc) purely so
   // the card layout matches the photo-avatar mockup. Swap these for real
   // lead/contact photo URLs from your backend when wiring this up.
-  final List<_LeadRecord> _leads = const [
+  List<_LeadRecord> _leads = const [
     _LeadRecord(
       personName: 'Rahul Sharma',
       companyName: 'Sharma Enterprises',
@@ -142,10 +147,57 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
   ];
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_providerReady) return;
+    _apiProvider = ApiProviderScope.of(context);
+    _providerReady = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _loadLeads();
+    });
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     _productFilterController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadLeads() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    try {
+      final items = await _apiProvider.fetchLeads(
+        status: _statusFilter == 'All Status' ? null : _statusFilter,
+      );
+      final leads = items.map(_LeadRecord.fromJson).toList();
+      if (!mounted) return;
+      setState(() {
+        _leads = leads;
+        _statusOptions = [
+          'All Status',
+          ...leads.map((lead) => lead.status).where((v) => v.trim().isNotEmpty).toSet(),
+        ];
+        _sourceOptions = [
+          'All Sources',
+          ...leads.map((lead) => lead.source).where((v) => v.trim().isNotEmpty).toSet(),
+        ];
+        _teamOptions = [
+          'All Team',
+          ...leads.map((lead) => lead.assignedTo).where((v) => v.trim().isNotEmpty).toSet(),
+        ];
+        _isLoading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = error.toString();
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _openAddLeadPage() async {
@@ -270,7 +322,22 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                             const SizedBox(height: 8),
                             _buildStatsSection(isMobile),
                             const SizedBox(height: 10),
-                            _buildLeadList(shownLeads, isMobile),
+                            if (_isLoading)
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 80),
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              )
+                            else if (_errorMessage != null)
+                              _LeadErrorState(
+                                message: _errorMessage!,
+                                onRetry: _loadLeads,
+                              )
+                            else
+                              _buildLeadList(shownLeads, isMobile),
                           ],
                         ),
                       ),
@@ -1268,4 +1335,116 @@ class _LeadRecord {
     required this.avatarEnd,
     this.avatarUrl,
   });
+
+  factory _LeadRecord.fromJson(Map<String, dynamic> json) {
+    final name = _leadString(
+      json,
+      const ['name', 'contact_person', 'contactPerson'],
+      fallback: '-',
+    );
+    final assignedTo = _leadString(
+      json,
+      const ['assigned_salesperson_name', 'assignedSalespersonName'],
+      nestedKeys: const ['assigned_salesperson', 'assigned_user', 'user'],
+      fallback: '-',
+    );
+    return _LeadRecord(
+      personName: name,
+      companyName: _leadString(
+        json,
+        const ['customer_name', 'customerName', 'company_name', 'companyName'],
+        nestedKeys: const ['customer'],
+        fallback: '-',
+      ),
+      phone: _leadString(
+        json,
+        const ['mobile_number', 'mobileNumber', 'phone'],
+        fallback: '-',
+      ),
+      source: _leadString(
+        json,
+        const ['lead_source', 'leadSource', 'source'],
+        fallback: '-',
+      ),
+      assignedTo: assignedTo,
+      assignedInitials: _initials(assignedTo),
+      status: _leadString(
+        json,
+        const ['lead_status', 'leadStatus', 'status'],
+        fallback: 'New',
+      ),
+      category: _leadString(
+        json,
+        const ['interested_product', 'interestedProduct', 'category'],
+        fallback: '-',
+      ),
+      lastActivity: _relativeLeadTime(
+        _leadString(json, const ['created_at', 'createdAt'], fallback: ''),
+      ),
+      accentColor: AppColors.primary,
+      avatarStart: AppColors.surfaceSoft,
+      avatarEnd: AppColors.activeMenuBg,
+      avatarUrl: null,
+    );
+  }
+}
+
+class _LeadErrorState extends StatelessWidget {
+  final String message;
+  final VoidCallback onRetry;
+
+  const _LeadErrorState({required this.message, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 56),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(message, textAlign: TextAlign.center),
+            const SizedBox(height: 12),
+            OutlinedButton(onPressed: onRetry, child: const Text('Retry')),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+String _leadString(
+  Map<String, dynamic> json,
+  List<String> keys, {
+  List<String> nestedKeys = const [],
+  String fallback = '',
+}) {
+  for (final key in keys) {
+    final value = json[key]?.toString().trim();
+    if (value != null && value.isNotEmpty) return value;
+  }
+  for (final key in nestedKeys) {
+    final value = json[key];
+    if (value is Map<String, dynamic>) {
+      final nested = _leadString(value, const ['name', 'full_name'], fallback: '');
+      if (nested.isNotEmpty) return nested;
+    }
+  }
+  return fallback;
+}
+
+String _initials(String value) {
+  final parts = value.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty);
+  final initials = parts.take(2).map((p) => p[0].toUpperCase()).join();
+  return initials.isEmpty ? 'NA' : initials;
+}
+
+String _relativeLeadTime(String value) {
+  final parsed = DateTime.tryParse(value);
+  if (parsed == null) return '-';
+  final diff = DateTime.now().difference(parsed);
+  if (diff.inDays > 0) return '${diff.inDays}d ago';
+  if (diff.inHours > 0) return '${diff.inHours}h ago';
+  if (diff.inMinutes > 0) return '${diff.inMinutes}m ago';
+  return 'Just now';
 }

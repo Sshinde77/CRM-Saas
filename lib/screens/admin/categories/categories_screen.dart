@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../providers/api_provider.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
 import 'add_category_screen.dart';
@@ -22,8 +23,12 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   static const double _imageWidth = 150;
   static const double _descriptionWidth = 400;
   static const double _actionWidth = 72;
+  late ApiProvider _apiProvider;
+  bool _providerReady = false;
+  bool _isLoading = true;
+  String? _errorMessage;
 
-  final List<CategoryRecord> _categories = [
+  List<CategoryRecord> _categories = [
     const CategoryRecord(
       name: 'Beverages',
       description: '-',
@@ -34,9 +39,41 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   ];
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_providerReady) return;
+    _apiProvider = ApiProviderScope.of(context);
+    _providerReady = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _loadCategories();
+    });
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadCategories() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    try {
+      final items = await _apiProvider.fetchCategories();
+      if (!mounted) return;
+      setState(() {
+        _categories = items.map(_categoryFromJson).toList();
+        _isLoading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = error.toString();
+        _isLoading = false;
+      });
+    }
   }
 
   List<CategoryRecord> _filteredCategories() {
@@ -176,8 +213,16 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           Padding(
                             padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
                             child: isCompact
-                                ? _buildCompactList(categories)
-                                : _buildTable(categories),
+                                ? _isLoading
+                                    ? _loadingState()
+                                    : _errorMessage != null
+                                        ? _errorState(_errorMessage!, _loadCategories)
+                                        : _buildCompactList(categories)
+                                : _isLoading
+                                    ? _loadingState()
+                                    : _errorMessage != null
+                                        ? _errorState(_errorMessage!, _loadCategories)
+                                        : _buildTable(categories),
                           ),
                           const Divider(height: 1, color: Color(0xFFE5E7EB)),
                           Padding(
@@ -239,6 +284,29 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
             fontSize: compact ? 12.5 : 13,
             fontWeight: FontWeight.w700,
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _loadingState() {
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: 56),
+      child: Center(child: CircularProgressIndicator(color: Color(0xFF0B4A06))),
+    );
+  }
+
+  Widget _errorState(String message, VoidCallback onRetry) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 40),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(message, textAlign: TextAlign.center),
+            const SizedBox(height: 12),
+            OutlinedButton(onPressed: onRetry, child: const Text('Retry')),
+          ],
         ),
       ),
     );
@@ -534,4 +602,32 @@ class _ImageCell extends StatelessWidget {
       ),
     );
   }
+}
+
+CategoryRecord _categoryFromJson(Map<String, dynamic> json) {
+  final name = _readText(json, const ['name', 'category_name'], fallback: '-');
+  final imageUrl = _readNullableText(json, const ['image', 'category_image']);
+  return CategoryRecord(
+    name: name,
+    description: _readText(json, const ['description'], fallback: '-'),
+    imageLabel: name.trim().isEmpty ? 'C' : name.trim()[0].toUpperCase(),
+    imageUrl: imageUrl,
+    subcategories: const [],
+  );
+}
+
+String _readText(
+  Map<String, dynamic> json,
+  List<String> keys, {
+  String fallback = '',
+}) {
+  return _readNullableText(json, keys) ?? fallback;
+}
+
+String? _readNullableText(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    final value = json[key]?.toString().trim();
+    if (value != null && value.isNotEmpty) return value;
+  }
+  return null;
 }

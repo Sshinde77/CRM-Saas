@@ -56,6 +56,12 @@ class ApiEndpoints {
   static const String customersDocumentsTemplate =
       '/customers/{customer_id}/documents';
   static const String ordersList = '/orders';
+  static const String leadsList = '/leads';
+  static const String quotationsList = '/quotations';
+  static const String suppliersList = '/suppliers';
+  static const String categoriesList = '/categories';
+  static const String brandsList = '/brands';
+  static const String productsList = '/products';
 
   static const String usersList = '/users';
   static const String usersCreate = '/users';
