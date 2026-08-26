@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../constants/app_colors.dart';
 import '../../../models/customer_model.dart';
@@ -661,6 +662,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
 
   Widget _customerCard(CustomerModel customer) {
     final statusActive = customer.isActive != false;
+    final locationText = _locationLabel(customer);
 
     return Container(
       width: double.infinity,
@@ -707,48 +709,44 @@ class _CustomersScreenState extends State<CustomersScreen> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        _statusChip(customer),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _statusChip(customer),
+                            const SizedBox(width: 6),
+                            _callAction(customer.phone),
+                            const SizedBox(width: 6),
+                            _mapAction(customer),
+                          ],
+                        ),
                       ],
                     ),
-                    const SizedBox(height: 4),
-                    if (customer.businessName != null)
-                      Text(
-                        customer.businessName!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: textSecondary,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
                     const SizedBox(height: 8),
                     _infoPairRow(
-                      leftIcon: Icons.phone_outlined,
-                      leftText: customer.phone ?? '--',
-                      rightIcon: Icons.business_outlined,
-                      rightText: customer.category ?? 'Category --',
-                    ),
-                    const SizedBox(height: 7),
-                    _infoPairRow(
                       leftIcon: Icons.person_outline_rounded,
-                      leftText:
-                          customer.assignedSalesOfficerName ??
-                          customer.assignedSalesOfficerId ??
-                          'Sales officer --',
-                      rightIcon: Icons.circle_rounded,
-                      rightText: statusActive ? 'Active' : 'Inactive',
-                      rightIconColor: statusActive
-                          ? AppColors.statusActiveText
-                          : AppColors.red,
+                      leftText: customer.contactPerson ?? '--',
+                      rightIcon: Icons.location_on_outlined,
+                      rightText: locationText,
+                      rightIconColor: AppColors.primary,
                     ),
                     const SizedBox(height: 7),
                     _infoPairRow(
-                      leftIcon: Icons.credit_card_rounded,
+                      leftIcon: Icons.toggle_on_outlined,
                       leftText:
-                          'Credit Limit: ${_formatCurrency(customer.creditLimit)}',
-                      rightIcon: Icons.currency_rupee_rounded,
-                      rightText: _formatCurrency(customer.outstanding),
+                          'Active Status: ${statusActive ? 'Active' : 'Inactive'}',
+                      rightIcon: Icons.calendar_month_outlined,
+                      rightText:
+                          'Last Order: ${_formatDate(customer.lastOrderDate)}',
+                      rightIconColor: textSecondary,
+                    ),
+                    const SizedBox(height: 7),
+                    _infoPairRow(
+                      leftIcon: Icons.event_available_outlined,
+                      leftText:
+                          'Last Visit: ${_formatDate(customer.lastVisitDate)}',
+                      rightIcon: Icons.account_balance_wallet_outlined,
+                      rightText:
+                          'Pending Balance: ${_formatCurrency(customer.outstanding)}',
                       rightIconColor: AppColors.statusActiveText,
                     ),
                     const SizedBox(height: 10),
@@ -848,6 +846,131 @@ class _CustomersScreenState extends State<CustomersScreen> {
         ),
       ],
     );
+  }
+
+  Widget _callAction(String? phone) {
+    final hasPhone = phone != null && phone.trim().isNotEmpty;
+
+    return Tooltip(
+      message: hasPhone ? 'Call customer' : 'Phone number unavailable',
+      child: InkWell(
+        onTap: hasPhone ? () => _callCustomer(phone!) : null,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: hasPhone ? const Color(0xFFF3F5F8) : AppColors.surfaceSoft,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            Icons.call_outlined,
+            size: 16,
+            color: hasPhone ? AppColors.primary : AppColors.textSecondary,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _callCustomer(String phone) async {
+    final sanitizedPhone = phone.trim().replaceAll(RegExp(r'[^\d+]'), '');
+    if (sanitizedPhone.isEmpty) return;
+
+    final uri = Uri(scheme: 'tel', path: sanitizedPhone);
+    final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!launched && mounted) {
+      _showMessage('Unable to open the phone dialer.');
+    }
+  }
+
+  Widget _mapAction(CustomerModel customer) {
+    final hasLocation =
+        customer.mapLatitude != null && customer.mapLongitude != null;
+
+    return Tooltip(
+      message: hasLocation ? 'Open map location' : 'Location unavailable',
+      child: InkWell(
+        onTap: hasLocation ? () => _openMapLocation(customer) : null,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          width: 30,
+          height: 30,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: hasLocation ? const Color(0xFFF3F5F8) : AppColors.surfaceSoft,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            Icons.map_outlined,
+            size: 16,
+            color: hasLocation ? AppColors.primary : AppColors.textSecondary,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openMapLocation(CustomerModel customer) async {
+    final latitude = customer.mapLatitude;
+    final longitude = customer.mapLongitude;
+    if (latitude == null || longitude == null) {
+      _showMessage('Location unavailable.');
+      return;
+    }
+
+    final uri = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude',
+    );
+    final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!launched && mounted) {
+      _showMessage('Unable to open the map.');
+    }
+  }
+
+  String _locationLabel(CustomerModel customer) {
+    final candidates = [
+      customer.billingAddress,
+      customer.address,
+      customer.deliveryAddress,
+      [customer.city, customer.state, customer.country]
+          .whereType<String>()
+          .map((value) => value.trim())
+          .where((value) => value.isNotEmpty)
+          .join(', '),
+      customer.pinCode,
+    ];
+
+    for (final candidate in candidates) {
+      final text = candidate?.trim();
+      if (text != null && text.isNotEmpty) {
+        return text;
+      }
+    }
+
+    if (customer.mapLatitude != null && customer.mapLongitude != null) {
+      return '${customer.mapLatitude}, ${customer.mapLongitude}';
+    }
+
+    return '--';
+  }
+
+  String _formatDate(DateTime? date) {
+    if (date == null) return '--';
+    const months = <String>[
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return '${date.day.toString().padLeft(2, '0')} ${months[date.month - 1]} ${date.year}';
   }
 
   Widget _actionRow(CustomerModel customer) {
