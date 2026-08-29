@@ -30,11 +30,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     'Week Off',
   ];
 
-  final List<String> _dateFilters = const [
-    'Today',
-    'This Week',
-    'This Month',
-  ];
+  final List<String> _dateFilters = const ['Today', 'This Week', 'This Month'];
 
   final List<String> _statusFilters = const [
     'Status: All',
@@ -184,20 +180,29 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                           child: Column(
                             children: [
                               Padding(
-                                padding: const EdgeInsets.fromLTRB(18, 18, 18, 14),
+                                padding: const EdgeInsets.fromLTRB(
+                                  18,
+                                  18,
+                                  18,
+                                  14,
+                                ),
                                 child: isCompact
                                     ? Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           _buildFilterRow(isCompact: true),
                                           const SizedBox(height: 12),
                                           Row(
                                             children: [
-                                              Expanded(child: _buildSearchField()),
+                                              Expanded(
+                                                child: _buildSearchField(),
+                                              ),
                                               const SizedBox(width: 10),
                                               _buildIconButton(
                                                 icon: Icons.refresh_rounded,
-                                                onPressed: () => setState(() {}),
+                                                onPressed: () =>
+                                                    setState(() {}),
                                               ),
                                               const SizedBox(width: 10),
                                               _buildOutlinedButton(
@@ -215,24 +220,45 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                         ],
                                       )
                                     : Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
-                                          Expanded(child: _buildFilterRow(isCompact: false)),
+                                          Expanded(
+                                            child: _buildFilterRow(
+                                              isCompact: false,
+                                            ),
+                                          ),
                                           const SizedBox(width: 12),
                                           _buildDownloadButton(),
                                         ],
                                       ),
                               ),
-                              const Divider(height: 1, color: Color(0xFFE5E7EB)),
+                              const Divider(
+                                height: 1,
+                                color: Color(0xFFE5E7EB),
+                              ),
                               Padding(
-                                padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
+                                padding: const EdgeInsets.fromLTRB(
+                                  18,
+                                  14,
+                                  18,
+                                  18,
+                                ),
                                 child: isCompact
                                     ? _buildCompactList(records)
                                     : _buildTable(records),
                               ),
-                              const Divider(height: 1, color: Color(0xFFE5E7EB)),
+                              const Divider(
+                                height: 1,
+                                color: Color(0xFFE5E7EB),
+                              ),
                               Padding(
-                                padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
+                                padding: const EdgeInsets.fromLTRB(
+                                  18,
+                                  14,
+                                  18,
+                                  18,
+                                ),
                                 child: Row(
                                   children: [
                                     Text(
@@ -246,7 +272,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                     const Spacer(),
                                     Row(
                                       children: [
-                                        _buildPagerButton(icon: Icons.chevron_left_rounded, active: false),
+                                        _buildPagerButton(
+                                          icon: Icons.chevron_left_rounded,
+                                          active: false,
+                                        ),
                                         const SizedBox(width: 8),
                                         Container(
                                           width: 38,
@@ -265,7 +294,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                           ),
                                         ),
                                         const SizedBox(width: 8),
-                                        _buildPagerButton(icon: Icons.chevron_right_rounded, active: false),
+                                        _buildPagerButton(
+                                          icon: Icons.chevron_right_rounded,
+                                          active: false,
+                                        ),
                                         const SizedBox(width: 14),
                                         _buildRowsPerPage(),
                                       ],
@@ -362,29 +394,50 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
   Widget _buildFilterRow({required bool isCompact}) {
     final widgets = [
-      _buildDropdown(label: _selectedRole, items: _roleFilters, onChanged: (value) {
-        if (value == null) return;
-        setState(() => _selectedRole = value);
-      }),
-      _buildDropdown(label: _selectedEmployee, items: _employeeFilters, onChanged: (value) {
-        if (value == null) return;
-        setState(() => _selectedEmployee = value);
-      }),
-      _buildDropdown(label: _selectedDate, items: _dateFilters, onChanged: (value) {
-        if (value == null) return;
-        setState(() => _selectedDate = value);
-      }),
-      _buildDropdown(label: _selectedStatus, items: _statusFilters, onChanged: (value) {
-        if (value == null) return;
-        setState(() => _selectedStatus = value);
-      }),
+      _buildDropdown(
+        label: _selectedRole,
+        items: _roleFilters,
+        onChanged: (value) {
+          if (value == null) return;
+          setState(() => _selectedRole = value);
+        },
+      ),
+      _buildDropdown(
+        label: _selectedEmployee,
+        items: _employeeFilters,
+        onChanged: (value) {
+          if (value == null) return;
+          setState(() => _selectedEmployee = value);
+        },
+      ),
+      _buildDropdown(
+        label: _selectedDate,
+        items: _dateFilters,
+        onChanged: (value) {
+          if (value == null) return;
+          setState(() => _selectedDate = value);
+        },
+      ),
+      _buildDropdown(
+        label: _selectedStatus,
+        items: _statusFilters,
+        onChanged: (value) {
+          if (value == null) return;
+          setState(() => _selectedStatus = value);
+        },
+      ),
     ];
 
     if (isCompact) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: widgets
-            .map((widget) => Padding(padding: const EdgeInsets.only(bottom: 10), child: widget))
+            .map(
+              (widget) => Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: widget,
+              ),
+            )
             .toList(),
       );
     }
@@ -424,7 +477,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         decoration: InputDecoration(
           filled: true,
           fillColor: const Color(0xFFF8FAFC),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 10,
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
             borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
@@ -479,7 +535,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(
           padding: EdgeInsets.zero,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
           side: const BorderSide(color: Color(0xFFE2E8F0)),
           backgroundColor: const Color(0xFFF8FAFC),
         ),
@@ -503,7 +561,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           foregroundColor: AppColors.textPrimary,
           backgroundColor: const Color(0xFFF8FAFC),
           side: const BorderSide(color: Color(0xFFE2E8F0)),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
         ),
       ),
     );
@@ -520,7 +580,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           foregroundColor: AppColors.textPrimary,
           backgroundColor: const Color(0xFFF8FAFC),
           side: const BorderSide(color: Color(0xFFE2E8F0)),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
         ),
       ),
     );
@@ -539,7 +601,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         decoration: InputDecoration(
           filled: true,
           fillColor: const Color(0xFFF8FAFC),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 10,
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
             borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
@@ -562,7 +627,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         borderRadius: BorderRadius.circular(999),
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
-      child: Icon(icon, size: 18, color: active ? Colors.white : AppColors.textSecondary),
+      child: Icon(
+        icon,
+        size: 18,
+        color: active ? Colors.white : AppColors.textSecondary,
+      ),
     );
   }
 
@@ -589,7 +658,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Row(
             children: const [
-              SizedBox(width: 34, child: Checkbox(value: false, onChanged: null)),
+              SizedBox(
+                width: 34,
+                child: Checkbox(value: false, onChanged: null),
+              ),
               SizedBox(width: 260, child: _AttendanceHeaderLabel('EMPLOYEE')),
               SizedBox(width: 180, child: _AttendanceHeaderLabel('ROLE')),
               SizedBox(width: 130, child: _AttendanceHeaderLabel('DATE')),
@@ -699,10 +771,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               ],
             ),
           ),
-          SizedBox(
-            width: 120,
-            child: _StatusPill(label: record.status),
-          ),
+          SizedBox(width: 120, child: _StatusPill(label: record.status)),
           SizedBox(
             width: 160,
             child: Row(
@@ -716,7 +785,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                _MiniTag(label: record.checkInBadge, isGood: record.checkInBadge == 'On time'),
+                _MiniTag(
+                  label: record.checkInBadge,
+                  isGood: record.checkInBadge == 'On time',
+                ),
               ],
             ),
           ),

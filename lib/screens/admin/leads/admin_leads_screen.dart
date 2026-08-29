@@ -6,6 +6,7 @@ import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
+import '../../shared/lead_detail_screen.dart';
 import '../../sales_manager/attendance/sales_manager_attendance_screen.dart';
 import '../../sales_manager/dashboard/sales_manager_dashboard_screen.dart';
 import '../../sales_manager/follow_ups/sales_manager_follow_ups_screen.dart';
@@ -41,12 +42,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
   bool _isLoading = true;
   String? _errorMessage;
 
-  List<String> _statusOptions = const [
-    'All Status',
-    'New',
-    'Follow Up',
-    'Hot',
-  ];
+  List<String> _statusOptions = const ['All Status', 'New', 'Follow Up', 'Hot'];
 
   List<String> _sourceOptions = const [
     'All Sources',
@@ -70,6 +66,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
   // lead/contact photo URLs from your backend when wiring this up.
   List<_LeadRecord> _leads = const [
     _LeadRecord(
+      id: '',
       personName: 'Rahul Sharma',
       companyName: 'Sharma Enterprises',
       phone: '9876543210',
@@ -85,6 +82,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
       avatarUrl: 'https://i.pravatar.cc/150?img=12',
     ),
     _LeadRecord(
+      id: '',
       personName: 'Priya Mehta',
       companyName: 'Mehta & Co.',
       phone: '9123456780',
@@ -100,6 +98,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
       avatarUrl: 'https://i.pravatar.cc/150?img=47',
     ),
     _LeadRecord(
+      id: '',
       personName: 'Amit Verma',
       companyName: 'Verma Solutions',
       phone: '9988776655',
@@ -115,6 +114,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
       avatarUrl: 'https://i.pravatar.cc/150?img=33',
     ),
     _LeadRecord(
+      id: '',
       personName: 'Neha Kapoor',
       companyName: 'Kapoor Industries',
       phone: '9765432109',
@@ -130,6 +130,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
       avatarUrl: 'https://i.pravatar.cc/150?img=44',
     ),
     _LeadRecord(
+      id: '',
       personName: 'Sagar Patil',
       companyName: 'Patil Traders',
       phone: '9012345678',
@@ -179,15 +180,24 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
         _leads = leads;
         _statusOptions = [
           'All Status',
-          ...leads.map((lead) => lead.status).where((v) => v.trim().isNotEmpty).toSet(),
+          ...leads
+              .map((lead) => lead.status)
+              .where((v) => v.trim().isNotEmpty)
+              .toSet(),
         ];
         _sourceOptions = [
           'All Sources',
-          ...leads.map((lead) => lead.source).where((v) => v.trim().isNotEmpty).toSet(),
+          ...leads
+              .map((lead) => lead.source)
+              .where((v) => v.trim().isNotEmpty)
+              .toSet(),
         ];
         _teamOptions = [
           'All Team',
-          ...leads.map((lead) => lead.assignedTo).where((v) => v.trim().isNotEmpty).toSet(),
+          ...leads
+              .map((lead) => lead.assignedTo)
+              .where((v) => v.trim().isNotEmpty)
+              .toSet(),
         ];
         _isLoading = false;
       });
@@ -204,6 +214,51 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
     await Navigator.of(
       context,
     ).push(MaterialPageRoute<void>(builder: (_) => const AddLeadScreen()));
+  }
+
+  Future<void> _openLeadDetails(_LeadRecord lead) async {
+    if (lead.id.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Lead detail is unavailable for this item.')),
+      );
+      return;
+    }
+
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => LeadDetailScreen(
+          leadId: lead.id,
+          useSalesManagerShell: widget.useSalesManagerShell,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleLeadAction(_LeadRecord lead, _LeadAction action) async {
+    switch (action) {
+      case _LeadAction.viewDetails:
+        await _openLeadDetails(lead);
+        return;
+      case _LeadAction.edit:
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Edit for ${lead.personName} is not wired yet.')),
+        );
+        return;
+      case _LeadAction.convertToCustomer:
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Convert to customer for ${lead.personName} is not wired yet.',
+            ),
+          ),
+        );
+        return;
+      case _LeadAction.delete:
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Delete for ${lead.personName} is not wired yet.')),
+        );
+        return;
+    }
   }
 
   void _handleSalesManagerSidebarSelection(String action) {
@@ -614,30 +669,37 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
   Widget _buildLeadCard(_LeadRecord lead, bool isMobile) {
     final statusStyle = _statusStyle(lead.status);
 
-    return Container(
-      decoration: _glassDecoration(radius: 16),
-      child: IntrinsicHeight(
-        child: Row(
-          children: [
-            Container(
-              width: 4,
-              decoration: BoxDecoration(
-                color: lead.accentColor,
-                borderRadius: const BorderRadius.horizontal(
-                  left: Radius.circular(16),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _openLeadDetails(lead),
+        borderRadius: BorderRadius.circular(16),
+        child: Ink(
+          decoration: _glassDecoration(radius: 16),
+          child: IntrinsicHeight(
+            child: Row(
+              children: [
+                Container(
+                  width: 4,
+                  decoration: BoxDecoration(
+                    color: lead.accentColor,
+                    borderRadius: const BorderRadius.horizontal(
+                      left: Radius.circular(16),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: isMobile ? 7 : 9,
-                  vertical: isMobile ? 7 : 9,
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isMobile ? 7 : 9,
+                      vertical: isMobile ? 7 : 9,
+                    ),
+                    child: _buildLeadCardBody(lead, statusStyle, isMobile),
+                  ),
                 ),
-                child: _buildLeadCardBody(lead, statusStyle, isMobile),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -742,13 +804,16 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
           ],
         ),
         const SizedBox(width: 6),
-        _buildActionSquare(icon: Icons.call_outlined),
-        const SizedBox(width: 6),
-        const Icon(
-          Icons.more_vert_rounded,
-          color: AppColors.textSecondary,
-          size: 18,
+        _buildActionSquare(
+          icon: Icons.call_outlined,
+          onTap: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Call ${lead.phone} from lead details.')),
+            );
+          },
         ),
+        const SizedBox(width: 6),
+        _buildLeadActionsMenu(lead),
       ],
     );
   }
@@ -825,15 +890,102 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
     );
   }
 
-  Widget _buildActionSquare({required IconData icon}) {
-    return Container(
-      width: 30,
-      height: 30,
-      decoration: BoxDecoration(
-        color: AppColors.surfaceSoft,
-        borderRadius: BorderRadius.circular(10),
+  Widget _buildLeadActionsMenu(_LeadRecord lead) {
+    return PopupMenuButton<_LeadAction>(
+      tooltip: 'Lead actions',
+      onSelected: (action) => _handleLeadAction(lead, action),
+      color: Colors.white,
+      elevation: 10,
+      offset: const Offset(0, 10),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      itemBuilder: (context) => [
+        _buildLeadActionItem(
+          value: _LeadAction.viewDetails,
+          icon: Icons.visibility_outlined,
+          label: 'View Details',
+        ),
+        _buildLeadActionItem(
+          value: _LeadAction.edit,
+          icon: Icons.edit_outlined,
+          label: 'Edit',
+        ),
+        _buildLeadActionItem(
+          value: _LeadAction.convertToCustomer,
+          icon: Icons.arrow_circle_right_outlined,
+          label: 'Convert to Customer',
+        ),
+        _buildLeadActionItem(
+          value: _LeadAction.delete,
+          icon: Icons.delete_outline_rounded,
+          label: 'Delete',
+          foreground: AppColors.red,
+        ),
+      ],
+      child: Container(
+        width: 30,
+        height: 30,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.border),
+        ),
+        alignment: Alignment.center,
+        child: const Icon(
+          Icons.more_vert_rounded,
+          color: AppColors.textSecondary,
+          size: 18,
+        ),
       ),
-      child: Icon(icon, color: AppColors.primary, size: 16),
+    );
+  }
+
+  PopupMenuItem<_LeadAction> _buildLeadActionItem({
+    required _LeadAction value,
+    required IconData icon,
+    required String label,
+    Color foreground = AppColors.textPrimary,
+  }) {
+    return PopupMenuItem<_LeadAction>(
+      value: value,
+      height: 42,
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: foreground),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                color: foreground,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionSquare({
+    required IconData icon,
+    VoidCallback? onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: Ink(
+          width: 30,
+          height: 30,
+          decoration: BoxDecoration(
+            color: AppColors.surfaceSoft,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, color: AppColors.primary, size: 16),
+        ),
+      ),
     );
   }
 
@@ -1305,7 +1457,15 @@ class _LeadStatusStyle {
   const _LeadStatusStyle({required this.background, required this.foreground});
 }
 
+enum _LeadAction {
+  viewDetails,
+  edit,
+  convertToCustomer,
+  delete,
+}
+
 class _LeadRecord {
+  final String id;
   final String personName;
   final String companyName;
   final String phone;
@@ -1321,6 +1481,7 @@ class _LeadRecord {
   final String? avatarUrl;
 
   const _LeadRecord({
+    required this.id,
     required this.personName,
     required this.companyName,
     required this.phone,
@@ -1337,11 +1498,11 @@ class _LeadRecord {
   });
 
   factory _LeadRecord.fromJson(Map<String, dynamic> json) {
-    final name = _leadString(
-      json,
-      const ['name', 'contact_person', 'contactPerson'],
-      fallback: '-',
-    );
+    final name = _leadString(json, const [
+      'name',
+      'contact_person',
+      'contactPerson',
+    ], fallback: '-');
     final assignedTo = _leadString(
       json,
       const ['assigned_salesperson_name', 'assignedSalespersonName'],
@@ -1349,6 +1510,7 @@ class _LeadRecord {
       fallback: '-',
     );
     return _LeadRecord(
+      id: _leadString(json, const ['id', 'lead_id', 'leadId'], fallback: ''),
       personName: name,
       companyName: _leadString(
         json,
@@ -1356,28 +1518,28 @@ class _LeadRecord {
         nestedKeys: const ['customer'],
         fallback: '-',
       ),
-      phone: _leadString(
-        json,
-        const ['mobile_number', 'mobileNumber', 'phone'],
-        fallback: '-',
-      ),
-      source: _leadString(
-        json,
-        const ['lead_source', 'leadSource', 'source'],
-        fallback: '-',
-      ),
+      phone: _leadString(json, const [
+        'mobile_number',
+        'mobileNumber',
+        'phone',
+      ], fallback: '-'),
+      source: _leadString(json, const [
+        'lead_source',
+        'leadSource',
+        'source',
+      ], fallback: '-'),
       assignedTo: assignedTo,
       assignedInitials: _initials(assignedTo),
-      status: _leadString(
-        json,
-        const ['lead_status', 'leadStatus', 'status'],
-        fallback: 'New',
-      ),
-      category: _leadString(
-        json,
-        const ['interested_product', 'interestedProduct', 'category'],
-        fallback: '-',
-      ),
+      status: _leadString(json, const [
+        'lead_status',
+        'leadStatus',
+        'status',
+      ], fallback: 'New'),
+      category: _leadString(json, const [
+        'interested_product',
+        'interestedProduct',
+        'category',
+      ], fallback: '-'),
       lastActivity: _relativeLeadTime(
         _leadString(json, const ['created_at', 'createdAt'], fallback: ''),
       ),
@@ -1426,7 +1588,10 @@ String _leadString(
   for (final key in nestedKeys) {
     final value = json[key];
     if (value is Map<String, dynamic>) {
-      final nested = _leadString(value, const ['name', 'full_name'], fallback: '');
+      final nested = _leadString(value, const [
+        'name',
+        'full_name',
+      ], fallback: '');
       if (nested.isNotEmpty) return nested;
     }
   }

@@ -41,6 +41,7 @@ class ApiEndpoints {
   static const String organizationsSettingsLogo =
       '/organizations/settings/logo';
   static const String filesUpload = '/files/upload';
+  static const String fileDetailTemplate = '/files/{file_id}';
 
   static const String customersList = '/customers';
   static const String customersCreate = '/customers';
@@ -57,7 +58,13 @@ class ApiEndpoints {
       '/customers/{customer_id}/documents';
   static const String ordersList = '/orders';
   static const String leadsList = '/leads';
+  static const String leadsDetailTemplate = '/leads/{lead_id}';
   static const String quotationsList = '/quotations';
+  static const String quotationsDetailTemplate = '/quotations/{quotation_id}';
+  static const String quotationsPdfTemplate = '/quotations/{quotation_id}/pdf';
+  static const String quotationsConvertTemplate =
+      '/quotations/{quotation_id}/convert-to-order';
+  static const String warehousesList = '/warehouses';
   static const String suppliersList = '/suppliers';
   static const String categoriesList = '/categories';
   static const String brandsList = '/brands';
@@ -100,6 +107,21 @@ class ApiEndpoints {
 
   static String customersDocuments(String customerId) =>
       customersDocumentsTemplate.replaceFirst('{customer_id}', customerId);
+
+  static String fileDetail(String fileId) =>
+      fileDetailTemplate.replaceFirst('{file_id}', fileId);
+
+  static String quotationsDetail(String quotationId) =>
+      quotationsDetailTemplate.replaceFirst('{quotation_id}', quotationId);
+
+  static String leadsDetail(String leadId) =>
+      leadsDetailTemplate.replaceFirst('{lead_id}', leadId);
+
+  static String quotationsPdf(String quotationId) =>
+      quotationsPdfTemplate.replaceFirst('{quotation_id}', quotationId);
+
+  static String quotationsConvert(String quotationId) =>
+      quotationsConvertTemplate.replaceFirst('{quotation_id}', quotationId);
 
   static String usersDetail(String userId) =>
       usersDetailTemplate.replaceFirst('{user_id}', userId);

@@ -15,12 +15,14 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final TextEditingController _supplierNameController = TextEditingController();
-  final TextEditingController _contactPersonController = TextEditingController();
+  final TextEditingController _contactPersonController =
+      TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _gstController = TextEditingController();
-  final TextEditingController _openingBalanceController =
-      TextEditingController(text: '0');
+  final TextEditingController _openingBalanceController = TextEditingController(
+    text: '0',
+  );
   final TextEditingController _cityController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
 
@@ -327,7 +329,10 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
             hintText: hintText,
             filled: true,
             fillColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 14,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
@@ -367,11 +372,17 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
         DropdownButtonFormField<String>(
           initialValue: value,
           isExpanded: true,
-          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF94A3B8)),
+          icon: const Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: Color(0xFF94A3B8),
+          ),
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 14,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
@@ -387,10 +398,8 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
           ),
           items: items
               .map(
-                (item) => DropdownMenuItem<String>(
-                  value: item,
-                  child: Text(item),
-                ),
+                (item) =>
+                    DropdownMenuItem<String>(value: item, child: Text(item)),
               )
               .toList(),
           onChanged: onChanged,

@@ -66,7 +66,9 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
               backgroundColor: Colors.white,
               headerBackgroundColor: Colors.white,
               headerForegroundColor: AppColors.textPrimary,
-              dayBackgroundColor: WidgetStatePropertyAll<Color>(Colors.transparent),
+              dayBackgroundColor: WidgetStatePropertyAll<Color>(
+                Colors.transparent,
+              ),
               todayBackgroundColor: WidgetStatePropertyAll<Color>(
                 Color(0xFF0B4A06),
               ),
@@ -204,7 +206,9 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
                                     items: _returnTypeOptions,
                                     onChanged: (value) {
                                       if (value == null) return;
-                                      setState(() => _selectedReturnType = value);
+                                      setState(
+                                        () => _selectedReturnType = value,
+                                      );
                                     },
                                   ),
                                 ),
@@ -213,7 +217,9 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
                                   label: 'Return Date',
                                   child: GestureDetector(
                                     onTap: _pickDate,
-                                    child: _dateField(_formatDate(_selectedDate)),
+                                    child: _dateField(
+                                      _formatDate(_selectedDate),
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(height: 10),
@@ -234,7 +240,9 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
                                     items: _warehouseOptions,
                                     onChanged: (value) {
                                       if (value == null) return;
-                                      setState(() => _selectedWarehouse = value);
+                                      setState(
+                                        () => _selectedWarehouse = value,
+                                      );
                                     },
                                   ),
                                 ),
@@ -260,7 +268,9 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
                                     items: _returnTypeOptions,
                                     onChanged: (value) {
                                       if (value == null) return;
-                                      setState(() => _selectedReturnType = value);
+                                      setState(
+                                        () => _selectedReturnType = value,
+                                      );
                                     },
                                   ),
                                 ),
@@ -269,7 +279,9 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
                                   label: 'Return Date',
                                   child: GestureDetector(
                                     onTap: _pickDate,
-                                    child: _dateField(_formatDate(_selectedDate)),
+                                    child: _dateField(
+                                      _formatDate(_selectedDate),
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(height: 10),
@@ -290,7 +302,9 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
                                     items: _warehouseOptions,
                                     onChanged: (value) {
                                       if (value == null) return;
-                                      setState(() => _selectedWarehouse = value);
+                                      setState(
+                                        () => _selectedWarehouse = value,
+                                      );
                                     },
                                   ),
                                 ),
@@ -322,7 +336,10 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
                         const SizedBox(width: 12),
                         ElevatedButton.icon(
                           onPressed: _raiseReturn,
-                          icon: const Icon(Icons.inventory_2_outlined, size: 18),
+                          icon: const Icon(
+                            Icons.inventory_2_outlined,
+                            size: 18,
+                          ),
                           label: const Text('Raise Return'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF0B4A06),
@@ -435,10 +452,7 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
         backgroundColor: const Color(0xFFF3F4F6),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-        textStyle: const TextStyle(
-          fontSize: 13.5,
-          fontWeight: FontWeight.w700,
-        ),
+        textStyle: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700),
       ),
     );
   }
@@ -478,10 +492,7 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
             const SizedBox(height: 4),
             Text(
               subtitle,
-              style: const TextStyle(
-                color: textSecondary,
-                fontSize: 12.5,
-              ),
+              style: const TextStyle(color: textSecondary, fontSize: 12.5),
             ),
           ],
           const SizedBox(height: 18),
@@ -505,10 +516,7 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
     );
   }
 
-  Widget _centeredField({
-    required String label,
-    required Widget child,
-  }) {
+  Widget _centeredField({required String label, required Widget child}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -550,7 +558,11 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
               ),
             ),
           ),
-          const Icon(Icons.calendar_month_outlined, size: 18, color: Color(0xFF94A3B8)),
+          const Icon(
+            Icons.calendar_month_outlined,
+            size: 18,
+            color: Color(0xFF94A3B8),
+          ),
         ],
       ),
     );
@@ -565,11 +577,17 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
       initialValue: value,
       isExpanded: true,
       dropdownColor: Colors.white,
-      icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF94A3B8)),
+      icon: const Icon(
+        Icons.keyboard_arrow_down_rounded,
+        color: Color(0xFF94A3B8),
+      ),
       decoration: InputDecoration(
         filled: true,
         fillColor: const Color(0xFFF8FAFC),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: Color(0xFFD8DFE8)),
@@ -617,10 +635,7 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
         backgroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-        textStyle: const TextStyle(
-          fontSize: 13.5,
-          fontWeight: FontWeight.w600,
-        ),
+        textStyle: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600),
       ),
     );
   }

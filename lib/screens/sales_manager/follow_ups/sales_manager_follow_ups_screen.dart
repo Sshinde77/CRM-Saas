@@ -118,9 +118,7 @@ class _SalesManagerFollowUpsScreenState
     }
     if (action == 'Attendance') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const SalesManagerAttendanceScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const SalesManagerAttendanceScreen()),
       );
       return;
     }
@@ -618,7 +616,10 @@ class _InputBox extends StatelessWidget {
           color: AppColors.textLightMuted,
           fontSize: 12.5,
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 12,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: AppColors.border),

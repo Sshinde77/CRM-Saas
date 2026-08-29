@@ -78,7 +78,8 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
           0,
           _RoleRecord(
             name: result.name,
-            accessSummary: '${result.modulesCount} modules - ${result.accessLevel}',
+            accessSummary:
+                '${result.modulesCount} modules - ${result.accessLevel}',
             isDefault: false,
             icon: Icons.admin_panel_settings_outlined,
             accentColor: const Color(0xFF1F6D2A),
@@ -142,7 +143,8 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
                             padding: const EdgeInsets.fromLTRB(18, 18, 18, 14),
                             child: isCompact
                                 ? Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       const Text(
                                         'Roles & Permissions',
@@ -163,18 +165,22 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
                                       const SizedBox(height: 12),
                                       Align(
                                         alignment: Alignment.centerRight,
-                                        child: _buildNewRoleButton(compact: true),
+                                        child: _buildNewRoleButton(
+                                          compact: true,
+                                        ),
                                       ),
                                       const SizedBox(height: 14),
                                       _buildSearchField(),
                                     ],
                                   )
                                 : Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       const Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               'Roles & Permissions',
@@ -203,7 +209,12 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
                           const Divider(height: 1, color: Color(0xFFE5E7EB)),
                           if (!isCompact)
                             Padding(
-                              padding: const EdgeInsets.fromLTRB(18, 14, 18, 14),
+                              padding: const EdgeInsets.fromLTRB(
+                                18,
+                                14,
+                                18,
+                                14,
+                              ),
                               child: Row(
                                 children: [
                                   const Spacer(),
@@ -306,7 +317,10 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
           prefixIconConstraints: const BoxConstraints(minWidth: 44),
           filled: true,
           fillColor: const Color(0xFFF8FAFC),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 12,
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
             borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
@@ -339,10 +353,8 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
         ),
         const SizedBox(height: 6),
         ...roles.map(
-          (role) => _RoleRow(
-            role: role,
-            onActionTap: () => _openRoleActions(role),
-          ),
+          (role) =>
+              _RoleRow(role: role, onActionTap: () => _openRoleActions(role)),
         ),
       ],
     );
@@ -388,7 +400,11 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
                           color: role.accentColor.withValues(alpha: 0.08),
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(role.icon, color: role.accentColor, size: 20),
+                        child: Icon(
+                          role.icon,
+                          color: role.accentColor,
+                          size: 20,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -426,7 +442,10 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
                         onSelected: (_) => _openRoleActions(role),
                         itemBuilder: (_) => const [
                           PopupMenuItem(value: 'edit', child: Text('Edit')),
-                          PopupMenuItem(value: 'duplicate', child: Text('Duplicate')),
+                          PopupMenuItem(
+                            value: 'duplicate',
+                            child: Text('Duplicate'),
+                          ),
                           PopupMenuItem(value: 'delete', child: Text('Delete')),
                         ],
                         icon: const Icon(Icons.more_vert_rounded),

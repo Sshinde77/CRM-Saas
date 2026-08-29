@@ -32,7 +32,8 @@ class ApiProvider extends ChangeNotifier {
   bool get isAuthenticated => (_session?.accessToken ?? '').trim().isNotEmpty;
   ApiService get service => _apiService;
 
-  bool can(String module, String action) => _authMe?.can(module, action) ?? true;
+  bool can(String module, String action) =>
+      _authMe?.can(module, action) ?? true;
   bool canView(String module) => can(module, 'view');
 
   Future<AuthSession> login({
@@ -198,8 +199,54 @@ class ApiProvider extends ChangeNotifier {
     return _apiService.fetchLeads(status: status);
   }
 
+  Future<Map<String, dynamic>> fetchLeadById(String leadId) {
+    return _apiService.fetchLeadById(leadId);
+  }
+
   Future<List<Map<String, dynamic>>> fetchQuotations() {
     return _apiService.fetchQuotations();
+  }
+
+  Future<Map<String, dynamic>> createQuotation({
+    required Map<String, dynamic> request,
+  }) {
+    return _apiService.createQuotation(request: request);
+  }
+
+  Future<Map<String, dynamic>> fetchQuotationById(String quotationId) {
+    return _apiService.fetchQuotationById(quotationId);
+  }
+
+  Future<Map<String, dynamic>> updateQuotationStatus({
+    required String quotationId,
+    required String status,
+  }) {
+    return _apiService.updateQuotationStatus(
+      quotationId: quotationId,
+      status: status,
+    );
+  }
+
+  Future<List<int>> downloadQuotationPdf(String quotationId) {
+    return _apiService.downloadQuotationPdf(quotationId);
+  }
+
+  Future<List<Map<String, dynamic>>> fetchWarehouses() {
+    return _apiService.fetchWarehouses();
+  }
+
+  Future<Map<String, dynamic>> convertQuotationToOrder({
+    required String quotationId,
+    required Map<String, dynamic> request,
+  }) {
+    return _apiService.convertQuotationToOrder(
+      quotationId: quotationId,
+      request: request,
+    );
+  }
+
+  Future<void> deleteQuotation(String quotationId) {
+    return _apiService.deleteQuotation(quotationId);
   }
 
   Future<List<Map<String, dynamic>>> fetchSuppliers({
@@ -270,7 +317,9 @@ class ApiProvider extends ChangeNotifier {
     }
   }
 
-  Future<List<CustomerOrderRecord>> fetchCustomerOrders(String customerId) async {
+  Future<List<CustomerOrderRecord>> fetchCustomerOrders(
+    String customerId,
+  ) async {
     _setLoading(true);
     _errorMessage = null;
 
@@ -316,6 +365,29 @@ class ApiProvider extends ChangeNotifier {
       final customer = await _apiService.createCustomer(request: request);
       notifyListeners();
       return customer;
+    } catch (error) {
+      _errorMessage = error.toString();
+      notifyListeners();
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<UploadedFileReference> uploadGenericFile({
+    required Uint8List fileBytes,
+    required String fileName,
+  }) async {
+    _setLoading(true);
+    _errorMessage = null;
+
+    try {
+      final file = await _apiService.uploadGenericFile(
+        fileBytes: fileBytes,
+        fileName: fileName,
+      );
+      notifyListeners();
+      return file;
     } catch (error) {
       _errorMessage = error.toString();
       notifyListeners();

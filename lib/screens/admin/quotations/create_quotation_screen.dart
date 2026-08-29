@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../models/app_user.dart';
+import '../../../models/customer_model.dart';
+import '../../../providers/api_provider.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
 
@@ -14,19 +17,31 @@ class NewQuotationScreen extends StatefulWidget {
 class _NewQuotationScreenState extends State<NewQuotationScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  final TextEditingController _quotationNumberController =
-      TextEditingController(text: 'QT-2026-1004');
-  final TextEditingController _quotationDateController =
-      TextEditingController(text: _formatDate(DateTime.now()));
-  final TextEditingController _validUntilController =
-      TextEditingController(text: _formatDate(DateTime.now().add(const Duration(days: 15))));
-  final TextEditingController _billingAddressController = TextEditingController();
-  final TextEditingController _shippingAddressController = TextEditingController();
+  final TextEditingController _quotationDateController = TextEditingController(
+    text: _formatDate(DateTime.now()),
+  );
+  final TextEditingController _validUntilController = TextEditingController(
+    text: _formatDate(DateTime.now().add(const Duration(days: 15))),
+  );
+  final TextEditingController _billingAddressController =
+      TextEditingController();
+  final TextEditingController _shippingAddressController =
+      TextEditingController();
   final TextEditingController _paymentTermsController = TextEditingController();
-  final TextEditingController _deliveryTermsController = TextEditingController();
+  final TextEditingController _deliveryTermsController =
+      TextEditingController();
   final TextEditingController _notesController = TextEditingController();
-  final TextEditingController _termsConditionsController = TextEditingController();
+  final TextEditingController _termsConditionsController =
+      TextEditingController();
 
+  late ApiProvider _apiProvider;
+  bool _providerReady = false;
+  bool _isOptionsLoading = true;
+  bool _isSaving = false;
+  String? _optionsErrorMessage;
+  List<CustomerModel> _customers = const [];
+  List<_QuotationCatalogItem> _apiProductOptions = const [];
+  List<AppUser> _salespeople = const [];
   int _currentStep = 0;
 
   final List<_QuotationStep> _steps = const [
@@ -53,11 +68,12 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
   final List<String> _currencyOptions = const [
     'INR',
     'USD',
-    'EUR',
+    'AED',
+    'SGD',
+    'GBP',
   ];
 
   final List<String> _paymentOptions = const [
-    'Net 7',
     'Net 15',
     'Net 30',
     'Advance',
@@ -100,22 +116,16 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
   ];
 
   final List<String> _uomOptions = const [
-    'Nos',
-    'Pack',
-    'Box',
-    'Kg',
-    'Ltr',
-    'Hour',
-    'Day',
-    'Service',
+    'unit',
+    'jar',
+    'case (24)',
+    'case (12)',
+    'box',
+    'pack',
+    'piece',
   ];
 
-  final List<String> _taxOptions = const [
-    '0%',
-    '5%',
-    '12%',
-    '18%',
-  ];
+  final List<String> _taxOptions = const ['0%', '5%', '12%', '18%', '28%'];
 
   String? _selectedCustomer;
   String? _selectedSalesperson;
@@ -134,8 +144,19 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_providerReady) return;
+    _apiProvider = ApiProviderScope.of(context);
+    _providerReady = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _loadOptions();
+    });
+  }
+
+  @override
   void dispose() {
-    _quotationNumberController.dispose();
     _quotationDateController.dispose();
     _validUntilController.dispose();
     _billingAddressController.dispose();
@@ -150,6 +171,60 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
     super.dispose();
   }
 
+  Future<void> _loadOptions() async {
+    setState(() {
+      _isOptionsLoading = true;
+      _optionsErrorMessage = null;
+    });
+
+    try {
+      final results = await Future.wait<dynamic>([
+        _apiProvider.fetchCustomers(),
+        _apiProvider.fetchProducts(isActive: true),
+        _apiProvider.service.fetchUsers(),
+      ]);
+
+      final customers = (results[0] as List<CustomerModel>)
+          .where((customer) => customer.name.trim().isNotEmpty)
+          .toList();
+      final products = (results[1] as List<Map<String, dynamic>>)
+          .map(_QuotationCatalogItem.fromJson)
+          .where((product) => product.name.trim().isNotEmpty)
+          .toList();
+      final salespeople = (results[2] as List<AppUser>)
+          .where(_isQuotationSalesperson)
+          .toList();
+
+      if (!mounted) return;
+      setState(() {
+        _customers = customers;
+        _apiProductOptions = products;
+        _salespeople = salespeople;
+        _isOptionsLoading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _optionsErrorMessage = error.toString();
+        _isOptionsLoading = false;
+      });
+    }
+  }
+
+  bool _isQuotationSalesperson(AppUser user) {
+    final values = [
+      user.role,
+      user.systemRole,
+      user.roleDetail?.name,
+    ].whereType<String>().map((value) => value.trim().toLowerCase());
+    return values.any(
+      (value) =>
+          value == 'sales_officer' ||
+          value == 'sales officer' ||
+          value == 'admin',
+    );
+  }
+
   static String _formatDate(DateTime value) {
     return '${value.day.toString().padLeft(2, '0')}-${value.month.toString().padLeft(2, '0')}-${value.year}';
   }
@@ -162,6 +237,10 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
     final year = int.tryParse(parts[2]);
     if (day == null || month == null || year == null) return null;
     return DateTime(year, month, day);
+  }
+
+  String _toApiIsoDate(DateTime value) {
+    return DateTime.utc(value.year, value.month, value.day).toIso8601String();
   }
 
   Future<void> _pickDate({
@@ -203,6 +282,113 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
     );
   }
 
+  CustomerModel? get _selectedCustomerModel {
+    for (final customer in _customers) {
+      if (customer.name == _selectedCustomer) return customer;
+    }
+    return null;
+  }
+
+  AppUser? get _selectedSalespersonModel {
+    for (final user in _salespeople) {
+      if (user.name == _selectedSalesperson) return user;
+    }
+    return null;
+  }
+
+  _QuotationCatalogItem? _selectedProductModel(_QuotationItemDraft item) {
+    for (final product in _apiProductOptions) {
+      if (product.name == item.productController.text.trim()) return product;
+    }
+    return null;
+  }
+
+  Future<void> _saveQuotation() async {
+    if (_isSaving) return;
+
+    final customer = _selectedCustomerModel;
+    if (customer == null) {
+      _showSnack('Select a customer before saving.');
+      setState(() => _currentStep = 0);
+      return;
+    }
+
+    final salesperson = _selectedSalespersonModel;
+    if (salesperson == null) {
+      _showSnack('Select a salesperson before saving.');
+      setState(() => _currentStep = 0);
+      return;
+    }
+
+    final quotationDate = _parseDate(_quotationDateController.text);
+    final validUntil = _parseDate(_validUntilController.text);
+    if (quotationDate == null || validUntil == null) {
+      _showSnack('Enter valid quotation dates.');
+      setState(() => _currentStep = 0);
+      return;
+    }
+
+    final requestItems = <Map<String, dynamic>>[];
+    for (final item in _items) {
+      final product = _selectedProductModel(item);
+      if (product == null || product.id.isEmpty) {
+        _showSnack('Select a product for every quotation item.');
+        setState(() => _currentStep = 2);
+        return;
+      }
+
+      final quantity = _parseNumber(item.quantityController.text);
+      if (quantity <= 0) {
+        _showSnack('Quantity must be greater than zero.');
+        setState(() => _currentStep = 2);
+        return;
+      }
+
+      requestItems.add({
+        'product_id': product.id,
+        'variant_id': product.variantId,
+        'quantity': quantity,
+        'uom': item.uomController.text.trim(),
+        'unit_price': _parseNumber(item.unitPriceController.text),
+        'discount': _parsePercent(item.discountController.text),
+        'tax_rate': _parsePercent(item.taxController.text),
+      });
+    }
+
+    final now = DateTime.now();
+    final request = {
+      'quotation_number': 'QT-${now.millisecondsSinceEpoch}',
+      'quotation_date': _toApiIsoDate(quotationDate),
+      'valid_until': _toApiIsoDate(validUntil),
+      'customer_id': customer.id,
+      'billing_address': _billingAddressController.text.trim(),
+      'salesperson_id': salesperson.id,
+      'currency': _selectedCurrency,
+      'shipping_address': _shippingAddressController.text.trim(),
+      'payment_terms': _selectedPaymentTerm,
+      'delivery_terms': _deliveryTermsController.text.trim(),
+      'notes': _notesController.text.trim(),
+      'terms_conditions': _termsConditionsController.text.trim(),
+      'status': 'Draft',
+      'items': requestItems,
+    };
+
+    setState(() => _isSaving = true);
+    try {
+      await _apiProvider.createQuotation(request: request);
+      if (!mounted) return;
+      _showSnack('Quotation created');
+      Navigator.of(context).pop(true);
+    } catch (error) {
+      if (!mounted) return;
+      _showSnack('Failed to create quotation: $error');
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
+    }
+  }
+
   void _onItemChanged() {
     _syncComputedFields();
     if (mounted) {
@@ -227,9 +413,29 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
     });
   }
 
+  void _handleCustomerSelection(String? customerName) {
+    CustomerModel? customer;
+    for (final option in _customers) {
+      if (option.name == customerName) {
+        customer = option;
+        break;
+      }
+    }
+
+    setState(() {
+      _selectedCustomer = customerName;
+      if (customer != null) {
+        _billingAddressController.text =
+            customer.billingAddress ?? customer.address ?? '';
+        _shippingAddressController.text =
+            customer.deliveryAddress ?? customer.billingAddress ?? '';
+      }
+    });
+  }
+
   void _handleProductSelection(_QuotationItemDraft item, String? productName) {
     _QuotationCatalogItem? product;
-    for (final option in _productOptions) {
+    for (final option in _apiProductOptions) {
       if (option.name == productName) {
         product = option;
         break;
@@ -238,9 +444,12 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
 
     item.productController.text = product?.name ?? '';
     item.skuController.text = product?.sku ?? '';
-    item.descriptionController.text = product?.description ?? '';
     if (product != null) {
       item.uomController.text = product.uom;
+      item.unitPriceController.text = product.unitPrice == 0
+          ? ''
+          : product.unitPrice.toStringAsFixed(2);
+      item.taxController.text = _formatTaxValue(product.taxRate);
     }
     _syncComputedFields();
     if (mounted) {
@@ -249,11 +458,20 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
   }
 
   String _currencyPrefix() {
+    if (_selectedCurrency == 'INR') return 'INR ';
+    if (_selectedCurrency == 'GBP') return 'GBP ';
+
     switch (_selectedCurrency) {
       case 'USD':
         return '\$';
       case 'EUR':
         return '€';
+      case 'AED':
+        return 'AED ';
+      case 'SGD':
+        return 'S\$';
+      case 'GBP':
+        return '£';
       case 'INR':
       default:
         return '₹';
@@ -261,17 +479,22 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
   }
 
   double _parseNumber(String text) {
-    return double.tryParse(text.trim()) ?? 0;
+    final sanitized = text.trim().replaceAll(RegExp(r'[^0-9.\-]'), '');
+    return double.tryParse(sanitized) ?? 0;
   }
 
   double _parsePercent(String text) {
     return double.tryParse(text.replaceAll('%', '').trim()) ?? 0;
   }
 
+  String _formatTaxValue(double value) {
+    final normalized = value.toStringAsFixed(value % 1 == 0 ? 0 : 2);
+    return '$normalized%';
+  }
+
   void _syncComputedFields() {
     for (final item in _items) {
-      item.lineTotalController.text =
-          '${_currencyPrefix()}${_lineTotal(item).toStringAsFixed(2)}';
+      item.lineTotalController.text = _lineTotal(item).toStringAsFixed(2);
     }
   }
 
@@ -305,8 +528,8 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
               children: [
                 AdminTopBar(
                   title: 'Quotations',
-                  leadingIcon: Icons.menu_rounded,
-                  onLeadingTap: () => _scaffoldKey.currentState?.openDrawer(),
+                  leadingIcon: Icons.arrow_back_rounded,
+                  onLeadingTap: () => Navigator.of(context).maybePop(),
                 ),
                 Expanded(
                   child: Padding(
@@ -328,10 +551,18 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
                           ? Column(
                               children: [
                                 Padding(
-                                  padding: const EdgeInsets.fromLTRB(18, 18, 18, 14),
+                                  padding: const EdgeInsets.fromLTRB(
+                                    18,
+                                    18,
+                                    18,
+                                    14,
+                                  ),
                                   child: _buildCompactStepper(),
                                 ),
-                                const Divider(height: 1, color: Color(0xFFE5E7EB)),
+                                const Divider(
+                                  height: 1,
+                                  color: Color(0xFFE5E7EB),
+                                ),
                                 Expanded(child: _buildFormPanel(context)),
                               ],
                             )
@@ -341,7 +572,10 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
                                   width: 320,
                                   child: _buildDesktopStepper(),
                                 ),
-                                const VerticalDivider(width: 1, color: Color(0xFFE5E7EB)),
+                                const VerticalDivider(
+                                  width: 1,
+                                  color: Color(0xFFE5E7EB),
+                                ),
                                 Expanded(child: _buildFormPanel(context)),
                               ],
                             ),
@@ -395,7 +629,26 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
         Expanded(
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(22, 20, 22, 22),
-            child: _buildCurrentStepForm(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (_isOptionsLoading) ...[
+                  const LinearProgressIndicator(
+                    minHeight: 3,
+                    color: Color(0xFF0B4A06),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+                if (_optionsErrorMessage != null) ...[
+                  _OptionsErrorBanner(
+                    message: _optionsErrorMessage!,
+                    onRetry: _loadOptions,
+                  ),
+                  const SizedBox(height: 16),
+                ],
+                _buildCurrentStepForm(),
+              ],
+            ),
           ),
         ),
         const Divider(height: 1, color: Color(0xFFE5E7EB)),
@@ -405,11 +658,16 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               TextButton(
-                onPressed: _currentStep == 0 ? null : () => setState(() => _currentStep--),
+                onPressed: _isSaving || _currentStep == 0
+                    ? null
+                    : () => setState(() => _currentStep--),
                 style: TextButton.styleFrom(
                   foregroundColor: const Color(0xFF9CA3AF),
                   backgroundColor: const Color(0xFFF3F4F6),
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 14,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(999),
                   ),
@@ -418,23 +676,33 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
               ),
               const SizedBox(width: 12),
               ElevatedButton(
-                onPressed: () {
-                  if (_currentStep < _steps.length - 1) {
-                    setState(() => _currentStep++);
-                    return;
-                  }
-                  _showSnack('Quotation saved');
-                  Navigator.of(context).maybePop();
-                },
+                onPressed: _isSaving
+                    ? null
+                    : () {
+                        if (_currentStep < _steps.length - 1) {
+                          setState(() => _currentStep++);
+                          return;
+                        }
+                        _saveQuotation();
+                      },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0B4A06),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 14,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(999),
                   ),
                 ),
-                child: Text(_currentStep < _steps.length - 1 ? 'Next' : 'Save Quotation'),
+                child: Text(
+                  _isSaving
+                      ? 'Saving...'
+                      : _currentStep < _steps.length - 1
+                      ? 'Next'
+                      : 'Save Quotation',
+                ),
               ),
             ],
           ),
@@ -526,7 +794,7 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
   String _stepSubtitle(int step) {
     switch (step) {
       case 0:
-        return 'Quotation number, dates, customer, and sales ownership.';
+        return 'Dates, customer, addresses, currency, and sales ownership.';
       case 1:
         return 'Terms, delivery notes, and quotation conditions.';
       case 2:
@@ -553,12 +821,6 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
         final stacked = constraints.maxWidth < 700;
 
         final children = [
-          _FormField(
-            label: 'Quotation Number *',
-            controller: _quotationNumberController,
-            hintText: 'QT-2026-1004',
-            readOnly: true,
-          ),
           _FormDateField(
             label: 'Quotation Date *',
             controller: _quotationDateController,
@@ -566,7 +828,8 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
             onTap: () {
               _pickDate(
                 controller: _quotationDateController,
-                initialDate: _parseDate(_quotationDateController.text) ?? DateTime.now(),
+                initialDate:
+                    _parseDate(_quotationDateController.text) ?? DateTime.now(),
               );
             },
           ),
@@ -575,7 +838,8 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
             controller: _validUntilController,
             hintText: 'dd-mm-yyyy',
             onTap: () {
-              final initial = _parseDate(_validUntilController.text) ??
+              final initial =
+                  _parseDate(_validUntilController.text) ??
                   DateTime.now().add(const Duration(days: 15));
               _pickDate(
                 controller: _validUntilController,
@@ -588,8 +852,8 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
             label: 'Customer *',
             value: _selectedCustomer,
             hintText: 'Select customer',
-            items: _customerOptions,
-            onChanged: (value) => setState(() => _selectedCustomer = value),
+            items: _customers.map((customer) => customer.name).toList(),
+            onChanged: _handleCustomerSelection,
           ),
           _FormField(
             label: 'Billing Address *',
@@ -605,7 +869,7 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
             label: 'Salesperson *',
             value: _selectedSalesperson,
             hintText: 'Select salesperson',
-            items: _salespersonOptions,
+            items: _salespeople.map((user) => user.name).toList(),
             onChanged: (value) => setState(() => _selectedSalesperson = value),
           ),
           _FormDropdown(
@@ -615,7 +879,10 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
             items: _currencyOptions,
             onChanged: (value) {
               if (value == null) return;
-              setState(() => _selectedCurrency = value);
+              setState(() {
+                _selectedCurrency = value;
+                _syncComputedFields();
+              });
             },
           ),
         ];
@@ -657,12 +924,9 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
               ],
             ),
             const SizedBox(height: 18),
-            Row(
-              children: [
-                Expanded(child: children[6]),
-                const SizedBox(width: 18),
-                Expanded(child: children[7]),
-              ],
+            Align(
+              alignment: Alignment.centerLeft,
+              child: SizedBox(width: 360, child: children[6]),
             ),
           ],
         );
@@ -767,10 +1031,7 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
                   SizedBox(height: 4),
                   Text(
                     'Add products or services for this estimate.',
-                    style: TextStyle(
-                      color: Color(0xFF64748B),
-                      fontSize: 13,
-                    ),
+                    style: TextStyle(color: Color(0xFF64748B), fontSize: 13),
                   ),
                 ],
               ),
@@ -794,12 +1055,13 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
           _QuotationItemCard(
             index: i + 1,
             item: _items[i],
-            productOptions: _productOptions,
+            productOptions: _apiProductOptions,
             uomOptions: _uomOptions,
             taxOptions: _taxOptions,
             currencyPrefix: _currencyPrefix(),
             canRemove: _items.length > 1,
-            onProductChanged: (value) => _handleProductSelection(_items[i], value),
+            onProductChanged: (value) =>
+                _handleProductSelection(_items[i], value),
             onRemove: () => _removeItem(i),
           ),
           if (i != _items.length - 1) const SizedBox(height: 14),
@@ -873,8 +1135,12 @@ class _CircleStepTile extends StatelessWidget {
     final circleColor = selected || completed
         ? const Color(0xFF0B4A06)
         : const Color(0xFFE5E7EB);
-    final iconColor = selected || completed ? Colors.white : const Color(0xFF6B7280);
-    final textColor = selected ? const Color(0xFF0B4A06) : const Color(0xFF64748B);
+    final iconColor = selected || completed
+        ? Colors.white
+        : const Color(0xFF6B7280);
+    final textColor = selected
+        ? const Color(0xFF0B4A06)
+        : const Color(0xFF64748B);
 
     return InkWell(
       onTap: onTap,
@@ -955,8 +1221,12 @@ class _CompactCircleStep extends StatelessWidget {
     final circleColor = selected || completed
         ? const Color(0xFF0B4A06)
         : const Color(0xFFE5E7EB);
-    final iconColor = selected || completed ? Colors.white : const Color(0xFF6B7280);
-    final textColor = selected ? const Color(0xFF0B4A06) : const Color(0xFF64748B);
+    final iconColor = selected || completed
+        ? Colors.white
+        : const Color(0xFF6B7280);
+    final textColor = selected
+        ? const Color(0xFF0B4A06)
+        : const Color(0xFF64748B);
 
     return InkWell(
       onTap: onTap,
@@ -1006,11 +1276,14 @@ class _CompactCircleStep extends StatelessWidget {
 class _QuotationItemDraft {
   final TextEditingController productController = TextEditingController();
   final TextEditingController skuController = TextEditingController();
-  final TextEditingController descriptionController = TextEditingController();
-  final TextEditingController quantityController = TextEditingController(text: '1');
+  final TextEditingController quantityController = TextEditingController(
+    text: '1',
+  );
   final TextEditingController uomController = TextEditingController();
   final TextEditingController unitPriceController = TextEditingController();
-  final TextEditingController discountController = TextEditingController(text: '0');
+  final TextEditingController discountController = TextEditingController(
+    text: '0',
+  );
   final TextEditingController taxController = TextEditingController();
   final TextEditingController lineTotalController = TextEditingController();
 
@@ -1020,7 +1293,6 @@ class _QuotationItemDraft {
     _listener = listener;
     productController.addListener(listener);
     skuController.addListener(listener);
-    descriptionController.addListener(listener);
     quantityController.addListener(listener);
     uomController.addListener(listener);
     unitPriceController.addListener(listener);
@@ -1033,7 +1305,6 @@ class _QuotationItemDraft {
     if (listener == null) return;
     productController.removeListener(listener);
     skuController.removeListener(listener);
-    descriptionController.removeListener(listener);
     quantityController.removeListener(listener);
     uomController.removeListener(listener);
     unitPriceController.removeListener(listener);
@@ -1046,7 +1317,6 @@ class _QuotationItemDraft {
     detachRebuild();
     productController.dispose();
     skuController.dispose();
-    descriptionController.dispose();
     quantityController.dispose();
     uomController.dispose();
     unitPriceController.dispose();
@@ -1108,12 +1378,16 @@ class _QuotationItemCard extends StatelessWidget {
                 icon: Icon(
                   Icons.delete_outline_rounded,
                   size: 18,
-                  color: canRemove ? const Color(0xFFEF4444) : const Color(0xFF9CA3AF),
+                  color: canRemove
+                      ? const Color(0xFFEF4444)
+                      : const Color(0xFF9CA3AF),
                 ),
                 label: Text(
                   'Remove',
                   style: TextStyle(
-                    color: canRemove ? const Color(0xFF9CA3AF) : const Color(0xFFD1D5DB),
+                    color: canRemove
+                        ? const Color(0xFF9CA3AF)
+                        : const Color(0xFFD1D5DB),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -1129,12 +1403,7 @@ class _QuotationItemCard extends StatelessWidget {
                 controller: item.skuController,
                 hintText: 'Auto-filled product code',
                 readOnly: true,
-              );
-              final descriptionField = _FormField(
-                label: 'Description',
-                controller: item.descriptionController,
-                hintText: 'Product description',
-                maxLines: 3,
+                enabled: false,
               );
               final qtyField = _FormField(
                 label: 'Quantity *',
@@ -1144,7 +1413,9 @@ class _QuotationItemCard extends StatelessWidget {
               );
               final uomField = _FormDropdown(
                 label: 'UOM *',
-                value: item.uomController.text.isEmpty ? null : item.uomController.text,
+                value: item.uomController.text.isEmpty
+                    ? null
+                    : item.uomController.text,
                 hintText: 'Select UOM',
                 items: uomOptions,
                 onChanged: (value) => item.uomController.text = value ?? '',
@@ -1163,7 +1434,9 @@ class _QuotationItemCard extends StatelessWidget {
               );
               final taxField = _FormDropdown(
                 label: 'Tax (%)',
-                value: item.taxController.text.isEmpty ? null : item.taxController.text,
+                value: item.taxController.text.isEmpty
+                    ? null
+                    : item.taxController.text,
                 hintText: 'Select tax',
                 items: taxOptions,
                 onChanged: (value) => item.taxController.text = value ?? '',
@@ -1173,6 +1446,7 @@ class _QuotationItemCard extends StatelessWidget {
                 controller: item.lineTotalController,
                 hintText: '0.00',
                 readOnly: true,
+                enabled: false,
                 prefixText: currencyPrefix,
               );
 
@@ -1185,9 +1459,13 @@ class _QuotationItemCard extends StatelessWidget {
                           flex: 3,
                           child: _FormDropdown(
                             label: 'Product *',
-                            value: item.productController.text.isEmpty ? null : item.productController.text,
+                            value: item.productController.text.isEmpty
+                                ? null
+                                : item.productController.text,
                             hintText: 'Select product or service',
-                            items: productOptions.map((product) => product.name).toList(),
+                            items: productOptions
+                                .map((product) => product.name)
+                                .toList(),
                             onChanged: onProductChanged,
                           ),
                         ),
@@ -1195,8 +1473,6 @@ class _QuotationItemCard extends StatelessWidget {
                         Expanded(child: skuField),
                       ],
                     ),
-                    const SizedBox(height: 14),
-                    descriptionField,
                     const SizedBox(height: 14),
                     Row(
                       children: [
@@ -1233,9 +1509,13 @@ class _QuotationItemCard extends StatelessWidget {
                         flex: 4,
                         child: _FormDropdown(
                           label: 'Product *',
-                          value: item.productController.text.isEmpty ? null : item.productController.text,
+                          value: item.productController.text.isEmpty
+                              ? null
+                              : item.productController.text,
                           hintText: 'Select product or service',
-                          items: productOptions.map((product) => product.name).toList(),
+                          items: productOptions
+                              .map((product) => product.name)
+                              .toList(),
                           onChanged: onProductChanged,
                         ),
                       ),
@@ -1243,8 +1523,6 @@ class _QuotationItemCard extends StatelessWidget {
                       Expanded(flex: 4, child: skuField),
                     ],
                   ),
-                  const SizedBox(height: 14),
-                  descriptionField,
                   const SizedBox(height: 14),
                   Row(
                     children: [
@@ -1280,17 +1558,144 @@ class _QuotationItemCard extends StatelessWidget {
 }
 
 class _QuotationCatalogItem {
+  final String id;
+  final String variantId;
   final String name;
   final String sku;
   final String description;
   final String uom;
+  final double unitPrice;
+  final double taxRate;
 
   const _QuotationCatalogItem({
+    this.id = '',
+    this.variantId = '',
     required this.name,
     required this.sku,
     required this.description,
     required this.uom,
+    this.unitPrice = 0,
+    this.taxRate = 0,
   });
+
+  factory _QuotationCatalogItem.fromJson(Map<String, dynamic> json) {
+    return _QuotationCatalogItem(
+      id: _quotationProductText(json, const [
+        'id',
+        'product_id',
+        'productId',
+      ], fallback: ''),
+      variantId: _quotationProductText(json, const [
+        'variant_id',
+        'variantId',
+        'default_variant_id',
+      ], fallback: ''),
+      name: _quotationProductText(json, const [
+        'name',
+        'product_name',
+        'title',
+      ], fallback: ''),
+      sku: _quotationProductText(json, const [
+        'sku',
+        'product_sku',
+        'hsn',
+        'hsn_sac',
+        'barcode',
+      ], fallback: ''),
+      description: _quotationProductText(json, const [
+        'description',
+        'short_description',
+        'details',
+      ], fallback: ''),
+      uom: _quotationProductText(json, const [
+        'uom',
+        'unit',
+        'unit_of_measure',
+        'measurement_unit',
+      ], fallback: 'unit'),
+      unitPrice: _quotationProductNumber(json, const [
+        'price',
+        'selling_price',
+        'sellingPrice',
+        'mrp',
+        'unit_price',
+      ]),
+      taxRate: _quotationProductNumber(json, const [
+        'tax',
+        'tax_rate',
+        'taxRate',
+        'gst',
+        'gst_rate',
+      ]),
+    );
+  }
+}
+
+class _OptionsErrorBanner extends StatelessWidget {
+  final String message;
+  final VoidCallback onRetry;
+
+  const _OptionsErrorBanner({required this.message, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFBFA),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFFCA5A5)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.error_outline_rounded, color: Color(0xFFDC2626)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: Color(0xFF7F1D1D),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          TextButton(onPressed: onRetry, child: const Text('Retry')),
+        ],
+      ),
+    );
+  }
+}
+
+String _quotationProductText(
+  Map<String, dynamic> json,
+  List<String> keys, {
+  String fallback = '',
+}) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value is Map<String, dynamic>) {
+      final nested = _quotationProductText(value, const ['name'], fallback: '');
+      if (nested.isNotEmpty) return nested;
+    }
+    final text = value?.toString().trim();
+    if (text != null && text.isNotEmpty) return text;
+  }
+  return fallback;
+}
+
+double _quotationProductNumber(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value is num) return value.toDouble();
+    if (value != null) {
+      final sanitized = value.toString().replaceAll(RegExp(r'[^0-9.\-]'), '');
+      final parsed = double.tryParse(sanitized);
+      if (parsed != null) return parsed;
+    }
+  }
+  return 0;
 }
 
 class _FormField extends StatelessWidget {
@@ -1300,6 +1705,7 @@ class _FormField extends StatelessWidget {
   final TextInputType? keyboardType;
   final int maxLines;
   final bool readOnly;
+  final bool enabled;
   final String? prefixText;
 
   const _FormField({
@@ -1309,6 +1715,7 @@ class _FormField extends StatelessWidget {
     this.keyboardType,
     this.maxLines = 1,
     this.readOnly = false,
+    this.enabled = true,
     this.prefixText,
   });
 
@@ -1321,10 +1728,8 @@ class _FormField extends StatelessWidget {
         keyboardType: keyboardType,
         maxLines: maxLines,
         readOnly: readOnly,
-        decoration: _inputDecoration(
-          hintText,
-          prefixText: prefixText,
-        ),
+        enabled: enabled,
+        decoration: _inputDecoration(hintText, prefixText: prefixText),
       ),
     );
   }
@@ -1381,23 +1786,27 @@ class _FormDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final effectiveValue = value != null && items.contains(value)
+        ? value
+        : null;
+
     return _LabeledField(
       label: label,
       child: DropdownButtonFormField<String>(
-        key: ValueKey<String?>(value),
-        initialValue: value,
+        key: ValueKey<String?>('$label-$effectiveValue'),
+        initialValue: effectiveValue,
         isExpanded: true,
         menuMaxHeight: 280,
-        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF94A3B8)),
+        icon: const Icon(
+          Icons.keyboard_arrow_down_rounded,
+          color: Color(0xFF94A3B8),
+        ),
         decoration: _inputDecoration(hintText),
         items: items
             .map(
               (item) => DropdownMenuItem<String>(
                 value: item,
-                child: Text(
-                  item,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                child: Text(item, overflow: TextOverflow.ellipsis),
               ),
             )
             .toList(),
@@ -1411,10 +1820,7 @@ class _LabeledField extends StatelessWidget {
   final String label;
   final Widget child;
 
-  const _LabeledField({
-    required this.label,
-    required this.child,
-  });
+  const _LabeledField({required this.label, required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -1445,10 +1851,7 @@ InputDecoration _inputDecoration(
 }) {
   return InputDecoration(
     hintText: hintText,
-    hintStyle: const TextStyle(
-      color: Color(0xFF94A3B8),
-      fontSize: 13.5,
-    ),
+    hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13.5),
     filled: true,
     fillColor: Colors.white,
     contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 15),

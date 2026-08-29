@@ -138,11 +138,13 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                             padding: const EdgeInsets.fromLTRB(18, 18, 18, 14),
                             child: isCompact
                                 ? Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       const Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               'Categories',
@@ -171,7 +173,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                                     children: [
                                       const Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               'Categories',
@@ -205,7 +208,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                                 : Row(
                                     children: [
                                       const Spacer(),
-                                      SizedBox(width: 360, child: _buildSearchField()),
+                                      SizedBox(
+                                        width: 360,
+                                        child: _buildSearchField(),
+                                      ),
                                     ],
                                   ),
                           ),
@@ -214,15 +220,18 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                             padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
                             child: isCompact
                                 ? _isLoading
-                                    ? _loadingState()
-                                    : _errorMessage != null
-                                        ? _errorState(_errorMessage!, _loadCategories)
-                                        : _buildCompactList(categories)
+                                      ? _loadingState()
+                                      : _errorMessage != null
+                                      ? _errorState(
+                                          _errorMessage!,
+                                          _loadCategories,
+                                        )
+                                      : _buildCompactList(categories)
                                 : _isLoading
-                                    ? _loadingState()
-                                    : _errorMessage != null
-                                        ? _errorState(_errorMessage!, _loadCategories)
-                                        : _buildTable(categories),
+                                ? _loadingState()
+                                : _errorMessage != null
+                                ? _errorState(_errorMessage!, _loadCategories)
+                                : _buildTable(categories),
                           ),
                           const Divider(height: 1, color: Color(0xFFE5E7EB)),
                           Padding(
@@ -328,7 +337,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           prefixIcon: const Icon(Icons.search_rounded, size: 20),
           filled: true,
           fillColor: Colors.white,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 12,
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
             borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
@@ -386,9 +398,15 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               child: Row(
                 children: [
                   SizedBox(width: _checkboxWidth),
-                  SizedBox(width: _categoryWidth, child: _TableHead('CATEGORY')),
+                  SizedBox(
+                    width: _categoryWidth,
+                    child: _TableHead('CATEGORY'),
+                  ),
                   SizedBox(width: _imageWidth, child: _TableHead('IMAGE')),
-                  SizedBox(width: _descriptionWidth, child: _TableHead('DESCRIPTION')),
+                  SizedBox(
+                    width: _descriptionWidth,
+                    child: _TableHead('DESCRIPTION'),
+                  ),
                   SizedBox(width: _actionWidth, child: _TableHead('ACTION')),
                 ],
               ),
@@ -423,7 +441,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       ),
       child: Row(
         children: [
-          const SizedBox(width: _checkboxWidth, child: Checkbox(value: false, onChanged: null)),
+          const SizedBox(
+            width: _checkboxWidth,
+            child: Checkbox(value: false, onChanged: null),
+          ),
           SizedBox(
             width: _categoryWidth,
             child: Row(
@@ -470,7 +491,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           SizedBox(
             width: _actionWidth,
             child: PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert_rounded, color: Color(0xFF94A3B8)),
+              icon: const Icon(
+                Icons.more_vert_rounded,
+                color: Color(0xFF94A3B8),
+              ),
               onSelected: (_) {},
               itemBuilder: (context) => const [
                 PopupMenuItem(value: 'edit', child: Text('Edit')),
@@ -501,7 +525,10 @@ class _CategoryCompactCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(width: 32, child: Checkbox(value: false, onChanged: null)),
+          const SizedBox(
+            width: 32,
+            child: Checkbox(value: false, onChanged: null),
+          ),
           CircleAvatar(
             radius: 18,
             backgroundColor: const Color(0xFFF8FAFC),
@@ -534,7 +561,9 @@ class _CategoryCompactCard extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        category.description.trim().isEmpty ? '-' : category.description,
+                        category.description.trim().isEmpty
+                            ? '-'
+                            : category.description,
                         style: const TextStyle(
                           color: Color(0xFF64748B),
                           fontSize: 13.5,
@@ -542,7 +571,10 @@ class _CategoryCompactCard extends StatelessWidget {
                       ),
                     ),
                     PopupMenuButton<String>(
-                      icon: const Icon(Icons.more_vert_rounded, color: Color(0xFF94A3B8)),
+                      icon: const Icon(
+                        Icons.more_vert_rounded,
+                        color: Color(0xFF94A3B8),
+                      ),
                       onSelected: (_) {},
                       itemBuilder: (context) => const [
                         PopupMenuItem(value: 'edit', child: Text('Edit')),

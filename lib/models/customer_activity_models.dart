@@ -18,26 +18,35 @@ class CustomerOrderRecord {
   factory CustomerOrderRecord.fromJson(Map<String, dynamic> json) {
     return CustomerOrderRecord(
       id: _readString(json, const ['id', 'order_id']) ?? '',
-      orderNumber: _readString(
-            json,
-            const ['order_number', 'order_no', 'number', 'sales_order_number'],
-          ) ??
+      orderNumber:
+          _readString(json, const [
+            'order_number',
+            'order_no',
+            'number',
+            'sales_order_number',
+          ]) ??
           '-',
-      date: _readDate(
-        json,
-        const ['date', 'order_date', 'created_at', 'createdAt'],
-      ),
+      date: _readDate(json, const [
+        'date',
+        'order_date',
+        'created_at',
+        'createdAt',
+      ]),
       status: _readString(json, const ['status', 'order_status']) ?? '-',
       fulfillment:
-          _readString(
-            json,
-            const ['fulfillment', 'fulfillment_status', 'delivery_status'],
-          ) ??
+          _readString(json, const [
+            'fulfillment',
+            'fulfillment_status',
+            'delivery_status',
+          ]) ??
           '-',
-      total: _readDouble(
-        json,
-        const ['total', 'grand_total', 'total_amount', 'amount_total', 'amount'],
-      ),
+      total: _readDouble(json, const [
+        'total',
+        'grand_total',
+        'total_amount',
+        'amount_total',
+        'amount',
+      ]),
     );
   }
 }
@@ -62,31 +71,35 @@ class CustomerPaymentRecord {
   factory CustomerPaymentRecord.fromJson(Map<String, dynamic> json) {
     return CustomerPaymentRecord(
       id: _readString(json, const ['id', 'payment_id']) ?? '',
-      amount: _readDouble(
-        json,
-        const ['amount', 'paid_amount', 'received_amount', 'payment_amount'],
-      ),
-      date: _readDate(
-        json,
-        const ['date', 'payment_date', 'paid_at', 'created_at', 'createdAt'],
-      ),
+      amount: _readDouble(json, const [
+        'amount',
+        'paid_amount',
+        'received_amount',
+        'payment_amount',
+      ]),
+      date: _readDate(json, const [
+        'date',
+        'payment_date',
+        'paid_at',
+        'created_at',
+        'createdAt',
+      ]),
       referenceNumber:
-          _readString(
-            json,
-            const [
-              'reference_number',
-              'invoice_number',
-              'receipt_number',
-              'reference',
-              'invoice_no',
-            ],
-          ) ??
+          _readString(json, const [
+            'reference_number',
+            'invoice_number',
+            'receipt_number',
+            'reference',
+            'invoice_no',
+          ]) ??
           '-',
       method:
-          _readString(
-            json,
-            const ['payment_method', 'method', 'payment_mode', 'mode'],
-          ) ??
+          _readString(json, const [
+            'payment_method',
+            'method',
+            'payment_mode',
+            'mode',
+          ]) ??
           '-',
       status: _readString(json, const ['status']) ?? '-',
     );

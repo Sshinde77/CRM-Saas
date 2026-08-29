@@ -99,7 +99,9 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
 
   void _toggleAll(String module, bool? checked) {
     setState(() {
-      _modulePermissions[module] = checked == true ? _permissionColumns.toSet() : <String>{};
+      _modulePermissions[module] = checked == true
+          ? _permissionColumns.toSet()
+          : <String>{};
     });
   }
 
@@ -116,7 +118,9 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
   }
 
   int _selectedModuleCount() {
-    return _modulePermissions.values.where((permissions) => permissions.isNotEmpty).length;
+    return _modulePermissions.values
+        .where((permissions) => permissions.isNotEmpty)
+        .length;
   }
 
   String _accessLevelLabel() {
@@ -185,13 +189,15 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
                             padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
                             child: isCompact
                                 ? Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
                                         children: [
                                           const Expanded(
                                             child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: [
                                                 Text(
                                                   'Create a new role',
@@ -214,12 +220,17 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
                                           ),
                                           const SizedBox(width: 10),
                                           TextButton(
-                                            onPressed: () => Navigator.of(context).pop(),
+                                            onPressed: () =>
+                                                Navigator.of(context).pop(),
                                             style: TextButton.styleFrom(
-                                              foregroundColor: AppColors.textPrimary,
-                                              backgroundColor: const Color(0xFFF3F4F6),
+                                              foregroundColor:
+                                                  AppColors.textPrimary,
+                                              backgroundColor: const Color(
+                                                0xFFF3F4F6,
+                                              ),
                                               shape: RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(999),
+                                                borderRadius:
+                                                    BorderRadius.circular(999),
                                               ),
                                             ),
                                             child: const Text('Back to Roles'),
@@ -229,11 +240,13 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
                                     ],
                                   )
                                 : Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       const Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               'Create a new role',
@@ -255,12 +268,18 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
                                         ),
                                       ),
                                       TextButton(
-                                        onPressed: () => Navigator.of(context).pop(),
+                                        onPressed: () =>
+                                            Navigator.of(context).pop(),
                                         style: TextButton.styleFrom(
-                                          foregroundColor: AppColors.textPrimary,
-                                          backgroundColor: const Color(0xFFF3F4F6),
+                                          foregroundColor:
+                                              AppColors.textPrimary,
+                                          backgroundColor: const Color(
+                                            0xFFF3F4F6,
+                                          ),
                                           shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(999),
+                                            borderRadius: BorderRadius.circular(
+                                              999,
+                                            ),
                                           ),
                                         ),
                                         child: const Text('Back to Roles'),
@@ -295,7 +314,9 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
                             child: SingleChildScrollView(
                               scrollDirection: Axis.horizontal,
                               child: ConstrainedBox(
-                                constraints: const BoxConstraints(minWidth: 1520),
+                                constraints: const BoxConstraints(
+                                  minWidth: 1520,
+                                ),
                                 child: _buildPermissionsTable(),
                               ),
                             ),
@@ -375,14 +396,18 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
                     label: 'Workspaces',
                     value: _selectedWorkspace,
                     items: _workspaces,
-                    onChanged: (value) => setState(() => _selectedWorkspace = value ?? _selectedWorkspace),
+                    onChanged: (value) => setState(
+                      () => _selectedWorkspace = value ?? _selectedWorkspace,
+                    ),
                   ),
                   SizedBox(height: formGap),
                   _buildDropdownField(
                     label: 'Data Scope',
                     value: _selectedDataScope,
                     items: _dataScopes,
-                    onChanged: (value) => setState(() => _selectedDataScope = value ?? _selectedDataScope),
+                    onChanged: (value) => setState(
+                      () => _selectedDataScope = value ?? _selectedDataScope,
+                    ),
                   ),
                   SizedBox(height: formGap),
                   _buildTextField(
@@ -409,8 +434,9 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
                       label: 'Workspaces',
                       value: _selectedWorkspace,
                       items: _workspaces,
-                      onChanged: (value) =>
-                          setState(() => _selectedWorkspace = value ?? _selectedWorkspace),
+                      onChanged: (value) => setState(
+                        () => _selectedWorkspace = value ?? _selectedWorkspace,
+                      ),
                     ),
                   ),
                 ],
@@ -425,8 +451,9 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
                   label: 'Data Scope',
                   value: _selectedDataScope,
                   items: _dataScopes,
-                  onChanged: (value) =>
-                      setState(() => _selectedDataScope = value ?? _selectedDataScope),
+                  onChanged: (value) => setState(
+                    () => _selectedDataScope = value ?? _selectedDataScope,
+                  ),
                 ),
               ),
               const SizedBox(width: 16),
@@ -484,7 +511,10 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: Color(0xFF0B4A06), width: 1.2),
+              borderSide: const BorderSide(
+                color: Color(0xFF0B4A06),
+                width: 1.2,
+              ),
             ),
           ),
         ),
@@ -525,12 +555,18 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: Color(0xFF0B4A06), width: 1.2),
+              borderSide: const BorderSide(
+                color: Color(0xFF0B4A06),
+                width: 1.2,
+              ),
             ),
           ),
           icon: const Icon(Icons.keyboard_arrow_down_rounded),
           items: items
-              .map((item) => DropdownMenuItem<String>(value: item, child: Text(item)))
+              .map(
+                (item) =>
+                    DropdownMenuItem<String>(value: item, child: Text(item)),
+              )
               .toList(),
           onChanged: onChanged,
         ),
@@ -610,7 +646,11 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Icon(Icons.check_box_outline_blank_rounded, size: 16, color: Color(0xFFCBD5E1)),
+                  const Icon(
+                    Icons.check_box_outline_blank_rounded,
+                    size: 16,
+                    color: Color(0xFFCBD5E1),
+                  ),
                 ],
               ),
             ),
@@ -655,8 +695,10 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
               width: 108,
               child: Center(
                 child: Checkbox(
-                  value: _modulePermissions[module]?.contains(permission) ?? false,
-                  onChanged: (value) => _togglePermission(module, permission, value),
+                  value:
+                      _modulePermissions[module]?.contains(permission) ?? false,
+                  onChanged: (value) =>
+                      _togglePermission(module, permission, value),
                   activeColor: const Color(0xFF0B4A06),
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   visualDensity: VisualDensity.compact,

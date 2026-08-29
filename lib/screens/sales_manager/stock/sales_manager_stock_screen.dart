@@ -14,7 +14,8 @@ class SalesManagerStockScreen extends StatefulWidget {
   const SalesManagerStockScreen({super.key});
 
   @override
-  State<SalesManagerStockScreen> createState() => _SalesManagerStockScreenState();
+  State<SalesManagerStockScreen> createState() =>
+      _SalesManagerStockScreenState();
 }
 
 class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
@@ -24,7 +25,12 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
   int _selectedTab = 0;
   String _selectedCategory = 'All categories';
 
-  final List<String> _tabs = const ['All', 'Active', 'Out of Stock', 'Inactive'];
+  final List<String> _tabs = const [
+    'All',
+    'Active',
+    'Out of Stock',
+    'Inactive',
+  ];
   final List<String> _categories = const [
     'All categories',
     'Beverages',
@@ -191,7 +197,9 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
         return;
       case 'Dashboard':
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const SalesManagerDashboardScreen()),
+          MaterialPageRoute(
+            builder: (_) => const SalesManagerDashboardScreen(),
+          ),
         );
         return;
       case 'Customers':
@@ -243,9 +251,11 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
         3 => item.status == 'Inactive',
         _ => true,
       };
-      final categoryMatch = _selectedCategory == 'All categories' ||
+      final categoryMatch =
+          _selectedCategory == 'All categories' ||
           item.category == _selectedCategory;
-      final queryMatch = query.isEmpty ||
+      final queryMatch =
+          query.isEmpty ||
           item.name.toLowerCase().contains(query) ||
           item.sku.toLowerCase().contains(query) ||
           item.category.toLowerCase().contains(query);
@@ -313,14 +323,16 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
           ),
           _SummaryCard(
             title: 'Out of Stock',
-            value: '${_items.where((item) => item.status == "Out of Stock").length}',
+            value:
+                '${_items.where((item) => item.status == "Out of Stock").length}',
             icon: Icons.cancel_outlined,
             iconColor: AppColors.red,
             iconBackground: AppColors.red.withValues(alpha: 0.14),
           ),
           _SummaryCard(
             title: 'Inactive',
-            value: '${_items.where((item) => item.status == "Inactive").length}',
+            value:
+                '${_items.where((item) => item.status == "Inactive").length}',
             icon: Icons.visibility_off_outlined,
             iconColor: AppColors.orange,
             iconBackground: AppColors.orange.withValues(alpha: 0.16),
@@ -333,10 +345,7 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
             runSpacing: 12,
             children: [
               for (final card in children)
-                SizedBox(
-                  width: (constraints.maxWidth - 12) / 2,
-                  child: card,
-                ),
+                SizedBox(width: (constraints.maxWidth - 12) / 2, child: card),
             ],
           );
         }
@@ -403,7 +412,9 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
                               ? AppColors.primary
                               : AppColors.textSecondary,
                           fontSize: 14,
-                          fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+                          fontWeight: selected
+                              ? FontWeight.w800
+                              : FontWeight.w600,
                         ),
                       ),
                     ),
@@ -751,8 +762,8 @@ class _StockTableRow extends StatelessWidget {
                 color: item.status == 'Out of Stock'
                     ? AppColors.red
                     : item.status == 'Inactive'
-                        ? AppColors.orange
-                        : AppColors.green,
+                    ? AppColors.orange
+                    : AppColors.green,
               ),
             ),
           ),

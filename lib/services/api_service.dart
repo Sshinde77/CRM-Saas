@@ -298,6 +298,24 @@ class ApiService {
     return _extractUploadedUrl(_tryDecodeBody(response.body.trim()));
   }
 
+  Future<UploadedFileReference> uploadGenericFile({
+    required Uint8List fileBytes,
+    required String fileName,
+  }) async {
+    final response = await _sendMultipart(
+      method: 'POST',
+      endpoint: ApiEndpoints.filesUpload,
+      requiresAuth: true,
+      fileBytes: fileBytes,
+      fileName: fileName,
+    );
+    final decoded = _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid file upload response.',
+    );
+    return _extractUploadedFileReference(decoded);
+  }
+
   Future<CustomerDocument> uploadCustomerDocument({
     required String customerId,
     required String documentType,
@@ -344,11 +362,12 @@ class ApiService {
     );
 
     final decoded = _tryDecodeBody(response.body.trim());
-    final rawDocuments = _extractGenericList(
-      decoded,
-      const ['documents', 'data', 'items', 'results'],
-      fallbackMessage: 'Invalid customer documents response.',
-    );
+    final rawDocuments = _extractGenericList(decoded, const [
+      'documents',
+      'data',
+      'items',
+      'results',
+    ], fallbackMessage: 'Invalid customer documents response.');
 
     return rawDocuments
         .whereType<Map<String, dynamic>>()
@@ -482,11 +501,157 @@ class ApiService {
     );
   }
 
+  Future<Map<String, dynamic>> fetchLeadById(String leadId) async {
+    final id = leadId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing lead id.');
+    }
+
+    final response = await _send(
+      method: 'GET',
+      endpoint: ApiEndpoints.leadsDetail(id),
+      requiresAuth: true,
+    );
+
+    final decoded = _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid lead detail response.',
+    );
+
+    final leadPayload = decoded['lead'];
+    if (leadPayload is Map<String, dynamic>) {
+      return leadPayload;
+    }
+
+    final dataPayload = decoded['data'];
+    if (dataPayload is Map<String, dynamic>) {
+      return dataPayload;
+    }
+
+    return decoded;
+  }
+
   Future<List<Map<String, dynamic>>> fetchQuotations() {
     return fetchRawList(
       endpoint: ApiEndpoints.quotationsList,
       candidateKeys: const ['quotations', 'data', 'items', 'results'],
       fallbackMessage: 'Invalid quotations response.',
+    );
+  }
+
+  Future<Map<String, dynamic>> createQuotation({
+    required Map<String, dynamic> request,
+  }) async {
+    final response = await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.quotationsList,
+      requiresAuth: true,
+      body: request,
+    );
+
+    final decoded = _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid quotation create response.',
+    );
+
+    return decoded;
+  }
+
+  Future<Map<String, dynamic>> fetchQuotationById(String quotationId) async {
+    final id = quotationId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing quotation id.');
+    }
+
+    final response = await _send(
+      method: 'GET',
+      endpoint: ApiEndpoints.quotationsDetail(id),
+      requiresAuth: true,
+    );
+
+    return _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid quotation detail response.',
+    );
+  }
+
+  Future<Map<String, dynamic>> updateQuotationStatus({
+    required String quotationId,
+    required String status,
+  }) async {
+    final id = quotationId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing quotation id.');
+    }
+
+    final response = await _send(
+      method: 'PATCH',
+      endpoint: ApiEndpoints.quotationsDetail(id),
+      requiresAuth: true,
+      body: {'status': status},
+    );
+
+    return _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid quotation status response.',
+    );
+  }
+
+  Future<List<int>> downloadQuotationPdf(String quotationId) async {
+    final id = quotationId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing quotation id.');
+    }
+
+    final response = await _send(
+      method: 'GET',
+      endpoint: ApiEndpoints.quotationsPdf(id),
+      requiresAuth: true,
+    );
+
+    return response.bodyBytes;
+  }
+
+  Future<List<Map<String, dynamic>>> fetchWarehouses() {
+    return fetchRawList(
+      endpoint: ApiEndpoints.warehousesList,
+      candidateKeys: const ['warehouses', 'data', 'items', 'results'],
+      fallbackMessage: 'Invalid warehouses response.',
+    );
+  }
+
+  Future<Map<String, dynamic>> convertQuotationToOrder({
+    required String quotationId,
+    required Map<String, dynamic> request,
+  }) async {
+    final id = quotationId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing quotation id.');
+    }
+
+    final response = await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.quotationsConvert(id),
+      requiresAuth: true,
+      body: request,
+    );
+
+    return _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid quotation conversion response.',
+    );
+  }
+
+  Future<void> deleteQuotation(String quotationId) async {
+    final id = quotationId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing quotation id.');
+    }
+
+    await _send(
+      method: 'DELETE',
+      endpoint: ApiEndpoints.quotationsDetail(id),
+      requiresAuth: true,
     );
   }
 
@@ -584,7 +749,9 @@ class ApiService {
     return CustomerLedger.fromJson(decoded);
   }
 
-  Future<List<CustomerOrderRecord>> fetchCustomerOrders(String customerId) async {
+  Future<List<CustomerOrderRecord>> fetchCustomerOrders(
+    String customerId,
+  ) async {
     final id = customerId.trim();
     if (id.isEmpty) {
       throw const ApiException(message: 'Missing customer id.');
@@ -598,11 +765,12 @@ class ApiService {
     );
 
     final decoded = _tryDecodeBody(response.body.trim());
-    final rawOrders = _extractGenericList(
-      decoded,
-      const ['orders', 'data', 'results', 'items'],
-      fallbackMessage: 'Invalid customer orders response.',
-    );
+    final rawOrders = _extractGenericList(decoded, const [
+      'orders',
+      'data',
+      'results',
+      'items',
+    ], fallbackMessage: 'Invalid customer orders response.');
 
     return rawOrders
         .whereType<Map<String, dynamic>>()
@@ -610,7 +778,9 @@ class ApiService {
         .toList();
   }
 
-  Future<List<CustomerPaymentRecord>> fetchCustomerPayments(String customerId) async {
+  Future<List<CustomerPaymentRecord>> fetchCustomerPayments(
+    String customerId,
+  ) async {
     final id = customerId.trim();
     if (id.isEmpty) {
       throw const ApiException(message: 'Missing customer id.');
@@ -623,11 +793,12 @@ class ApiService {
     );
 
     final decoded = _tryDecodeBody(response.body.trim());
-    final rawPayments = _extractGenericList(
-      decoded,
-      const ['payments', 'data', 'results', 'items'],
-      fallbackMessage: 'Invalid customer payments response.',
-    );
+    final rawPayments = _extractGenericList(decoded, const [
+      'payments',
+      'data',
+      'results',
+      'items',
+    ], fallbackMessage: 'Invalid customer payments response.');
 
     return rawPayments
         .whereType<Map<String, dynamic>>()
@@ -1088,6 +1259,20 @@ class ApiService {
     }
 
     return null;
+  }
+
+  static UploadedFileReference _extractUploadedFileReference(
+    Map<String, dynamic> decoded,
+  ) {
+    try {
+      return UploadedFileReference.fromJson(decoded);
+    } on FormatException {
+      final nestedData = decoded['data'];
+      if (nestedData is Map<String, dynamic>) {
+        return _extractUploadedFileReference(nestedData);
+      }
+      rethrow;
+    }
   }
 
   CurrentUserProfile? _extractUserProfile(Map<String, dynamic> decoded) {
@@ -1573,14 +1758,14 @@ class ApiService {
       'pdf' => MediaType('application', 'pdf'),
       'doc' => MediaType('application', 'msword'),
       'docx' => MediaType(
-          'application',
-          'vnd.openxmlformats-officedocument.wordprocessingml.document',
-        ),
+        'application',
+        'vnd.openxmlformats-officedocument.wordprocessingml.document',
+      ),
       'xls' => MediaType('application', 'vnd.ms-excel'),
       'xlsx' => MediaType(
-          'application',
-          'vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        ),
+        'application',
+        'vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      ),
       'txt' => MediaType('text', 'plain'),
       'csv' => MediaType('text', 'csv'),
       _ => MediaType('application', 'octet-stream'),

@@ -332,9 +332,7 @@ class _SalesManagerDashboardScreenState
 
     if (action == 'Follow-Ups' || action == 'Follow-ups') {
       Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => const SalesManagerFollowUpsScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const SalesManagerFollowUpsScreen()),
       );
       return;
     }
@@ -350,9 +348,7 @@ class _SalesManagerDashboardScreenState
 
     if (action == 'Attendance') {
       Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => const SalesManagerAttendanceScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const SalesManagerAttendanceScreen()),
       );
       return;
     }
@@ -1648,9 +1644,7 @@ class _SalesManagerDashboardScreenState
   }
 
   void _openSalesOrdersScreen() {
-    Navigator.of(
-      context,
-    ).push(
+    Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => const AdminOrdersScreen(useSalesManagerShell: true),
       ),

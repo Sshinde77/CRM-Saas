@@ -132,9 +132,9 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
   }
 
   Future<void> _handleNewReturn() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const NewSalesReturnScreen()),
-    );
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const NewSalesReturnScreen()));
   }
 
   @override
@@ -180,10 +180,7 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
                                 runSpacing: 10,
                                 crossAxisAlignment: WrapCrossAlignment.center,
                                 children: [
-                                  SizedBox(
-                                    width: 290,
-                                    child: _searchField(),
-                                  ),
+                                  SizedBox(width: 290, child: _searchField()),
                                   SizedBox(
                                     width: 165,
                                     child: _statusDropdown(),
@@ -202,21 +199,29 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
                         ? _emptyState()
                         : Column(
                             children: [
-                              const Divider(height: 1, color: Color(0xFFE5E7EB)),
+                              const Divider(
+                                height: 1,
+                                color: Color(0xFFE5E7EB),
+                              ),
                               Padding(
                                 padding: const EdgeInsets.fromLTRB(6, 12, 6, 0),
                                 child: ListView.separated(
                                   itemCount: returns.length,
                                   shrinkWrap: true,
                                   physics: const NeverScrollableScrollPhysics(),
-                                  separatorBuilder: (_, __) =>
-                                      const Divider(height: 20, color: Color(0xFFE5E7EB)),
+                                  separatorBuilder: (_, __) => const Divider(
+                                    height: 20,
+                                    color: Color(0xFFE5E7EB),
+                                  ),
                                   itemBuilder: (context, index) {
                                     return _returnListTile(returns[index]);
                                   },
                                 ),
                               ),
-                              const Divider(height: 1, color: Color(0xFFE5E7EB)),
+                              const Divider(
+                                height: 1,
+                                color: Color(0xFFE5E7EB),
+                              ),
                             ],
                           ),
                     const SizedBox(height: 12),
@@ -362,7 +367,10 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
           ),
           filled: true,
           fillColor: Colors.white,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 12,
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
             borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
@@ -393,7 +401,10 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
         child: DropdownButton<String>(
           value: _selectedStatus,
           isExpanded: true,
-          icon: const Icon(Icons.keyboard_arrow_up_rounded, color: Color(0xFF94A3B8)),
+          icon: const Icon(
+            Icons.keyboard_arrow_up_rounded,
+            color: Color(0xFF94A3B8),
+          ),
           dropdownColor: Colors.white,
           borderRadius: BorderRadius.circular(14),
           style: const TextStyle(
@@ -460,9 +471,7 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
           horizontal: compact ? 18 : 22,
           vertical: compact ? 10 : 14,
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(999),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
         textStyle: TextStyle(
           fontSize: compact ? 13 : 13.5,
           fontWeight: FontWeight.w700,
@@ -489,10 +498,7 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
             const Text(
               'Raise a return request against an existing invoice.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: textSecondary,
-                fontSize: 13,
-              ),
+              style: TextStyle(color: textSecondary, fontSize: 13),
             ),
             const SizedBox(height: 18),
             _newReturnButton(compact: true),

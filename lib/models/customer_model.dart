@@ -3,15 +3,24 @@ class CustomerDocument {
   final String? url;
   final String? type;
   final String? documentType;
+  final String? fileId;
 
   const CustomerDocument({
     required this.name,
     required this.url,
     required this.type,
     this.documentType,
+    this.fileId,
   });
 
   factory CustomerDocument.fromJson(Map<String, dynamic> json) {
+    final fileId = _readString(json, const [
+      'file_id',
+      'fileId',
+      'id',
+      'document_id',
+      'attachment_id',
+    ]);
     final url = _readString(json, const [
       'url',
       'file_url',
@@ -45,10 +54,12 @@ class CustomerDocument {
         'extension',
       ]),
       documentType: _readString(json, const ['document_type', 'documentType']),
+      fileId: fileId,
     );
   }
 
   bool get hasUrl => url?.trim().isNotEmpty == true;
+  bool get hasFileId => fileId?.trim().isNotEmpty == true;
 
   bool get isImage {
     final value = '${type ?? ''} ${url ?? ''}'.toLowerCase();
@@ -71,6 +82,7 @@ class CustomerDocument {
       'url': url,
       'type': type,
       'document_type': documentType,
+      'file_id': fileId,
     };
   }
 
@@ -199,7 +211,9 @@ class CustomerModel {
     final financialSummary = _asMap(json['financial_summary']);
     final salesSummary = _asMap(json['sales_summary']);
     final additionalInformation = _asMap(json['additional_information']);
-    final googleMapsLocation = _asMap(addressInformation?['google_maps_location']);
+    final googleMapsLocation = _asMap(
+      addressInformation?['google_maps_location'],
+    );
     final assignedSalesOfficer =
         _asMap(json['assigned_sales_officer']) ??
         _asMap(json['sales_officer']) ??
@@ -283,14 +297,12 @@ class CustomerModel {
         'website',
         'website_url',
       ]),
-      communicationPreference: _listOrStringValueFromSources(
-        stringSources,
-        const [
-          'communication_preference',
-          'preferred_communication',
-          'preferred_communication_mode',
-        ],
-      ),
+      communicationPreference:
+          _listOrStringValueFromSources(stringSources, const [
+            'communication_preference',
+            'preferred_communication',
+            'preferred_communication_mode',
+          ]),
       gstNumber: _nullableStringValueFromSources(stringSources, const [
         'gst_number',
         'gst',
@@ -323,7 +335,9 @@ class CustomerModel {
         'deliveryAddress',
         'shipping_address',
       ]),
-      country: _nullableStringValueFromSources(stringSources, const ['country']),
+      country: _nullableStringValueFromSources(stringSources, const [
+        'country',
+      ]),
       state: _nullableStringValueFromSources(stringSources, const ['state']),
       city: _nullableStringValueFromSources(stringSources, const ['city']),
       pinCode: _nullableStringValueFromSources(stringSources, const [
@@ -346,11 +360,7 @@ class CustomerModel {
       assignedSalesOfficerName: _stringFromNested(
         salesCrmInformation ?? json,
         assignedSalesOfficer,
-        const [
-          'assigned_sales_officer_name',
-          'sales_officer_name',
-          'name',
-        ],
+        const ['assigned_sales_officer_name', 'sales_officer_name', 'name'],
       ),
       leadSource: _nullableStringValueFromSources(stringSources, const [
         'lead_source',
@@ -546,21 +556,34 @@ class CustomerModel {
       required String name,
       String? url,
       String? type,
+      String? fileId,
+      String? documentType,
     }) {
       final normalizedName = name.trim();
       final normalizedUrl = url?.trim();
-      if (normalizedName.isEmpty && (normalizedUrl == null || normalizedUrl.isEmpty)) {
+      final normalizedFileId = fileId?.trim();
+      if (normalizedName.isEmpty &&
+          (normalizedUrl == null || normalizedUrl.isEmpty) &&
+          (normalizedFileId == null || normalizedFileId.isEmpty)) {
         return;
       }
 
       final document = CustomerDocument(
         name: normalizedName.isEmpty
-            ? CustomerDocument.fileNameFromUrl(normalizedUrl!)
+            ? normalizedUrl == null || normalizedUrl.isEmpty
+                  ? 'Document'
+                  : CustomerDocument.fileNameFromUrl(normalizedUrl)
             : normalizedName,
         url: normalizedUrl?.isEmpty == true ? null : normalizedUrl,
         type: type?.trim().isEmpty == true ? null : type?.trim(),
+        documentType: documentType?.trim().isEmpty == true
+            ? null
+            : documentType?.trim(),
+        fileId: normalizedFileId?.isEmpty == true ? null : normalizedFileId,
       );
-      final key = '${document.name}|${document.url ?? ''}'.toLowerCase();
+      final key =
+          '${document.name}|${document.url ?? ''}|${document.fileId ?? ''}'
+              .toLowerCase();
       if (seen.add(key)) {
         documents.add(document);
       }
@@ -578,7 +601,8 @@ class CustomerModel {
         final map = value.map(
           (key, mapValue) => MapEntry(key.toString(), mapValue),
         );
-        final name = _nullableStringValue(map, const [
+        final name =
+            _nullableStringValue(map, const [
               'name',
               'document_name',
               'file_name',
@@ -600,6 +624,12 @@ class CustomerModel {
           'path',
           'file_path',
         ]);
+        final fileId = _nullableStringValue(map, const [
+          'file_id',
+          'fileId',
+          'document_id',
+          'attachment_id',
+        ]);
         final type = _nullableStringValue(map, const [
           'mime_type',
           'mimeType',
@@ -607,10 +637,22 @@ class CustomerModel {
           'file_type',
           'extension',
         ]);
+        final documentType = _nullableStringValue(map, const [
+          'document_type',
+          'documentType',
+          'type',
+        ]);
 
-        final addedDirectDocument = url != null || name.trim() != fallbackName.trim();
+        final addedDirectDocument =
+            url != null || fileId != null || name.trim() != fallbackName.trim();
         if (addedDirectDocument) {
-          addDocument(name: name, url: url, type: type);
+          addDocument(
+            name: name,
+            url: url,
+            type: type,
+            fileId: fileId,
+            documentType: documentType,
+          );
         }
 
         for (final entry in map.entries) {
@@ -625,12 +667,24 @@ class CustomerModel {
 
       final text = value.toString().trim();
       if (text.isEmpty || text == '[]') return;
-      final looksLikeFile = text.startsWith('http') ||
+      final looksLikeFile =
+          text.startsWith('http') ||
           text.contains('/') ||
-          RegExp(r'\.(pdf|png|jpe?g|webp|docx?|xlsx?)$', caseSensitive: false)
-              .hasMatch(text);
+          RegExp(
+            r'\.(pdf|png|jpe?g|webp|docx?|xlsx?)$',
+            caseSensitive: false,
+          ).hasMatch(text);
       if (looksLikeFile) {
         addDocument(name: fallbackName, url: text);
+      } else if (_looksLikeFileIdKey(fallbackName)) {
+        addDocument(
+          name: fallbackName.replaceAll(
+            RegExp(r'\s+Ids?$', caseSensitive: false),
+            '',
+          ),
+          fileId: text,
+          documentType: fallbackName,
+        );
       }
     }
 
@@ -645,16 +699,22 @@ class CustomerModel {
       'attachments',
       'files',
       'gst_certificate',
+      'gst_certificate_id',
       'gst_certificate_file',
       'pan_card',
+      'pan_card_id',
       'pan_card_file',
       'business_registration_certificate',
+      'business_registration_certificate_id',
       'business_registration_file',
       'address_proof',
+      'address_proof_id',
       'address_proof_file',
       'purchase_agreement',
+      'purchase_agreement_id',
       'purchase_agreement_file',
       'other_documents',
+      'other_document_ids',
       'other_document',
     ];
 
@@ -667,6 +727,17 @@ class CustomerModel {
     }
 
     return documents;
+  }
+
+  static bool _looksLikeFileIdKey(String key) {
+    final normalized = key.trim().toLowerCase();
+    return normalized.endsWith('_id') ||
+        normalized.endsWith('_ids') ||
+        normalized.endsWith(' id') ||
+        normalized.endsWith(' ids') ||
+        normalized == 'id' ||
+        normalized == 'fileid' ||
+        normalized == 'file id';
   }
 
   static String _documentLabelFromKey(String key) {
@@ -977,6 +1048,37 @@ DateTime? _readDate(Object? value) {
   return DateTime.tryParse(text);
 }
 
+class UploadedFileReference {
+  final String fileId;
+  final String? url;
+  final String? fileName;
+
+  const UploadedFileReference({required this.fileId, this.url, this.fileName});
+
+  factory UploadedFileReference.fromJson(Map<String, dynamic> json) {
+    String? readString(List<String> keys) {
+      for (final key in keys) {
+        final value = json[key]?.toString().trim();
+        if (value != null && value.isNotEmpty) {
+          return value;
+        }
+      }
+      return null;
+    }
+
+    final fileId = readString(const ['file_id', 'fileId', 'id']);
+    if (fileId == null) {
+      throw const FormatException('Uploaded file id missing in response.');
+    }
+
+    return UploadedFileReference(
+      fileId: fileId,
+      url: readString(const ['url', 'file_url', 'fileUrl', 'path', 'location']),
+      fileName: readString(const ['file_name', 'filename', 'name', 'title']),
+    );
+  }
+}
+
 class CustomerListQuery {
   final String? search;
   final String? category;
@@ -1024,6 +1126,12 @@ class CustomerCreateRequest {
   final int? openingBalance;
   final String? category;
   final String? notes;
+  final String? gstCertificateId;
+  final String? panCardId;
+  final String? businessRegistrationCertificateId;
+  final String? addressProofId;
+  final String? purchaseAgreementId;
+  final List<String>? otherDocumentIds;
 
   const CustomerCreateRequest({
     this.name,
@@ -1038,14 +1146,28 @@ class CustomerCreateRequest {
     this.openingBalance,
     this.category,
     this.notes,
+    this.gstCertificateId,
+    this.panCardId,
+    this.businessRegistrationCertificateId,
+    this.addressProofId,
+    this.purchaseAgreementId,
+    this.otherDocumentIds,
   });
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    final documents = <String, dynamic>{};
     void put(String key, Object? value) {
       if (value == null) return;
       if (value is String && value.trim().isEmpty) return;
       json[key] = value;
+    }
+
+    void putDocument(String key, Object? value) {
+      if (value == null) return;
+      if (value is String && value.trim().isEmpty) return;
+      if (value is List && value.isEmpty) return;
+      documents[key] = value;
     }
 
     put('name', name);
@@ -1060,6 +1182,18 @@ class CustomerCreateRequest {
     put('opening_balance', openingBalance);
     put('category', category);
     put('notes', notes);
+    putDocument('gst_certificate_id', gstCertificateId);
+    putDocument('pan_card_id', panCardId);
+    putDocument(
+      'business_registration_certificate_id',
+      businessRegistrationCertificateId,
+    );
+    putDocument('address_proof_id', addressProofId);
+    putDocument('purchase_agreement_id', purchaseAgreementId);
+    putDocument('other_document_ids', otherDocumentIds);
+    if (documents.isNotEmpty) {
+      json['documents'] = documents;
+    }
     return json;
   }
 }
@@ -1077,6 +1211,12 @@ class CustomerUpdateRequest {
   final String? category;
   final String? notes;
   final bool? isActive;
+  final String? gstCertificateId;
+  final String? panCardId;
+  final String? businessRegistrationCertificateId;
+  final String? addressProofId;
+  final String? purchaseAgreementId;
+  final List<String>? otherDocumentIds;
 
   const CustomerUpdateRequest({
     this.name,
@@ -1091,14 +1231,28 @@ class CustomerUpdateRequest {
     this.category,
     this.notes,
     this.isActive,
+    this.gstCertificateId,
+    this.panCardId,
+    this.businessRegistrationCertificateId,
+    this.addressProofId,
+    this.purchaseAgreementId,
+    this.otherDocumentIds,
   });
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    final documents = <String, dynamic>{};
     void put(String key, Object? value) {
       if (value == null) return;
       if (value is String && value.trim().isEmpty) return;
       json[key] = value;
+    }
+
+    void putDocument(String key, Object? value) {
+      if (value == null) return;
+      if (value is String && value.trim().isEmpty) return;
+      if (value is List && value.isEmpty) return;
+      documents[key] = value;
     }
 
     put('name', name);
@@ -1113,6 +1267,18 @@ class CustomerUpdateRequest {
     put('category', category);
     put('notes', notes);
     put('is_active', isActive);
+    putDocument('gst_certificate_id', gstCertificateId);
+    putDocument('pan_card_id', panCardId);
+    putDocument(
+      'business_registration_certificate_id',
+      businessRegistrationCertificateId,
+    );
+    putDocument('address_proof_id', addressProofId);
+    putDocument('purchase_agreement_id', purchaseAgreementId);
+    putDocument('other_document_ids', otherDocumentIds);
+    if (documents.isNotEmpty) {
+      json['documents'] = documents;
+    }
     return json;
   }
 }

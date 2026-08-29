@@ -135,9 +135,7 @@ class _SalesManagerPerformanceScreenState
     }
     if (action == 'Follow-Ups' || action == 'Follow-ups') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const SalesManagerFollowUpsScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const SalesManagerFollowUpsScreen()),
       );
       return;
     }
@@ -149,9 +147,7 @@ class _SalesManagerPerformanceScreenState
     }
     if (action == 'Attendance') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const SalesManagerAttendanceScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const SalesManagerAttendanceScreen()),
       );
       return;
     }
@@ -297,8 +293,9 @@ class _SalesManagerPerformanceScreenState
                     value: overallScore,
                     minHeight: 12,
                     backgroundColor: AppColors.surfaceSoft,
-                    valueColor:
-                        const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      AppColors.primary,
+                    ),
                   ),
                 ),
               ],
@@ -319,10 +316,7 @@ class _SalesManagerPerformanceScreenState
               SizedBox(height: 2),
               Text(
                 'Overall Score',
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 12,
-                ),
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
               ),
             ],
           ),
@@ -450,8 +444,9 @@ class _MetricCard extends StatelessWidget {
               value: data.progress,
               minHeight: 10,
               backgroundColor: AppColors.surfaceSoft,
-              valueColor:
-                  const AlwaysStoppedAnimation<Color>(AppColors.primary),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                AppColors.primary,
+              ),
             ),
           ),
         ],

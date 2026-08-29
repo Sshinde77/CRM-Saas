@@ -108,7 +108,9 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
         imageLabel: imageLabel,
         imageUrl: _imageUrlController.text.trim().isNotEmpty
             ? _imageUrlController.text.trim()
-            : (_selectedImageName == null ? null : 'uploaded://${_selectedImageName!}'),
+            : (_selectedImageName == null
+                  ? null
+                  : 'uploaded://${_selectedImageName!}'),
         subcategories: List<String>.unmodifiable(_subcategories),
       ),
     );
@@ -116,7 +118,9 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final hasImage = _selectedImageBytes != null || _imageUrlController.text.trim().isNotEmpty;
+    final hasImage =
+        _selectedImageBytes != null ||
+        _imageUrlController.text.trim().isNotEmpty;
 
     return Scaffold(
       key: _scaffoldKey,
@@ -184,7 +188,9 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
                             : Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Expanded(child: _buildMainForm(compact: false)),
+                                  Expanded(
+                                    child: _buildMainForm(compact: false),
+                                  ),
                                   const SizedBox(width: 16),
                                   SizedBox(
                                     width: 280,
@@ -355,10 +361,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
             const SizedBox(height: 6),
             const Text(
               'Press Enter or click Add to include a subcategory.',
-              style: TextStyle(
-                color: Color(0xFF94A3B8),
-                fontSize: 12.5,
-              ),
+              style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12.5),
             ),
             const SizedBox(height: 10),
             compact
@@ -442,7 +445,10 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
                           style: TextButton.styleFrom(
                             backgroundColor: const Color(0xFFF3F4F6),
                             foregroundColor: const Color(0xFF111827),
-                            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 18,
+                              vertical: 13,
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(999),
                             ),
@@ -460,7 +466,10 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
                         style: TextButton.styleFrom(
                           backgroundColor: const Color(0xFFF3F4F6),
                           foregroundColor: const Color(0xFF111827),
-                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 13,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(999),
                           ),
@@ -504,7 +513,9 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          hasImage ? Icons.image_outlined : Icons.image_not_supported_outlined,
+                          hasImage
+                              ? Icons.image_outlined
+                              : Icons.image_not_supported_outlined,
                           color: const Color(0xFF94A3B8),
                           size: 44,
                         ),
@@ -538,10 +549,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
               _selectedImageName!,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Color(0xFF64748B),
-                fontSize: 12.5,
-              ),
+              style: const TextStyle(color: Color(0xFF64748B), fontSize: 12.5),
             ),
           ),
         ],
@@ -569,9 +577,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
         backgroundColor: const Color(0xFFF3F4F6),
         foregroundColor: const Color(0xFF111827),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(999),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
       ),
       child: const Text('Cancel'),
     );
@@ -662,10 +668,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
         children: [
           Text(
             label,
-            style: const TextStyle(
-              color: Color(0xFF334155),
-              fontSize: 13.5,
-            ),
+            style: const TextStyle(color: Color(0xFF334155), fontSize: 13.5),
           ),
           const Spacer(),
           if (label == 'Status')
@@ -691,7 +694,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
                 fontSize: 13.5,
                 fontWeight: FontWeight.w700,
               ),
-          ),
+            ),
         ],
       ),
     );
@@ -728,7 +731,10 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
             hintText: hintText,
             filled: true,
             fillColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 14,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: Color(0xFFD1D5DB)),

@@ -73,12 +73,13 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
     try {
       final items = await _apiProvider.fetchSuppliers();
       final suppliers = items.map(_SupplierRecord.fromJson).toList();
-      final categories = suppliers
-          .map((supplier) => supplier.category)
-          .where((category) => category.trim().isNotEmpty)
-          .toSet()
-          .toList()
-        ..sort();
+      final categories =
+          suppliers
+              .map((supplier) => supplier.category)
+              .where((category) => category.trim().isNotEmpty)
+              .toSet()
+              .toList()
+            ..sort();
       if (!mounted) return;
       setState(() {
         _suppliers = suppliers;
@@ -124,9 +125,9 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
   }
 
   Future<void> _openAddSupplierScreen() async {
-    final result = await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const AddSupplierScreen()),
-    );
+    final result = await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const AddSupplierScreen()));
 
     if (result != null && mounted) {
       setState(() {});
@@ -192,7 +193,9 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                                           (tab) => _TabChip(
                                             label: tab,
                                             selected: _selectedTab == tab,
-                                            onTap: () => setState(() => _selectedTab = tab),
+                                            onTap: () => setState(
+                                              () => _selectedTab = tab,
+                                            ),
                                           ),
                                         )
                                         .toList(),
@@ -233,15 +236,18 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                             padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
                             child: isCompact
                                 ? _isLoading
-                                    ? _loadingState()
-                                    : _errorMessage != null
-                                        ? _errorState(_errorMessage!, _loadSuppliers)
-                                        : _buildCompactList(suppliers)
+                                      ? _loadingState()
+                                      : _errorMessage != null
+                                      ? _errorState(
+                                          _errorMessage!,
+                                          _loadSuppliers,
+                                        )
+                                      : _buildCompactList(suppliers)
                                 : _isLoading
-                                    ? _loadingState()
-                                    : _errorMessage != null
-                                        ? _errorState(_errorMessage!, _loadSuppliers)
-                                        : _buildTable(suppliers),
+                                ? _loadingState()
+                                : _errorMessage != null
+                                ? _errorState(_errorMessage!, _loadSuppliers)
+                                : _buildTable(suppliers),
                           ),
                           const Divider(height: 1, color: Color(0xFFE5E7EB)),
                           Padding(
@@ -297,7 +303,10 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
           prefixIcon: const Icon(Icons.search_rounded, size: 20),
           filled: true,
           fillColor: Colors.white,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 14,
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
             borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
@@ -352,9 +361,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
           horizontal: compact ? 14 : 18,
           vertical: compact ? 8 : 14,
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(999),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
         textStyle: TextStyle(
           fontSize: compact ? 12.5 : 13.5,
           fontWeight: FontWeight.w700,
@@ -367,11 +374,17 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
     return DropdownButtonFormField<String>(
       initialValue: _selectedCategory,
       isExpanded: true,
-      icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF94A3B8)),
+      icon: const Icon(
+        Icons.keyboard_arrow_down_rounded,
+        color: Color(0xFF94A3B8),
+      ),
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
@@ -389,10 +402,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
           .map(
             (category) => DropdownMenuItem<String>(
               value: category,
-              child: Text(
-                category,
-                overflow: TextOverflow.ellipsis,
-              ),
+              child: Text(category, overflow: TextOverflow.ellipsis),
             ),
           )
           .toList(),
@@ -499,7 +509,9 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                   ),
                   alignment: Alignment.center,
                   child: Text(
-                    supplier.name.isNotEmpty ? supplier.name[0].toUpperCase() : 'S',
+                    supplier.name.isNotEmpty
+                        ? supplier.name[0].toUpperCase()
+                        : 'S',
                     style: const TextStyle(
                       color: Color(0xFF111827),
                       fontSize: 16,
@@ -586,7 +598,10 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
             child: Align(
               alignment: Alignment.centerLeft,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: supplier.statusBg,
                   borderRadius: BorderRadius.circular(999),
@@ -643,7 +658,9 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                 ),
                 alignment: Alignment.center,
                 child: Text(
-                  supplier.name.isNotEmpty ? supplier.name[0].toUpperCase() : 'S',
+                  supplier.name.isNotEmpty
+                      ? supplier.name[0].toUpperCase()
+                      : 'S',
                   style: const TextStyle(
                     color: AppColors.primary,
                     fontSize: 16,
@@ -658,16 +675,16 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                   children: [
                     Text(
                       supplier.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Color(0xFF111827),
-                          fontSize: 15,
-                          fontWeight: FontWeight.w800,
-                        ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Color(0xFF111827),
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
                       supplier.category,
                       style: const TextStyle(
                         color: Color(0xFF94A3B8),
@@ -680,7 +697,10 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
               ),
               IconButton(
                 onPressed: () {},
-                icon: const Icon(Icons.more_vert_rounded, color: Color(0xFF94A3B8)),
+                icon: const Icon(
+                  Icons.more_vert_rounded,
+                  color: Color(0xFF94A3B8),
+                ),
               ),
             ],
           ),
@@ -700,7 +720,10 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
               ),
               const SizedBox(width: 18),
               Expanded(
-                child: _supplierInfoBlock('Payable', supplier.outstandingPayable),
+                child: _supplierInfoBlock(
+                  'Payable',
+                  supplier.outstandingPayable,
+                ),
               ),
             ],
           ),
@@ -784,7 +807,9 @@ class _TabChip extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                color: selected ? const Color(0xFF0B4A06) : const Color(0xFF64748B),
+                color: selected
+                    ? const Color(0xFF0B4A06)
+                    : const Color(0xFF64748B),
                 fontSize: 14.5,
                 fontWeight: FontWeight.w600,
               ),
@@ -854,13 +879,15 @@ class _SupplierRecord {
     return _SupplierRecord(
       name: _readString(json, const ['name'], fallback: '-'),
       category: _readString(json, const ['category'], fallback: 'Others'),
-      contact: _readString(
-        json,
-        const ['contact_person', 'contactPerson', 'phone'],
-        fallback: '-',
-      ),
+      contact: _readString(json, const [
+        'contact_person',
+        'contactPerson',
+        'phone',
+      ], fallback: '-'),
       city: _readString(json, const ['city'], fallback: '-'),
-      totalPurchases: _money(_readNum(json, const ['total_purchases', 'totalPurchases'])),
+      totalPurchases: _money(
+        _readNum(json, const ['total_purchases', 'totalPurchases']),
+      ),
       outstandingPayable: _money(
         _readNum(json, const ['outstanding_payable', 'outstandingPayable']),
       ),
@@ -902,4 +929,5 @@ bool _boolValue(Object? value) {
   return text != 'false' && text != 'inactive' && text != '0';
 }
 
-String _money(double value) => 'Rs ${value.toStringAsFixed(value % 1 == 0 ? 0 : 2)}';
+String _money(double value) =>
+    'Rs ${value.toStringAsFixed(value % 1 == 0 ? 0 : 2)}';

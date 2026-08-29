@@ -250,7 +250,9 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
     }
     if (action == 'My Performance') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const SalesManagerPerformanceScreen()),
+        MaterialPageRoute(
+          builder: (_) => const SalesManagerPerformanceScreen(),
+        ),
       );
     }
   }

@@ -5,6 +5,7 @@ import '../../../providers/api_provider.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
 import 'create_quotation_screen.dart';
+import 'quotation_detail_screen.dart';
 
 class AdminQuotationsScreen extends StatefulWidget {
   const AdminQuotationsScreen({super.key});
@@ -33,6 +34,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
 
   List<_QuotationRecord> _quotations = const [
     _QuotationRecord(
+      id: 'QT-2026-1003',
       number: 'QT-2026-1003',
       customer: 'Hotel Grand Meridian',
       salesperson: 'Vikram Singh',
@@ -45,6 +47,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
       statusBackground: Color(0xFFF3F4F6),
     ),
     _QuotationRecord(
+      id: 'QT-2026-1002',
       number: 'QT-2026-1002',
       customer: 'Sunrise Corporate Park',
       salesperson: 'Vikram Singh',
@@ -114,6 +117,101 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
     }).toList();
   }
 
+  Future<void> _openCreateQuotationScreen() async {
+    final result = await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const NewQuotationScreen()));
+
+    if (result != null && mounted) {
+      await _loadQuotations();
+    }
+  }
+
+  Future<void> _openEditQuotationScreen(_QuotationRecord _) async {
+    final result = await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const NewQuotationScreen()));
+
+    if (result != null && mounted) {
+      await _loadQuotations();
+    }
+  }
+
+  Future<void> _openQuotationDetails(_QuotationRecord record) async {
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => QuotationDetailScreen(quotationId: record.id),
+      ),
+    );
+
+    if (result != null && mounted) {
+      await _loadQuotations();
+    }
+  }
+
+  Future<bool> _confirmDeleteQuotation(_QuotationRecord record) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: AppColors.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Text(
+            'Delete Quotation',
+            style: TextStyle(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          content: Text(
+            'Delete ${record.number}? This action cannot be undone.',
+            style: const TextStyle(color: AppColors.textSecondary),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text(
+                'Delete',
+                style: TextStyle(
+                  color: AppColors.red,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    return confirmed == true;
+  }
+
+  Future<void> _deleteQuotation(_QuotationRecord record) async {
+    final confirmed = await _confirmDeleteQuotation(record);
+    if (!confirmed || !mounted) return;
+
+    try {
+      await _apiProvider.deleteQuotation(record.id);
+      if (!mounted) return;
+      await _loadQuotations();
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('${record.number} deleted')));
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to delete quotation: $error')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final quotations = _filteredQuotations();
@@ -158,15 +256,15 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
                       ),
                       child: isMobile
                           ? _isLoading
-                              ? _loadingState()
-                              : _errorMessage != null
-                                  ? _errorState(_errorMessage!, _loadQuotations)
-                                  : _buildMobileContent(quotations)
+                                ? _loadingState()
+                                : _errorMessage != null
+                                ? _errorState(_errorMessage!, _loadQuotations)
+                                : _buildMobileContent(quotations)
                           : _isLoading
-                              ? _loadingState()
-                              : _errorMessage != null
-                                  ? _errorState(_errorMessage!, _loadQuotations)
-                                  : _buildDesktopContent(quotations),
+                          ? _loadingState()
+                          : _errorMessage != null
+                          ? _errorState(_errorMessage!, _loadQuotations)
+                          : _buildDesktopContent(quotations),
                     ),
                   ),
                 ),
@@ -199,13 +297,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
               ),
               const SizedBox(width: 12),
               ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const NewQuotationScreen(),
-                    ),
-                  );
-                },
+                onPressed: _openCreateQuotationScreen,
                 icon: const Icon(Icons.add, size: 18),
                 label: const Text('New Quotation'),
                 style: ElevatedButton.styleFrom(
@@ -230,7 +322,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
         const Divider(height: 1, color: Color(0xFFE5E7EB)),
         Padding(
           padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
-          child: _buildTable(quotations),
+          child: _buildQuotationCardList(quotations),
         ),
         const Divider(height: 1, color: Color(0xFFE5E7EB)),
         Padding(
@@ -305,13 +397,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
                 children: [
                   _statusDropdown(width: 180),
                   ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const NewQuotationScreen(),
-                        ),
-                      );
-                    },
+                    onPressed: _openCreateQuotationScreen,
                     icon: const Icon(Icons.add, size: 18),
                     label: const Text('New Quotation'),
                     style: ElevatedButton.styleFrom(
@@ -341,7 +427,12 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
           child: Column(
             children: [
               for (var i = 0; i < quotations.length; i++) ...[
-                _QuotationCard(record: quotations[i]),
+                _QuotationCard(
+                  record: quotations[i],
+                  onView: () => _openQuotationDetails(quotations[i]),
+                  onEdit: () => _openEditQuotationScreen(quotations[i]),
+                  onDelete: () => _deleteQuotation(quotations[i]),
+                ),
                 if (i != quotations.length - 1) const SizedBox(height: 12),
               ],
               if (quotations.isEmpty)
@@ -363,20 +454,20 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
           ),
         ),
         const Divider(height: 1, color: Color(0xFFE5E7EB)),
-        const Padding(
+        Padding(
           padding: EdgeInsets.fromLTRB(14, 14, 14, 18),
           child: Row(
             children: [
               Text(
-                '1 to 2 of 2',
-                style: TextStyle(
+                '${quotations.length} of ${_quotations.length}',
+                style: const TextStyle(
                   color: Color(0xFF94A3B8),
                   fontSize: 13.5,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              Spacer(),
-              Text(
+              const Spacer(),
+              const Text(
                 'Quotations',
                 style: TextStyle(
                   color: Color(0xFF94A3B8),
@@ -485,169 +576,41 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
     return SizedBox(width: width, height: 44, child: dropdown);
   }
 
-  Widget _buildTable(List<_QuotationRecord> quotations) {
-    final rows = quotations.isEmpty
-        ? [
-            const Padding(
-              padding: EdgeInsets.all(24),
-              child: Center(
-                child: Text(
-                  'No quotations found.',
-                  style: TextStyle(
-                    color: Color(0xFF64748B),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
+  Widget _buildQuotationCardList(List<_QuotationRecord> quotations) {
+    if (quotations.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(24),
+        child: Center(
+          child: Text(
+            'No quotations found.',
+            style: TextStyle(
+              color: Color(0xFF64748B),
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
             ),
-          ]
-        : quotations
-              .map(
-                (record) => Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 16,
-                  ),
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        width: 190,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              record.number,
-                              style: const TextStyle(
-                                color: Color(0xFF0F172A),
-                                fontSize: 15,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              record.itemCount,
-                              style: const TextStyle(
-                                color: Color(0xFF94A3B8),
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(
-                        width: 260,
-                        child: Text(
-                          record.customer,
-                          style: const TextStyle(
-                            color: Color(0xFF334155),
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        width: 180,
-                        child: Text(
-                          record.salesperson,
-                          style: const TextStyle(
-                            color: Color(0xFF334155),
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        width: 150,
-                        child: Text(
-                          record.date,
-                          style: const TextStyle(
-                            color: Color(0xFF334155),
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        width: 150,
-                        child: Text(
-                          record.validUntil,
-                          style: const TextStyle(
-                            color: Color(0xFF334155),
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        width: 120,
-                        child: Text(
-                          record.amount,
-                          style: const TextStyle(
-                            color: Color(0xFF0F172A),
-                            fontSize: 15,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        width: 110,
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: _StatusChip(
-                            label: record.status,
-                            background: record.statusBackground,
-                            foreground: record.statusColor,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-              .toList();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(8, 2, 8, 14),
-          child: Row(
-            children: const [
-              SizedBox(width: 190, child: _TableHeading('QUOTATION')),
-              SizedBox(width: 260, child: _TableHeading('CUSTOMER')),
-              SizedBox(width: 180, child: _TableHeading('SALESPERSON')),
-              SizedBox(width: 150, child: _TableHeading('DATE')),
-              SizedBox(width: 150, child: _TableHeading('VALID UNTIL')),
-              SizedBox(width: 120, child: _TableHeading('AMOUNT')),
-              SizedBox(width: 110, child: _TableHeading('STATUS')),
-            ],
           ),
         ),
-        const Divider(height: 1, color: Color(0xFFE5E7EB)),
-        if (quotations.isEmpty)
-          const Padding(
-            padding: EdgeInsets.all(24),
-            child: Center(
-              child: Text(
-                'No quotations found.',
-                style: TextStyle(
-                  color: Color(0xFF64748B),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          )
-        else
-          ...rows,
+      );
+    }
+
+    return Column(
+      children: [
+        for (var i = 0; i < quotations.length; i++) ...[
+          _QuotationCard(
+            record: quotations[i],
+            onView: () => _openQuotationDetails(quotations[i]),
+            onEdit: () => _openEditQuotationScreen(quotations[i]),
+            onDelete: () => _deleteQuotation(quotations[i]),
+          ),
+          if (i != quotations.length - 1) const SizedBox(height: 12),
+        ],
       ],
     );
   }
 }
 
 class _QuotationRecord {
+  final String id;
   final String number;
   final String customer;
   final String salesperson;
@@ -660,6 +623,7 @@ class _QuotationRecord {
   final Color statusBackground;
 
   const _QuotationRecord({
+    required this.id,
     required this.number,
     required this.customer,
     required this.salesperson,
@@ -675,11 +639,20 @@ class _QuotationRecord {
   factory _QuotationRecord.fromJson(Map<String, dynamic> json) {
     final status = _stringValue(json, const ['status'], fallback: 'Draft');
     final itemCount = _numValue(json, const ['item_count', 'itemCount']);
+    final number = _stringValue(json, const [
+      'quotation_number',
+      'quotationNumber',
+      'number',
+      'id',
+    ]);
+    final id = _stringValue(json, const [
+      'id',
+      'quotation_id',
+      'quotationId',
+    ], fallback: number);
     return _QuotationRecord(
-      number: _stringValue(
-        json,
-        const ['quotation_number', 'quotationNumber', 'number', 'id'],
-      ),
+      id: id,
+      number: number,
       customer: _stringValue(
         json,
         const ['customer_name', 'customerName'],
@@ -703,6 +676,24 @@ class _QuotationRecord {
       statusBackground: _quotationStatusBackground(status),
     );
   }
+
+  String get initials {
+    final source = customer == '-' ? number : customer;
+    final parts = source
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((part) => part.isNotEmpty)
+        .toList();
+    if (parts.isEmpty) return 'QT';
+    if (parts.length == 1) {
+      final text = parts.first.replaceAll(RegExp(r'[^A-Za-z0-9]'), '');
+      if (text.isEmpty) return 'QT';
+      return text.length >= 2
+          ? text.substring(0, 2).toUpperCase()
+          : text.toUpperCase();
+    }
+    return '${parts.first[0]}${parts[1][0]}'.toUpperCase();
+  }
 }
 
 String _stringValue(
@@ -718,7 +709,10 @@ String _stringValue(
   for (final nestedKey in nestedKeys) {
     final nested = json[nestedKey];
     if (nested is Map<String, dynamic>) {
-      final value = _stringValue(nested, const ['name', 'full_name'], fallback: '');
+      final value = _stringValue(nested, const [
+        'name',
+        'full_name',
+      ], fallback: '');
       if (value.isNotEmpty) return value;
     }
   }
@@ -737,12 +731,26 @@ double _numValue(Map<String, dynamic> json, List<String> keys) {
   return 0;
 }
 
-String _formatMoney(double value) => 'Rs. ${value.toStringAsFixed(value % 1 == 0 ? 0 : 2)}';
+String _formatMoney(double value) =>
+    'Rs. ${value.toStringAsFixed(value % 1 == 0 ? 0 : 2)}';
 
 String _formatApiDate(String value) {
   final parsed = DateTime.tryParse(value);
   if (parsed == null) return value.isEmpty ? '-' : value;
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
   return '${parsed.day.toString().padLeft(2, '0')} ${months[parsed.month - 1]} ${parsed.year}';
 }
 
@@ -766,96 +774,243 @@ Color _quotationStatusBackground(String status) {
 
 class _QuotationCard extends StatelessWidget {
   final _QuotationRecord record;
+  final VoidCallback onView;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
 
-  const _QuotationCard({required this.record});
+  const _QuotationCard({
+    required this.record,
+    required this.onView,
+    required this.onEdit,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.borderStrong),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.textPrimary.withValues(alpha: 0.035),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final compact = constraints.maxWidth < 430;
+
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              _quotationAvatar(record.initials, compact ? 52 : 60),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      record.number,
-                      style: const TextStyle(
-                        color: Color(0xFF0F172A),
-                        fontSize: 15.5,
-                        fontWeight: FontWeight.w800,
-                      ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            record.number,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        _StatusChip(
+                          label: record.status,
+                          background: record.statusBackground,
+                          foreground: record.statusColor,
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      record.itemCount,
+                      record.customer,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        color: Color(0xFF94A3B8),
-                        fontSize: 12.5,
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
+                    ),
+                    const SizedBox(height: 8),
+                    _infoPairRow(
+                      leftIcon: Icons.person_outline_rounded,
+                      leftText: record.salesperson,
+                      rightIcon: Icons.inventory_2_outlined,
+                      rightText: record.itemCount,
+                    ),
+                    const SizedBox(height: 7),
+                    _infoPairRow(
+                      leftIcon: Icons.calendar_today_outlined,
+                      leftText: record.date,
+                      rightIcon: Icons.event_available_outlined,
+                      rightText: record.validUntil,
+                    ),
+                    const SizedBox(height: 7),
+                    _infoPairRow(
+                      leftIcon: Icons.currency_rupee_rounded,
+                      leftText: record.amount,
+                      rightIcon: Icons.circle_rounded,
+                      rightText: record.status,
+                      rightIconColor: record.statusColor,
+                    ),
+                    const SizedBox(height: 10),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: _actionRow(),
                     ),
                   ],
                 ),
               ),
-              _StatusChip(
-                label: record.status,
-                background: record.statusBackground,
-                foreground: record.statusColor,
-              ),
             ],
-          ),
-          const SizedBox(height: 14),
-          _infoRow('Customer', record.customer),
-          const SizedBox(height: 8),
-          _infoRow('Salesperson', record.salesperson),
-          const SizedBox(height: 8),
-          _infoRow('Date', record.date),
-          const SizedBox(height: 8),
-          _infoRow('Valid Until', record.validUntil),
-          const SizedBox(height: 8),
-          _infoRow('Amount', record.amount),
-        ],
+          );
+        },
       ),
     );
   }
 
-  Widget _infoRow(String label, String value) {
+  Widget _infoPairRow({
+    required IconData leftIcon,
+    required String leftText,
+    required IconData rightIcon,
+    required String rightText,
+    Color? rightIconColor,
+  }) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(
-          width: 94,
-          child: Text(
-            label,
-            style: const TextStyle(
-              color: Color(0xFF94A3B8),
-              fontSize: 12.5,
-              fontWeight: FontWeight.w600,
-            ),
+        Expanded(child: _infoLine(leftIcon, leftText)),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _infoLine(
+            rightIcon,
+            rightText,
+            iconColor: rightIconColor ?? AppColors.textPrimary,
           ),
         ),
+      ],
+    );
+  }
+
+  Widget _infoLine(
+    IconData icon,
+    String text, {
+    Color iconColor = AppColors.textPrimary,
+  }) {
+    return Row(
+      children: [
+        Icon(icon, size: 15, color: iconColor),
+        const SizedBox(width: 6),
         Expanded(
           child: Text(
-            value,
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              color: Color(0xFF0F172A),
-              fontSize: 13.5,
-              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0,
             ),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _actionRow() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _actionButton(
+          icon: Icons.visibility_outlined,
+          label: 'View Details',
+          color: AppColors.primary,
+          backgroundColor: const Color(0xFFF3F5F8),
+          onTap: onView,
+        ),
+        const SizedBox(width: 6),
+        _actionButton(
+          icon: Icons.edit_outlined,
+          label: 'Edit',
+          color: AppColors.textPrimary,
+          backgroundColor: const Color(0xFFF3F5F8),
+          onTap: onEdit,
+        ),
+        const SizedBox(width: 6),
+        _actionButton(
+          icon: Icons.delete_outline_rounded,
+          label: 'Delete',
+          color: AppColors.red,
+          backgroundColor: const Color(0xFFFFEBEB),
+          onTap: onDelete,
+        ),
+      ],
+    );
+  }
+
+  Widget _quotationAvatar(String initials, double size) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: AppColors.surfaceSoft,
+        shape: BoxShape.circle,
+        border: Border.all(color: AppColors.borderLight),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        initials,
+        style: TextStyle(
+          color: AppColors.primary,
+          fontWeight: FontWeight.w900,
+          fontSize: size * 0.24,
+          letterSpacing: 0,
+        ),
+      ),
+    );
+  }
+
+  Widget _actionButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required Color backgroundColor,
+    required VoidCallback onTap,
+  }) {
+    return Tooltip(
+      message: label,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          width: 34,
+          height: 34,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, size: 17, color: color),
+        ),
+      ),
     );
   }
 }
@@ -879,32 +1034,28 @@ class _StatusChip extends StatelessWidget {
         color: background,
         borderRadius: BorderRadius.circular(999),
       ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: foreground,
-          fontSize: 12.5,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-    );
-  }
-}
-
-class _TableHeading extends StatelessWidget {
-  final String title;
-
-  const _TableHeading(this.title);
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      title,
-      style: const TextStyle(
-        color: Color(0xFF94A3B8),
-        fontSize: 12,
-        fontWeight: FontWeight.w800,
-        letterSpacing: 1.1,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              color: foreground,
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Container(
+            width: 7,
+            height: 7,
+            decoration: BoxDecoration(
+              color: foreground,
+              shape: BoxShape.circle,
+            ),
+          ),
+        ],
       ),
     );
   }

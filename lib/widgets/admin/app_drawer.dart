@@ -188,10 +188,7 @@ class AppDrawer extends StatefulWidget {
       _NavItem('Company Settings', Icons.storefront_outlined),
       _NavItem('Plans', Icons.workspace_premium_outlined),
       _NavItem('Staff', Icons.people_outline_rounded),
-      _NavItem(
-        'Roles & Permissions',
-        Icons.admin_panel_settings_outlined,
-      ),
+      _NavItem('Roles & Permissions', Icons.admin_panel_settings_outlined),
       _NavItem('Attendance', Icons.fact_check_outlined),
       _NavItem('Notifications', Icons.notifications_none_rounded),
       _NavItem('Audit Logs', Icons.history_rounded),
@@ -271,9 +268,7 @@ class _AppDrawerState extends State<AppDrawer> {
         break;
       case 'Roles & Permissions':
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (_) => const RolesPermissionsScreen(),
-          ),
+          MaterialPageRoute(builder: (_) => const RolesPermissionsScreen()),
         );
         break;
       case 'Attendance':

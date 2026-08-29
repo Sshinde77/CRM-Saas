@@ -306,9 +306,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
   }
 
   Future<void> _openNewOrder() async {
-    Navigator.of(
-      context,
-    ).push(
+    Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => NewAdminOrderScreen(
           useSalesManagerShell: widget.useSalesManagerShell,
@@ -376,7 +374,9 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     }
     if (action == 'My Performance') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const SalesManagerPerformanceScreen()),
+        MaterialPageRoute(
+          builder: (_) => const SalesManagerPerformanceScreen(),
+        ),
       );
     }
   }

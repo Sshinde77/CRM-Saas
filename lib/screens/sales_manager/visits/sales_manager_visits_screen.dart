@@ -108,9 +108,7 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
     }
     if (action == 'Follow-Ups' || action == 'Follow-ups') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const SalesManagerFollowUpsScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const SalesManagerFollowUpsScreen()),
       );
       return;
     }
@@ -124,9 +122,7 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
     }
     if (action == 'Attendance') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const SalesManagerAttendanceScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const SalesManagerAttendanceScreen()),
       );
       return;
     }
@@ -142,10 +138,7 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
         : 'Check in saved for $customer${notes.isEmpty ? '' : ' with notes'}';
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        behavior: SnackBarBehavior.floating,
-      ),
+      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
     );
   }
 
@@ -513,10 +506,7 @@ class _VisitHistoryCard extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             record.notes,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 13,
-            ),
+            style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
           ),
         ],
       ),

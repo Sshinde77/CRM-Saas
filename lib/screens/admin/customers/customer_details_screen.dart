@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../constants/api_constants.dart';
 import '../../../constants/app_colors.dart';
 import '../../../models/customer_activity_models.dart';
 import '../../../models/customer_model.dart';
@@ -31,7 +32,9 @@ String _formatMoneyValue(Object? value) {
   final parts = absolute.split('.');
   final whole = parts.first;
   final fraction = parts.length > 1 ? '.${parts.last}' : '';
-  final lastThree = whole.length > 3 ? whole.substring(whole.length - 3) : whole;
+  final lastThree = whole.length > 3
+      ? whole.substring(whole.length - 3)
+      : whole;
   final leading = whole.length > 3 ? whole.substring(0, whole.length - 3) : '';
   final chunks = <String>[];
   var rest = leading;
@@ -84,6 +87,22 @@ String _titleCaseText(String value) {
       .where((part) => part.isNotEmpty)
       .map((part) => part[0].toUpperCase() + part.substring(1).toLowerCase())
       .join(' ');
+}
+
+String? _documentFileUrl(CustomerDocument document) {
+  final url = document.url?.trim();
+  if (url != null && url.isNotEmpty) {
+    return url;
+  }
+
+  final fileId = document.fileId?.trim();
+  if (fileId == null || fileId.isEmpty) {
+    return null;
+  }
+
+  return Uri.parse(
+    ApiConstants.baseUrl,
+  ).resolve(ApiEndpoints.fileDetail(fileId)).toString();
 }
 
 class CustomerDetailsScreen extends StatefulWidget {
@@ -214,16 +233,23 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
     try {
       final documents = await _apiProvider.fetchCustomerDocuments(customerId);
       if (!mounted) return;
+      final fallbackDocuments =
+          _customer?.documents ?? const <CustomerDocument>[];
       setState(() {
-        _documents = documents;
+        _documents = documents.isEmpty ? fallbackDocuments : documents;
         _hasLoadedDocuments = true;
         _isDocumentsLoading = false;
       });
     } catch (error) {
       if (!mounted) return;
+      final fallbackDocuments =
+          _customer?.documents ?? const <CustomerDocument>[];
       setState(() {
-        _documents = const [];
-        _documentsErrorMessage = error.toString();
+        _documents = fallbackDocuments;
+        _documentsErrorMessage = fallbackDocuments.isEmpty
+            ? error.toString()
+            : null;
+        _hasLoadedDocuments = fallbackDocuments.isNotEmpty;
         _isDocumentsLoading = false;
       });
     }
@@ -295,9 +321,9 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
     if (value.trim().isEmpty || value == '-') return;
     await Clipboard.setData(ClipboardData(text: value));
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$label copied')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('$label copied')));
   }
 
   Future<void> _openMapLocation(CustomerModel customer) async {
@@ -320,7 +346,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
   }
 
   Future<void> _downloadDocument(CustomerDocument document) async {
-    final url = document.url?.trim();
+    final url = _documentFileUrl(document);
     if (url == null || url.isEmpty) {
       _copyValue('Document name', document.name);
       return;
@@ -402,7 +428,10 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
       context: context,
       builder: (dialogContext) {
         return Dialog(
-          insetPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 18,
+            vertical: 24,
+          ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(22),
           ),
@@ -428,8 +457,8 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                           document.isImage
                               ? Icons.image_outlined
                               : document.isPdf
-                                  ? Icons.picture_as_pdf_outlined
-                                  : Icons.description_outlined,
+                              ? Icons.picture_as_pdf_outlined
+                              : Icons.description_outlined,
                           color: AppColors.primary,
                         ),
                       ),
@@ -468,7 +497,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                       child: _DocumentPreviewBody(document: document),
                     ),
                   ),
-                  if (document.hasUrl) ...[
+                  if (_documentFileUrl(document) != null) ...[
                     const SizedBox(height: 14),
                     Align(
                       alignment: Alignment.centerRight,
@@ -510,13 +539,15 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                   label: 'Primary Phone',
                   value: _displayText(customer.phone),
                   trailingIcon: Icons.call_rounded,
-                  onTrailingTap: () => _copyValue('Phone', customer.phone ?? ''),
+                  onTrailingTap: () =>
+                      _copyValue('Phone', customer.phone ?? ''),
                 ),
                 _FieldItem(
                   label: 'Email Address',
                   value: _displayText(customer.email),
                   trailingIcon: Icons.mail_outline_rounded,
-                  onTrailingTap: () => _copyValue('Email', customer.email ?? ''),
+                  onTrailingTap: () =>
+                      _copyValue('Email', customer.email ?? ''),
                 ),
                 _FieldItem(
                   label: 'Primary Contact Person',
@@ -530,7 +561,10 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                   label: 'Designation',
                   value: _displayText(customer.designation),
                 ),
-                _FieldItem(label: 'Website', value: _displayText(customer.website)),
+                _FieldItem(
+                  label: 'Website',
+                  value: _displayText(customer.website),
+                ),
                 _FieldItem(
                   label: 'Communication Preference',
                   value: _displayText(customer.communicationPreference),
@@ -560,7 +594,8 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                   label: 'GST Number',
                   value: _displayText(customer.gstNumber),
                   trailingIcon: Icons.copy_rounded,
-                  onTrailingTap: () => _copyValue('GST Number', customer.gstNumber ?? ''),
+                  onTrailingTap: () =>
+                      _copyValue('GST Number', customer.gstNumber ?? ''),
                 ),
                 _FieldItem(
                   label: 'PAN / Registration No.',
@@ -595,26 +630,38 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
               items: [
                 _FieldItem(
                   label: 'Billing Address',
-                  value: _displayText(customer.billingAddress ?? customer.address),
+                  value: _displayText(
+                    customer.billingAddress ?? customer.address,
+                  ),
                   trailingIcon: Icons.location_on_rounded,
                 ),
                 _FieldItem(
                   label: 'Shipping Address',
-                  value: _displayText(customer.deliveryAddress ?? customer.billingAddress),
+                  value: _displayText(
+                    customer.deliveryAddress ?? customer.billingAddress,
+                  ),
                   trailingIcon: Icons.location_on_rounded,
                 ),
                 _FieldItem(
                   label: 'Google Maps Location',
-                  value: customer.mapLatitude != null && customer.mapLongitude != null
+                  value:
+                      customer.mapLatitude != null &&
+                          customer.mapLongitude != null
                       ? '${customer.mapLatitude}, ${customer.mapLongitude}'
                       : '-',
                   trailingIcon: Icons.map_outlined,
                   onTrailingTap: () => _openMapLocation(customer),
                 ),
-                _FieldItem(label: 'Country', value: _displayText(customer.country)),
+                _FieldItem(
+                  label: 'Country',
+                  value: _displayText(customer.country),
+                ),
                 _FieldItem(label: 'City', value: _displayText(customer.city)),
                 _FieldItem(label: 'State', value: _displayText(customer.state)),
-                _FieldItem(label: 'Pin Code', value: _displayText(customer.pinCode)),
+                _FieldItem(
+                  label: 'Pin Code',
+                  value: _displayText(customer.pinCode),
+                ),
               ],
             ),
           ],
@@ -637,7 +684,8 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                 _FieldItem(
                   label: 'Assigned Sales Officer',
                   value: _displayText(
-                    customer.assignedSalesOfficerName ?? customer.assignedSalesOfficerId,
+                    customer.assignedSalesOfficerName ??
+                        customer.assignedSalesOfficerId,
                   ),
                 ),
                 _FieldItem(
@@ -655,7 +703,9 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                 _FieldItem(
                   label: 'Customer Since',
                   value: _formatDate(
-                    customer.customerSince ?? customer.createdAt ?? customer.updatedAt,
+                    customer.customerSince ??
+                        customer.createdAt ??
+                        customer.updatedAt,
                   ),
                 ),
                 _FieldItem(
@@ -757,7 +807,9 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
             Expanded(
               child: _isLoading && customer == null
                   ? const Center(
-                      child: CircularProgressIndicator(color: AppColors.primary),
+                      child: CircularProgressIndicator(
+                        color: AppColors.primary,
+                      ),
                     )
                   : RefreshIndicator(
                       onRefresh: _loadCustomer,
@@ -775,25 +827,33 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                                 children: [
                                   _HeaderCard(
                                     customer: customer,
-                                    onCallTap: () =>
-                                        _copyValue('Phone', customer.phone ?? ''),
+                                    onCallTap: () => _copyValue(
+                                      'Phone',
+                                      customer.phone ?? '',
+                                    ),
                                   ),
                                   const SizedBox(height: 14),
                                   _MetricsGrid(customer: customer),
                                   const SizedBox(height: 14),
                                   ..._sectionsFor(customer).map(
                                     (section) => Padding(
-                                      padding: const EdgeInsets.only(bottom: 12),
+                                      padding: const EdgeInsets.only(
+                                        bottom: 12,
+                                      ),
                                       child: _AccordionSection(
                                         title: section.title,
                                         icon: section.icon,
-                                        expanded: _expandedSections.contains(section.id),
+                                        expanded: _expandedSections.contains(
+                                          section.id,
+                                        ),
                                         onChanged: (expanded) {
                                           setState(() {
                                             if (expanded) {
                                               _expandedSections.add(section.id);
                                             } else {
-                                              _expandedSections.remove(section.id);
+                                              _expandedSections.remove(
+                                                section.id,
+                                              );
                                             }
                                           });
                                         },
@@ -1035,11 +1095,7 @@ class _HeaderRow extends StatelessWidget {
   final String text;
   final Widget? trailing;
 
-  const _HeaderRow({
-    required this.icon,
-    required this.text,
-    this.trailing,
-  });
+  const _HeaderRow({required this.icon, required this.text, this.trailing});
 
   @override
   Widget build(BuildContext context) {
@@ -1063,10 +1119,7 @@ class _HeaderRow extends StatelessWidget {
             ),
           ),
         ),
-        if (trailing != null) ...[
-          const SizedBox(width: 10),
-          trailing!,
-        ],
+        if (trailing != null) ...[const SizedBox(width: 10), trailing!],
       ],
     );
   }
@@ -1219,10 +1272,7 @@ class _SlidingMetricsStripState extends State<_SlidingMetricsStrip>
           animation: _controller,
           builder: (context, child) {
             final offset = -(loopWidth * _controller.value);
-            return Transform.translate(
-              offset: Offset(offset, 0),
-              child: child,
-            );
+            return Transform.translate(offset: Offset(offset, 0), child: child);
           },
           child: Row(
             children: [
@@ -1484,7 +1534,9 @@ class _FieldTile extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: AppColors.borderLight.withValues(alpha: 0.9)),
+          bottom: BorderSide(
+            color: AppColors.borderLight.withValues(alpha: 0.9),
+          ),
         ),
       ),
       child: Row(
@@ -1538,8 +1590,10 @@ class _FinancialSummary extends StatelessWidget {
     final totalReceived = _safeMoneyNumber(customer.totalReceived);
     final totalBilled = _safeMoneyNumber(customer.totalBilled);
     final openingBalance = _safeMoneyNumber(customer.openingBalance);
-    final availableCredit =
-        (creditLimit - outstanding).clamp(-999999999.0, 999999999.0);
+    final availableCredit = (creditLimit - outstanding).clamp(
+      -999999999.0,
+      999999999.0,
+    );
     final cards = [
       _SummaryCardData(
         label: 'Credit Limit',
@@ -1595,10 +1649,7 @@ class _SummaryCardData {
   final String label;
   final String value;
 
-  const _SummaryCardData({
-    required this.label,
-    required this.value,
-  });
+  const _SummaryCardData({required this.label, required this.value});
 }
 
 class _SummaryBox extends StatelessWidget {
@@ -1810,8 +1861,8 @@ class _DocumentListRow extends StatelessWidget {
     final icon = document.isImage
         ? Icons.image_outlined
         : document.isPdf
-            ? Icons.picture_as_pdf_outlined
-            : Icons.description_outlined;
+        ? Icons.picture_as_pdf_outlined
+        : Icons.description_outlined;
 
     final typeChip = Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
@@ -1892,9 +1943,11 @@ class _DocumentPreviewBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (document.isImage && document.hasUrl) {
+    final url = _documentFileUrl(document);
+
+    if (url != null && (document.isImage || document.hasFileId)) {
       return Image.network(
-        document.url!,
+        url,
         fit: BoxFit.contain,
         loadingBuilder: (context, child, progress) {
           if (progress == null) return child;
@@ -1912,11 +1965,11 @@ class _DocumentPreviewBody extends StatelessWidget {
       );
     }
 
-    if (!document.hasUrl) {
+    if (url == null) {
       return const _DocumentPreviewMessage(
         icon: Icons.insert_drive_file_outlined,
         title: 'Document name available',
-        subtitle: 'No preview URL was provided by the API.',
+        subtitle: 'No file reference was provided by the API.',
       );
     }
 
@@ -2177,9 +2230,7 @@ class _StatementMetricGrid extends StatelessWidget {
           Row(
             children: [
               for (var i = 0; i < rows[rowIndex].length; i++) ...[
-                Expanded(
-                  child: _StatementMetricCard(data: rows[rowIndex][i]),
-                ),
+                Expanded(child: _StatementMetricCard(data: rows[rowIndex][i])),
                 if (i != rows[rowIndex].length - 1) const SizedBox(width: 12),
               ],
               if (rows[rowIndex].length == 1) ...[
@@ -2270,7 +2321,9 @@ class _StatementTransactionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final amount = _isCredit ? transaction.credit : transaction.debit;
-    final amountColor = _isCredit ? const Color(0xFF0A8F3D) : const Color(0xFFC53030);
+    final amountColor = _isCredit
+        ? const Color(0xFF0A8F3D)
+        : const Color(0xFFC53030);
     final amountPrefix = _isCredit ? '+' : '-';
 
     return Container(
@@ -2475,7 +2528,8 @@ class _PaymentHistoryCard extends StatelessWidget {
               fontWeight: FontWeight.w500,
             ),
           ),
-          if (payment.status.trim() != '-' && payment.status.trim().isNotEmpty) ...[
+          if (payment.status.trim() != '-' &&
+              payment.status.trim().isNotEmpty) ...[
             const SizedBox(height: 8),
             _InfoPill(
               label: _titleCaseText(payment.status),
@@ -2636,7 +2690,9 @@ Color _statusTextColor(String status) {
   if (normalized == 'completed' || normalized == 'delivered') {
     return const Color(0xFF04844B);
   }
-  if (normalized == 'placed' || normalized == 'pending' || normalized == 'reserved') {
+  if (normalized == 'placed' ||
+      normalized == 'pending' ||
+      normalized == 'reserved') {
     return const Color(0xFF1256F3);
   }
   if (normalized == 'cancelled' || normalized == 'void') {
@@ -2650,7 +2706,9 @@ Color _statusBackgroundColor(String status) {
   if (normalized == 'completed' || normalized == 'delivered') {
     return const Color(0xFFE9F8EF);
   }
-  if (normalized == 'placed' || normalized == 'pending' || normalized == 'reserved') {
+  if (normalized == 'placed' ||
+      normalized == 'pending' ||
+      normalized == 'reserved') {
     return const Color(0xFFECF3FF);
   }
   if (normalized == 'cancelled' || normalized == 'void') {
@@ -2747,10 +2805,7 @@ class _SectionError extends StatelessWidget {
   final String message;
   final Future<void> Function() onRetry;
 
-  const _SectionError({
-    required this.message,
-    required this.onRetry,
-  });
+  const _SectionError({required this.message, required this.onRetry});
 
   @override
   Widget build(BuildContext context) {

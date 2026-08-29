@@ -1,5 +1,9 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
+import '../../../constants/api_constants.dart';
 import '../../../constants/app_colors.dart';
 import '../../../providers/api_provider.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
@@ -170,18 +174,22 @@ class _ProductsScreenState extends State<ProductsScreen> {
         _apiProvider.fetchBrands(),
       ]);
       final products = results[0].map(_ProductItem.fromJson).toList();
-      final categories = results[1]
-          .map((item) => _productText(item, const ['name', 'category_name']))
-          .where((value) => value.trim().isNotEmpty)
-          .toSet()
-          .toList()
-        ..sort();
-      final brands = results[2]
-          .map((item) => _productText(item, const ['name']))
-          .where((value) => value.trim().isNotEmpty)
-          .toSet()
-          .toList()
-        ..sort();
+      final categories =
+          results[1]
+              .map(
+                (item) => _productText(item, const ['name', 'category_name']),
+              )
+              .where((value) => value.trim().isNotEmpty)
+              .toSet()
+              .toList()
+            ..sort();
+      final brands =
+          results[2]
+              .map((item) => _productText(item, const ['name']))
+              .where((value) => value.trim().isNotEmpty)
+              .toSet()
+              .toList()
+            ..sort();
       if (!mounted) return;
       setState(() {
         _products = products;
@@ -697,6 +705,51 @@ class _ProductsScreenState extends State<ProductsScreen> {
   }
 
   Widget _productVisual(_ProductItem product, {required double size}) {
+    final imageUrl = product.imageUrl?.trim();
+    final imageBytes = _productImageBytes(imageUrl);
+    final Widget visualChild;
+
+    if (imageBytes != null) {
+      visualChild = Image.memory(
+        imageBytes,
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return _productIconFallback(product, size: size);
+        },
+      );
+    } else if (imageUrl != null && imageUrl.isNotEmpty) {
+      visualChild = Image.network(
+        imageUrl,
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return _productIconFallback(product, size: size);
+        },
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Stack(
+            alignment: Alignment.center,
+            children: [
+              _productIconFallback(product, size: size),
+              SizedBox(
+                width: size * 0.24,
+                height: size * 0.24,
+                child: const CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.primary,
+                ),
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      visualChild = _productIconFallback(product, size: size);
+    }
+
     return Container(
       width: size,
       height: size,
@@ -705,20 +758,25 @@ class _ProductsScreenState extends State<ProductsScreen> {
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: AppColors.borderLight),
       ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Container(
-            width: size * 0.62,
-            height: size * 0.62,
-            decoration: BoxDecoration(
-              color: product.accent.withValues(alpha: 0.12),
-              shape: BoxShape.circle,
-            ),
+      clipBehavior: Clip.antiAlias,
+      child: visualChild,
+    );
+  }
+
+  Widget _productIconFallback(_ProductItem product, {required double size}) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Container(
+          width: size * 0.62,
+          height: size * 0.62,
+          decoration: BoxDecoration(
+            color: product.accent.withValues(alpha: 0.12),
+            shape: BoxShape.circle,
           ),
-          Icon(product.icon, size: size * 0.42, color: product.accent),
-        ],
-      ),
+        ),
+        Icon(product.icon, size: size * 0.42, color: product.accent),
+      ],
     );
   }
 
@@ -1082,6 +1140,7 @@ class _ProductItem {
   final String brand;
   final String category;
   final String hsn;
+  final String? imageUrl;
   final double price;
   final int stock;
   final String status;
@@ -1093,6 +1152,7 @@ class _ProductItem {
     required this.brand,
     required this.category,
     required this.hsn,
+    this.imageUrl,
     required this.price,
     required this.stock,
     required this.status,
@@ -1103,30 +1163,38 @@ class _ProductItem {
   factory _ProductItem.fromJson(Map<String, dynamic> json) {
     final category = _productText(
       json,
-      const ['category_label', 'categoryLabel', 'category'],
+      const ['category_label', 'categoryLabel', 'product_type', 'category'],
       nestedKeys: const ['category'],
       fallback: '-',
     );
-    final stock = _productInt(
-      json,
-      const ['stock', 'current_stock', 'currentStock', 'inventory'],
-    );
+    final stock = _productInt(json, const [
+      'stock',
+      'current_stock',
+      'currentStock',
+      'inventory',
+      'total_inventory',
+      'total_stock',
+    ]);
     return _ProductItem(
       name: _productText(json, const ['name'], fallback: '-'),
       brand: _productText(
         json,
-        const ['brand'],
-        nestedKeys: const ['brand'],
+        const ['brand', 'manufacturer', 'vendor'],
+        nestedKeys: const ['brand', 'brand_ref', 'supplier'],
         fallback: '-',
       ),
       category: category,
-      hsn: _productText(json, const ['hsn', 'hsn_sac', 'sku'], fallback: '-'),
-      price: _productNum(
-        json,
-        const ['price', 'selling_price', 'sellingPrice', 'mrp'],
-      ),
+      hsn: _productText(json, const [
+        'hsn',
+        'hsn_code',
+        'hsn_sac',
+        'sku',
+        'product_id',
+      ], fallback: '-'),
+      imageUrl: _productImageUrl(json),
+      price: _productPrice(json),
       stock: stock,
-      status: _productBool(json['is_active']) ? 'Active' : 'Inactive',
+      status: _productStatus(json),
       icon: Icons.inventory_2_rounded,
       accent: AppColors.primary,
     );
@@ -1182,13 +1250,167 @@ String _productText(
   return fallback;
 }
 
-double _productNum(Map<String, dynamic> json, List<String> keys) {
+String? _productImageUrl(Map<String, dynamic> json) {
+  final direct = _productAssetText(json, const [
+    'image_url',
+    'imageUrl',
+    'product_image_url',
+    'productImageUrl',
+    'thumbnail_url',
+    'thumbnailUrl',
+    'photo_url',
+    'photoUrl',
+    'image',
+    'product_image',
+    'productImage',
+    'thumbnail',
+    'photo',
+    'picture',
+    'cover_image',
+    'coverImage',
+  ]);
+  final normalized = _normalizeProductAssetUrl(direct);
+  if (normalized != null) return normalized;
+
+  final fileId = _productAssetText(json, const [
+    'image_file_id',
+    'imageFileId',
+    'product_image_id',
+    'productImageId',
+    'file_id',
+    'fileId',
+  ]);
+  if (fileId == null || fileId.isEmpty) return null;
+
+  return Uri.parse(
+    ApiConstants.baseUrl,
+  ).resolve(ApiEndpoints.fileDetail(fileId)).toString();
+}
+
+String? _productAssetText(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    final value = json[key];
+    final text = _assetValueText(value);
+    if (text != null && text.isNotEmpty) return text;
+  }
+  return null;
+}
+
+String? _assetValueText(Object? value) {
+  if (value == null) return null;
+  if (value is List && value.isNotEmpty) {
+    return _assetValueText(value.first);
+  }
+  if (value is Map<String, dynamic>) {
+    return _productAssetText(value, const [
+      'url',
+      'download_url',
+      'downloadUrl',
+      'file_url',
+      'fileUrl',
+      'path',
+      'file_id',
+      'fileId',
+      'id',
+    ]);
+  }
+  final text = value.toString().trim();
+  return text.isEmpty ? null : text;
+}
+
+String? _normalizeProductAssetUrl(String? value) {
+  final text = value?.trim();
+  if (text == null || text.isEmpty) return null;
+  if (text.startsWith('data:image/')) return text;
+  final uri = Uri.tryParse(text);
+  if (uri != null && uri.hasScheme) return text;
+  if (text.startsWith('/')) {
+    return Uri.parse(ApiConstants.baseUrl).resolve(text).toString();
+  }
+  if (RegExp(r'^[0-9a-fA-F-]{20,}$').hasMatch(text)) {
+    return Uri.parse(
+      ApiConstants.baseUrl,
+    ).resolve(ApiEndpoints.fileDetail(text)).toString();
+  }
+  return Uri.parse(ApiConstants.baseUrl).resolve('/$text').toString();
+}
+
+Uint8List? _productImageBytes(String? value) {
+  final text = value?.trim();
+  if (text == null || !text.startsWith('data:image/')) return null;
+  final commaIndex = text.indexOf(',');
+  if (commaIndex == -1 || commaIndex == text.length - 1) return null;
+  try {
+    return base64Decode(text.substring(commaIndex + 1));
+  } catch (_) {
+    return null;
+  }
+}
+
+double _productPrice(Map<String, dynamic> json) {
+  final rootPrice = _productNum(json, const [
+    'selling_price',
+    'sellingPrice',
+    'mrp',
+    'price',
+  ]);
+  if (rootPrice > 0) return rootPrice;
+
+  final pricing = json['pricing'];
+  if (pricing is Map<String, dynamic>) {
+    final pricingPrice = _productNum(pricing, const [
+      'selling_price',
+      'sellingPrice',
+      'mrp',
+      'price',
+    ]);
+    if (pricingPrice > 0) return pricingPrice;
+  }
+
+  final variations = json['variations'];
+  if (variations is List) {
+    for (final variation in variations) {
+      if (variation is Map<String, dynamic>) {
+        final variationPrice = _productNum(variation, const [
+          'selling_price',
+          'sellingPrice',
+          'mrp',
+          'price',
+        ]);
+        if (variationPrice > 0) return variationPrice;
+      }
+    }
+  }
+
+  return rootPrice;
+}
+
+double _productNum(
+  Map<String, dynamic> json,
+  List<String> keys, {
+  List<String> nestedKeys = const [],
+}) {
   for (final key in keys) {
     final value = json[key];
     if (value is num) return value.toDouble();
     if (value != null) {
       final parsed = double.tryParse(value.toString());
       if (parsed != null) return parsed;
+    }
+  }
+  for (final key in nestedKeys) {
+    final value = json[key];
+    if (value is Map<String, dynamic>) {
+      final nested = _productNum(value, keys);
+      if (nested != 0) return nested;
+    }
+    if (value is List) {
+      for (final item in value) {
+        if (item is Map<String, dynamic>) {
+          final nested = _productNum(item, keys);
+          if (nested != 0) return nested;
+        }
+      }
     }
   }
   return 0;
@@ -1204,6 +1426,14 @@ bool _productBool(Object? value) {
   if (value is num) return value != 0;
   final text = value.toString().toLowerCase().trim();
   return text != 'false' && text != 'inactive' && text != '0';
+}
+
+String _productStatus(Map<String, dynamic> json) {
+  final status = _productText(json, const ['status'], fallback: '');
+  if (status.isNotEmpty) {
+    return status.toLowerCase() == 'active' ? 'Active' : 'Inactive';
+  }
+  return _productBool(json['is_active']) ? 'Active' : 'Inactive';
 }
 
 class _ProductFormDialog extends StatefulWidget {
@@ -1280,6 +1510,7 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
         brand: _brand,
         category: _category,
         hsn: _hsnController.text.trim(),
+        imageUrl: widget.existing?.imageUrl,
         price: price,
         stock: stock,
         status: _status,

@@ -187,16 +187,23 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   CustomerModel? _loadedCustomer;
   Uint8List? _gstCertificateBytes;
   String? _gstCertificateName;
+  String? _gstCertificateFileId;
   Uint8List? _panCardBytes;
   String? _panCardName;
+  String? _panCardFileId;
   Uint8List? _businessRegistrationBytes;
   String? _businessRegistrationName;
+  String? _businessRegistrationFileId;
   Uint8List? _addressProofBytes;
   String? _addressProofName;
+  String? _addressProofFileId;
   Uint8List? _purchaseAgreementBytes;
   String? _purchaseAgreementName;
+  String? _purchaseAgreementFileId;
   Uint8List? _otherDocBytes;
   String? _otherDocName;
+  String? _otherDocFileId;
+  final Set<_CustomerDocSlot> _uploadingDocumentSlots = <_CustomerDocSlot>{};
 
   static const List<_CustomerWizardStep> _steps = [
     _CustomerWizardStep('Basic Information', Icons.info_outline_rounded),
@@ -433,29 +440,36 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           case _CustomerDocSlot.gst:
             _gstCertificateBytes = bytes;
             _gstCertificateName = picked.name;
+            _gstCertificateFileId = null;
             break;
           case _CustomerDocSlot.pan:
             _panCardBytes = bytes;
             _panCardName = picked.name;
+            _panCardFileId = null;
             break;
           case _CustomerDocSlot.businessRegistration:
             _businessRegistrationBytes = bytes;
             _businessRegistrationName = picked.name;
+            _businessRegistrationFileId = null;
             break;
           case _CustomerDocSlot.addressProof:
             _addressProofBytes = bytes;
             _addressProofName = picked.name;
+            _addressProofFileId = null;
             break;
           case _CustomerDocSlot.purchaseAgreement:
             _purchaseAgreementBytes = bytes;
             _purchaseAgreementName = picked.name;
+            _purchaseAgreementFileId = null;
             break;
           case _CustomerDocSlot.other:
             _otherDocBytes = bytes;
             _otherDocName = picked.name;
+            _otherDocFileId = null;
             break;
         }
       });
+      await _stageCustomerDocumentUpload(slot);
     } catch (error) {
       if (mounted) _showMessage('Unable to upload document: $error');
     }
@@ -467,28 +481,35 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
         case _CustomerDocSlot.gst:
           _gstCertificateBytes = null;
           _gstCertificateName = null;
+          _gstCertificateFileId = null;
           break;
         case _CustomerDocSlot.pan:
           _panCardBytes = null;
           _panCardName = null;
+          _panCardFileId = null;
           break;
         case _CustomerDocSlot.businessRegistration:
           _businessRegistrationBytes = null;
           _businessRegistrationName = null;
+          _businessRegistrationFileId = null;
           break;
         case _CustomerDocSlot.addressProof:
           _addressProofBytes = null;
           _addressProofName = null;
+          _addressProofFileId = null;
           break;
         case _CustomerDocSlot.purchaseAgreement:
           _purchaseAgreementBytes = null;
           _purchaseAgreementName = null;
+          _purchaseAgreementFileId = null;
           break;
         case _CustomerDocSlot.other:
           _otherDocBytes = null;
           _otherDocName = null;
+          _otherDocFileId = null;
           break;
       }
+      _uploadingDocumentSlots.remove(slot);
     });
   }
 
@@ -557,50 +578,135 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   List<_PendingCustomerDocument> _pendingCustomerDocuments() {
     return [
       _PendingCustomerDocument(
+        slot: _CustomerDocSlot.gst,
         documentType: 'gst_certificate',
         bytes: _gstCertificateBytes,
         fileName: _gstCertificateName,
+        fileId: _gstCertificateFileId,
       ),
       _PendingCustomerDocument(
+        slot: _CustomerDocSlot.pan,
         documentType: 'pan_card',
         bytes: _panCardBytes,
         fileName: _panCardName,
+        fileId: _panCardFileId,
       ),
       _PendingCustomerDocument(
+        slot: _CustomerDocSlot.businessRegistration,
         documentType: 'business_registration_certificate',
         bytes: _businessRegistrationBytes,
         fileName: _businessRegistrationName,
+        fileId: _businessRegistrationFileId,
       ),
       _PendingCustomerDocument(
+        slot: _CustomerDocSlot.addressProof,
         documentType: 'address_proof',
         bytes: _addressProofBytes,
         fileName: _addressProofName,
+        fileId: _addressProofFileId,
       ),
       _PendingCustomerDocument(
+        slot: _CustomerDocSlot.purchaseAgreement,
         documentType: 'purchase_agreement',
         bytes: _purchaseAgreementBytes,
         fileName: _purchaseAgreementName,
+        fileId: _purchaseAgreementFileId,
       ),
       _PendingCustomerDocument(
+        slot: _CustomerDocSlot.other,
         documentType: 'other',
         bytes: _otherDocBytes,
         fileName: _otherDocName,
+        fileId: _otherDocFileId,
       ),
     ].where((document) => document.canUpload).toList();
   }
 
-  Future<void> _uploadPendingCustomerDocuments(String customerId) async {
-    final documents = _pendingCustomerDocuments();
-    if (documents.isEmpty) return;
+  bool _isDocumentUploading(_CustomerDocSlot slot) {
+    return _uploadingDocumentSlots.contains(slot);
+  }
 
-    for (final document in documents) {
-      await _apiProvider.uploadCustomerDocument(
-        customerId: customerId,
-        documentType: document.documentType,
+  String? _firstDocumentFileId(String documentType) {
+    for (final document in _pendingCustomerDocuments()) {
+      if (document.documentType == documentType && document.hasStagedUpload) {
+        return document.fileId;
+      }
+    }
+    return null;
+  }
+
+  Future<void> _stageCustomerDocumentUpload(_CustomerDocSlot slot) async {
+    if (_isDocumentUploading(slot)) return;
+
+    _PendingCustomerDocument? document;
+    for (final candidate in _pendingCustomerDocuments()) {
+      if (candidate.slot == slot) {
+        document = candidate;
+        break;
+      }
+    }
+    if (document == null || !document.canUpload || document.hasStagedUpload) {
+      return;
+    }
+
+    setState(() {
+      _uploadingDocumentSlots.add(slot);
+    });
+
+    try {
+      final uploaded = await _apiProvider.uploadGenericFile(
         fileBytes: document.bytes!,
         fileName: document.fileName!,
       );
+      if (!mounted) return;
+
+      setState(() {
+        switch (slot) {
+          case _CustomerDocSlot.gst:
+            _gstCertificateFileId = uploaded.fileId;
+            break;
+          case _CustomerDocSlot.pan:
+            _panCardFileId = uploaded.fileId;
+            break;
+          case _CustomerDocSlot.businessRegistration:
+            _businessRegistrationFileId = uploaded.fileId;
+            break;
+          case _CustomerDocSlot.addressProof:
+            _addressProofFileId = uploaded.fileId;
+            break;
+          case _CustomerDocSlot.purchaseAgreement:
+            _purchaseAgreementFileId = uploaded.fileId;
+            break;
+          case _CustomerDocSlot.other:
+            _otherDocFileId = uploaded.fileId;
+            break;
+        }
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _uploadingDocumentSlots.remove(slot);
+        });
+      }
     }
+  }
+
+  Future<void> _ensureCustomerDocumentsAreUploaded() async {
+    final documents = _pendingCustomerDocuments();
+    for (final document in documents) {
+      if (!document.hasStagedUpload) {
+        await _stageCustomerDocumentUpload(document.slot);
+      }
+    }
+  }
+
+  List<String>? _otherDocumentFileIds() {
+    final ids = _pendingCustomerDocuments()
+        .where((document) => document.documentType == 'other')
+        .map((document) => document.fileId)
+        .whereType<String>()
+        .toList();
+    return ids.isEmpty ? null : ids;
   }
 
   Future<void> _submit(List<AppUser> users) async {
@@ -626,6 +732,12 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     setState(() => _isSubmitting = true);
 
     try {
+      if (_uploadingDocumentSlots.isNotEmpty) {
+        throw StateError(
+          'Please wait for customer document uploads to finish before saving.',
+        );
+      }
+
       final selected = _effectiveSalesOfficer(users);
 
       if (widget.isEditMode) {
@@ -635,6 +747,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           throw StateError('Missing customer id.');
         }
 
+        await _ensureCustomerDocumentsAreUploaded();
         final request = CustomerUpdateRequest(
           name: name,
           businessName: businessName,
@@ -648,6 +761,14 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           category: category,
           notes: notes,
           isActive: _isActive,
+          gstCertificateId: _firstDocumentFileId('gst_certificate'),
+          panCardId: _firstDocumentFileId('pan_card'),
+          businessRegistrationCertificateId: _firstDocumentFileId(
+            'business_registration_certificate',
+          ),
+          addressProofId: _firstDocumentFileId('address_proof'),
+          purchaseAgreementId: _firstDocumentFileId('purchase_agreement'),
+          otherDocumentIds: _otherDocumentFileIds(),
         );
         debugPrint('[CUSTOMER UPDATE REQUEST] ${jsonEncode(request.toJson())}');
         final updated = await _apiProvider.updateCustomer(
@@ -657,13 +778,11 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
         debugPrint(
           '[CUSTOMER UPDATE RESPONSE] ${jsonEncode(updated.toJson())}',
         );
-        await _uploadPendingCustomerDocuments(
-          updated.id.trim().isEmpty ? customerId : updated.id,
-        );
 
         if (!mounted) return;
         Navigator.of(context).pop(updated);
       } else {
+        await _ensureCustomerDocumentsAreUploaded();
         final request = CustomerCreateRequest(
           name: name,
           businessName: businessName,
@@ -677,13 +796,20 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           openingBalance: openingBalance,
           category: category,
           notes: notes,
+          gstCertificateId: _firstDocumentFileId('gst_certificate'),
+          panCardId: _firstDocumentFileId('pan_card'),
+          businessRegistrationCertificateId: _firstDocumentFileId(
+            'business_registration_certificate',
+          ),
+          addressProofId: _firstDocumentFileId('address_proof'),
+          purchaseAgreementId: _firstDocumentFileId('purchase_agreement'),
+          otherDocumentIds: _otherDocumentFileIds(),
         );
         debugPrint('[CUSTOMER CREATE REQUEST] ${jsonEncode(request.toJson())}');
         final created = await _apiProvider.createCustomer(request: request);
         debugPrint(
           '[CUSTOMER CREATE RESPONSE] ${jsonEncode(created.toJson())}',
         );
-        await _uploadPendingCustomerDocuments(created.id);
 
         if (!mounted) return;
         Navigator.of(context).pop(created);
@@ -1800,8 +1926,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             value: _selectedPaymentTerm,
             hintText: 'Select payment terms',
             items: _paymentTermsOptions,
-            onChanged: (value) =>
-                setState(() => _selectedPaymentTerm = value),
+            onChanged: (value) => setState(() => _selectedPaymentTerm = value),
           ),
           _field(
             label: 'Credit Limit',
@@ -1961,6 +2086,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                 mimeHint: 'image/png,image/jpeg',
                 bytes: _gstCertificateBytes,
                 name: _gstCertificateName,
+                isUploading: _isDocumentUploading(_CustomerDocSlot.gst),
+                isUploaded: (_gstCertificateFileId ?? '').trim().isNotEmpty,
                 onUpload: () => _pickCustomerDocument(_CustomerDocSlot.gst),
                 onRemove: () => _removeCustomerDocument(_CustomerDocSlot.gst),
               ),
@@ -1969,6 +2096,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                 mimeHint: 'image/png,image/jpeg',
                 bytes: _panCardBytes,
                 name: _panCardName,
+                isUploading: _isDocumentUploading(_CustomerDocSlot.pan),
+                isUploaded: (_panCardFileId ?? '').trim().isNotEmpty,
                 onUpload: () => _pickCustomerDocument(_CustomerDocSlot.pan),
                 onRemove: () => _removeCustomerDocument(_CustomerDocSlot.pan),
               ),
@@ -1977,6 +2106,12 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                 mimeHint: 'image/png,image/jpeg',
                 bytes: _businessRegistrationBytes,
                 name: _businessRegistrationName,
+                isUploading: _isDocumentUploading(
+                  _CustomerDocSlot.businessRegistration,
+                ),
+                isUploaded: (_businessRegistrationFileId ?? '')
+                    .trim()
+                    .isNotEmpty,
                 onUpload: () => _pickCustomerDocument(
                   _CustomerDocSlot.businessRegistration,
                 ),
@@ -1989,6 +2124,10 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                 mimeHint: 'image/png,image/jpeg',
                 bytes: _addressProofBytes,
                 name: _addressProofName,
+                isUploading: _isDocumentUploading(
+                  _CustomerDocSlot.addressProof,
+                ),
+                isUploaded: (_addressProofFileId ?? '').trim().isNotEmpty,
                 onUpload: () =>
                     _pickCustomerDocument(_CustomerDocSlot.addressProof),
                 onRemove: () =>
@@ -1999,6 +2138,10 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                 mimeHint: 'image/png,image/jpeg',
                 bytes: _purchaseAgreementBytes,
                 name: _purchaseAgreementName,
+                isUploading: _isDocumentUploading(
+                  _CustomerDocSlot.purchaseAgreement,
+                ),
+                isUploaded: (_purchaseAgreementFileId ?? '').trim().isNotEmpty,
                 onUpload: () =>
                     _pickCustomerDocument(_CustomerDocSlot.purchaseAgreement),
                 onRemove: () =>
@@ -2009,6 +2152,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                 mimeHint: 'image/png,image/jpeg',
                 bytes: _otherDocBytes,
                 name: _otherDocName,
+                isUploading: _isDocumentUploading(_CustomerDocSlot.other),
+                isUploaded: (_otherDocFileId ?? '').trim().isNotEmpty,
                 onUpload: () => _pickCustomerDocument(_CustomerDocSlot.other),
                 onRemove: () => _removeCustomerDocument(_CustomerDocSlot.other),
               ),
@@ -2082,6 +2227,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     required String mimeHint,
     required Uint8List? bytes,
     required String? name,
+    required bool isUploading,
+    required bool isUploaded,
     required VoidCallback onUpload,
     required VoidCallback onRemove,
   }) {
@@ -2142,9 +2289,18 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                   runSpacing: 10,
                   children: [
                     ElevatedButton.icon(
-                      onPressed: onUpload,
-                      icon: const Icon(Icons.file_upload_outlined, size: 18),
-                      label: const Text('Upload'),
+                      onPressed: isUploading ? null : onUpload,
+                      icon: isUploading
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Icon(Icons.file_upload_outlined, size: 18),
+                      label: Text(isUploading ? 'Uploading...' : 'Upload'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF8CAD84),
                         foregroundColor: Colors.white,
@@ -2163,7 +2319,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                       ),
                     ),
                     OutlinedButton.icon(
-                      onPressed: bytes == null ? null : onRemove,
+                      onPressed: bytes == null || isUploading ? null : onRemove,
                       icon: const Icon(Icons.delete_outline_rounded, size: 18),
                       label: const Text('Remove'),
                       style: OutlinedButton.styleFrom(
@@ -2194,6 +2350,17 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                       color: AppColors.textPrimary,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+                if (isUploaded) ...[
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Uploaded and ready to attach on save',
+                    style: TextStyle(
+                      color: AppColors.primary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ],
@@ -2900,18 +3067,23 @@ class _CustomerWizardStep {
 }
 
 class _PendingCustomerDocument {
+  final _CustomerDocSlot slot;
   final String documentType;
   final Uint8List? bytes;
   final String? fileName;
+  final String? fileId;
 
   const _PendingCustomerDocument({
+    required this.slot,
     required this.documentType,
     required this.bytes,
     required this.fileName,
+    required this.fileId,
   });
 
   bool get canUpload =>
       bytes != null && fileName != null && fileName!.trim().isNotEmpty;
+  bool get hasStagedUpload => (fileId ?? '').trim().isNotEmpty;
 }
 
 enum _CustomerDocSlot {

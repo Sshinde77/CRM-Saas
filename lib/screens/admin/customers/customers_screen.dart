@@ -177,7 +177,9 @@ class _CustomersScreenState extends State<CustomersScreen> {
     }
     if (action == 'My Performance') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const SalesManagerPerformanceScreen()),
+        MaterialPageRoute(
+          builder: (_) => const SalesManagerPerformanceScreen(),
+        ),
       );
     }
   }
@@ -416,24 +418,23 @@ class _CustomersScreenState extends State<CustomersScreen> {
                 : AdminTopBar(
                     title: 'Customers',
                     leadingIcon: Icons.menu_rounded,
-                    onLeadingTap: () =>
-                        _scaffoldKey.currentState?.openDrawer(),
+                    onLeadingTap: () => _scaffoldKey.currentState?.openDrawer(),
                   ),
             Expanded(
               child: RefreshIndicator(
                 onRefresh: _loadCustomers,
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(14, 16, 14, 22),
+                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 18),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _titleRow(),
-                      const SizedBox(height: 14),
+                      const SizedBox(height: 10),
                       _searchRow(),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
                       _filterChips(),
-                      const SizedBox(height: 14),
+                      const SizedBox(height: 10),
                       if (_isLoading)
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 80),
@@ -450,7 +451,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
                       else
                         ..._customers.map(
                           (customer) => Padding(
-                            padding: const EdgeInsets.only(bottom: 10),
+                            padding: const EdgeInsets.only(bottom: 8),
                             child: _customerCard(customer),
                           ),
                         ),
@@ -493,29 +494,29 @@ class _CustomersScreenState extends State<CustomersScreen> {
             'Customers',
             style: TextStyle(
               color: textPrimary,
-              fontSize: 22,
+              fontSize: 19,
               height: 1,
               fontWeight: FontWeight.w800,
               letterSpacing: 0,
             ),
           ),
         ),
-        const SizedBox(width: 10),
+        const SizedBox(width: 8),
         ElevatedButton.icon(
           onPressed: _openAddCustomerScreen,
-          icon: const Icon(Icons.add_rounded, size: 18),
+          icon: const Icon(Icons.add_rounded, size: 16),
           label: const Text('Add Customer'),
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primary,
             foregroundColor: Colors.white,
             elevation: 0,
-            minimumSize: const Size(0, 40),
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            minimumSize: const Size(0, 36),
+            padding: const EdgeInsets.symmetric(horizontal: 10),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
             textStyle: const TextStyle(
-              fontSize: 13,
+              fontSize: 12,
               fontWeight: FontWeight.w800,
               letterSpacing: 0,
             ),
@@ -530,20 +531,20 @@ class _CustomersScreenState extends State<CustomersScreen> {
       children: [
         Expanded(
           child: SizedBox(
-            height: 42,
+            height: 38,
             child: TextField(
               controller: _searchController,
               onChanged: _scheduleSearchReload,
               style: const TextStyle(
                 color: textPrimary,
-                fontSize: 13,
+                fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
               decoration: InputDecoration(
                 hintText: 'Search name, business, phone, email...',
                 hintStyle: const TextStyle(
                   color: textSecondary,
-                  fontSize: 13,
+                  fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
                 prefixIcon: const Padding(
@@ -664,16 +665,16 @@ class _CustomersScreenState extends State<CustomersScreen> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: AppColors.background,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: AppColors.borderStrong),
         boxShadow: [
           BoxShadow(
             color: AppColors.textPrimary.withValues(alpha: 0.035),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -684,8 +685,8 @@ class _CustomersScreenState extends State<CustomersScreen> {
           return Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _avatar(customer.initials, compact ? 52 : 60),
-              const SizedBox(width: 10),
+              _avatar(customer.initials, compact ? 42 : 48),
+              const SizedBox(width: 8),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -700,17 +701,17 @@ class _CustomersScreenState extends State<CustomersScreen> {
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               color: textPrimary,
-                              fontSize: 14,
+                              fontSize: 12.5,
                               fontWeight: FontWeight.w800,
                               letterSpacing: 0,
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 6),
                         _statusChip(customer),
                       ],
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 3),
                     if (customer.businessName != null)
                       Text(
                         customer.businessName!,
@@ -718,18 +719,18 @@ class _CustomersScreenState extends State<CustomersScreen> {
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: textSecondary,
-                          fontSize: 12,
+                          fontSize: 11,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 6),
                     _infoPairRow(
                       leftIcon: Icons.phone_outlined,
                       leftText: customer.phone ?? '--',
                       rightIcon: Icons.business_outlined,
                       rightText: customer.category ?? 'Category --',
                     ),
-                    const SizedBox(height: 7),
+                    const SizedBox(height: 5),
                     _infoPairRow(
                       leftIcon: Icons.person_outline_rounded,
                       leftText:
@@ -742,7 +743,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
                           ? AppColors.statusActiveText
                           : AppColors.red,
                     ),
-                    const SizedBox(height: 7),
+                    const SizedBox(height: 5),
                     _infoPairRow(
                       leftIcon: Icons.credit_card_rounded,
                       leftText:
@@ -751,7 +752,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
                       rightText: _formatCurrency(customer.outstanding),
                       rightIconColor: AppColors.statusActiveText,
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 7),
                     Align(
                       alignment: Alignment.centerRight,
                       child: _actionRow(customer),
@@ -812,7 +813,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
     return Row(
       children: [
         Expanded(child: _infoLine(leftIcon, leftText)),
-        const SizedBox(width: 8),
+        const SizedBox(width: 6),
         Expanded(
           child: _infoLine(
             rightIcon,
@@ -831,8 +832,8 @@ class _CustomersScreenState extends State<CustomersScreen> {
   }) {
     return Row(
       children: [
-        Icon(icon, size: 15, color: iconColor),
-        const SizedBox(width: 6),
+        Icon(icon, size: 13, color: iconColor),
+        const SizedBox(width: 5),
         Expanded(
           child: Text(
             text,
@@ -840,7 +841,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               color: textPrimary,
-              fontSize: 12,
+              fontSize: 10.8,
               fontWeight: FontWeight.w500,
               letterSpacing: 0,
             ),
@@ -861,7 +862,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
           backgroundColor: const Color(0xFFF3F5F8),
           onTap: () => _openCustomerDetailsScreen(customer),
         ),
-        const SizedBox(width: 6),
+        const SizedBox(width: 5),
         _actionButton(
           icon: Icons.edit_outlined,
           label: 'Edit',
@@ -869,7 +870,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
           backgroundColor: const Color(0xFFF3F5F8),
           onTap: () => _openEditCustomerScreen(customer),
         ),
-        const SizedBox(width: 6),
+        const SizedBox(width: 5),
         _actionButton(
           icon: Icons.delete_outline_rounded,
           label: 'Delete',
@@ -907,10 +908,10 @@ class _CustomersScreenState extends State<CustomersScreen> {
     final active = customer.isActive != false;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
       decoration: BoxDecoration(
         color: active ? AppColors.statusActiveBg : AppColors.statusInactiveBg,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -921,15 +922,15 @@ class _CustomersScreenState extends State<CustomersScreen> {
               color: active
                   ? AppColors.statusActiveText
                   : AppColors.statusInactiveText,
-              fontSize: 12,
+              fontSize: 10.8,
               fontWeight: FontWeight.w800,
               letterSpacing: 0,
             ),
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 5),
           Container(
-            width: 7,
-            height: 7,
+            width: 6,
+            height: 6,
             decoration: BoxDecoration(
               color: active ? AppColors.statusActiveText : AppColors.red,
               shape: BoxShape.circle,
@@ -951,16 +952,16 @@ class _CustomersScreenState extends State<CustomersScreen> {
       message: label,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(8),
         child: Container(
-          width: 34,
-          height: 34,
+          width: 29,
+          height: 29,
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: backgroundColor,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, size: 17, color: color),
+          child: Icon(icon, size: 15, color: color),
         ),
       ),
     );
