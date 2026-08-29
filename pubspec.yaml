@@ -69,6 +69,7 @@ flutter:
     - assets/avatar1.png
     - assets/avatar2.png
     - assets/avatar3.png
+    - assets/delivery1.png
 
   # assets:
   #   - images/a_dot_burr.jpeg

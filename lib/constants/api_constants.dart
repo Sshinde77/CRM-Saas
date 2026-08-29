@@ -59,6 +59,11 @@ class ApiEndpoints {
   static const String ordersList = '/orders';
   static const String leadsList = '/leads';
   static const String leadsDetailTemplate = '/leads/{lead_id}';
+  static const String deliveriesList = '/deliveries';
+  static const String vehicleStockCurrentTemplate =
+      '/vehicle-stock/current/{delivery_partner_id}';
+  static const String attendanceMe = '/attendance/me';
+  static const String usersMeLocation = '/users/me/location';
   static const String quotationsList = '/quotations';
   static const String quotationsDetailTemplate = '/quotations/{quotation_id}';
   static const String quotationsPdfTemplate = '/quotations/{quotation_id}/pdf';
@@ -116,6 +121,12 @@ class ApiEndpoints {
 
   static String leadsDetail(String leadId) =>
       leadsDetailTemplate.replaceFirst('{lead_id}', leadId);
+
+  static String vehicleStockCurrent(String deliveryPartnerId) =>
+      vehicleStockCurrentTemplate.replaceFirst(
+        '{delivery_partner_id}',
+        deliveryPartnerId,
+      );
 
   static String quotationsPdf(String quotationId) =>
       quotationsPdfTemplate.replaceFirst('{quotation_id}', quotationId);

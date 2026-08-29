@@ -199,6 +199,40 @@ class ApiProvider extends ChangeNotifier {
     return _apiService.fetchLeads(status: status);
   }
 
+  Future<List<Map<String, dynamic>>> fetchDeliveryPartnerDeliveries({
+    required String deliveryPartnerId,
+  }) {
+    return _apiService.fetchDeliveryPartnerDeliveries(
+      deliveryPartnerId: deliveryPartnerId,
+    );
+  }
+
+  Future<Map<String, dynamic>?> fetchCurrentVehicleStock(
+    String deliveryPartnerId,
+  ) {
+    return _apiService.fetchCurrentVehicleStock(deliveryPartnerId);
+  }
+
+  Future<List<Map<String, dynamic>>> fetchMyAttendance() {
+    return _apiService.fetchMyAttendance();
+  }
+
+  Future<void> shareMyLocation({
+    required double latitude,
+    required double longitude,
+    double? accuracyMeters,
+    String? label,
+    DateTime? capturedAt,
+  }) {
+    return _apiService.shareMyLocation(
+      latitude: latitude,
+      longitude: longitude,
+      accuracyMeters: accuracyMeters,
+      label: label,
+      capturedAt: capturedAt,
+    );
+  }
+
   Future<Map<String, dynamic>> fetchLeadById(String leadId) {
     return _apiService.fetchLeadById(leadId);
   }

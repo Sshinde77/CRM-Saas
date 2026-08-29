@@ -38,4 +38,29 @@ class AppColors {
   static const Color amber = Color(0xFFA3B18A);
   static const Color orange = Color(0xFF7B8F6A);
   static const Color red = statusInactiveText;
+
+  static const Color deliveryBackground = surfaceSoft;
+  static const Color deliveryInk = textPrimary;
+  static const Color deliveryBlue = primary;
+  static const Color deliveryGreen = statusActiveText;
+  static const Color deliveryOrange = orange;
+  static const Color deliveryRed = statusInactiveText;
+  static const Color deliveryViolet = primary900;
+  static const Color deliveryYellow = amber;
+  static const Color deliveryHeroStart = primary900;
+  static const Color deliveryHeroEnd = primary950;
+  static const Color deliveryHeroShadow = primary950;
+  static const Color deliveryHeroIcon = activeMenuBg;
+  static const Color deliveryCardSoft = Color(0xFFFBFCFF);
+  static const Color deliveryCardBorder = Color(0xFFE9EDF5);
+  static const Color deliverySurfaceBorder = Color(0xFFE7EBF3);
+  static const Color deliveryBlueSoft = adminSidebarBg;
+  static const Color deliveryGreenSoft = statusActiveBg;
+  static const Color deliveryOrangeSoft = surfaceOverlay;
+  static const Color deliveryVioletSoft = adminSidebarBg;
+  static const Color deliveryRedSoft = statusInactiveBg;
+  static const Color deliveryOrangeBadge = surfaceOverlay;
+  static const Color deliveryYellowSoft = surfaceOverlay;
+  static const Color deliveryVioletBadge = adminSidebarBg;
+  static const Color deliveryBlueBadge = adminSidebarBg;
 }

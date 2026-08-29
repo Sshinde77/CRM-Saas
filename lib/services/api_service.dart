@@ -492,6 +492,115 @@ class ApiService {
     return rawItems.whereType<Map<String, dynamic>>().toList();
   }
 
+  Future<List<Map<String, dynamic>>> fetchDeliveryPartnerDeliveries({
+    required String deliveryPartnerId,
+  }) {
+    return fetchRawList(
+      endpoint: ApiEndpoints.deliveriesList,
+      queryParameters: _cleanQuery({
+        'delivery_partner_id': deliveryPartnerId,
+      }),
+      candidateKeys: const ['deliveries', 'data', 'items', 'results'],
+      fallbackMessage: 'Invalid deliveries response.',
+    );
+  }
+
+  Future<Map<String, dynamic>?> fetchCurrentVehicleStock(
+    String deliveryPartnerId,
+  ) async {
+    final id = deliveryPartnerId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing delivery partner id.');
+    }
+
+    http.Response response;
+    try {
+      response = await _send(
+        method: 'GET',
+        endpoint: ApiEndpoints.vehicleStockCurrent(id),
+        requiresAuth: true,
+      );
+    } on ApiException catch (error) {
+      if (error.statusCode == 404) {
+        return null;
+      }
+      rethrow;
+    }
+    final decoded = _tryDecodeBody(response.body.trim());
+    if (decoded == null) return null;
+    if (decoded is Map<String, dynamic>) {
+      final data = decoded['data'];
+      if (data is Map<String, dynamic>) return data;
+      final session = decoded['session'];
+      if (session is Map<String, dynamic>) return session;
+      final stock = decoded['vehicle_stock'];
+      if (stock is Map<String, dynamic>) return stock;
+      return decoded;
+    }
+    throw const ApiException(message: 'Invalid vehicle stock response.');
+  }
+
+  Future<List<Map<String, dynamic>>> fetchMyAttendance() async {
+    final response = await _send(
+      method: 'GET',
+      endpoint: ApiEndpoints.attendanceMe,
+      requiresAuth: true,
+    );
+    final decoded = _tryDecodeBody(response.body.trim());
+    if (decoded is List) {
+      return decoded.whereType<Map<String, dynamic>>().toList();
+    }
+    if (decoded is Map<String, dynamic>) {
+      for (final key in const [
+        'attendance',
+        'records',
+        'data',
+        'items',
+        'results',
+      ]) {
+        final value = decoded[key];
+        if (value is List) {
+          return value.whereType<Map<String, dynamic>>().toList();
+        }
+        if (value is Map<String, dynamic>) {
+          return [value];
+        }
+      }
+      return [decoded];
+    }
+    throw const ApiException(message: 'Invalid attendance response.');
+  }
+
+  Future<void> shareMyLocation({
+    required double latitude,
+    required double longitude,
+    double? accuracyMeters,
+    String? label,
+    DateTime? capturedAt,
+  }) async {
+    final payload = <String, dynamic>{
+      'latitude': latitude,
+      'longitude': longitude,
+    };
+    if (accuracyMeters != null) {
+      payload['accuracy_meters'] = accuracyMeters;
+    }
+    final trimmedLabel = label?.trim();
+    if (trimmedLabel != null && trimmedLabel.isNotEmpty) {
+      payload['label'] = trimmedLabel;
+    }
+    if (capturedAt != null) {
+      payload['captured_at'] = capturedAt.toUtc().toIso8601String();
+    }
+
+    await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.usersMeLocation,
+      requiresAuth: true,
+      body: payload,
+    );
+  }
+
   Future<List<Map<String, dynamic>>> fetchLeads({String? status}) {
     return fetchRawList(
       endpoint: ApiEndpoints.leadsList,
