@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../core/theme/app_sizes.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/theme/app_text_styles.dart';
 import '../../../providers/api_provider.dart';
+import '../../../routes/app_router.dart';
+import '../../../widgets/delivery/delivery_partner_sidebar.dart';
+import '../../../widgets/delivery/delivery_top_bar.dart';
 
 class DeliveryDashboardScreen extends StatefulWidget {
   const DeliveryDashboardScreen({super.key});
@@ -12,6 +18,7 @@ class DeliveryDashboardScreen extends StatefulWidget {
 }
 
 class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late Future<_DashboardData> _dashboardFuture;
   bool _didStartLoad = false;
 
@@ -87,7 +94,11 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: AppColors.deliveryBackground,
+      drawer: const DeliveryPartnerSidebar(
+        currentRoute: AppRoutes.deliveryDashboard,
+      ),
       body: SafeArea(
         bottom: false,
         child: FutureBuilder<_DashboardData>(
@@ -107,10 +118,21 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
                 ),
                 slivers: [
                   SliverToBoxAdapter(
+                    child: DeliveryTopBar(
+                      title: 'Good Morning, ${data?.firstName ?? 'Partner'}',
+                      subtitle: 'Have a safe and productive day!',
+                      leadingIcon: Icons.menu_rounded,
+                      onLeadingTap: () =>
+                          _scaffoldKey.currentState?.openDrawer(),
+                    ),
+                  ),
+                  SliverToBoxAdapter(
                     child: LayoutBuilder(
                       builder: (context, constraints) {
                         final horizontalPadding =
-                            constraints.maxWidth >= 600 ? 12.0 : 10.0;
+                            constraints.maxWidth >= 600
+                                ? AppSpacing.screen
+                                : AppSpacing.screenSmall;
 
                         return Center(
                           child: ConstrainedBox(
@@ -118,18 +140,13 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
                             child: Padding(
                               padding: EdgeInsets.fromLTRB(
                                 horizontalPadding,
-                                10,
+                                AppSpacing.sm,
                                 horizontalPadding,
-                                16,
+                                AppSpacing.section,
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  _Header(
-                                    name: data?.firstName ?? 'Partner',
-                                    onMenuTap: () => _showComingSoon('Menu'),
-                                  ),
-                                  const SizedBox(height: 12),
                                   if (isLoading)
                                     const _LoadingPanel()
                                   else if (snapshot.hasError)
@@ -144,15 +161,21 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
                                   else if (data != null)
                                     _DashboardContent(
                                       data: data,
-                                  onShareLocation: _shareLocation,
-                                  onPendingDeliveries: () =>
-                                      _showComingSoon('Attendance'),
+                                      onShareLocation: _shareLocation,
+                                      onPendingDeliveries: () =>
+                                          Navigator.of(context).pushNamed(
+                                            AppRoutes.deliveryAttendance,
+                                          ),
                                       onEndDayReturn: () =>
                                           _showComingSoon('End day return'),
                                       onViewAllItems: () =>
-                                          _showComingSoon('Vehicle stock'),
+                                          Navigator.of(context).pushNamed(
+                                            AppRoutes.deliveryVehicleStock,
+                                          ),
                                       onViewAllDeliveries: () =>
-                                          _showComingSoon('My deliveries'),
+                                          Navigator.of(context).pushNamed(
+                                            AppRoutes.deliveryDeliveries,
+                                          ),
                                     ),
                                 ],
                               ),
@@ -168,7 +191,6 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
           },
         ),
       ),
-      bottomNavigationBar: _DeliveryBottomNav(onTap: _showComingSoon),
     );
   }
 }
@@ -201,98 +223,23 @@ class _DashboardContent extends StatelessWidget {
           onPendingDeliveries: onPendingDeliveries,
           onEndDayReturn: onEndDayReturn,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
         _StatsGrid(data: data),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
         _CollectionsCard(data: data),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
         _PrioritiesCard(data: data),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
         _VehicleLoadCard(session: data.vehicleStock, onViewAll: onViewAllItems),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
         _DeliveryStatusCard(data: data),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
         _DeliveriesPreviewCard(
           deliveries: data.deliveries.take(4).toList(),
           onViewAll: onViewAllDeliveries,
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: AppSpacing.xl),
       ],
-    );
-  }
-}
-
-class _Header extends StatelessWidget {
-  final String name;
-  final VoidCallback onMenuTap;
-
-  const _Header({required this.name, required this.onMenuTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 58,
-      child: Row(
-        children: [
-          _IconButtonShell(
-            icon: Icons.menu_rounded,
-            color: AppColors.deliveryInk,
-            onTap: onMenuTap,
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Good Morning, $name',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    height: 1.25,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.deliveryInk,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                const Text(
-                  'Have a safe and productive day!',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 12,
-                    height: 1.35,
-                    color: AppColors.textMuted,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              const _IconButtonShell(
-                icon: Icons.notifications_none_rounded,
-                color: AppColors.deliveryInk,
-              ),
-              Positioned(
-                top: 4,
-                right: 4,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: AppColors.deliveryRed,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
     );
   }
 }
@@ -315,7 +262,7 @@ class _HeroSummaryCard extends StatelessWidget {
     return Container(
       height: 168,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppSizes.cardRadius),
         boxShadow: [
           BoxShadow(
             color: AppColors.deliveryHeroShadow.withValues(alpha: 0.20),
@@ -325,7 +272,7 @@ class _HeroSummaryCard extends StatelessWidget {
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppSizes.cardRadius),
         child: Stack(
           children: [
             Positioned.fill(
@@ -371,7 +318,7 @@ class _HeroSummaryCard extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(AppSpacing.card),
               child: Column(
                 children: [
                   Expanded(
@@ -399,7 +346,7 @@ class _HeroSummaryCard extends StatelessWidget {
                                     height: 44,
                                     color: Colors.white.withValues(alpha: 0.20),
                                   ),
-                                  const SizedBox(width: 10),
+                                  const SizedBox(width: AppSpacing.sm),
                                   Expanded(
                                     child: _HeroMetric(
                                       title: "Today's Deliveries",
@@ -410,7 +357,7 @@ class _HeroSummaryCard extends StatelessWidget {
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 12),
+                              const SizedBox(height: AppSpacing.md),
                               Row(
                                 children: [
                                   Container(
@@ -418,7 +365,9 @@ class _HeroSummaryCard extends StatelessWidget {
                                     height: 28,
                                     decoration: BoxDecoration(
                                       color: Colors.white.withValues(alpha: 0.14),
-                                      borderRadius: BorderRadius.circular(8),
+                                      borderRadius: BorderRadius.circular(
+                                        AppSizes.controlRadius,
+                                      ),
                                     ),
                                     child: const Icon(
                                       Icons.two_wheeler_rounded,
@@ -426,7 +375,7 @@ class _HeroSummaryCard extends StatelessWidget {
                                       color: AppColors.deliveryHeroIcon,
                                     ),
                                   ),
-                                  const SizedBox(width: 8),
+                                  const SizedBox(width: AppSpacing.sm),
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment:
@@ -445,7 +394,7 @@ class _HeroSummaryCard extends StatelessWidget {
                                             fontWeight: FontWeight.w600,
                                           ),
                                         ),
-                                        const SizedBox(height: 2),
+                                        const SizedBox(height: AppSpacing.xs),
                                         Text(
                                           data.vehicleNumberText,
                                           maxLines: 1,
@@ -469,10 +418,12 @@ class _HeroSummaryCard extends StatelessWidget {
                     ),
                   ),
                   Container(
-                    height: 44,
+                    height: AppSizes.buttonHeight,
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(
+                        AppSizes.controlRadius,
+                      ),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.08),
@@ -546,15 +497,15 @@ class _HeroMetric extends StatelessWidget {
       children: [
         if (icon != null) ...[
           Container(
-            width: 28,
-            height: 28,
+            width: AppSizes.buttonHeightCompact,
+            height: AppSizes.buttonHeightCompact,
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.16),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppSizes.controlRadius),
             ),
-            child: Icon(icon, color: color, size: 18),
+            child: Icon(icon, color: color, size: AppSizes.iconMedium),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppSpacing.sm),
         ],
         Expanded(
           child: Column(
@@ -571,14 +522,14 @@ class _HeroMetric extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: AppSpacing.xs),
               Text(
                 value,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: isNumber ? 24 : 15,
+                  fontSize: isNumber ? AppSizes.iconLarge : 14,
                   height: 1.15,
                   fontWeight: FontWeight.w800,
                 ),
@@ -607,10 +558,10 @@ class _HeroAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(9),
+      borderRadius: BorderRadius.circular(AppSizes.controlRadius),
       onTap: onTap,
       child: SizedBox(
-        height: 44,
+        height: AppSizes.buttonHeight,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -621,9 +572,9 @@ class _HeroAction extends StatelessWidget {
                 color: color.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: color, size: 17),
+              child: Icon(icon, color: color, size: AppSizes.iconSmall),
             ),
-            const SizedBox(width: 7),
+            const SizedBox(width: AppSpacing.sm),
             Flexible(
               child: Text(
                 label,
@@ -995,11 +946,11 @@ class _PriorityRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 42,
+      height: AppSizes.listTileHeight,
       child: Row(
         children: [
           _MiniIcon(icon: info.icon, color: info.color, background: info.background),
-          const SizedBox(width: 10),
+          const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
               info.label,
@@ -1374,101 +1325,6 @@ class _DeliveryPreviewTile extends StatelessWidget {
   }
 }
 
-class _DeliveryBottomNav extends StatelessWidget {
-  final ValueChanged<String> onTap;
-
-  const _DeliveryBottomNav({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 72,
-      padding: const EdgeInsets.fromLTRB(12, 6, 12, 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          top: BorderSide(color: Colors.black.withValues(alpha: 0.06)),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 20,
-            offset: const Offset(0, -8),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          _BottomNavItem(
-            icon: Icons.home_rounded,
-            label: 'Dashboard',
-            active: true,
-            onTap: () {},
-          ),
-          _BottomNavItem(
-            icon: Icons.inventory_2_outlined,
-            label: 'Deliveries',
-            onTap: () => onTap('Deliveries'),
-          ),
-          _BottomNavItem(
-            icon: Icons.local_shipping_outlined,
-            label: 'Stock',
-            onTap: () => onTap('Stock'),
-          ),
-          _BottomNavItem(
-            icon: Icons.more_horiz_rounded,
-            label: 'More',
-            onTap: () => onTap('More'),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _BottomNavItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool active;
-  final VoidCallback onTap;
-
-  const _BottomNavItem({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-    this.active = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final color = active ? AppColors.deliveryBlue : AppColors.textMuted;
-
-    return Expanded(
-      child: InkWell(
-        borderRadius: BorderRadius.circular(10),
-        onTap: onTap,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 22, color: color),
-            const SizedBox(height: 3),
-            Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: active ? FontWeight.w800 : FontWeight.w600,
-                color: color,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _SectionHeader extends StatelessWidget {
   final String title;
   final IconData? trailingIcon;
@@ -1568,7 +1424,7 @@ class _SurfaceCard extends StatelessWidget {
 
   const _SurfaceCard({
     required this.child,
-    this.padding = const EdgeInsets.all(12),
+    this.padding = const EdgeInsets.all(AppSpacing.card),
   });
 
   @override
@@ -1578,7 +1434,7 @@ class _SurfaceCard extends StatelessWidget {
       padding: padding,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppSizes.cardRadius),
         border: Border.all(color: AppColors.deliverySurfaceBorder),
         boxShadow: [
           BoxShadow(
@@ -1607,38 +1463,13 @@ class _MiniIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 28,
-      height: 28,
+      width: AppSizes.buttonHeightCompact,
+      height: AppSizes.buttonHeightCompact,
       decoration: BoxDecoration(
         color: background,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppSizes.controlRadius),
       ),
-      child: Icon(icon, color: color, size: 16),
-    );
-  }
-}
-
-class _IconButtonShell extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-  final VoidCallback? onTap;
-
-  const _IconButtonShell({
-    required this.icon,
-    required this.color,
-    this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(10),
-      onTap: onTap,
-      child: SizedBox(
-        width: 36,
-        height: 36,
-        child: Icon(icon, size: 24, color: color),
-      ),
+      child: Icon(icon, color: color, size: AppSizes.iconSmall),
     );
   }
 }
@@ -1675,7 +1506,7 @@ class _ErrorPanel extends StatelessWidget {
             size: 38,
             color: AppColors.deliveryRed,
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: AppSpacing.sm),
           const Text(
             'Dashboard could not load',
             style: TextStyle(
@@ -1684,24 +1515,27 @@ class _ErrorPanel extends StatelessWidget {
               color: AppColors.deliveryInk,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: AppSpacing.sm),
           Text(
             message,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+            style: AppTextStyles.secondary,
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: AppSpacing.md),
           FilledButton.icon(
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.deliveryBlue,
               foregroundColor: Colors.white,
-              minimumSize: const Size(130, 42),
+              minimumSize: const Size(130, AppSizes.buttonHeight),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(AppSizes.controlRadius),
               ),
             ),
             onPressed: onRetry,
-            icon: const Icon(Icons.refresh_rounded, size: 18),
+            icon: const Icon(
+              Icons.refresh_rounded,
+              size: AppSizes.iconMedium,
+            ),
             label: const Text('Retry'),
           ),
         ],

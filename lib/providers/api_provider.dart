@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import '../models/api_response.dart';
 import '../models/customer_activity_models.dart';
 import '../models/customer_model.dart';
+import '../models/delivery_detail_model.dart';
 import '../models/app_user.dart';
 import '../models/auth_models.dart';
 import '../services/api_service.dart';
@@ -207,14 +208,54 @@ class ApiProvider extends ChangeNotifier {
     );
   }
 
+  Future<DeliveryDetail> fetchDeliveryById(String deliveryId) {
+    return _apiService.fetchDeliveryById(deliveryId);
+  }
+
+  Future<List<int>> downloadDeliveryChallan(String deliveryId) {
+    return _apiService.downloadDeliveryChallan(deliveryId);
+  }
+
+  Future<Map<String, dynamic>> acceptDelivery(String deliveryId) {
+    return _apiService.acceptDelivery(deliveryId);
+  }
+
+  Future<Map<String, dynamic>> rejectDelivery({
+    required String deliveryId,
+    required String reason,
+  }) {
+    return _apiService.rejectDelivery(
+      deliveryId: deliveryId,
+      reason: reason,
+    );
+  }
+
+  Future<Map<String, dynamic>> confirmDelivery({
+    required String deliveryId,
+    required Map<String, dynamic> payload,
+  }) {
+    return _apiService.confirmDelivery(
+      deliveryId: deliveryId,
+      payload: payload,
+    );
+  }
+
   Future<Map<String, dynamic>?> fetchCurrentVehicleStock(
     String deliveryPartnerId,
   ) {
     return _apiService.fetchCurrentVehicleStock(deliveryPartnerId);
   }
 
+  Future<List<Map<String, dynamic>>> fetchVehicleStockSessions() {
+    return _apiService.fetchVehicleStockSessions();
+  }
+
   Future<List<Map<String, dynamic>>> fetchMyAttendance() {
     return _apiService.fetchMyAttendance();
+  }
+
+  Future<Map<String, dynamic>> checkInAttendance(String type) {
+    return _apiService.checkInAttendance(type);
   }
 
   Future<void> shareMyLocation({

@@ -44,6 +44,7 @@ class _CrmSaasAppState extends State<CrmSaasApp> {
             ? RoleHomeScreen.forRole(savedRole)
             : const LoginScreen(),
         routes: AppRouter.routes,
+        onGenerateRoute: AppRouter.onGenerateRoute,
       ),
     );
   }

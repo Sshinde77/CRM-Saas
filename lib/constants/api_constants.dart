@@ -25,6 +25,7 @@ class ApiEndpoints {
   const ApiEndpoints._();
 
   static const String health = '/health';
+  static const String adminDashboard = '/dashboard/admin';
 
   static const String authLogin = '/auth/login';
   static const String authRegister = '/auth/register';
@@ -60,9 +61,19 @@ class ApiEndpoints {
   static const String leadsList = '/leads';
   static const String leadsDetailTemplate = '/leads/{lead_id}';
   static const String deliveriesList = '/deliveries';
+  static const String deliveriesDetailTemplate =
+      '/deliveries/by-id/{delivery_id}';
+  static const String deliveriesChallanPdfTemplate =
+      '/deliveries/{delivery_id}/challan/pdf';
+  static const String deliveriesAcceptTemplate = '/deliveries/{delivery_id}/accept';
+  static const String deliveriesRejectTemplate = '/deliveries/{delivery_id}/reject';
+  static const String deliveriesConfirmTemplate =
+      '/deliveries/{delivery_id}/confirm';
+  static const String vehicleStock = '/vehicle-stock';
   static const String vehicleStockCurrentTemplate =
       '/vehicle-stock/current/{delivery_partner_id}';
   static const String attendanceMe = '/attendance/me';
+  static const String attendanceCheckIn = '/attendance/check-in';
   static const String usersMeLocation = '/users/me/location';
   static const String quotationsList = '/quotations';
   static const String quotationsDetailTemplate = '/quotations/{quotation_id}';
@@ -121,6 +132,21 @@ class ApiEndpoints {
 
   static String leadsDetail(String leadId) =>
       leadsDetailTemplate.replaceFirst('{lead_id}', leadId);
+
+  static String deliveriesAccept(String deliveryId) =>
+      deliveriesAcceptTemplate.replaceFirst('{delivery_id}', deliveryId);
+
+  static String deliveriesReject(String deliveryId) =>
+      deliveriesRejectTemplate.replaceFirst('{delivery_id}', deliveryId);
+
+  static String deliveriesDetail(String deliveryId) =>
+      deliveriesDetailTemplate.replaceFirst('{delivery_id}', deliveryId);
+
+  static String deliveriesChallanPdf(String deliveryId) =>
+      deliveriesChallanPdfTemplate.replaceFirst('{delivery_id}', deliveryId);
+
+  static String deliveriesConfirm(String deliveryId) =>
+      deliveriesConfirmTemplate.replaceFirst('{delivery_id}', deliveryId);
 
   static String vehicleStockCurrent(String deliveryPartnerId) =>
       vehicleStockCurrentTemplate.replaceFirst(

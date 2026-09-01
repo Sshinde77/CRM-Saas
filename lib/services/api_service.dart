@@ -8,8 +8,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../constants/api_constants.dart';
 import '../models/api_response.dart';
+import '../models/admin_dashboard_model.dart';
 import '../models/customer_activity_models.dart';
 import '../models/customer_model.dart';
+import '../models/delivery_detail_model.dart';
 import '../models/auth_models.dart';
 import '../models/app_user.dart';
 import '../models/plan_model.dart';
@@ -492,6 +494,35 @@ class ApiService {
     return rawItems.whereType<Map<String, dynamic>>().toList();
   }
 
+  Future<AdminDashboardData> fetchAdminDashboard({
+    String? dateFrom,
+    String? dateTo,
+    String? customerId,
+    String? supplierId,
+    String? warehouseId,
+    String? branchId,
+  }) async {
+    final response = await _send(
+      method: 'GET',
+      endpoint: ApiEndpoints.adminDashboard,
+      requiresAuth: true,
+      queryParameters: _cleanQuery({
+        'date_from': dateFrom,
+        'date_to': dateTo,
+        'customer_id': customerId,
+        'supplier_id': supplierId,
+        'warehouse_id': warehouseId,
+        'branch_id': branchId,
+      }),
+    );
+
+    final decoded = _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid admin dashboard response.',
+    );
+    return AdminDashboardData.fromJson(decoded);
+  }
+
   Future<List<Map<String, dynamic>>> fetchDeliveryPartnerDeliveries({
     required String deliveryPartnerId,
   }) {
@@ -502,6 +533,101 @@ class ApiService {
       }),
       candidateKeys: const ['deliveries', 'data', 'items', 'results'],
       fallbackMessage: 'Invalid deliveries response.',
+    );
+  }
+
+  Future<DeliveryDetail> fetchDeliveryById(String deliveryId) async {
+    final id = deliveryId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing delivery id.');
+    }
+
+    final response = await _send(
+      method: 'GET',
+      endpoint: ApiEndpoints.deliveriesDetail(id),
+      requiresAuth: true,
+    );
+    final decoded = _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid delivery detail response.',
+    );
+    return DeliveryDetail.fromJson(decoded);
+  }
+
+  Future<List<int>> downloadDeliveryChallan(String deliveryId) async {
+    final id = deliveryId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing delivery id.');
+    }
+
+    final response = await _send(
+      method: 'GET',
+      endpoint: ApiEndpoints.deliveriesChallanPdf(id),
+      requiresAuth: true,
+    );
+    return response.bodyBytes;
+  }
+
+  Future<Map<String, dynamic>> acceptDelivery(String deliveryId) async {
+    final id = deliveryId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing delivery id.');
+    }
+
+    final response = await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.deliveriesAccept(id),
+      requiresAuth: true,
+    );
+    return _extractDeliveryPayload(
+      response.body.trim(),
+      fallbackMessage: 'Invalid accept delivery response.',
+    );
+  }
+
+  Future<Map<String, dynamic>> rejectDelivery({
+    required String deliveryId,
+    required String reason,
+  }) async {
+    final id = deliveryId.trim();
+    final trimmedReason = reason.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing delivery id.');
+    }
+    if (trimmedReason.isEmpty) {
+      throw const ApiException(message: 'Missing rejection reason.');
+    }
+
+    final response = await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.deliveriesReject(id),
+      requiresAuth: true,
+      body: {'reason': trimmedReason},
+    );
+    return _extractDeliveryPayload(
+      response.body.trim(),
+      fallbackMessage: 'Invalid reject delivery response.',
+    );
+  }
+
+  Future<Map<String, dynamic>> confirmDelivery({
+    required String deliveryId,
+    required Map<String, dynamic> payload,
+  }) async {
+    final id = deliveryId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing delivery id.');
+    }
+
+    final response = await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.deliveriesConfirm(id),
+      requiresAuth: true,
+      body: payload,
+    );
+    return _extractDeliveryPayload(
+      response.body.trim(),
+      fallbackMessage: 'Invalid confirm delivery response.',
     );
   }
 
@@ -540,6 +666,35 @@ class ApiService {
     throw const ApiException(message: 'Invalid vehicle stock response.');
   }
 
+  Future<List<Map<String, dynamic>>> fetchVehicleStockSessions() async {
+    final response = await _send(
+      method: 'GET',
+      endpoint: ApiEndpoints.vehicleStock,
+      requiresAuth: true,
+    );
+    final decoded = _tryDecodeBody(response.body.trim());
+    if (decoded is List) {
+      return decoded.whereType<Map<String, dynamic>>().toList();
+    }
+    if (decoded is Map<String, dynamic>) {
+      for (final key in const [
+        'vehicle_stock',
+        'vehicleStock',
+        'sessions',
+        'data',
+        'items',
+        'results',
+      ]) {
+        final value = decoded[key];
+        if (value is List) {
+          return value.whereType<Map<String, dynamic>>().toList();
+        }
+      }
+      return [decoded];
+    }
+    throw const ApiException(message: 'Invalid vehicle stock response.');
+  }
+
   Future<List<Map<String, dynamic>>> fetchMyAttendance() async {
     final response = await _send(
       method: 'GET',
@@ -569,6 +724,29 @@ class ApiService {
       return [decoded];
     }
     throw const ApiException(message: 'Invalid attendance response.');
+  }
+
+  Future<Map<String, dynamic>> checkInAttendance(String type) async {
+    final checkpointType = type.trim();
+    if (checkpointType.isEmpty) {
+      throw const ApiException(message: 'Missing attendance checkpoint type.');
+    }
+
+    final response = await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.attendanceCheckIn,
+      requiresAuth: true,
+      body: {'type': checkpointType},
+    );
+    final decoded = _tryDecodeBody(response.body.trim());
+    if (decoded is Map<String, dynamic>) {
+      final data = decoded['data'];
+      if (data is Map<String, dynamic>) return data;
+      final attendance = decoded['attendance'];
+      if (attendance is Map<String, dynamic>) return attendance;
+      return decoded;
+    }
+    return const <String, dynamic>{};
   }
 
   Future<void> shareMyLocation({
@@ -1508,6 +1686,20 @@ class ApiService {
       return decoded;
     }
     throw ApiException(message: fallbackMessage);
+  }
+
+  Map<String, dynamic> _extractDeliveryPayload(
+    String body, {
+    required String fallbackMessage,
+  }) {
+    final decoded = _requireDecodedMap(body, fallbackMessage: fallbackMessage);
+    for (final key in const ['delivery', 'data', 'item', 'result']) {
+      final value = decoded[key];
+      if (value is Map<String, dynamic>) {
+        return value;
+      }
+    }
+    return decoded;
   }
 
   dynamic _tryDecodeBody(String body) {

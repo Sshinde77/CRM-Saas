@@ -183,7 +183,7 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
             ),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+                padding: const EdgeInsets.fromLTRB(16, 18, 16, 28),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -191,16 +191,16 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                       'Deliveries',
                       style: TextStyle(
                         color: textPrimary,
-                        fontSize: 24,
+                        fontSize: 18,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
                     const SizedBox(height: 4),
                     const Text(
                       'Track order delivery status and outstanding balances',
-                      style: TextStyle(color: textSecondary, fontSize: 13),
+                      style: TextStyle(color: textSecondary, fontSize: 12.5),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 16),
                     LayoutBuilder(
                       builder: (context, constraints) {
                         final width = constraints.maxWidth;
@@ -214,9 +214,9 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                           crossAxisCount: crossAxisCount,
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                          childAspectRatio: crossAxisCount == 1 ? 4.2 : 2.2,
+                          crossAxisSpacing: 10,
+                          mainAxisSpacing: 10,
+                          childAspectRatio: crossAxisCount == 1 ? 4.8 : 2.6,
                           children: [
                             _statCard(
                               label: 'Total Deliveries',
@@ -246,13 +246,13 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                         );
                       },
                     ),
-                    const SizedBox(height: 22),
+                    const SizedBox(height: 16),
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(18),
+                      padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: AppColors.background,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(10),
                         border: Border.all(
                           color: AppColors.secondary.withValues(alpha: 0.18),
                         ),
@@ -261,8 +261,8 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                             color: AppColors.textPrimary.withValues(
                               alpha: 0.04,
                             ),
-                            blurRadius: 14,
-                            offset: const Offset(0, 6),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
                           ),
                         ],
                       ),
@@ -273,7 +273,7 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                             'All Deliveries',
                             style: TextStyle(
                               color: textPrimary,
-                              fontSize: 18,
+                              fontSize: 16,
                               fontWeight: FontWeight.w800,
                             ),
                           ),
@@ -282,10 +282,10 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                             'Search by order, customer, delivery partner, status, scheduled date, or amount due.',
                             style: TextStyle(
                               color: textSecondary,
-                              fontSize: 12.5,
+                              fontSize: 12,
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 12),
                           TextField(
                             controller: _searchController,
                             onChanged: (_) => setState(() {}),
@@ -297,11 +297,11 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                               filled: true,
                               fillColor: AppColors.surfaceSoft,
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(10),
                                 borderSide: BorderSide.none,
                               ),
                               enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(10),
                                 borderSide: BorderSide(
                                   color: AppColors.secondary.withValues(
                                     alpha: 0.14,
@@ -309,7 +309,7 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                                 ),
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(10),
                                 borderSide: const BorderSide(
                                   color: AppColors.purple,
                                   width: 1.4,
@@ -326,7 +326,7 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                                     ),
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 12),
                           if (deliveries.isEmpty)
                             const Padding(
                               padding: EdgeInsets.symmetric(vertical: 40),
@@ -347,9 +347,7 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                                   .entries
                                   .map(
                                     (entry) => Padding(
-                                      padding: const EdgeInsets.only(
-                                        bottom: 12,
-                                      ),
+                                      padding: const EdgeInsets.only(bottom: 10),
                                       child: _buildDeliveryCard(entry.value),
                                     ),
                                   )
@@ -375,24 +373,24 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
     required Color color,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.background,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: color.withValues(alpha: 0.16)),
       ),
       child: Row(
         children: [
           Container(
-            width: 46,
-            height: 46,
+            width: 34,
+            height: 34,
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: color, size: 22),
+            child: Icon(icon, color: color, size: 20),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -402,7 +400,7 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                   value,
                   style: const TextStyle(
                     color: textPrimary,
-                    fontSize: 22,
+                    fontSize: 16,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -411,7 +409,7 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                   label,
                   style: const TextStyle(
                     color: textSecondary,
-                    fontSize: 12.5,
+                    fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -428,16 +426,16 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.background,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: AppColors.secondary.withValues(alpha: 0.14)),
         boxShadow: [
           BoxShadow(
             color: AppColors.textPrimary.withValues(alpha: 0.04),
-            blurRadius: 14,
-            offset: const Offset(0, 6),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -447,18 +445,18 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
           Row(
             children: [
               Container(
-                width: 44,
-                height: 44,
+                width: 34,
+                height: 34,
                 decoration: BoxDecoration(
                   color: AppColors.purple.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(
                   Icons.local_shipping_outlined,
                   color: AppColors.purple,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -467,7 +465,7 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                       delivery.orderNo,
                       style: const TextStyle(
                         color: textPrimary,
-                        fontSize: 15.5,
+                        fontSize: 13,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -476,7 +474,7 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                       delivery.scheduledDate.toIso8601String().split('T').first,
                       style: const TextStyle(
                         color: textSecondary,
-                        fontSize: 12,
+                        fontSize: 11.5,
                       ),
                     ),
                   ],
@@ -484,12 +482,12 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
               ),
               Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 5,
+                  horizontal: 8,
+                  vertical: 4,
                 ),
                 decoration: BoxDecoration(
                   color: statusColor.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(14),
                   border: Border.all(
                     color: statusColor.withValues(alpha: 0.22),
                   ),
@@ -505,11 +503,11 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 10),
           _infoRow('Customer', delivery.customer),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           _infoRow('Delivery Partner', delivery.deliveryPartner),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Row(
             children: [
               Expanded(
@@ -541,12 +539,12 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
             fontWeight: FontWeight.w600,
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 3),
         Text(
           value,
           style: const TextStyle(
             color: textPrimary,
-            fontSize: 13.5,
+            fontSize: 12.5,
             fontWeight: FontWeight.w700,
           ),
         ),
