@@ -250,6 +250,23 @@ class ApiProvider extends ChangeNotifier {
     return _apiService.fetchVehicleStockSessions();
   }
 
+  Future<Map<String, dynamic>> submitEndOfDayReturn({
+    required String sessionId,
+    required List<Map<String, dynamic>> items,
+  }) {
+    return _apiService.submitEndOfDayReturn(sessionId: sessionId, items: items);
+  }
+
+  Future<Map<String, dynamic>> reconcileVehicleStock({
+    required String sessionId,
+    required Map<String, dynamic> payload,
+  }) {
+    return _apiService.reconcileVehicleStock(
+      sessionId: sessionId,
+      payload: payload,
+    );
+  }
+
   Future<List<Map<String, dynamic>>> fetchMyAttendance() {
     return _apiService.fetchMyAttendance();
   }

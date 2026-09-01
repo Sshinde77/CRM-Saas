@@ -167,7 +167,9 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
                                             AppRoutes.deliveryAttendance,
                                           ),
                                       onEndDayReturn: () =>
-                                          _showComingSoon('End day return'),
+                                          Navigator.of(context).pushNamed(
+                                            AppRoutes.deliveryEndOfDay,
+                                          ),
                                       onViewAllItems: () =>
                                           Navigator.of(context).pushNamed(
                                             AppRoutes.deliveryVehicleStock,

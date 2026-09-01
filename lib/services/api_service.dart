@@ -695,6 +695,48 @@ class ApiService {
     throw const ApiException(message: 'Invalid vehicle stock response.');
   }
 
+  Future<Map<String, dynamic>> submitEndOfDayReturn({
+    required String sessionId,
+    required List<Map<String, dynamic>> items,
+  }) async {
+    final id = sessionId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing vehicle stock session id.');
+    }
+
+    final response = await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.vehicleStockEndOfDay(id),
+      requiresAuth: true,
+      body: {'items': items},
+    );
+    return _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid end of day return response.',
+    );
+  }
+
+  Future<Map<String, dynamic>> reconcileVehicleStock({
+    required String sessionId,
+    required Map<String, dynamic> payload,
+  }) async {
+    final id = sessionId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing vehicle stock session id.');
+    }
+
+    final response = await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.vehicleStockReconcile(id),
+      requiresAuth: true,
+      body: payload,
+    );
+    return _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid vehicle stock reconciliation response.',
+    );
+  }
+
   Future<List<Map<String, dynamic>>> fetchMyAttendance() async {
     final response = await _send(
       method: 'GET',

@@ -441,30 +441,43 @@ class _SalesManagerDashboardScreenState
             ),
           ),
           const SizedBox(height: 12),
-          _HeaderDatePill(
-            icon: Icons.calendar_month_rounded,
-            label: '20 May 2024, Monday',
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: _openAttendanceScreen,
-              icon: const Icon(Icons.fact_check_outlined, size: 19),
-              label: const Text('Mark Attendance'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-            ),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final compact = constraints.maxWidth < 360;
+              return Flex(
+                direction: compact ? Axis.vertical : Axis.horizontal,
+                crossAxisAlignment: compact
+                    ? CrossAxisAlignment.stretch
+                    : CrossAxisAlignment.center,
+                children: [
+                  const _HeaderDatePill(
+                    icon: Icons.calendar_month_rounded,
+                    label: '20 May 2024, Monday',
+                  ),
+                  SizedBox(width: compact ? 0 : 10, height: compact ? 10 : 0),
+                  Expanded(
+                    flex: compact ? 0 : 1,
+                    child: SizedBox(
+                      height: 42,
+                      child: ElevatedButton.icon(
+                        onPressed: _openAttendanceScreen,
+                        icon: const Icon(Icons.fact_check_outlined, size: 18),
+                        label: const Text('Mark Attendance'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ],
       ),

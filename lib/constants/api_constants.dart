@@ -72,6 +72,10 @@ class ApiEndpoints {
   static const String vehicleStock = '/vehicle-stock';
   static const String vehicleStockCurrentTemplate =
       '/vehicle-stock/current/{delivery_partner_id}';
+  static const String vehicleStockEndOfDayTemplate =
+      '/vehicle-stock/{session_id}/end-of-day';
+  static const String vehicleStockReconcileTemplate =
+      '/vehicle-stock/{session_id}/reconcile';
   static const String attendanceMe = '/attendance/me';
   static const String attendanceCheckIn = '/attendance/check-in';
   static const String usersMeLocation = '/users/me/location';
@@ -153,6 +157,12 @@ class ApiEndpoints {
         '{delivery_partner_id}',
         deliveryPartnerId,
       );
+
+  static String vehicleStockEndOfDay(String sessionId) =>
+      vehicleStockEndOfDayTemplate.replaceFirst('{session_id}', sessionId);
+
+  static String vehicleStockReconcile(String sessionId) =>
+      vehicleStockReconcileTemplate.replaceFirst('{session_id}', sessionId);
 
   static String quotationsPdf(String quotationId) =>
       quotationsPdfTemplate.replaceFirst('{quotation_id}', quotationId);

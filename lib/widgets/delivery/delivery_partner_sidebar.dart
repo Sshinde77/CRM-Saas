@@ -89,6 +89,8 @@ class DeliveryPartnerSidebar extends StatelessWidget {
         Navigator.of(context).pushNamed(AppRoutes.deliveryVehicleStock);
       case AppRoutes.deliveryAttendance:
         Navigator.of(context).pushNamed(AppRoutes.deliveryAttendance);
+      case AppRoutes.deliveryEndOfDay:
+        Navigator.of(context).pushNamed(AppRoutes.deliveryEndOfDay);
       default:
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
