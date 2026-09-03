@@ -211,9 +211,28 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
   }
 
   Future<void> _openAddLeadPage() async {
-    await Navigator.of(
+    final created = await Navigator.of(
       context,
-    ).push(MaterialPageRoute<void>(builder: (_) => const AddLeadScreen()));
+    ).push<bool>(MaterialPageRoute(builder: (_) => const AddLeadScreen()));
+    if (created == true && mounted) {
+      await _loadLeads();
+    }
+  }
+
+  Future<void> _openEditLeadPage(_LeadRecord lead) async {
+    if (lead.id.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Lead edit is unavailable for this item.')),
+      );
+      return;
+    }
+
+    final updated = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => AddLeadScreen(leadId: lead.id)),
+    );
+    if (updated == true && mounted) {
+      await _loadLeads();
+    }
   }
 
   Future<void> _openLeadDetails(_LeadRecord lead) async {
@@ -242,11 +261,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
         await _openLeadDetails(lead);
         return;
       case _LeadAction.edit:
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Edit for ${lead.personName} is not wired yet.'),
-          ),
-        );
+        await _openEditLeadPage(lead);
         return;
       case _LeadAction.convertToCustomer:
         ScaffoldMessenger.of(context).showSnackBar(

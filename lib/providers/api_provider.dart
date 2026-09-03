@@ -237,6 +237,10 @@ class ApiProvider extends ChangeNotifier {
     );
   }
 
+  Future<List<Map<String, dynamic>>> fetchOrders() {
+    return _apiService.fetchOrders();
+  }
+
   Future<Map<String, dynamic>?> fetchCurrentVehicleStock(
     String deliveryPartnerId,
   ) {
@@ -302,6 +306,42 @@ class ApiProvider extends ChangeNotifier {
 
   Future<Map<String, dynamic>> fetchLeadById(String leadId) {
     return _apiService.fetchLeadById(leadId);
+  }
+
+  Future<Map<String, dynamic>> createLead({
+    required Map<String, dynamic> request,
+  }) {
+    return _apiService.createLead(request: request);
+  }
+
+  Future<Map<String, dynamic>> updateLead({
+    required String leadId,
+    required Map<String, dynamic> request,
+  }) {
+    return _apiService.updateLead(leadId: leadId, request: request);
+  }
+
+  Future<Map<String, dynamic>> convertLeadToCustomer({
+    required String leadId,
+    required Map<String, dynamic> request,
+  }) {
+    return _apiService.convertLeadToCustomer(
+      leadId: leadId,
+      request: request,
+    );
+  }
+
+  Future<Map<String, dynamic>> createVisit({
+    required Map<String, dynamic> request,
+  }) {
+    return _apiService.createVisit(request: request);
+  }
+
+  Future<Map<String, dynamic>> createVisitFollowUp({
+    required String visitId,
+    required Map<String, dynamic> request,
+  }) {
+    return _apiService.createVisitFollowUp(visitId: visitId, request: request);
   }
 
   Future<List<Map<String, dynamic>>> fetchQuotations() {

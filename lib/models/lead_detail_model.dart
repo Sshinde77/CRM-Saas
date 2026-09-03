@@ -10,6 +10,9 @@ class LeadDetailModel {
   final String interestedProduct;
   final String assignedTo;
   final String existingCustomer;
+  final String customerId;
+  final String leadType;
+  final String segment;
   final String notes;
   final String address;
   final String city;
@@ -35,6 +38,9 @@ class LeadDetailModel {
     required this.interestedProduct,
     required this.assignedTo,
     required this.existingCustomer,
+    required this.customerId,
+    required this.leadType,
+    required this.segment,
     required this.notes,
     required this.address,
     required this.city,
@@ -128,6 +134,21 @@ class LeadDetailModel {
       ], fallback: '-'),
       assignedTo: assignedTo,
       existingCustomer: existingCustomer,
+      customerId: _readIdString(
+        json,
+        const ['customer_id', 'customerId', 'existing_customer_id'],
+        nestedKeys: const ['customer', 'existing_customer'],
+      ),
+      leadType: _readString(json, const [
+        'lead_type',
+        'leadType',
+        'type',
+      ], fallback: '-'),
+      segment: _readString(json, const [
+        'segment',
+        'lead_segment',
+        'leadSegment',
+      ], fallback: '-'),
       notes: _readString(json, const [
         'notes',
         'description',
@@ -199,6 +220,25 @@ class LeadDetailModel {
     if (parts.isEmpty) return 'LD';
     return parts.map((part) => part[0].toUpperCase()).join();
   }
+}
+
+String _readIdString(
+  Map<String, dynamic> json,
+  List<String> keys, {
+  List<String> nestedKeys = const [],
+}) {
+  final direct = _readString(json, keys);
+  if (direct.isNotEmpty && direct != '-') return direct;
+
+  for (final key in nestedKeys) {
+    final nested = json[key];
+    if (nested is Map<String, dynamic>) {
+      final nestedId = _readString(nested, const ['id', 'customer_id']);
+      if (nestedId.isNotEmpty && nestedId != '-') return nestedId;
+    }
+  }
+
+  return '';
 }
 
 String _readString(

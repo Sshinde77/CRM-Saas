@@ -60,6 +60,10 @@ class ApiEndpoints {
   static const String ordersList = '/orders';
   static const String leadsList = '/leads';
   static const String leadsDetailTemplate = '/leads/{lead_id}';
+  static const String leadsConvertTemplate =
+      '/leads/{lead_id}/convert-to-customer';
+  static const String visitsList = '/visits';
+  static const String visitFollowUpsTemplate = '/visits/{visit_id}/follow-ups';
   static const String deliveriesList = '/deliveries';
   static const String deliveriesDetailTemplate =
       '/deliveries/by-id/{delivery_id}';
@@ -94,6 +98,7 @@ class ApiEndpoints {
   static const String productsList = '/products';
 
   static const String usersList = '/users';
+  static const String usersAssignable = '/users/assignable';
   static const String usersCreate = '/users';
   static const String usersDetailTemplate = '/users/{user_id}';
   static const String usersUpdateTemplate = '/users/{user_id}';
@@ -139,6 +144,12 @@ class ApiEndpoints {
 
   static String leadsDetail(String leadId) =>
       leadsDetailTemplate.replaceFirst('{lead_id}', leadId);
+
+  static String leadsConvert(String leadId) =>
+      leadsConvertTemplate.replaceFirst('{lead_id}', leadId);
+
+  static String visitFollowUps(String visitId) =>
+      visitFollowUpsTemplate.replaceFirst('{visit_id}', visitId);
 
   static String deliveriesAccept(String deliveryId) =>
       deliveriesAcceptTemplate.replaceFirst('{delivery_id}', deliveryId);

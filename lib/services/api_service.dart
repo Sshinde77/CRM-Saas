@@ -431,16 +431,28 @@ class ApiService {
   }
 
   Future<List<AppUser>> fetchAssignableUsers() async {
-    final users = await fetchUsers();
-    return users.where((user) {
-      final role = (user.role ?? '').trim().toLowerCase();
-      final systemRole = (user.systemRole ?? '').trim().toLowerCase();
-      final roleName = user.roleDetail?.name.trim().toLowerCase();
-      return role == 'sales_officer' ||
-          systemRole == 'staff' ||
-          roleName == 'sales officer' ||
-          roleName == 'staff';
-    }).toList();
+    List<AppUser> assignableOnly(List<AppUser> users) {
+      return users.where((user) {
+        final role = (user.role ?? '').trim().toLowerCase();
+        final systemRole = (user.systemRole ?? '').trim().toLowerCase();
+        final roleName = user.roleDetail?.name.trim().toLowerCase();
+        return role == 'sales_officer' ||
+            systemRole == 'staff' ||
+            roleName == 'sales officer' ||
+            roleName == 'staff';
+      }).toList();
+    }
+
+    try {
+      final rawUsers = await fetchRawList(
+        endpoint: ApiEndpoints.usersAssignable,
+        candidateKeys: const ['users', 'staff', 'data', 'items', 'results'],
+        fallbackMessage: 'Invalid assignable users response.',
+      );
+      return assignableOnly(rawUsers.map(AppUser.fromJson).toList());
+    } on ApiException {
+      return assignableOnly(await fetchUsers());
+    }
   }
 
   Future<List<CustomerModel>> fetchCustomers({
@@ -626,6 +638,14 @@ class ApiService {
     return _extractDeliveryPayload(
       response.body.trim(),
       fallbackMessage: 'Invalid confirm delivery response.',
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> fetchOrders() {
+    return fetchRawList(
+      endpoint: ApiEndpoints.ordersList,
+      candidateKeys: const ['orders', 'data', 'items', 'results'],
+      fallbackMessage: 'Invalid orders response.',
     );
   }
 
@@ -892,6 +912,113 @@ class ApiService {
     }
 
     return decoded;
+  }
+
+  Future<Map<String, dynamic>> createLead({
+    required Map<String, dynamic> request,
+  }) async {
+    final response = await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.leadsList,
+      requiresAuth: true,
+      body: request,
+    );
+
+    return _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid lead create response.',
+    );
+  }
+
+  Future<Map<String, dynamic>> updateLead({
+    required String leadId,
+    required Map<String, dynamic> request,
+  }) async {
+    final id = leadId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing lead id.');
+    }
+
+    final response = await _send(
+      method: 'PATCH',
+      endpoint: ApiEndpoints.leadsDetail(id),
+      requiresAuth: true,
+      body: request,
+    );
+
+    final body = response.body.trim();
+    if (body.isEmpty) return const <String, dynamic>{};
+
+    return _requireDecodedMap(
+      body,
+      fallbackMessage: 'Invalid lead update response.',
+    );
+  }
+
+  Future<Map<String, dynamic>> convertLeadToCustomer({
+    required String leadId,
+    required Map<String, dynamic> request,
+  }) async {
+    final id = leadId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing lead id.');
+    }
+
+    final response = await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.leadsConvert(id),
+      requiresAuth: true,
+      body: request,
+    );
+
+    final body = response.body.trim();
+    if (body.isEmpty) return const <String, dynamic>{};
+    return _requireDecodedMap(
+      body,
+      fallbackMessage: 'Invalid lead conversion response.',
+    );
+  }
+
+  Future<Map<String, dynamic>> createVisit({
+    required Map<String, dynamic> request,
+  }) async {
+    final response = await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.visitsList,
+      requiresAuth: true,
+      body: request,
+    );
+
+    final body = response.body.trim();
+    if (body.isEmpty) return const <String, dynamic>{};
+    return _requireDecodedMap(
+      body,
+      fallbackMessage: 'Invalid visit create response.',
+    );
+  }
+
+  Future<Map<String, dynamic>> createVisitFollowUp({
+    required String visitId,
+    required Map<String, dynamic> request,
+  }) async {
+    final id = visitId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing visit id.');
+    }
+
+    final response = await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.visitFollowUps(id),
+      requiresAuth: true,
+      body: request,
+    );
+
+    final body = response.body.trim();
+    if (body.isEmpty) return const <String, dynamic>{};
+    return _requireDecodedMap(
+      body,
+      fallbackMessage: 'Invalid visit follow-up response.',
+    );
   }
 
   Future<List<Map<String, dynamic>>> fetchQuotations() {
