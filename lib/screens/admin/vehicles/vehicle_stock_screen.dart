@@ -78,6 +78,15 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
     );
   }
 
+  Future<void> _openVehicleLoading() async {
+    final created = await Navigator.of(
+      context,
+    ).pushNamed(AppRoutes.deliveryVehicleLoading);
+    if (created == true && mounted) {
+      await _refresh();
+    }
+  }
+
   List<String> _partners(List<_VehicleStockSession> sessions) {
     final names =
         sessions
@@ -120,6 +129,13 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
                 subtitle: 'Track loaded, delivered and remaining items',
                 leadingIcon: Icons.menu_rounded,
                 onLeadingTap: () => _scaffoldKey.currentState?.openDrawer(),
+                actions: [
+                  DeliveryTopBarAction(
+                    icon: Icons.add_box_outlined,
+                    tooltip: 'Record opening load',
+                    onTap: _openVehicleLoading,
+                  ),
+                ],
               )
             else
               AdminTopBar(

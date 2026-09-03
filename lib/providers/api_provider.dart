@@ -247,6 +247,18 @@ class ApiProvider extends ChangeNotifier {
     return _apiService.fetchVehicleStockSessions();
   }
 
+  Future<Map<String, dynamic>> loadVehicleStock({
+    required String deliveryPartnerId,
+    required DateTime date,
+    required List<Map<String, dynamic>> items,
+  }) {
+    return _apiService.loadVehicleStock(
+      deliveryPartnerId: deliveryPartnerId,
+      date: date,
+      items: items,
+    );
+  }
+
   Future<Map<String, dynamic>> submitEndOfDayReturn({
     required String sessionId,
     required List<Map<String, dynamic>> items,

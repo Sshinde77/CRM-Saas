@@ -87,6 +87,8 @@ class DeliveryPartnerSidebar extends StatelessWidget {
         Navigator.of(context).pushNamed(AppRoutes.deliveryDeliveries);
       case AppRoutes.deliveryVehicleStock:
         Navigator.of(context).pushNamed(AppRoutes.deliveryVehicleStock);
+      case AppRoutes.deliveryVehicleLoading:
+        Navigator.of(context).pushNamed(AppRoutes.deliveryVehicleLoading);
       case AppRoutes.deliveryAttendance:
         Navigator.of(context).pushNamed(AppRoutes.deliveryAttendance);
       case AppRoutes.deliveryEndOfDay:

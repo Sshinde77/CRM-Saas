@@ -693,6 +693,42 @@ class ApiService {
     throw const ApiException(message: 'Invalid vehicle stock response.');
   }
 
+  Future<Map<String, dynamic>> loadVehicleStock({
+    required String deliveryPartnerId,
+    required DateTime date,
+    required List<Map<String, dynamic>> items,
+  }) async {
+    final id = deliveryPartnerId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing delivery partner id.');
+    }
+    if (items.isEmpty) {
+      throw const ApiException(message: 'Add at least one product to load.');
+    }
+
+    final response = await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.vehicleStockLoading,
+      requiresAuth: true,
+      body: {
+        'delivery_partner_id': id,
+        'date': _formatApiDate(date),
+        'items': items
+            .map(
+              (item) => {
+                'product_id': item['product_id'] ?? item['productId'],
+                'loaded_qty': item['loaded_qty'] ?? item['loadedQty'] ?? 0,
+              },
+            )
+            .toList(),
+      },
+    );
+    return _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid vehicle loading response.',
+    );
+  }
+
   Future<Map<String, dynamic>> submitEndOfDayReturn({
     required String sessionId,
     required List<Map<String, dynamic>> items,
@@ -1650,6 +1686,13 @@ class ApiService {
       }
     }
     return query.isEmpty ? null : query;
+  }
+
+  String _formatApiDate(DateTime value) {
+    final local = value.toLocal();
+    return '${local.year.toString().padLeft(4, '0')}-'
+        '${local.month.toString().padLeft(2, '0')}-'
+        '${local.day.toString().padLeft(2, '0')}';
   }
 
   List<dynamic> _extractUsersList(dynamic decoded) {

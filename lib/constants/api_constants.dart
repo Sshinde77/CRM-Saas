@@ -72,6 +72,7 @@ class ApiEndpoints {
   static const String deliveriesConfirmTemplate =
       '/deliveries/{delivery_id}/confirm';
   static const String vehicleStock = '/vehicle-stock';
+  static const String vehicleStockLoading = '/vehicle-stock/loading';
   static const String vehicleStockCurrentTemplate =
       '/vehicle-stock/current/{delivery_partner_id}';
   static const String vehicleStockEndOfDayTemplate =

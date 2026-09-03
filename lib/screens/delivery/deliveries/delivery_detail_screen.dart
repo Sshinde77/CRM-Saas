@@ -149,10 +149,6 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
                       tooltip: 'Delivery Challan',
                       onTap: delivery == null ? null : _downloadChallan,
                     ),
-                    const DeliveryTopBarAction(
-                      icon: Icons.more_vert_rounded,
-                      tooltip: 'More',
-                    ),
                   ],
                 ),
                 Expanded(
