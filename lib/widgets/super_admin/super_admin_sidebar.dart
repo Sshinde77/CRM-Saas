@@ -16,10 +16,7 @@ class SuperAdminSidebarDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Drawer(
       backgroundColor: AppColors.adminSidebarBg,
-      child: SuperAdminSidebar(
-        currentPage: currentPage,
-        onSelect: onSelect,
-      ),
+      child: SuperAdminSidebar(currentPage: currentPage, onSelect: onSelect),
     );
   }
 }

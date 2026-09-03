@@ -16,8 +16,14 @@ class EndOfDaySession {
   });
 
   factory EndOfDaySession.fromJson(Map<String, dynamic> json) {
-    final nested = _readMap(json, const ['session', 'vehicle_stock', 'vehicleStock']);
-    final source = nested.isEmpty ? json : <String, dynamic>{...json, ...nested};
+    final nested = _readMap(json, const [
+      'session',
+      'vehicle_stock',
+      'vehicleStock',
+    ]);
+    final source = nested.isEmpty
+        ? json
+        : <String, dynamic>{...json, ...nested};
     final vehicle = _readMap(source, const ['vehicle']);
     final items = _readList(source, const [
       'items',
@@ -37,13 +43,21 @@ class EndOfDaySession {
       ]),
       vehicleNumber: _firstNonEmpty([
         _readString(source, const ['vehicle_number', 'vehicleNumber']),
-        _readString(vehicle, const ['number', 'vehicle_number', 'vehicleNumber']),
+        _readString(vehicle, const [
+          'number',
+          'vehicle_number',
+          'vehicleNumber',
+        ]),
       ]),
       vehicleType: _firstNonEmpty([
         _readString(source, const ['vehicle_type', 'vehicleType']),
         _readString(vehicle, const ['type', 'model', 'vehicle_type']),
       ]),
-      status: _readString(source, const ['status', 'session_status', 'sessionStatus']),
+      status: _readString(source, const [
+        'status',
+        'session_status',
+        'sessionStatus',
+      ]),
       items: items.map(EndOfDayStockItem.fromJson).toList(),
     );
   }
@@ -98,7 +112,12 @@ class EndOfDayStockItem {
       _readString(product, const ['name', 'product_name', 'productName']),
     ]);
     final id = _firstNonEmpty([
-      _readString(json, const ['id', '_id', 'loading_item_id', 'loadingItemId']),
+      _readString(json, const [
+        'id',
+        '_id',
+        'loading_item_id',
+        'loadingItemId',
+      ]),
       productId,
       variantId,
       productName,
@@ -124,7 +143,8 @@ class EndOfDayStockItem {
       'returned_qty',
       'returned',
     ]);
-    final expected = _readNullableDouble(json, const [
+    final expected =
+        _readNullableDouble(json, const [
           'expected_closing_quantity',
           'expectedClosingQuantity',
           'expected_closing_qty',

@@ -224,10 +224,7 @@ class ApiProvider extends ChangeNotifier {
     required String deliveryId,
     required String reason,
   }) {
-    return _apiService.rejectDelivery(
-      deliveryId: deliveryId,
-      reason: reason,
-    );
+    return _apiService.rejectDelivery(deliveryId: deliveryId, reason: reason);
   }
 
   Future<Map<String, dynamic>> confirmDelivery({

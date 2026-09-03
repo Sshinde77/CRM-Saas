@@ -528,9 +528,7 @@ class ApiService {
   }) {
     return fetchRawList(
       endpoint: ApiEndpoints.deliveriesList,
-      queryParameters: _cleanQuery({
-        'delivery_partner_id': deliveryPartnerId,
-      }),
+      queryParameters: _cleanQuery({'delivery_partner_id': deliveryPartnerId}),
       candidateKeys: const ['deliveries', 'data', 'items', 'results'],
       fallbackMessage: 'Invalid deliveries response.',
     );

@@ -56,24 +56,28 @@ class DeliveryDetail {
   });
 
   factory DeliveryDetail.fromJson(Map<String, dynamic> json) {
-    final data = _map(json['delivery']) ??
+    final data =
+        _map(json['delivery']) ??
         _map(json['data']) ??
         _map(json['item']) ??
         _map(json['result']) ??
         json;
     final order = _map(data['order']) ?? const {};
-    final customer = _map(data['customer']) ?? _map(order['customer']) ?? const {};
-    final partner = _map(data['delivery_partner']) ??
+    final customer =
+        _map(data['customer']) ?? _map(order['customer']) ?? const {};
+    final partner =
+        _map(data['delivery_partner']) ??
         _map(data['deliveryPartner']) ??
         _map(data['partner']) ??
         const {};
     final vehicle = _map(data['vehicle']) ?? const {};
     final warehouse = _map(data['warehouse']) ?? const {};
-    final items = _list(data['delivery_items'] ?? data['items'] ?? data['order_items'])
-        .map(_map)
-        .whereType<Map<String, dynamic>>()
-        .map(DeliveryDetailItem.fromJson)
-        .toList();
+    final items =
+        _list(data['delivery_items'] ?? data['items'] ?? data['order_items'])
+            .map(_map)
+            .whereType<Map<String, dynamic>>()
+            .map(DeliveryDetailItem.fromJson)
+            .toList();
 
     return DeliveryDetail(
       id: _text(data, const ['id', 'delivery_id', '_id']),
@@ -83,30 +87,111 @@ class DeliveryDetail {
         'deliveryNo',
         'number',
       ], fallback: 'DLV-NEW'),
-      orderNumber: _text(data, const ['order_number', 'orderNumber'], fallback: _text(order, const ['order_number', 'orderNumber', 'number'], fallback: 'ORD-NEW')),
-      customerName: _text(data, const ['customer_name', 'customerName'], fallback: _text(customer, const ['name', 'full_name'], fallback: 'Customer')),
-      customerPhone: _text(data, const ['customer_phone', 'customerPhone'], fallback: _text(customer, const ['phone', 'mobile', 'contact_number'])),
-      customerEmail: _text(data, const ['customer_email', 'customerEmail'], fallback: _text(customer, const ['email'])),
-      partnerName: _text(data, const ['delivery_partner_name', 'deliveryPartnerName'], fallback: _text(partner, const ['name', 'full_name'], fallback: 'Delivery Partner')),
-      partnerPhone: _text(data, const ['delivery_partner_phone', 'deliveryPartnerPhone'], fallback: _text(partner, const ['phone', 'mobile', 'contact_number'])),
-      partnerEmail: _text(data, const ['delivery_partner_email', 'deliveryPartnerEmail'], fallback: _text(partner, const ['email'])),
-      status: _normalize(_text(data, const ['status', 'delivery_status'], fallback: 'planned')),
-      partialDelivery: _bool(data['partial_delivery'] ?? data['partialDelivery']) || _normalize(_text(data, const ['status'])) == 'partially_delivered',
-      vehicleNumber: _text(data, const ['vehicle_number', 'vehicleNumber'], fallback: _text(vehicle, const ['vehicle_number', 'number', 'registration_number'])),
-      vehicleType: _text(data, const ['vehicle_type', 'vehicleType'], fallback: _text(vehicle, const ['type', 'vehicle_type', 'name'])),
-      capacity: _text(data, const ['capacity'], fallback: _text(vehicle, const ['capacity', 'load_capacity'])),
-      warehouseName: _text(data, const ['warehouse_name', 'warehouseName'], fallback: _text(warehouse, const ['name'])),
-      deliveryAddress: _text(data, const ['delivery_address', 'deliveryAddress', 'address'], fallback: _text(order, const ['delivery_address', 'shipping_address'])),
-      scheduledDate: _date(_text(data, const ['scheduled_date', 'scheduledDate', 'scheduled_at'])),
+      orderNumber: _text(
+        data,
+        const ['order_number', 'orderNumber'],
+        fallback: _text(order, const [
+          'order_number',
+          'orderNumber',
+          'number',
+        ], fallback: 'ORD-NEW'),
+      ),
+      customerName: _text(
+        data,
+        const ['customer_name', 'customerName'],
+        fallback: _text(customer, const [
+          'name',
+          'full_name',
+        ], fallback: 'Customer'),
+      ),
+      customerPhone: _text(
+        data,
+        const ['customer_phone', 'customerPhone'],
+        fallback: _text(customer, const ['phone', 'mobile', 'contact_number']),
+      ),
+      customerEmail: _text(data, const [
+        'customer_email',
+        'customerEmail',
+      ], fallback: _text(customer, const ['email'])),
+      partnerName: _text(
+        data,
+        const ['delivery_partner_name', 'deliveryPartnerName'],
+        fallback: _text(partner, const [
+          'name',
+          'full_name',
+        ], fallback: 'Delivery Partner'),
+      ),
+      partnerPhone: _text(data, const [
+        'delivery_partner_phone',
+        'deliveryPartnerPhone',
+      ], fallback: _text(partner, const ['phone', 'mobile', 'contact_number'])),
+      partnerEmail: _text(data, const [
+        'delivery_partner_email',
+        'deliveryPartnerEmail',
+      ], fallback: _text(partner, const ['email'])),
+      status: _normalize(
+        _text(data, const ['status', 'delivery_status'], fallback: 'planned'),
+      ),
+      partialDelivery:
+          _bool(data['partial_delivery'] ?? data['partialDelivery']) ||
+          _normalize(_text(data, const ['status'])) == 'partially_delivered',
+      vehicleNumber: _text(
+        data,
+        const ['vehicle_number', 'vehicleNumber'],
+        fallback: _text(vehicle, const [
+          'vehicle_number',
+          'number',
+          'registration_number',
+        ]),
+      ),
+      vehicleType: _text(data, const [
+        'vehicle_type',
+        'vehicleType',
+      ], fallback: _text(vehicle, const ['type', 'vehicle_type', 'name'])),
+      capacity: _text(data, const [
+        'capacity',
+      ], fallback: _text(vehicle, const ['capacity', 'load_capacity'])),
+      warehouseName: _text(data, const [
+        'warehouse_name',
+        'warehouseName',
+      ], fallback: _text(warehouse, const ['name'])),
+      deliveryAddress: _text(
+        data,
+        const ['delivery_address', 'deliveryAddress', 'address'],
+        fallback: _text(order, const ['delivery_address', 'shipping_address']),
+      ),
+      scheduledDate: _date(
+        _text(data, const ['scheduled_date', 'scheduledDate', 'scheduled_at']),
+      ),
       dispatchedAt: _date(_text(data, const ['dispatched_at', 'dispatchedAt'])),
-      confirmedAt: _date(_text(data, const ['confirmed_at', 'confirmedAt', 'delivered_at'])),
-      previousPendingBalance: _number(data['previous_pending_balance'] ?? data['previousPendingBalance']),
-      amountDue: _number(data['amount_due'] ?? data['amountDue'] ?? data['due_amount'] ?? order['amount_due']),
-      failureReason: _text(data, const ['failure_reason', 'failureReason', 'reject_reason', 'rejection_reason']),
+      confirmedAt: _date(
+        _text(data, const ['confirmed_at', 'confirmedAt', 'delivered_at']),
+      ),
+      previousPendingBalance: _number(
+        data['previous_pending_balance'] ?? data['previousPendingBalance'],
+      ),
+      amountDue: _number(
+        data['amount_due'] ??
+            data['amountDue'] ??
+            data['due_amount'] ??
+            order['amount_due'],
+      ),
+      failureReason: _text(data, const [
+        'failure_reason',
+        'failureReason',
+        'reject_reason',
+        'rejection_reason',
+      ]),
       items: items,
       notes: _text(data, const ['notes', 'delivery_notes']),
-      podPhotos: _list(data['pod_photos'] ?? data['podPhotos'] ?? data['proof_photos']).map((e) => e.toString()).where((e) => e.trim().isNotEmpty).toList(),
-      signatureUrl: _text(data, const ['signature_url', 'signatureUrl', 'signature']),
+      podPhotos: _list(
+        data['pod_photos'] ?? data['podPhotos'] ?? data['proof_photos'],
+      ).map((e) => e.toString()).where((e) => e.trim().isNotEmpty).toList(),
+      signatureUrl: _text(data, const [
+        'signature_url',
+        'signatureUrl',
+        'signature',
+      ]),
     );
   }
 
@@ -155,19 +240,45 @@ class DeliveryDetailItem {
   factory DeliveryDetailItem.fromJson(Map<String, dynamic> json) {
     final product = _map(json['product']) ?? const {};
     final variant = _map(json['variant']) ?? const {};
-    final planned = _int(json['planned'] ?? json['planned_quantity'] ?? json['quantity']);
+    final planned = _int(
+      json['planned'] ?? json['planned_quantity'] ?? json['quantity'],
+    );
     final delivered = _int(json['delivered'] ?? json['delivered_quantity']);
     return DeliveryDetailItem(
       id: _text(json, const ['id', 'delivery_item_id', '_id']),
-      productId: _text(json, const ['product_id', 'productId'], fallback: _text(product, const ['id', '_id'])),
-      productName: _text(json, const ['product_name', 'productName', 'name'], fallback: _text(product, const ['name'], fallback: 'Product')),
-      variant: _text(json, const ['variant_name', 'variantName', 'variant'], fallback: _text(variant, const ['name', 'title'])),
-      imageUrl: _text(json, const ['image_url', 'imageUrl', 'image'], fallback: _text(product, const ['image_url', 'image'])),
+      productId: _text(json, const [
+        'product_id',
+        'productId',
+      ], fallback: _text(product, const ['id', '_id'])),
+      productName: _text(json, const [
+        'product_name',
+        'productName',
+        'name',
+      ], fallback: _text(product, const ['name'], fallback: 'Product')),
+      variant: _text(json, const [
+        'variant_name',
+        'variantName',
+        'variant',
+      ], fallback: _text(variant, const ['name', 'title'])),
+      imageUrl: _text(json, const [
+        'image_url',
+        'imageUrl',
+        'image',
+      ], fallback: _text(product, const ['image_url', 'image'])),
       planned: planned,
-      picked: _int(json['picked'] ?? json['picked_quantity'], fallback: planned),
-      loaded: _int(json['loaded'] ?? json['loaded_quantity'], fallback: planned),
+      picked: _int(
+        json['picked'] ?? json['picked_quantity'],
+        fallback: planned,
+      ),
+      loaded: _int(
+        json['loaded'] ?? json['loaded_quantity'],
+        fallback: planned,
+      ),
       delivered: delivered,
-      pending: _int(json['pending'] ?? json['pending_quantity'], fallback: mathMax(0, planned - delivered)),
+      pending: _int(
+        json['pending'] ?? json['pending_quantity'],
+        fallback: mathMax(0, planned - delivered),
+      ),
       batch: _text(json, const ['batch', 'batch_number', 'batchNumber']),
       expiry: _text(json, const ['expiry', 'expiry_date', 'expiryDate']),
     );
@@ -198,7 +309,11 @@ Map<String, dynamic>? _map(dynamic value) {
 
 List<dynamic> _list(dynamic value) => value is List ? value : const [];
 
-String _text(Map<String, dynamic> json, List<String> keys, {String fallback = ''}) {
+String _text(
+  Map<String, dynamic> json,
+  List<String> keys, {
+  String fallback = '',
+}) {
   for (final key in keys) {
     final value = json[key];
     if (value == null) continue;
@@ -210,7 +325,10 @@ String _text(Map<String, dynamic> json, List<String> keys, {String fallback = ''
 
 double _number(dynamic value) {
   if (value is num) return value.toDouble();
-  final text = (value?.toString() ?? '').replaceAll(',', '').replaceAll('Rs.', '').trim();
+  final text = (value?.toString() ?? '')
+      .replaceAll(',', '')
+      .replaceAll('Rs.', '')
+      .trim();
   return double.tryParse(text) ?? 0;
 }
 

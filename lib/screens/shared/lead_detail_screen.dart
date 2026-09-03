@@ -143,7 +143,9 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
     }
     if (action == 'My Performance') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const SalesManagerPerformanceScreen()),
+        MaterialPageRoute(
+          builder: (_) => const SalesManagerPerformanceScreen(),
+        ),
       );
     }
   }
@@ -218,7 +220,9 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
             Expanded(
               child: _isLoading
                   ? const Center(
-                      child: CircularProgressIndicator(color: AppColors.primary),
+                      child: CircularProgressIndicator(
+                        color: AppColors.primary,
+                      ),
                     )
                   : _errorMessage != null
                   ? _LeadDetailErrorState(
@@ -271,7 +275,8 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
                                 icon: Icons.phone_outlined,
                                 label: 'Mobile',
                                 value: lead.phone,
-                                onCopy: () => _copyValue('Mobile number', lead.phone),
+                                onCopy: () =>
+                                    _copyValue('Mobile number', lead.phone),
                               ),
                               _buildInfoTile(
                                 icon: Icons.email_outlined,
@@ -287,9 +292,11 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
                               _buildInfoTile(
                                 icon: Icons.apartment_outlined,
                                 label: 'Region',
-                                value: _joinedNonEmpty(
-                                  [lead.city, lead.state, lead.country],
-                                ),
+                                value: _joinedNonEmpty([
+                                  lead.city,
+                                  lead.state,
+                                  lead.country,
+                                ]),
                               ),
                             ],
                           ),
@@ -378,7 +385,10 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
                                 value: lead.leadCode,
                                 onCopy: lead.leadCode == '-'
                                     ? null
-                                    : () => _copyValue('Lead code', lead.leadCode),
+                                    : () => _copyValue(
+                                        'Lead code',
+                                        lead.leadCode,
+                                      ),
                               ),
                               _buildInfoTile(
                                 icon: Icons.schedule_rounded,
@@ -399,7 +409,8 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
                   const SizedBox(height: 12),
                   _buildSectionCard(
                     title: 'Notes',
-                    subtitle: 'Context captured during lead creation or follow-up',
+                    subtitle:
+                        'Context captured during lead creation or follow-up',
                     child: Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(14),
@@ -502,7 +513,9 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
               ),
               _metricTile(
                 label: 'Updated',
-                value: _relativeTime(lead.updatedAt.isEmpty ? lead.createdAt : lead.updatedAt),
+                value: _relativeTime(
+                  lead.updatedAt.isEmpty ? lead.createdAt : lead.updatedAt,
+                ),
                 icon: Icons.update_rounded,
               ),
             ],
@@ -545,14 +558,8 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  _compactBadge(
-                    icon: Icons.phone_outlined,
-                    value: lead.phone,
-                  ),
-                  _compactBadge(
-                    icon: Icons.email_outlined,
-                    value: lead.email,
-                  ),
+                  _compactBadge(icon: Icons.phone_outlined, value: lead.phone),
+                  _compactBadge(icon: Icons.email_outlined, value: lead.email),
                   if (lead.leadCode != '-')
                     _compactBadge(
                       icon: Icons.confirmation_number_outlined,
@@ -605,7 +612,9 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
               _smallActionButton(
                 icon: Icons.chat_bubble_outline_rounded,
                 label: 'WhatsApp',
-                onTap: lead.phone == '-' ? null : () => _openWhatsApp(lead.phone),
+                onTap: lead.phone == '-'
+                    ? null
+                    : () => _openWhatsApp(lead.phone),
               ),
               _smallActionButton(
                 icon: Icons.refresh_rounded,
@@ -828,7 +837,9 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
               Icon(
                 icon,
                 size: 15,
-                color: onTap == null ? AppColors.textLightMuted : AppColors.primary,
+                color: onTap == null
+                    ? AppColors.textLightMuted
+                    : AppColors.primary,
               ),
               const SizedBox(width: 6),
               Text(
@@ -952,10 +963,7 @@ class _LeadDetailErrorState extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
 
-  const _LeadDetailErrorState({
-    required this.message,
-    required this.onRetry,
-  });
+  const _LeadDetailErrorState({required this.message, required this.onRetry});
 
   @override
   Widget build(BuildContext context) {
@@ -995,7 +1003,10 @@ class _LeadDetailErrorState extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 12,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),

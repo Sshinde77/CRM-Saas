@@ -58,9 +58,9 @@ class EndOfDayEmptyState extends StatelessWidget {
               height: 44,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  Navigator.of(context).pushNamed(
-                    AppRoutes.deliveryVehicleLoading,
-                  );
+                  Navigator.of(
+                    context,
+                  ).pushNamed(AppRoutes.deliveryVehicleLoading);
                 },
                 icon: const Icon(Icons.local_shipping_outlined, size: 18),
                 label: const Text('Go to Vehicle Loading'),

@@ -129,10 +129,9 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
                   SliverToBoxAdapter(
                     child: LayoutBuilder(
                       builder: (context, constraints) {
-                        final horizontalPadding =
-                            constraints.maxWidth >= 600
-                                ? AppSpacing.screen
-                                : AppSpacing.screenSmall;
+                        final horizontalPadding = constraints.maxWidth >= 600
+                            ? AppSpacing.screen
+                            : AppSpacing.screenSmall;
 
                         return Center(
                           child: ConstrainedBox(
@@ -162,22 +161,19 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
                                     _DashboardContent(
                                       data: data,
                                       onShareLocation: _shareLocation,
-                                      onPendingDeliveries: () =>
-                                          Navigator.of(context).pushNamed(
-                                            AppRoutes.deliveryAttendance,
-                                          ),
-                                      onEndDayReturn: () =>
-                                          Navigator.of(context).pushNamed(
-                                            AppRoutes.deliveryEndOfDay,
-                                          ),
+                                      onPendingDeliveries: () => Navigator.of(
+                                        context,
+                                      ).pushNamed(AppRoutes.deliveryAttendance),
+                                      onEndDayReturn: () => Navigator.of(
+                                        context,
+                                      ).pushNamed(AppRoutes.deliveryEndOfDay),
                                       onViewAllItems: () =>
                                           Navigator.of(context).pushNamed(
                                             AppRoutes.deliveryVehicleStock,
                                           ),
-                                      onViewAllDeliveries: () =>
-                                          Navigator.of(context).pushNamed(
-                                            AppRoutes.deliveryDeliveries,
-                                          ),
+                                      onViewAllDeliveries: () => Navigator.of(
+                                        context,
+                                      ).pushNamed(AppRoutes.deliveryDeliveries),
                                     ),
                                 ],
                               ),
@@ -366,7 +362,9 @@ class _HeroSummaryCard extends StatelessWidget {
                                     width: 28,
                                     height: 28,
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withValues(alpha: 0.14),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.14,
+                                      ),
                                       borderRadius: BorderRadius.circular(
                                         AppSizes.controlRadius,
                                       ),
@@ -844,7 +842,11 @@ class _CollectionMetricTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _MiniIcon(icon: info.icon, color: info.color, background: Colors.white),
+          _MiniIcon(
+            icon: info.icon,
+            color: info.color,
+            background: Colors.white,
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Column(
@@ -951,7 +953,11 @@ class _PriorityRow extends StatelessWidget {
       height: AppSizes.listTileHeight,
       child: Row(
         children: [
-          _MiniIcon(icon: info.icon, color: info.color, background: info.background),
+          _MiniIcon(
+            icon: info.icon,
+            color: info.color,
+            background: info.background,
+          ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
@@ -1210,7 +1216,9 @@ class _DeliveriesPreviewCard extends StatelessWidget {
               ),
             )
           else
-            ...deliveries.map((delivery) => _DeliveryPreviewTile(delivery: delivery)),
+            ...deliveries.map(
+              (delivery) => _DeliveryPreviewTile(delivery: delivery),
+            ),
           _FooterLink(label: 'View All Deliveries', onTap: onViewAll),
         ],
       ),
@@ -1534,10 +1542,7 @@ class _ErrorPanel extends StatelessWidget {
               ),
             ),
             onPressed: onRetry,
-            icon: const Icon(
-              Icons.refresh_rounded,
-              size: AppSizes.iconMedium,
-            ),
+            icon: const Icon(Icons.refresh_rounded, size: AppSizes.iconMedium),
             label: const Text('Retry'),
           ),
         ],
@@ -1583,9 +1588,13 @@ class _DashboardData {
       .length;
 
   int get pendingToday => todaysDeliveries.where((delivery) {
-        return const {'planned', 'accepted', 'loaded', 'in_transit'}
-            .contains(delivery.status);
-      }).length;
+    return const {
+      'planned',
+      'accepted',
+      'loaded',
+      'in_transit',
+    }.contains(delivery.status);
+  }).length;
 
   int get paymentPending =>
       deliveries.where((delivery) => delivery.amountDue > 0).length;
@@ -1617,7 +1626,10 @@ class _DashboardData {
   }
 
   double get pendingAmount {
-    return deliveries.fold<double>(0, (sum, delivery) => sum + delivery.amountDue);
+    return deliveries.fold<double>(
+      0,
+      (sum, delivery) => sum + delivery.amountDue,
+    );
   }
 
   String get formattedTotalToCollect => _formatMoney(totalAmountToCollect);
@@ -1654,8 +1666,8 @@ class _DashboardData {
     final hour = checkIn.hour > 12
         ? checkIn.hour - 12
         : checkIn.hour == 0
-            ? 12
-            : checkIn.hour;
+        ? 12
+        : checkIn.hour;
     final minute = checkIn.minute.toString().padLeft(2, '0');
     final period = checkIn.hour >= 12 ? 'PM' : 'AM';
     return '$hour:$minute $period';
@@ -1696,11 +1708,11 @@ class _DeliveryItem {
       id: id,
       orderNumber:
           _readString(json, const ['orderNumber', 'order_number', 'orderNo']) ??
-              'ORD-${id.isEmpty ? 'NEW' : id.toUpperCase()}',
+          'ORD-${id.isEmpty ? 'NEW' : id.toUpperCase()}',
       customerName:
           _readString(json, const ['customerName', 'customer_name']) ??
-              _readNestedString(json, 'customer', const ['name']) ??
-              'Customer',
+          _readNestedString(json, 'customer', const ['name']) ??
+          'Customer',
       scheduledDate: _parseDate(
         _readString(json, const ['scheduledDate', 'scheduled_date', 'date']),
       ),
@@ -1769,7 +1781,10 @@ class _VehicleStockSession {
   final String vehicleNumber;
   final List<_StockLine> items;
 
-  const _VehicleStockSession({required this.vehicleNumber, required this.items});
+  const _VehicleStockSession({
+    required this.vehicleNumber,
+    required this.items,
+  });
 
   factory _VehicleStockSession.fromJson(Map<String, dynamic>? json) {
     if (json == null || json.isEmpty) {
@@ -1779,13 +1794,17 @@ class _VehicleStockSession {
     final rawItems = json['items'] ?? json['lines'] ?? json['loading_items'];
     return _VehicleStockSession(
       vehicleNumber:
-          _readString(json, const ['vehicleNumber', 'vehicle_number', 'vehicleNo']) ??
-              '',
+          _readString(json, const [
+            'vehicleNumber',
+            'vehicle_number',
+            'vehicleNo',
+          ]) ??
+          '',
       items: rawItems is List
           ? rawItems
-              .whereType<Map<String, dynamic>>()
-              .map(_StockLine.fromJson)
-              .toList()
+                .whereType<Map<String, dynamic>>()
+                .map(_StockLine.fromJson)
+                .toList()
           : const [],
     );
   }
@@ -1806,15 +1825,16 @@ class _StockLine {
     return _StockLine(
       productName:
           _readString(json, const ['productName', 'product_name', 'name']) ??
-              'Product',
+          'Product',
       variantLabel:
           _readString(json, const ['variantName', 'variant_name', 'variant']) ??
-              _readNestedString(json, 'variant', const ['name', 'label']) ??
-              'Loaded stock',
-      loadedQuantity: _readDouble(
-        json,
-        const ['loadedQuantity', 'loaded_quantity', 'loaded_qty'],
-      ),
+          _readNestedString(json, 'variant', const ['name', 'label']) ??
+          'Loaded stock',
+      loadedQuantity: _readDouble(json, const [
+        'loadedQuantity',
+        'loaded_quantity',
+        'loaded_qty',
+      ]),
     );
   }
 

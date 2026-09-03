@@ -12,8 +12,14 @@ class ReconciliationSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final totalExpected = lines.fold<double>(0, (sum, line) => sum + line.expected);
-    final totalPhysical = lines.fold<double>(0, (sum, line) => sum + line.physical);
+    final totalExpected = lines.fold<double>(
+      0,
+      (sum, line) => sum + line.expected,
+    );
+    final totalPhysical = lines.fold<double>(
+      0,
+      (sum, line) => sum + line.physical,
+    );
     final netVariance = totalPhysical - totalExpected;
 
     return Column(
@@ -68,8 +74,8 @@ class ReconciliationSummary extends StatelessWidget {
                   subValue: netVariance == 0
                       ? 'Matched'
                       : netVariance > 0
-                          ? 'Surplus'
-                          : 'Shortage',
+                      ? 'Surplus'
+                      : 'Shortage',
                 ),
               ),
             ],

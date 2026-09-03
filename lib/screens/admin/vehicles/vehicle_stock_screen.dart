@@ -18,7 +18,7 @@ class VehicleStockScreen extends StatefulWidget {
   const VehicleStockScreen({super.key, this.mode = VehicleStockMode.admin});
 
   const VehicleStockScreen.delivery({super.key})
-      : mode = VehicleStockMode.delivery;
+    : mode = VehicleStockMode.delivery;
 
   @override
   State<VehicleStockScreen> createState() => _VehicleStockScreenState();
@@ -50,7 +50,9 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
       if (deliveryPartnerId == null || deliveryPartnerId.isEmpty) {
         throw const _VehicleStockException('Delivery partner id is missing.');
       }
-      final current = await provider.fetchCurrentVehicleStock(deliveryPartnerId);
+      final current = await provider.fetchCurrentVehicleStock(
+        deliveryPartnerId,
+      );
       if (current == null) return const [];
       return [_VehicleStockSession.fromJson(current)];
     }
@@ -77,12 +79,13 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
   }
 
   List<String> _partners(List<_VehicleStockSession> sessions) {
-    final names = sessions
-        .map((session) => session.partnerName)
-        .where((name) => name.trim().isNotEmpty)
-        .toSet()
-        .toList()
-      ..sort();
+    final names =
+        sessions
+            .map((session) => session.partnerName)
+            .where((name) => name.trim().isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
     return ['All Delivery Partners', ...names];
   }
 
@@ -99,7 +102,9 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: _isDelivery ? const Color(0xFFF8FAF9) : AppColors.background,
+      backgroundColor: _isDelivery
+          ? const Color(0xFFF8FAF9)
+          : AppColors.background,
       drawer: _isDelivery
           ? const DeliveryPartnerSidebar(
               currentRoute: AppRoutes.deliveryVehicleStock,
@@ -126,7 +131,8 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
               child: FutureBuilder<List<_VehicleStockSession>>(
                 future: _future,
                 builder: (context, snapshot) {
-                  final sessions = snapshot.data ?? const <_VehicleStockSession>[];
+                  final sessions =
+                      snapshot.data ?? const <_VehicleStockSession>[];
                   final filtered = _filtered(sessions);
                   final isLoading =
                       snapshot.connectionState == ConnectionState.waiting &&
@@ -378,7 +384,9 @@ class _VehicleStockDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: isDelivery ? const Color(0xFFF8FAF9) : AppColors.background,
+      backgroundColor: isDelivery
+          ? const Color(0xFFF8FAF9)
+          : AppColors.background,
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -875,7 +883,8 @@ class _StatusPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final normalized = status.trim().toLowerCase();
-    final active = normalized.isEmpty ||
+    final active =
+        normalized.isEmpty ||
         normalized == 'active' ||
         normalized == 'loaded' ||
         normalized == 'in_progress';
@@ -979,10 +988,7 @@ class _ErrorState extends StatelessWidget {
               textAlign: TextAlign.center,
               maxLines: 4,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 12,
-                color: AppColors.textMuted,
-              ),
+              style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
             ),
             const SizedBox(height: 12),
             OutlinedButton.icon(
@@ -1118,8 +1124,14 @@ class _VehicleStockSession {
   });
 
   factory _VehicleStockSession.fromJson(Map<String, dynamic> json) {
-    final nested = _readMap(json, const ['session', 'vehicle_stock', 'vehicleStock']);
-    final source = nested.isEmpty ? json : <String, dynamic>{...json, ...nested};
+    final nested = _readMap(json, const [
+      'session',
+      'vehicle_stock',
+      'vehicleStock',
+    ]);
+    final source = nested.isEmpty
+        ? json
+        : <String, dynamic>{...json, ...nested};
     final vehicle = _readMap(source, const ['vehicle']);
     final partner = _readMap(source, const [
       'delivery_partner',
@@ -1141,7 +1153,11 @@ class _VehicleStockSession {
       id: _readString(source, const ['id', '_id', 'session_id', 'sessionId']),
       vehicleNumber: _firstNonEmpty([
         _readString(source, const ['vehicle_number', 'vehicleNumber']),
-        _readString(vehicle, const ['number', 'vehicle_number', 'vehicleNumber']),
+        _readString(vehicle, const [
+          'number',
+          'vehicle_number',
+          'vehicleNumber',
+        ]),
       ]),
       vehicleType: _firstNonEmpty([
         _readString(source, const ['vehicle_type', 'vehicleType']),
@@ -1156,7 +1172,11 @@ class _VehicleStockSession {
         ]),
         _readString(partner, const ['name', 'full_name', 'fullName']),
       ]),
-      status: _readString(source, const ['status', 'session_status', 'sessionStatus']),
+      status: _readString(source, const [
+        'status',
+        'session_status',
+        'sessionStatus',
+      ]),
       sessionDate: _parseDateTime(
         _readString(source, const [
           'session_date',
@@ -1189,9 +1209,11 @@ class _VehicleStockSession {
   }
 
   double get totalLoaded => items.fold(0, (sum, item) => sum + item.loaded);
-  double get totalDelivered => items.fold(0, (sum, item) => sum + item.delivered);
+  double get totalDelivered =>
+      items.fold(0, (sum, item) => sum + item.delivered);
   double get totalReturned => items.fold(0, (sum, item) => sum + item.returned);
-  double get totalRemaining => items.fold(0, (sum, item) => sum + item.remaining);
+  double get totalRemaining =>
+      items.fold(0, (sum, item) => sum + item.remaining);
 }
 
 class _VehicleStockItem {
@@ -1362,8 +1384,8 @@ String _formatTime(DateTime value) {
   final hour = local.hour == 0
       ? 12
       : local.hour > 12
-          ? local.hour - 12
-          : local.hour;
+      ? local.hour - 12
+      : local.hour;
   final minute = local.minute.toString().padLeft(2, '0');
   final period = local.hour >= 12 ? 'PM' : 'AM';
   return '${hour.toString().padLeft(2, '0')}:$minute $period';

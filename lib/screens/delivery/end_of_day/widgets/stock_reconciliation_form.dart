@@ -12,7 +12,8 @@ class StockReconciliationForm extends StatefulWidget {
   final Future<void> Function({
     required Map<String, double> physicalCounts,
     required String notes,
-  }) onSubmit;
+  })
+  onSubmit;
 
   const StockReconciliationForm({
     super.key,
@@ -79,10 +80,7 @@ class _StockReconciliationFormState extends State<StockReconciliationForm> {
     for (final item in widget.session.items) {
       counts[item.id] = _valueFor(item);
     }
-    await widget.onSubmit(
-      physicalCounts: counts,
-      notes: _notesController.text,
-    );
+    await widget.onSubmit(physicalCounts: counts, notes: _notesController.text);
   }
 
   @override
@@ -175,8 +173,9 @@ class _StockReconciliationFormState extends State<StockReconciliationForm> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
-                    disabledBackgroundColor:
-                        AppColors.primary.withValues(alpha: 0.55),
+                    disabledBackgroundColor: AppColors.primary.withValues(
+                      alpha: 0.55,
+                    ),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -208,7 +207,9 @@ class _StockReconciliationFormState extends State<StockReconciliationForm> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item.productName.isEmpty ? 'Unnamed product' : item.productName,
+                  item.productName.isEmpty
+                      ? 'Unnamed product'
+                      : item.productName,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(

@@ -898,7 +898,9 @@ class _CustomersScreenState extends State<CustomersScreen> {
           height: 30,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: hasLocation ? const Color(0xFFF3F5F8) : AppColors.surfaceSoft,
+            color: hasLocation
+                ? const Color(0xFFF3F5F8)
+                : AppColors.surfaceSoft,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(

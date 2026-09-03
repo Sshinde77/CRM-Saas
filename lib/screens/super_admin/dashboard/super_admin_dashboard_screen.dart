@@ -36,12 +36,27 @@ class _SuperAdminDashboardScreenState extends State<SuperAdminDashboardScreen> {
   _OrganizationRow? _selectedOrganization;
 
   final List<_MetricItem> _metrics = const [
-    _MetricItem('Total Organizations', '41', Icons.apartment_rounded, AppColors.primary),
+    _MetricItem(
+      'Total Organizations',
+      '41',
+      Icons.apartment_rounded,
+      AppColors.primary,
+    ),
     _MetricItem('Active', '1', Icons.check_circle_rounded, AppColors.green),
     _MetricItem('Trial', '40', Icons.schedule_rounded, AppColors.blue),
     _MetricItem('Suspended', '0', Icons.block_rounded, AppColors.red),
-    _MetricItem('Pending Upgrades', '0', Icons.upgrade_rounded, AppColors.accentGrey),
-    _MetricItem('MRR Estimate', '₹599', Icons.currency_rupee_rounded, AppColors.green),
+    _MetricItem(
+      'Pending Upgrades',
+      '0',
+      Icons.upgrade_rounded,
+      AppColors.accentGrey,
+    ),
+    _MetricItem(
+      'MRR Estimate',
+      '₹599',
+      Icons.currency_rupee_rounded,
+      AppColors.green,
+    ),
   ];
 
   final List<_TrendPoint> _growthPoints = const [
@@ -206,25 +221,25 @@ class _SuperAdminDashboardScreenState extends State<SuperAdminDashboardScreen> {
                   onSelect: _handleSelect,
                 ),
               ),
-            Expanded(
-              child: _MainArea(
-                currentPage: _currentPage,
-                searchController: _searchController,
-                scrollController: _contentScrollController,
-                organizations: organizations,
-                selectedOrganization: _selectedOrganization,
-                metrics: _metrics,
-                growthPoints: _growthPoints,
-                planSlices: _planSlices,
-                onQueryChanged: (value) => setState(() => _query = value),
-                pageIndex: _pageIndex,
-                onPageChange: (index) => setState(() => _pageIndex = index),
-                onOpenOrganizationDetails: _openOrganizationDetails,
-                onNavigateToPage: _handleSelect,
+              Expanded(
+                child: _MainArea(
+                  currentPage: _currentPage,
+                  searchController: _searchController,
+                  scrollController: _contentScrollController,
+                  organizations: organizations,
+                  selectedOrganization: _selectedOrganization,
+                  metrics: _metrics,
+                  growthPoints: _growthPoints,
+                  planSlices: _planSlices,
+                  onQueryChanged: (value) => setState(() => _query = value),
+                  pageIndex: _pageIndex,
+                  onPageChange: (index) => setState(() => _pageIndex = index),
+                  onOpenOrganizationDetails: _openOrganizationDetails,
+                  onNavigateToPage: _handleSelect,
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
         ),
       );
     }
@@ -400,7 +415,8 @@ class _MainArea extends StatelessWidget {
                             flex: 2,
                             child: _ChartCard(
                               title: 'Organization Growth',
-                              subtitle: 'Cumulative organizations on the platform',
+                              subtitle:
+                                  'Cumulative organizations on the platform',
                               child: _GrowthChart(points: growthPoints),
                             ),
                           ),
@@ -454,10 +470,7 @@ class _TopBar extends StatelessWidget {
   final bool showCompactMenuButton;
   final VoidCallback? onOpenMenu;
 
-  const _TopBar({
-    required this.showCompactMenuButton,
-    this.onOpenMenu,
-  });
+  const _TopBar({required this.showCompactMenuButton, this.onOpenMenu});
 
   @override
   Widget build(BuildContext context) {
@@ -481,7 +494,11 @@ class _TopBar extends StatelessWidget {
             ),
             child: const Row(
               children: [
-                Icon(Icons.search_rounded, size: 18, color: AppColors.textLightMuted),
+                Icon(
+                  Icons.search_rounded,
+                  size: 18,
+                  color: AppColors.textLightMuted,
+                ),
                 SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -554,7 +571,10 @@ class _TopBar extends StatelessWidget {
                 ],
               ),
               const SizedBox(width: 6),
-              const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textLightMuted),
+              const Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: AppColors.textLightMuted,
+              ),
             ],
           ),
         ),
@@ -618,7 +638,11 @@ class _SearchRow extends StatelessWidget {
         decoration: const InputDecoration(
           filled: true,
           fillColor: Colors.white,
-          prefixIcon: Icon(Icons.search_rounded, size: 18, color: AppColors.textLightMuted),
+          prefixIcon: Icon(
+            Icons.search_rounded,
+            size: 18,
+            color: AppColors.textLightMuted,
+          ),
           hintText: 'Search organizations...',
           hintStyle: TextStyle(color: AppColors.textLightMuted, fontSize: 12.5),
           border: InputBorder.none,
@@ -637,7 +661,11 @@ class _SummaryGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
-    final columns = width >= 1400 ? 6 : width >= 1000 ? 3 : 2;
+    final columns = width >= 1400
+        ? 6
+        : width >= 1000
+        ? 3
+        : 2;
 
     return GridView.builder(
       shrinkWrap: true,
@@ -924,10 +952,7 @@ class _OrganizationsCard extends StatelessWidget {
           const SizedBox(height: 4),
           const Text(
             'All organizations on the SAAS CRM platform',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 12,
-            ),
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
           ),
           const SizedBox(height: 12),
           Row(
@@ -952,15 +977,21 @@ class _OrganizationsCard extends StatelessWidget {
                     decoration: const InputDecoration(
                       filled: true,
                       fillColor: Colors.white,
-                      prefixIcon: Icon(Icons.search_rounded, size: 18, color: AppColors.textLightMuted),
+                      prefixIcon: Icon(
+                        Icons.search_rounded,
+                        size: 18,
+                        color: AppColors.textLightMuted,
+                      ),
                       hintText: 'Search organizations...',
                       hintStyle: TextStyle(
                         color: AppColors.textLightMuted,
                         fontSize: 12.5,
                       ),
                       border: InputBorder.none,
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
                     ),
                   ),
                 ),
@@ -1013,12 +1044,16 @@ class _OrganizationsCard extends StatelessWidget {
               ),
               const Spacer(),
               IconButton(
-                onPressed: pageIndex > 0 ? () => onPageChange(pageIndex - 1) : null,
+                onPressed: pageIndex > 0
+                    ? () => onPageChange(pageIndex - 1)
+                    : null,
                 icon: const Icon(Icons.chevron_left_rounded),
                 color: AppColors.textSecondary,
               ),
               IconButton(
-                onPressed: pageIndex < 4 ? () => onPageChange(pageIndex + 1) : null,
+                onPressed: pageIndex < 4
+                    ? () => onPageChange(pageIndex + 1)
+                    : null,
                 icon: const Icon(Icons.chevron_right_rounded),
                 color: AppColors.textSecondary,
               ),
@@ -1077,7 +1112,8 @@ class _OrganizationsListPageState extends State<_OrganizationsListPage> {
       final statusMatches =
           _selectedStatus == 'All statuses' ||
           org.status.toLowerCase() == _selectedStatus.toLowerCase();
-      final upgradeMatches = _selectedUpgrade == 'All upgrade requests' ||
+      final upgradeMatches =
+          _selectedUpgrade == 'All upgrade requests' ||
           org.upgradeRequest.toLowerCase() == _selectedUpgrade.toLowerCase();
       return statusMatches && upgradeMatches;
     }).toList();
@@ -1542,7 +1578,10 @@ class _UpgradeRequestCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: statusColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(999),
@@ -1666,7 +1705,10 @@ class _PlansPageState extends State<_PlansPage> {
               style: TextButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 14,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(999),
                 ),
@@ -1683,7 +1725,11 @@ class _PlansPageState extends State<_PlansPage> {
         LayoutBuilder(
           builder: (context, constraints) {
             final width = constraints.maxWidth;
-            final columns = width >= 1500 ? 3 : width >= 1024 ? 2 : 1;
+            final columns = width >= 1500
+                ? 3
+                : width >= 1024
+                ? 2
+                : 1;
 
             return GridView.builder(
               shrinkWrap: true,
@@ -1697,10 +1743,7 @@ class _PlansPageState extends State<_PlansPage> {
               ),
               itemBuilder: (context, index) {
                 final plan = cards[index];
-                return _PlanCard(
-                  data: plan,
-                  monthly: _monthly,
-                );
+                return _PlanCard(data: plan, monthly: _monthly);
               },
             );
           },
@@ -1770,10 +1813,7 @@ class _PlanCard extends StatelessWidget {
   final _PlanCardData data;
   final bool monthly;
 
-  const _PlanCard({
-    required this.data,
-    required this.monthly,
-  });
+  const _PlanCard({required this.data, required this.monthly});
 
   @override
   Widget build(BuildContext context) {
@@ -1832,13 +1872,19 @@ class _PlanCard extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  data.active ? Icons.power_settings_new_rounded : Icons.power_off_rounded,
+                  data.active
+                      ? Icons.power_settings_new_rounded
+                      : Icons.power_off_rounded,
                   color: powerColor,
                   size: 16,
                 ),
               ),
               const SizedBox(width: 8),
-              const Icon(Icons.edit_outlined, size: 18, color: AppColors.textLightMuted),
+              const Icon(
+                Icons.edit_outlined,
+                size: 18,
+                color: AppColors.textLightMuted,
+              ),
             ],
           ),
           const SizedBox(height: 8),
@@ -1867,7 +1913,9 @@ class _PlanCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            monthly ? data.subtitle : data.subtitle.replaceFirst('per month', 'per year'),
+            monthly
+                ? data.subtitle
+                : data.subtitle.replaceFirst('per month', 'per year'),
             style: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: 12.5,
@@ -1881,7 +1929,11 @@ class _PlanCard extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.check_rounded, color: AppColors.green, size: 16),
+                  const Icon(
+                    Icons.check_rounded,
+                    color: AppColors.green,
+                    size: 16,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -1932,7 +1984,8 @@ class _CreatePlanDialogState extends State<_CreatePlanDialog> {
   final TextEditingController _planNameController = TextEditingController();
   final TextEditingController _priceMonthController = TextEditingController();
   final TextEditingController _priceYearController = TextEditingController();
-  final TextEditingController _originalMonthController = TextEditingController();
+  final TextEditingController _originalMonthController =
+      TextEditingController();
   final TextEditingController _originalYearController = TextEditingController();
   final TextEditingController _maxUsersController = TextEditingController();
   final TextEditingController _maxOrdersController = TextEditingController();
@@ -2235,7 +2288,10 @@ class _DialogField extends StatelessWidget {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.primary, width: 1.2),
+              borderSide: const BorderSide(
+                color: AppColors.primary,
+                width: 1.2,
+              ),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 12,
@@ -2309,13 +2365,18 @@ class _StatusDropdown extends StatelessWidget {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     child: Text(
                       option,
                       style: TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: 12.5,
-                        fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                        fontWeight: selected
+                            ? FontWeight.w700
+                            : FontWeight.w500,
                       ),
                     ),
                   ),
@@ -2408,10 +2469,7 @@ class _InfoChip extends StatelessWidget {
   final String label;
   final String value;
 
-  const _InfoChip({
-    required this.label,
-    required this.value,
-  });
+  const _InfoChip({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -2535,7 +2593,11 @@ class _PlatformAnalyticsPage extends StatelessWidget {
       children: [
         LayoutBuilder(
           builder: (context, constraints) {
-            final columns = constraints.maxWidth >= 1400 ? 4 : constraints.maxWidth >= 900 ? 2 : 1;
+            final columns = constraints.maxWidth >= 1400
+                ? 4
+                : constraints.maxWidth >= 900
+                ? 2
+                : 1;
             return GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -2546,7 +2608,8 @@ class _PlatformAnalyticsPage extends StatelessWidget {
                 crossAxisSpacing: 12,
                 childAspectRatio: columns == 1 ? 2.6 : 2.9,
               ),
-              itemBuilder: (context, index) => _AnalyticsStatCard(stat: _stats[index]),
+              itemBuilder: (context, index) =>
+                  _AnalyticsStatCard(stat: _stats[index]),
             );
           },
         ),
@@ -2588,11 +2651,7 @@ class _PlatformAnalyticsPage extends StatelessWidget {
             }
 
             return Column(
-              children: [
-                planCard,
-                const SizedBox(height: 12),
-                statusCard,
-              ],
+              children: [planCard, const SizedBox(height: 12), statusCard],
             );
           },
         ),
@@ -2626,10 +2685,7 @@ class _PlatformAnalyticsPage extends StatelessWidget {
               const SizedBox(height: 4),
               const Text(
                 'Newest organizations on the platform',
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 12,
-                ),
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
               ),
               const SizedBox(height: 14),
               SingleChildScrollView(
@@ -2644,7 +2700,10 @@ class _PlatformAnalyticsPage extends StatelessWidget {
                         (row) => Column(
                           children: [
                             _AnalyticsTableRow(row: row),
-                            const Divider(height: 1, color: AppColors.borderLight),
+                            const Divider(
+                              height: 1,
+                              color: AppColors.borderLight,
+                            ),
                           ],
                         ),
                       ),
@@ -2734,10 +2793,7 @@ class _AnalyticsBreakdownCard extends StatelessWidget {
   final String title;
   final List<Widget> children;
 
-  const _AnalyticsBreakdownCard({
-    required this.title,
-    required this.children,
-  });
+  const _AnalyticsBreakdownCard({required this.title, required this.children});
 
   @override
   Widget build(BuildContext context) {
@@ -2913,10 +2969,7 @@ class _AnalyticsTableRow extends StatelessWidget {
             ),
             Expanded(
               flex: 2,
-              child: _Pill(
-                label: row.status,
-                color: AppColors.blue,
-              ),
+              child: _Pill(label: row.status, color: AppColors.blue),
             ),
             Expanded(
               flex: 2,
@@ -2996,10 +3049,7 @@ class _OrganizationRowItem extends StatelessWidget {
   final _OrganizationRow row;
   final ValueChanged<_OrganizationRow> onViewDetails;
 
-  const _OrganizationRowItem({
-    required this.row,
-    required this.onViewDetails,
-  });
+  const _OrganizationRowItem({required this.row, required this.onViewDetails});
 
   @override
   Widget build(BuildContext context) {
@@ -3029,7 +3079,9 @@ class _OrganizationRowItem extends StatelessWidget {
               flex: 1,
               child: _Pill(
                 label: row.status,
-                color: row.status == 'Active' ? AppColors.green : AppColors.blue,
+                color: row.status == 'Active'
+                    ? AppColors.green
+                    : AppColors.blue,
               ),
             ),
             Expanded(
@@ -3136,10 +3188,7 @@ class _DetailLine extends StatelessWidget {
   final String label;
   final String value;
 
-  const _DetailLine({
-    required this.label,
-    required this.value,
-  });
+  const _DetailLine({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -3179,10 +3228,7 @@ class _OrganizationDetailsPage extends StatefulWidget {
   final _OrganizationRow row;
   final VoidCallback onClose;
 
-  const _OrganizationDetailsPage({
-    required this.row,
-    required this.onClose,
-  });
+  const _OrganizationDetailsPage({required this.row, required this.onClose});
 
   @override
   State<_OrganizationDetailsPage> createState() =>
@@ -3199,7 +3245,10 @@ class _OrganizationDetailsPageState extends State<_OrganizationDetailsPage> {
   }
 
   String _emailForRow() {
-    final slug = widget.row.name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '');
+    final slug = widget.row.name.toLowerCase().replaceAll(
+      RegExp(r'[^a-z0-9]+'),
+      '',
+    );
     return '$slug@example.com';
   }
 
@@ -3371,7 +3420,10 @@ class _OrganizationDetailsPageState extends State<_OrganizationDetailsPage> {
                               children: cards
                                   .map(
                                     (card) => SizedBox(
-                                      width: math.max(0, (constraints.maxWidth - 12) / 2),
+                                      width: math.max(
+                                        0,
+                                        (constraints.maxWidth - 12) / 2,
+                                      ),
                                       child: card,
                                     ),
                                   )
@@ -3382,7 +3434,8 @@ class _OrganizationDetailsPageState extends State<_OrganizationDetailsPage> {
                         const SizedBox(height: 14),
                         _DetailSection(
                           title: 'Status Override',
-                          subtitle: 'Manually set the organization\'s account status.',
+                          subtitle:
+                              'Manually set the organization\'s account status.',
                           child: Row(
                             children: [
                               SizedBox(
@@ -3433,13 +3486,25 @@ class _OrganizationDetailsPageState extends State<_OrganizationDetailsPage> {
                             final details = Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                _DetailLine(label: 'Business Type', value: widget.row.businessType),
-                                _DetailLine(label: 'Email', value: _emailForRow()),
-                                _DetailLine(label: 'Phone', value: widget.row.phone),
+                                _DetailLine(
+                                  label: 'Business Type',
+                                  value: widget.row.businessType,
+                                ),
+                                _DetailLine(
+                                  label: 'Email',
+                                  value: _emailForRow(),
+                                ),
+                                _DetailLine(
+                                  label: 'Phone',
+                                  value: widget.row.phone,
+                                ),
                                 _DetailLine(label: 'GST Number', value: '—'),
                                 _DetailLine(label: 'PAN Number', value: '—'),
                                 _DetailLine(label: 'Address', value: '—'),
-                                _DetailLine(label: 'Financial Year', value: '—'),
+                                _DetailLine(
+                                  label: 'Financial Year',
+                                  value: '—',
+                                ),
                               ],
                             );
                             const planDetails = Text(
@@ -3504,10 +3569,7 @@ class _OrganizationDetailsView extends StatefulWidget {
   final _OrganizationRow row;
   final VoidCallback onBack;
 
-  const _OrganizationDetailsView({
-    required this.row,
-    required this.onBack,
-  });
+  const _OrganizationDetailsView({required this.row, required this.onBack});
 
   @override
   State<_OrganizationDetailsView> createState() =>
@@ -3524,7 +3586,10 @@ class _OrganizationDetailsViewState extends State<_OrganizationDetailsView> {
   }
 
   String _emailForRow() {
-    final slug = widget.row.name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '');
+    final slug = widget.row.name.toLowerCase().replaceAll(
+      RegExp(r'[^a-z0-9]+'),
+      '',
+    );
     return '$slug@example.com';
   }
 
@@ -3589,10 +3654,7 @@ class _OrganizationDetailsViewState extends State<_OrganizationDetailsView> {
                             fontWeight: FontWeight.w800,
                           ),
                         ),
-                        _Pill(
-                          label: widget.row.status,
-                          color: AppColors.blue,
-                        ),
+                        _Pill(label: widget.row.status, color: AppColors.blue),
                       ],
                     ),
                     const SizedBox(height: 3),
@@ -3742,7 +3804,10 @@ class _OrganizationDetailsViewState extends State<_OrganizationDetailsView> {
               final details = Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _DetailLine(label: 'Business Type', value: widget.row.businessType),
+                  _DetailLine(
+                    label: 'Business Type',
+                    value: widget.row.businessType,
+                  ),
                   _DetailLine(label: 'Email', value: _emailForRow()),
                   _DetailLine(label: 'Phone', value: widget.row.phone),
                   const _DetailLine(label: 'GST Number', value: '—'),
@@ -3783,15 +3848,9 @@ class _OrganizationDetailsViewState extends State<_OrganizationDetailsView> {
 
               return Column(
                 children: [
-                  _DetailSection(
-                    title: 'Organization Details',
-                    child: details,
-                  ),
+                  _DetailSection(title: 'Organization Details', child: details),
                   const SizedBox(height: 12),
-                  _DetailSection(
-                    title: 'Plan Details',
-                    child: planDetails,
-                  ),
+                  _DetailSection(title: 'Plan Details', child: planDetails),
                 ],
               );
             },
@@ -3933,7 +3992,9 @@ class _Pill extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: color == AppColors.borderStrong ? 0.12 : 0.12),
+          color: color.withValues(
+            alpha: color == AppColors.borderStrong ? 0.12 : 0.12,
+          ),
           borderRadius: BorderRadius.circular(999),
         ),
         child: Text(
@@ -4014,7 +4075,8 @@ class _GrowthChartPainter extends CustomPainter {
 
     for (var i = 0; i < points.length; i++) {
       final x = leftPadding + (stepX * i);
-      final y = topPadding + chartHeight - (points[i].value / maxValue * chartHeight);
+      final y =
+          topPadding + chartHeight - (points[i].value / maxValue * chartHeight);
       if (i == 0) {
         linePath.moveTo(x, y);
         fillPath.moveTo(x, topPadding + chartHeight);
@@ -4026,7 +4088,10 @@ class _GrowthChartPainter extends CustomPainter {
     }
 
     fillPath
-      ..lineTo(leftPadding + (stepX * (points.length - 1)), topPadding + chartHeight)
+      ..lineTo(
+        leftPadding + (stepX * (points.length - 1)),
+        topPadding + chartHeight,
+      )
       ..close();
 
     canvas.drawPath(fillPath, fillPaint);
@@ -4036,7 +4101,11 @@ class _GrowthChartPainter extends CustomPainter {
     final lastY =
         topPadding + chartHeight - (points.last.value / maxValue * chartHeight);
     canvas.drawCircle(Offset(lastX, lastY), 6, Paint()..color = Colors.white);
-    canvas.drawCircle(Offset(lastX, lastY), 4, Paint()..color = AppColors.primary);
+    canvas.drawCircle(
+      Offset(lastX, lastY),
+      4,
+      Paint()..color = AppColors.primary,
+    );
   }
 
   @override

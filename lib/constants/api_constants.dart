@@ -65,8 +65,10 @@ class ApiEndpoints {
       '/deliveries/by-id/{delivery_id}';
   static const String deliveriesChallanPdfTemplate =
       '/deliveries/{delivery_id}/challan/pdf';
-  static const String deliveriesAcceptTemplate = '/deliveries/{delivery_id}/accept';
-  static const String deliveriesRejectTemplate = '/deliveries/{delivery_id}/reject';
+  static const String deliveriesAcceptTemplate =
+      '/deliveries/{delivery_id}/accept';
+  static const String deliveriesRejectTemplate =
+      '/deliveries/{delivery_id}/reject';
   static const String deliveriesConfirmTemplate =
       '/deliveries/{delivery_id}/confirm';
   static const String vehicleStock = '/vehicle-stock';

@@ -224,14 +224,13 @@ class _SidebarItemTile extends StatelessWidget {
                     item.label,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: (active
-                            ? AppTextStyles.bodyStrong
-                            : AppTextStyles.body)
-                        .copyWith(
-                      color: active
-                          ? AppColors.deliveryInk
-                          : const Color(0xFF31394D),
-                    ),
+                    style:
+                        (active ? AppTextStyles.bodyStrong : AppTextStyles.body)
+                            .copyWith(
+                              color: active
+                                  ? AppColors.deliveryInk
+                                  : const Color(0xFF31394D),
+                            ),
                   ),
                 ),
                 if (active)

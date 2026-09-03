@@ -219,7 +219,9 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
   Future<void> _openLeadDetails(_LeadRecord lead) async {
     if (lead.id.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Lead detail is unavailable for this item.')),
+        const SnackBar(
+          content: Text('Lead detail is unavailable for this item.'),
+        ),
       );
       return;
     }
@@ -241,7 +243,9 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
         return;
       case _LeadAction.edit:
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Edit for ${lead.personName} is not wired yet.')),
+          SnackBar(
+            content: Text('Edit for ${lead.personName} is not wired yet.'),
+          ),
         );
         return;
       case _LeadAction.convertToCustomer:
@@ -255,7 +259,9 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
         return;
       case _LeadAction.delete:
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Delete for ${lead.personName} is not wired yet.')),
+          SnackBar(
+            content: Text('Delete for ${lead.personName} is not wired yet.'),
+          ),
         );
         return;
     }
@@ -967,10 +973,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
     );
   }
 
-  Widget _buildActionSquare({
-    required IconData icon,
-    VoidCallback? onTap,
-  }) {
+  Widget _buildActionSquare({required IconData icon, VoidCallback? onTap}) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -1457,12 +1460,7 @@ class _LeadStatusStyle {
   const _LeadStatusStyle({required this.background, required this.foreground});
 }
 
-enum _LeadAction {
-  viewDetails,
-  edit,
-  convertToCustomer,
-  delete,
-}
+enum _LeadAction { viewDetails, edit, convertToCustomer, delete }
 
 class _LeadRecord {
   final String id;

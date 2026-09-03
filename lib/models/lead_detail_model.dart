@@ -75,68 +75,107 @@ class LeadDetailModel {
     );
     final assignedTo = _readString(
       json,
-      const ['assigned_salesperson_name', 'assignedSalespersonName', 'owner_name'],
-      nestedKeys: const ['assigned_salesperson', 'assigned_user', 'owner', 'user'],
+      const [
+        'assigned_salesperson_name',
+        'assignedSalespersonName',
+        'owner_name',
+      ],
+      nestedKeys: const [
+        'assigned_salesperson',
+        'assigned_user',
+        'owner',
+        'user',
+      ],
       fallback: '-',
     );
 
     return LeadDetailModel(
       id: _readString(json, const ['id', 'lead_id', 'leadId'], fallback: ''),
-      leadCode: _readString(
-        json,
-        const ['lead_code', 'leadCode', 'lead_number', 'leadNumber'],
-        fallback: '-',
-      ),
+      leadCode: _readString(json, const [
+        'lead_code',
+        'leadCode',
+        'lead_number',
+        'leadNumber',
+      ], fallback: '-'),
       contactName: contactName,
       companyName: companyName,
-      phone: _readString(
-        json,
-        const ['mobile_number', 'mobileNumber', 'phone', 'phone_number'],
-        fallback: '-',
-      ),
-      email: _readString(json, const ['email', 'email_address', 'emailAddress'], fallback: '-'),
-      source: _readString(json, const ['lead_source', 'leadSource', 'source'], fallback: '-'),
-      status: _readString(json, const ['lead_status', 'leadStatus', 'status'], fallback: 'New'),
-      interestedProduct: _readString(
-        json,
-        const ['interested_product', 'interestedProduct', 'product', 'category'],
-        fallback: '-',
-      ),
+      phone: _readString(json, const [
+        'mobile_number',
+        'mobileNumber',
+        'phone',
+        'phone_number',
+      ], fallback: '-'),
+      email: _readString(json, const [
+        'email',
+        'email_address',
+        'emailAddress',
+      ], fallback: '-'),
+      source: _readString(json, const [
+        'lead_source',
+        'leadSource',
+        'source',
+      ], fallback: '-'),
+      status: _readString(json, const [
+        'lead_status',
+        'leadStatus',
+        'status',
+      ], fallback: 'New'),
+      interestedProduct: _readString(json, const [
+        'interested_product',
+        'interestedProduct',
+        'product',
+        'category',
+      ], fallback: '-'),
       assignedTo: assignedTo,
       existingCustomer: existingCustomer,
-      notes: _readString(json, const ['notes', 'description', 'remark', 'remarks'], fallback: '-'),
+      notes: _readString(json, const [
+        'notes',
+        'description',
+        'remark',
+        'remarks',
+      ], fallback: '-'),
       address: _composeAddress(json),
       city: _readString(json, const ['city', 'district'], fallback: '-'),
       state: _readString(json, const ['state', 'province'], fallback: '-'),
       country: _readString(json, const ['country'], fallback: '-'),
-      createdAt: _readString(json, const ['created_at', 'createdAt'], fallback: ''),
-      updatedAt: _readString(json, const ['updated_at', 'updatedAt'], fallback: ''),
-      followUpDate: _readString(
-        json,
-        const ['follow_up_date', 'followUpDate', 'next_follow_up', 'nextFollowUp'],
-        fallback: '',
-      ),
-      expectedClosingDate: _readString(
-        json,
-        const [
-          'expected_closing_date',
-          'expectedClosingDate',
-          'closing_date',
-          'closingDate',
-        ],
-        fallback: '',
-      ),
-      budget: _readString(
-        json,
-        const ['budget', 'expected_value', 'expectedValue', 'deal_value', 'dealValue'],
-        fallback: '-',
-      ),
-      priority: _readString(json, const ['priority', 'lead_priority', 'leadPriority'], fallback: '-'),
-      avatarUrl: _readString(
-        json,
-        const ['avatar_url', 'avatarUrl', 'profile_photo', 'profilePhoto'],
-        fallback: '',
-      ),
+      createdAt: _readString(json, const [
+        'created_at',
+        'createdAt',
+      ], fallback: ''),
+      updatedAt: _readString(json, const [
+        'updated_at',
+        'updatedAt',
+      ], fallback: ''),
+      followUpDate: _readString(json, const [
+        'follow_up_date',
+        'followUpDate',
+        'next_follow_up',
+        'nextFollowUp',
+      ], fallback: ''),
+      expectedClosingDate: _readString(json, const [
+        'expected_closing_date',
+        'expectedClosingDate',
+        'closing_date',
+        'closingDate',
+      ], fallback: ''),
+      budget: _readString(json, const [
+        'budget',
+        'expected_value',
+        'expectedValue',
+        'deal_value',
+        'dealValue',
+      ], fallback: '-'),
+      priority: _readString(json, const [
+        'priority',
+        'lead_priority',
+        'leadPriority',
+      ], fallback: '-'),
+      avatarUrl: _readString(json, const [
+        'avatar_url',
+        'avatarUrl',
+        'profile_photo',
+        'profilePhoto',
+      ], fallback: ''),
     );
   }
 
@@ -180,10 +219,12 @@ String _readString(
   for (final key in nestedKeys) {
     final nested = json[key];
     if (nested is Map<String, dynamic>) {
-      final candidate = _readString(
-        nested,
-        const ['name', 'full_name', 'business_name', 'company_name'],
-      );
+      final candidate = _readString(nested, const [
+        'name',
+        'full_name',
+        'business_name',
+        'company_name',
+      ]);
       if (candidate.isNotEmpty) {
         return candidate;
       }
@@ -194,10 +235,13 @@ String _readString(
 }
 
 String _composeAddress(Map<String, dynamic> json) {
-  final direct = _readString(
-    json,
-    const ['address', 'full_address', 'fullAddress', 'street_address', 'streetAddress'],
-  );
+  final direct = _readString(json, const [
+    'address',
+    'full_address',
+    'fullAddress',
+    'street_address',
+    'streetAddress',
+  ]);
   if (direct.isNotEmpty) {
     return direct;
   }

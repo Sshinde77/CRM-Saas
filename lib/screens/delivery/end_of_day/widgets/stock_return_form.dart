@@ -139,8 +139,9 @@ class _StockReturnFormState extends State<StockReturnForm> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       foregroundColor: Colors.white,
-                      disabledBackgroundColor:
-                          AppColors.primary.withValues(alpha: 0.55),
+                      disabledBackgroundColor: AppColors.primary.withValues(
+                        alpha: 0.55,
+                      ),
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),

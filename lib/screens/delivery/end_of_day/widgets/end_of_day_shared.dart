@@ -137,13 +137,13 @@ class VarianceBadge extends StatelessWidget {
     final color = matched
         ? const Color(0xFF0D8C28)
         : surplus
-            ? const Color(0xFF2563EB)
-            : AppColors.deliveryRed;
+        ? const Color(0xFF2563EB)
+        : AppColors.deliveryRed;
     final label = matched
         ? 'Matched'
         : surplus
-            ? '+${qty(variance)} Surplus'
-            : '${qty(variance.abs())} Shortage';
+        ? '+${qty(variance)} Surplus'
+        : '${qty(variance.abs())} Shortage';
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),

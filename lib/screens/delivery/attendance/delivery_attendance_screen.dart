@@ -275,8 +275,9 @@ class _CheckpointTile extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color:
-                        recorded ? const Color(0xFF065F1B) : AppColors.textMuted,
+                    color: recorded
+                        ? const Color(0xFF065F1B)
+                        : AppColors.textMuted,
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                   ),
@@ -307,8 +308,9 @@ class _CheckpointTile extends StatelessWidget {
                     ),
               label: Text(recorded ? 'Recorded' : 'Mark now'),
               style: OutlinedButton.styleFrom(
-                foregroundColor:
-                    recorded ? const Color(0xFF065F1B) : checkpoint.color,
+                foregroundColor: recorded
+                    ? const Color(0xFF065F1B)
+                    : checkpoint.color,
                 disabledForegroundColor: const Color(0xFF065F1B),
                 side: BorderSide(
                   color: recorded
@@ -403,10 +405,7 @@ class _HistoryTable extends StatelessWidget {
         border: Border.all(color: const Color(0xFFE2E7F0)),
       ),
       child: Column(
-        children: [
-          const _HistoryHeaderRow(),
-          ...records.map(_HistoryRow.new),
-        ],
+        children: [const _HistoryHeaderRow(), ...records.map(_HistoryRow.new)],
       ),
     );
   }
@@ -630,17 +629,11 @@ class _HistoryMessage extends StatelessWidget {
               textAlign: TextAlign.center,
               maxLines: 4,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 12,
-                color: AppColors.textMuted,
-              ),
+              style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
             ),
             if (action != null && onAction != null) ...[
               const SizedBox(height: 10),
-              OutlinedButton(
-                onPressed: onAction,
-                child: Text(action!),
-              ),
+              OutlinedButton(onPressed: onAction, child: Text(action!)),
             ],
           ],
         ),
@@ -683,8 +676,7 @@ class _StatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isPresent = status == 'present';
-    final color =
-        isPresent ? const Color(0xFF0D8C28) : AppColors.deliveryRed;
+    final color = isPresent ? const Color(0xFF0D8C28) : AppColors.deliveryRed;
     final label = isPresent ? 'Present' : 'Absent';
 
     return Align(
@@ -848,14 +840,16 @@ class _AttendanceRecord {
   factory _AttendanceRecord.fromJson(Map<String, dynamic> json) {
     final parsedDate =
         _parseDate(_readString(json, const ['date', 'attendance_date'])) ??
-            DateTime.now();
+        DateTime.now();
     return _AttendanceRecord(
       date: parsedDate,
       officeCheckIn: _parseDateTime(
-        _readString(
-          json,
-          const ['office_check_in', 'officeCheckIn', 'checkIn', 'check_in'],
-        ),
+        _readString(json, const [
+          'office_check_in',
+          'officeCheckIn',
+          'checkIn',
+          'check_in',
+        ]),
         parsedDate,
       ),
       departure: _parseDateTime(
@@ -867,10 +861,12 @@ class _AttendanceRecord {
         parsedDate,
       ),
       finalCheckOut: _parseDateTime(
-        _readString(
-          json,
-          const ['final_check_out', 'finalCheckOut', 'checkOut', 'check_out'],
-        ),
+        _readString(json, const [
+          'final_check_out',
+          'finalCheckOut',
+          'checkOut',
+          'check_out',
+        ]),
         parsedDate,
       ),
       rawStatus: _readString(json, const ['status', 'attendance_status']),
@@ -958,8 +954,8 @@ String _formatTime(DateTime? value) {
   final hour = local.hour == 0
       ? 12
       : local.hour > 12
-          ? local.hour - 12
-          : local.hour;
+      ? local.hour - 12
+      : local.hour;
   final minute = local.minute.toString().padLeft(2, '0');
   final period = local.hour >= 12 ? 'PM' : 'AM';
   return '${hour.toString().padLeft(2, '0')}:$minute $period';

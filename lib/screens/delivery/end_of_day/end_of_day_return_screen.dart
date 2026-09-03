@@ -51,7 +51,9 @@ class _EndOfDayReturnScreenState extends State<EndOfDayReturnScreen> {
       throw const _EndOfDayException('Delivery partner id is missing.');
     }
 
-    final rawSession = await provider.fetchCurrentVehicleStock(deliveryPartnerId);
+    final rawSession = await provider.fetchCurrentVehicleStock(
+      deliveryPartnerId,
+    );
     if (rawSession == null) return null;
     final session = EndOfDaySession.fromJson(rawSession);
     if (mounted) {
@@ -82,11 +84,11 @@ class _EndOfDayReturnScreenState extends State<EndOfDayReturnScreen> {
           'returned_qty': returns[item.id] ?? 0,
         };
       }).toList();
-      final response = await ApiProviderScope.of(context).submitEndOfDayReturn(
-        sessionId: session.id,
-        items: payloadItems,
-      );
-      final nextSession = _sessionFromResponse(response) ??
+      final response = await ApiProviderScope.of(
+        context,
+      ).submitEndOfDayReturn(sessionId: session.id, items: payloadItems);
+      final nextSession =
+          _sessionFromResponse(response) ??
           session.copyWithItems(
             session.items
                 .map((item) => item.copyWithReturn(returns[item.id] ?? 0))
@@ -132,10 +134,7 @@ class _EndOfDayReturnScreenState extends State<EndOfDayReturnScreen> {
       }).toList();
       await ApiProviderScope.of(context).reconcileVehicleStock(
         sessionId: session.id,
-        payload: {
-          'notes': notes.trim(),
-          'items': payloadItems,
-        },
+        payload: {'notes': notes.trim(), 'items': payloadItems},
       );
 
       final lines = session.items.map((item) {
@@ -220,19 +219,19 @@ class _EndOfDayReturnScreenState extends State<EndOfDayReturnScreen> {
                           child: isLoading
                               ? const EndOfDayLoadingState()
                               : snapshot.hasError
-                                  ? Column(
-                                      children: [
-                                        EndOfDayErrorBanner(
-                                          message: _cleanError(snapshot.error),
-                                          onDismiss: () {},
-                                        ),
-                                        const SizedBox(height: 12),
-                                        const EndOfDayEmptyState(),
-                                      ],
-                                    )
-                                  : session == null || session.items.isEmpty
-                                      ? const EndOfDayEmptyState()
-                                      : _buildStep(session),
+                              ? Column(
+                                  children: [
+                                    EndOfDayErrorBanner(
+                                      message: _cleanError(snapshot.error),
+                                      onDismiss: () {},
+                                    ),
+                                    const SizedBox(height: 12),
+                                    const EndOfDayEmptyState(),
+                                  ],
+                                )
+                              : session == null || session.items.isEmpty
+                              ? const EndOfDayEmptyState()
+                              : _buildStep(session),
                         ),
                       ),
                     ),
@@ -249,19 +248,19 @@ class _EndOfDayReturnScreenState extends State<EndOfDayReturnScreen> {
   Widget _buildStep(EndOfDaySession session) {
     return switch (_step) {
       _EndOfDayStep.returnStock => StockReturnForm(
-          session: session,
-          error: _returnError,
-          isSaving: _isSavingReturn,
-          onDismissError: () => setState(() => _returnError = null),
-          onSubmit: _saveReturn,
-        ),
+        session: session,
+        error: _returnError,
+        isSaving: _isSavingReturn,
+        onDismissError: () => setState(() => _returnError = null),
+        onSubmit: _saveReturn,
+      ),
       _EndOfDayStep.reconcile => StockReconciliationForm(
-          session: session,
-          error: _reconciliationError,
-          isSaving: _isSavingReconciliation,
-          onDismissError: () => setState(() => _reconciliationError = null),
-          onSubmit: _saveReconciliation,
-        ),
+        session: session,
+        error: _reconciliationError,
+        isSaving: _isSavingReconciliation,
+        onDismissError: () => setState(() => _reconciliationError = null),
+        onSubmit: _saveReconciliation,
+      ),
       _EndOfDayStep.summary => ReconciliationSummary(lines: _summaryLines),
     };
   }
@@ -299,7 +298,12 @@ class _EndOfDayReturnScreenState extends State<EndOfDayReturnScreen> {
 }
 
 EndOfDaySession? _sessionFromResponse(Map<String, dynamic> response) {
-  for (final key in const ['data', 'session', 'vehicle_stock', 'vehicleStock']) {
+  for (final key in const [
+    'data',
+    'session',
+    'vehicle_stock',
+    'vehicleStock',
+  ]) {
     final value = response[key];
     if (value is Map<String, dynamic>) {
       return EndOfDaySession.fromJson(value);

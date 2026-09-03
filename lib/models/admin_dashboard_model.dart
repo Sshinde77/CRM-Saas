@@ -24,40 +24,45 @@ class AdminDashboardData {
   });
 
   factory AdminDashboardData.fromJson(Map<String, dynamic> json) {
-    final payload = _asMap(json['data']) ??
+    final payload =
+        _asMap(json['data']) ??
         _asMap(json['dashboard']) ??
         _asMap(json['admin_dashboard']) ??
         json;
 
     return AdminDashboardData(
-      summary: AdminDashboardSummary.fromJson(_asMap(payload['summary']) ?? payload),
-      orders: AdminDashboardOrders.fromJson(_asMap(payload['orders']) ?? const {}),
+      summary: AdminDashboardSummary.fromJson(
+        _asMap(payload['summary']) ?? payload,
+      ),
+      orders: AdminDashboardOrders.fromJson(
+        _asMap(payload['orders']) ?? const {},
+      ),
       receivablesPayables: AdminReceivablesPayables.fromJson(
         _asMap(payload['receivables_payables']) ??
             _asMap(payload['receivablesPayables']) ??
             const {},
       ),
-      cashflow: _mapList(payload['cashflow'])
-          .map(AdminCashflowPoint.fromJson)
-          .toList(),
-      expenseBreakdown: _mapList(payload['expense_breakdown'])
-          .map(AdminExpenseBreakdownItem.fromJson)
-          .toList(),
-      salesTrend: _mapList(payload['sales_trend'])
-          .map(AdminSalesTrendPoint.fromJson)
-          .toList(),
-      topProducts: _mapList(payload['top_products'])
-          .map(AdminTopProduct.fromJson)
-          .toList(),
-      topCustomers: _mapList(payload['top_customers'])
-          .map(AdminTopCustomer.fromJson)
-          .toList(),
-      stockWatch: _mapList(payload['stock_watch'])
-          .map(AdminStockWatchItem.fromJson)
-          .toList(),
-      recentOrders: _mapList(payload['recent_orders'])
-          .map(AdminRecentOrder.fromJson)
-          .toList(),
+      cashflow: _mapList(
+        payload['cashflow'],
+      ).map(AdminCashflowPoint.fromJson).toList(),
+      expenseBreakdown: _mapList(
+        payload['expense_breakdown'],
+      ).map(AdminExpenseBreakdownItem.fromJson).toList(),
+      salesTrend: _mapList(
+        payload['sales_trend'],
+      ).map(AdminSalesTrendPoint.fromJson).toList(),
+      topProducts: _mapList(
+        payload['top_products'],
+      ).map(AdminTopProduct.fromJson).toList(),
+      topCustomers: _mapList(
+        payload['top_customers'],
+      ).map(AdminTopCustomer.fromJson).toList(),
+      stockWatch: _mapList(
+        payload['stock_watch'],
+      ).map(AdminStockWatchItem.fromJson).toList(),
+      recentOrders: _mapList(
+        payload['recent_orders'],
+      ).map(AdminRecentOrder.fromJson).toList(),
     );
   }
 }
@@ -96,7 +101,9 @@ class AdminDashboardSummary {
       expenses: _number(json['expenses']),
       grossProfit: _number(json['gross_profit'] ?? json['grossProfit']),
       netProfit: _number(json['net_profit'] ?? json['netProfit']),
-      newCustomers: _number(json['new_customers'] ?? json['newCustomers']).round(),
+      newCustomers: _number(
+        json['new_customers'] ?? json['newCustomers'],
+      ).round(),
       salesGrowthPercentage: _number(
         json['sales_growth_percentage'] ?? json['salesGrowthPercentage'],
       ),
@@ -119,7 +126,9 @@ class AdminDashboardOrders {
 
   factory AdminDashboardOrders.fromJson(Map<String, dynamic> json) {
     return AdminDashboardOrders(
-      total: _number(json['total'] ?? json['total_orders'] ?? json['orders']).round(),
+      total: _number(
+        json['total'] ?? json['total_orders'] ?? json['orders'],
+      ).round(),
       delivered: _number(json['delivered'] ?? json['completed']).round(),
       pending: _number(json['pending'] ?? json['processing']).round(),
       cancelled: _number(json['cancelled'] ?? json['canceled']).round(),
@@ -195,10 +204,7 @@ class AdminSalesTrendPoint {
   final String date;
   final double sales;
 
-  const AdminSalesTrendPoint({
-    required this.date,
-    required this.sales,
-  });
+  const AdminSalesTrendPoint({required this.date, required this.sales});
 
   factory AdminSalesTrendPoint.fromJson(Map<String, dynamic> json) {
     return AdminSalesTrendPoint(
@@ -221,8 +227,12 @@ class AdminTopProduct {
 
   factory AdminTopProduct.fromJson(Map<String, dynamic> json) {
     return AdminTopProduct(
-      productName: _label(json['product_name'] ?? json['productName'] ?? json['name']),
-      salesAmount: _number(json['sales_amount'] ?? json['salesAmount'] ?? json['sales']),
+      productName: _label(
+        json['product_name'] ?? json['productName'] ?? json['name'],
+      ),
+      salesAmount: _number(
+        json['sales_amount'] ?? json['salesAmount'] ?? json['sales'],
+      ),
       quantity: _number(json['quantity'] ?? json['qty']),
     );
   }
@@ -232,14 +242,13 @@ class AdminTopCustomer {
   final String customerName;
   final double sales;
 
-  const AdminTopCustomer({
-    required this.customerName,
-    required this.sales,
-  });
+  const AdminTopCustomer({required this.customerName, required this.sales});
 
   factory AdminTopCustomer.fromJson(Map<String, dynamic> json) {
     return AdminTopCustomer(
-      customerName: _label(json['customer_name'] ?? json['customerName'] ?? json['name']),
+      customerName: _label(
+        json['customer_name'] ?? json['customerName'] ?? json['name'],
+      ),
       sales: _number(json['sales'] ?? json['amount'] ?? json['total']),
     );
   }
@@ -258,10 +267,16 @@ class AdminStockWatchItem {
 
   factory AdminStockWatchItem.fromJson(Map<String, dynamic> json) {
     return AdminStockWatchItem(
-      productName: _label(json['product_name'] ?? json['productName'] ?? json['name']),
-      status: _label(json['status']).isEmpty ? 'Low stock' : _label(json['status']),
+      productName: _label(
+        json['product_name'] ?? json['productName'] ?? json['name'],
+      ),
+      status: _label(json['status']).isEmpty
+          ? 'Low stock'
+          : _label(json['status']),
       stockPercentage: _number(
-        json['stock_percentage'] ?? json['stockPercentage'] ?? json['percentage'],
+        json['stock_percentage'] ??
+            json['stockPercentage'] ??
+            json['percentage'],
       ),
     );
   }
@@ -289,8 +304,12 @@ class AdminRecentOrder {
   factory AdminRecentOrder.fromJson(Map<String, dynamic> json) {
     return AdminRecentOrder(
       id: _label(json['id'] ?? json['_id']),
-      orderNumber: _label(json['order_number'] ?? json['orderNumber'] ?? json['number']),
-      customerName: _label(json['customer_name'] ?? json['customerName'] ?? json['customer']),
+      orderNumber: _label(
+        json['order_number'] ?? json['orderNumber'] ?? json['number'],
+      ),
+      customerName: _label(
+        json['customer_name'] ?? json['customerName'] ?? json['customer'],
+      ),
       status: _label(json['status']),
       paymentStatus: _label(json['payment_status'] ?? json['paymentStatus']),
       total: _number(json['total'] ?? json['amount']),
@@ -317,7 +336,14 @@ List<Map<String, dynamic>> _mapList(dynamic value) {
 double _number(dynamic value) {
   if (value is num) return value.toDouble();
   if (value is String) {
-    return double.tryParse(value.replaceAll(',', '').replaceAll('Rs.', '').replaceAll('₹', '').trim()) ?? 0;
+    return double.tryParse(
+          value
+              .replaceAll(',', '')
+              .replaceAll('Rs.', '')
+              .replaceAll('₹', '')
+              .trim(),
+        ) ??
+        0;
   }
   return 0;
 }
