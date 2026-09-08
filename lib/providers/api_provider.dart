@@ -237,8 +237,83 @@ class ApiProvider extends ChangeNotifier {
     );
   }
 
-  Future<List<Map<String, dynamic>>> fetchOrders() {
-    return _apiService.fetchOrders();
+  Future<List<Map<String, dynamic>>> fetchOrders({
+    String? status,
+    String? fulfilmentStatus,
+    String? customerId,
+    String? assignedDeliveryPartnerId,
+    String? search,
+  }) {
+    return _apiService.fetchOrders(
+      status: status,
+      fulfilmentStatus: fulfilmentStatus,
+      customerId: customerId,
+      assignedDeliveryPartnerId: assignedDeliveryPartnerId,
+      search: search,
+    );
+  }
+
+  Future<PaginatedOrdersResult> fetchPaginatedOrders({
+    int page = 1,
+    int limit = 10,
+    String? status,
+    String? fulfilmentStatus,
+    String? customerId,
+    String? assignedDeliveryPartnerId,
+    String? search,
+  }) {
+    return _apiService.fetchPaginatedOrders(
+      page: page,
+      limit: limit,
+      status: status,
+      fulfilmentStatus: fulfilmentStatus,
+      customerId: customerId,
+      assignedDeliveryPartnerId: assignedDeliveryPartnerId,
+      search: search,
+    );
+  }
+
+  Future<Map<String, dynamic>> fetchOrderById(String orderId) {
+    return _apiService.fetchOrderById(orderId);
+  }
+
+  Future<Map<String, dynamic>> createOrder({
+    required Map<String, dynamic> request,
+  }) {
+    return _apiService.createOrder(request: request);
+  }
+
+  Future<Map<String, dynamic>> updateOrder({
+    required String orderId,
+    required Map<String, dynamic> request,
+  }) {
+    return _apiService.updateOrder(orderId: orderId, request: request);
+  }
+
+  Future<Map<String, dynamic>> assignOrderDeliveryPartner({
+    required String orderId,
+    required String deliveryPartnerId,
+  }) {
+    return _apiService.assignOrderDeliveryPartner(
+      orderId: orderId,
+      deliveryPartnerId: deliveryPartnerId,
+    );
+  }
+
+  Future<Map<String, dynamic>> confirmOrder(String orderId) {
+    return _apiService.confirmOrder(orderId);
+  }
+
+  Future<Map<String, dynamic>> cancelOrder({
+    required String orderId,
+    required String reason,
+    String? notes,
+  }) {
+    return _apiService.cancelOrder(
+      orderId: orderId,
+      reason: reason,
+      notes: notes,
+    );
   }
 
   Future<Map<String, dynamic>?> fetchCurrentVehicleStock(
@@ -421,6 +496,18 @@ class ApiProvider extends ChangeNotifier {
       categoryId: categoryId,
       isActive: isActive,
       barcode: barcode,
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> fetchStockBoard({
+    String? search,
+    String? categoryId,
+    bool? isActive,
+  }) {
+    return _apiService.fetchStockBoard(
+      search: search,
+      categoryId: categoryId,
+      isActive: isActive,
     );
   }
 

@@ -4,11 +4,25 @@ import '../../../constants/app_colors.dart';
 import '../../../providers/api_provider.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
+import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
+import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
+import '../../sales_manager/attendance/sales_manager_attendance_screen.dart';
+import '../../sales_manager/dashboard/sales_manager_dashboard_screen.dart';
+import '../../sales_manager/follow_ups/sales_manager_follow_ups_screen.dart';
+import '../../sales_manager/performance/sales_manager_performance_screen.dart';
+import '../../sales_manager/stock/sales_manager_stock_screen.dart';
+import '../../sales_manager/visits/sales_manager_visits_screen.dart';
+import '../customers/customers_screen.dart';
+import '../leads/admin_leads_screen.dart';
+import '../orders/admin_orders_screen.dart';
+import '../orders/new_admin_order_screen.dart';
 import 'create_quotation_screen.dart';
 import 'quotation_detail_screen.dart';
 
 class AdminQuotationsScreen extends StatefulWidget {
-  const AdminQuotationsScreen({super.key});
+  final bool useSalesManagerShell;
+
+  const AdminQuotationsScreen({super.key, this.useSalesManagerShell = false});
 
   @override
   State<AdminQuotationsScreen> createState() => _AdminQuotationsScreenState();
@@ -120,7 +134,13 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
   Future<void> _openCreateQuotationScreen() async {
     final result = await Navigator.of(
       context,
-    ).push(MaterialPageRoute(builder: (_) => const NewQuotationScreen()));
+    ).push(
+      MaterialPageRoute(
+        builder: (_) => NewQuotationScreen(
+          useSalesManagerShell: widget.useSalesManagerShell,
+        ),
+      ),
+    );
 
     if (result != null && mounted) {
       await _loadQuotations();
@@ -130,7 +150,13 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
   Future<void> _openEditQuotationScreen(_QuotationRecord _) async {
     final result = await Navigator.of(
       context,
-    ).push(MaterialPageRoute(builder: (_) => const NewQuotationScreen()));
+    ).push(
+      MaterialPageRoute(
+        builder: (_) => NewQuotationScreen(
+          useSalesManagerShell: widget.useSalesManagerShell,
+        ),
+      ),
+    );
 
     if (result != null && mounted) {
       await _loadQuotations();
@@ -140,7 +166,10 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
   Future<void> _openQuotationDetails(_QuotationRecord record) async {
     final result = await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => QuotationDetailScreen(quotationId: record.id),
+        builder: (_) => QuotationDetailScreen(
+          quotationId: record.id,
+          useSalesManagerShell: widget.useSalesManagerShell,
+        ),
       ),
     );
 
@@ -212,6 +241,80 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
     }
   }
 
+  void _handleSalesManagerSidebarSelection(String action) {
+    Navigator.of(context).maybePop();
+    if (action == 'Quotations' || action == 'Quotation') return;
+    if (action == 'Dashboard') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerDashboardScreen()),
+      );
+      return;
+    }
+    if (action == 'Customers') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const CustomersScreen(useSalesManagerShell: true),
+        ),
+      );
+      return;
+    }
+    if (action == 'Leads') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const AdminLeadsScreen(useSalesManagerShell: true),
+        ),
+      );
+      return;
+    }
+    if (action == 'Create Order') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const NewAdminOrderScreen(useSalesManagerShell: true),
+        ),
+      );
+      return;
+    }
+    if (action == 'Sales Orders') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const AdminOrdersScreen(useSalesManagerShell: true),
+        ),
+      );
+      return;
+    }
+    if (action == 'Stock') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerStockScreen()),
+      );
+      return;
+    }
+    if (action == 'Follow-ups' || action == 'Follow-Ups') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerFollowUpsScreen()),
+      );
+      return;
+    }
+    if (action == 'Attendance') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerAttendanceScreen()),
+      );
+      return;
+    }
+    if (action == 'Visits') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerVisitsScreen()),
+      );
+      return;
+    }
+    if (action == 'My Performance') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const SalesManagerPerformanceScreen(),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final quotations = _filteredQuotations();
@@ -219,7 +322,12 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
-      drawer: const AppDrawer(activeItem: 'Quotation'),
+      drawer: widget.useSalesManagerShell
+          ? SalesManagerSidebarDrawer(
+              currentPage: 'Quotations',
+              onSelect: _handleSalesManagerSidebarSelection,
+            )
+          : const AppDrawer(activeItem: 'Quotation'),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -227,11 +335,14 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
 
             return Column(
               children: [
-                AdminTopBar(
-                  title: 'Quotation',
-                  leadingIcon: Icons.menu_rounded,
-                  onLeadingTap: () => _scaffoldKey.currentState?.openDrawer(),
-                ),
+                widget.useSalesManagerShell
+                    ? const SalesManagerTopBar(title: 'Quotations')
+                    : AdminTopBar(
+                        title: 'Quotation',
+                        leadingIcon: Icons.menu_rounded,
+                        onLeadingTap: () =>
+                            _scaffoldKey.currentState?.openDrawer(),
+                      ),
                 Expanded(
                   child: SingleChildScrollView(
                     padding: EdgeInsets.fromLTRB(

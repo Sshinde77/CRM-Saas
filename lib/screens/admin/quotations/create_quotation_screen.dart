@@ -6,9 +6,24 @@ import '../../../models/customer_model.dart';
 import '../../../providers/api_provider.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
+import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
+import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
+import '../../sales_manager/attendance/sales_manager_attendance_screen.dart';
+import '../../sales_manager/dashboard/sales_manager_dashboard_screen.dart';
+import '../../sales_manager/follow_ups/sales_manager_follow_ups_screen.dart';
+import '../../sales_manager/performance/sales_manager_performance_screen.dart';
+import '../../sales_manager/stock/sales_manager_stock_screen.dart';
+import '../../sales_manager/visits/sales_manager_visits_screen.dart';
+import '../customers/customers_screen.dart';
+import '../leads/admin_leads_screen.dart';
+import '../orders/admin_orders_screen.dart';
+import '../orders/new_admin_order_screen.dart';
+import 'admin_quotations_screen.dart';
 
 class NewQuotationScreen extends StatefulWidget {
-  const NewQuotationScreen({super.key});
+  final bool useSalesManagerShell;
+
+  const NewQuotationScreen({super.key, this.useSalesManagerShell = false});
 
   @override
   State<NewQuotationScreen> createState() => _NewQuotationScreenState();
@@ -16,1087 +31,1364 @@ class NewQuotationScreen extends StatefulWidget {
 
 class _NewQuotationScreenState extends State<NewQuotationScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
-  final TextEditingController _quotationDateController = TextEditingController(
-    text: _formatDate(DateTime.now()),
-  );
-  final TextEditingController _validUntilController = TextEditingController(
-    text: _formatDate(DateTime.now().add(const Duration(days: 15))),
-  );
+  final TextEditingController _searchController = TextEditingController();
   final TextEditingController _billingAddressController =
       TextEditingController();
   final TextEditingController _shippingAddressController =
       TextEditingController();
-  final TextEditingController _paymentTermsController = TextEditingController();
-  final TextEditingController _deliveryTermsController =
-      TextEditingController();
   final TextEditingController _notesController = TextEditingController();
-  final TextEditingController _termsConditionsController =
-      TextEditingController();
+  final TextEditingController _termsController = TextEditingController(
+    text: 'Prices are valid until the quotation expiry date.',
+  );
 
   late ApiProvider _apiProvider;
   bool _providerReady = false;
-  bool _isOptionsLoading = true;
+  bool _isLoading = true;
   bool _isSaving = false;
-  String? _optionsErrorMessage;
+  String? _loadError;
+
+  int _step = 0;
+  bool _forCustomer = true;
+  String _currency = 'INR';
+  String _paymentTerms = 'Net 15';
+  String _deliveryTerms = 'Standard delivery';
+  DateTime _quotationDate = DateTime.now();
+  DateTime _validUntil = DateTime.now().add(const Duration(days: 14));
+
   List<CustomerModel> _customers = const [];
-  List<_QuotationCatalogItem> _apiProductOptions = const [];
+  List<_LeadOption> _leads = const [];
+  List<_ProductOption> _products = const [];
   List<AppUser> _salespeople = const [];
-  int _currentStep = 0;
+  final List<_QuoteItem> _items = [];
 
-  final List<_QuotationStep> _steps = const [
-    _QuotationStep('Quotation Details', Icons.description_outlined),
-    _QuotationStep('Terms Details', Icons.receipt_long_outlined),
-    _QuotationStep('Quotation Items', Icons.inventory_2_outlined),
-  ];
-
-  final List<String> _customerOptions = const [
-    'Hotel Grand Meridian',
-    'Spice Route Restaurant',
-    'Sunrise Corporate Park',
-    'Mr. Arjun Reddy',
-    'Green Leaf Caterers',
-    'Café Mocha',
-  ];
-
-  final List<String> _salespersonOptions = const [
-    'Vikram Singh',
-    'Sunil Sales',
-    'Neha Sharma',
-  ];
-
-  final List<String> _currencyOptions = const [
-    'INR',
-    'USD',
-    'AED',
-    'SGD',
-    'GBP',
-  ];
-
-  final List<String> _paymentOptions = const [
-    'Net 15',
-    'Net 30',
-    'Advance',
-    'Immediate',
-    'Due on Receipt',
-  ];
-
-  final List<String> _deliveryOptions = const [
-    'Standard delivery',
-    'Express delivery',
-    'Customer pickup',
-    'Delivery within 2 business days',
-  ];
-
-  final List<_QuotationCatalogItem> _productOptions = const [
-    _QuotationCatalogItem(
-      name: 'Conference Setup',
-      sku: 'SRV-1001',
-      description: 'End-to-end event support and coordination.',
-      uom: 'Service',
-    ),
-    _QuotationCatalogItem(
-      name: 'Projector Rental',
-      sku: 'EQP-2044',
-      description: 'Full-day projector rental with basic cabling.',
-      uom: 'Day',
-    ),
-    _QuotationCatalogItem(
-      name: 'Premium Chair',
-      sku: 'FUR-3012',
-      description: 'Comfort seating for premium spaces and events.',
-      uom: 'Nos',
-    ),
-    _QuotationCatalogItem(
-      name: 'Office Stationery Pack',
-      sku: 'STY-1180',
-      description: 'Standard stationery bundle for daily office use.',
-      uom: 'Pack',
-    ),
-  ];
-
-  final List<String> _uomOptions = const [
-    'unit',
-    'jar',
-    'case (24)',
-    'case (12)',
-    'box',
-    'pack',
-    'piece',
-  ];
-
-  final List<String> _taxOptions = const ['0%', '5%', '12%', '18%', '28%'];
-
-  String? _selectedCustomer;
-  String? _selectedSalesperson;
-  String _selectedCurrency = 'INR';
-  String _selectedPaymentTerm = 'Net 15';
-
-  final List<_QuotationItemDraft> _items = [_QuotationItemDraft()];
-
-  @override
-  void initState() {
-    super.initState();
-    for (final item in _items) {
-      item.attachRebuild(_onItemChanged);
-    }
-    _syncComputedFields();
-  }
+  CustomerModel? _selectedCustomer;
+  _LeadOption? _selectedLead;
+  AppUser? _selectedSalesperson;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_providerReady) return;
-    _apiProvider = ApiProviderScope.of(context);
     _providerReady = true;
+    _apiProvider = ApiProviderScope.of(context);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      _loadOptions();
+      if (mounted) _loadData();
     });
   }
 
   @override
   void dispose() {
-    _quotationDateController.dispose();
-    _validUntilController.dispose();
+    _searchController.dispose();
     _billingAddressController.dispose();
     _shippingAddressController.dispose();
-    _paymentTermsController.dispose();
-    _deliveryTermsController.dispose();
     _notesController.dispose();
-    _termsConditionsController.dispose();
-    for (final item in _items) {
-      item.dispose();
-    }
+    _termsController.dispose();
     super.dispose();
   }
 
-  Future<void> _loadOptions() async {
+  Future<void> _loadData() async {
     setState(() {
-      _isOptionsLoading = true;
-      _optionsErrorMessage = null;
+      _isLoading = true;
+      _loadError = null;
     });
 
     try {
       final results = await Future.wait<dynamic>([
         _apiProvider.fetchCustomers(),
+        _apiProvider.fetchLeads(),
         _apiProvider.fetchProducts(isActive: true),
-        _apiProvider.service.fetchUsers(),
+        _apiProvider.fetchAssignableUsers(),
       ]);
 
       final customers = (results[0] as List<CustomerModel>)
           .where((customer) => customer.name.trim().isNotEmpty)
           .toList();
-      final products = (results[1] as List<Map<String, dynamic>>)
-          .map(_QuotationCatalogItem.fromJson)
-          .where((product) => product.name.trim().isNotEmpty)
+      final leads = (results[1] as List<Map<String, dynamic>>)
+          .map(_LeadOption.fromJson)
+          .where((lead) => lead.name.isNotEmpty && lead.isQuotable)
           .toList();
-      final salespeople = (results[2] as List<AppUser>)
-          .where(_isQuotationSalesperson)
+      final products = (results[2] as List<Map<String, dynamic>>)
+          .map(_ProductOption.fromJson)
+          .where((product) => product.id.isNotEmpty && product.name.isNotEmpty)
+          .toList();
+      final salespeople = (results[3] as List<AppUser>)
+          .where((user) => user.id.trim().isNotEmpty)
           .toList();
 
       if (!mounted) return;
       setState(() {
         _customers = customers;
-        _apiProductOptions = products;
+        _leads = leads;
+        _products = products;
         _salespeople = salespeople;
-        _isOptionsLoading = false;
+        _selectedCustomer = customers.isNotEmpty ? customers.first : null;
+        _selectedSalesperson = _currentUserAsSalesperson(salespeople);
+        _applyCustomerDefaults(_selectedCustomer);
+        _isLoading = false;
       });
     } catch (error) {
       if (!mounted) return;
       setState(() {
-        _optionsErrorMessage = error.toString();
-        _isOptionsLoading = false;
+        _loadError = error.toString();
+        _isLoading = false;
       });
     }
   }
 
-  bool _isQuotationSalesperson(AppUser user) {
-    final values = [
-      user.role,
-      user.systemRole,
-      user.roleDetail?.name,
-    ].whereType<String>().map((value) => value.trim().toLowerCase());
-    return values.any(
-      (value) =>
-          value == 'sales_officer' ||
-          value == 'sales officer' ||
-          value == 'admin',
-    );
+  AppUser? _currentUserAsSalesperson(List<AppUser> salespeople) {
+    final currentId = _apiProvider.currentUser?.id?.trim();
+    if (currentId != null && currentId.isNotEmpty) {
+      for (final user in salespeople) {
+        if (user.id == currentId) return user;
+      }
+    }
+    return salespeople.isNotEmpty ? salespeople.first : null;
   }
 
-  static String _formatDate(DateTime value) {
-    return '${value.day.toString().padLeft(2, '0')}-${value.month.toString().padLeft(2, '0')}-${value.year}';
+  void _applyCustomerDefaults(CustomerModel? customer) {
+    if (customer == null) return;
+    _billingAddressController.text =
+        (customer.billingAddress ?? customer.address ?? '').trim();
+    _shippingAddressController.text =
+        (customer.deliveryAddress ?? customer.address ?? '').trim();
+    if ((customer.assignedSalesOfficerId ?? '').trim().isNotEmpty) {
+      for (final user in _salespeople) {
+        if (user.id == customer.assignedSalesOfficerId) {
+          _selectedSalesperson = user;
+          break;
+        }
+      }
+    }
   }
 
-  DateTime? _parseDate(String text) {
-    final parts = text.split('-');
-    if (parts.length != 3) return null;
-    final day = int.tryParse(parts[0]);
-    final month = int.tryParse(parts[1]);
-    final year = int.tryParse(parts[2]);
-    if (day == null || month == null || year == null) return null;
-    return DateTime(year, month, day);
-  }
-
-  String _toApiIsoDate(DateTime value) {
-    return DateTime.utc(value.year, value.month, value.day).toIso8601String();
-  }
-
-  Future<void> _pickDate({
-    required TextEditingController controller,
-    DateTime? initialDate,
-    DateTime? firstDate,
-    DateTime? lastDate,
-  }) async {
-    final now = DateTime.now();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: initialDate ?? now,
-      firstDate: firstDate ?? DateTime(now.year - 2),
-      lastDate: lastDate ?? DateTime(now.year + 10),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: Color(0xFF0B4A06),
-              onPrimary: Colors.white,
-              onSurface: Color(0xFF0F172A),
-            ),
-          ),
-          child: child ?? const SizedBox.shrink(),
-        );
-      },
-    );
-
-    if (picked == null) return;
-
-    setState(() {
-      controller.text = _formatDate(picked);
-    });
+  void _applyLeadDefaults(_LeadOption? lead) {
+    if (lead == null) return;
+    _billingAddressController.text = lead.address;
+    _shippingAddressController.text = lead.address;
+    if (lead.salespersonId.isNotEmpty) {
+      for (final user in _salespeople) {
+        if (user.id == lead.salespersonId) {
+          _selectedSalesperson = user;
+          break;
+        }
+      }
+    }
   }
 
   void _showSnack(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _quickAddCustomer() async {
+    final created = await showDialog<CustomerModel>(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.42),
+      builder: (context) => _QuickAddCustomerDialog(apiProvider: _apiProvider),
     );
+    if (created == null || !mounted) return;
+    setState(() {
+      _customers = [created, ..._customers];
+      _selectedCustomer = created;
+      _forCustomer = true;
+      _applyCustomerDefaults(created);
+    });
   }
 
-  CustomerModel? get _selectedCustomerModel {
-    for (final customer in _customers) {
-      if (customer.name == _selectedCustomer) return customer;
-    }
-    return null;
+  void _addProduct(_ProductOption product) {
+    final existingIndex =
+        _items.indexWhere((item) => item.product.id == product.id);
+    setState(() {
+      if (existingIndex >= 0) {
+        _items[existingIndex] = _items[existingIndex].copyWith(
+          quantity: _items[existingIndex].quantity + 1,
+        );
+      } else {
+        _items.add(_QuoteItem(product: product, quantity: 1));
+      }
+    });
   }
 
-  AppUser? get _selectedSalespersonModel {
-    for (final user in _salespeople) {
-      if (user.name == _selectedSalesperson) return user;
-    }
-    return null;
+  void _changeQuantity(int index, double delta) {
+    final item = _items[index];
+    final next = item.quantity + delta;
+    setState(() {
+      if (next <= 0) {
+        _items.removeAt(index);
+      } else {
+        _items[index] = item.copyWith(quantity: next);
+      }
+    });
   }
 
-  _QuotationCatalogItem? _selectedProductModel(_QuotationItemDraft item) {
-    for (final product in _apiProductOptions) {
-      if (product.name == item.productController.text.trim()) return product;
+  void _removeItem(int index) {
+    setState(() => _items.removeAt(index));
+  }
+
+  bool _validateStep({bool showMessage = true}) {
+    if (_step == 0) {
+      if (_forCustomer && _selectedCustomer == null) {
+        if (showMessage) _showSnack('Select a customer.');
+        return false;
+      }
+      if (!_forCustomer && _selectedLead == null) {
+        if (showMessage) _showSnack('Select a lead or prospect.');
+        return false;
+      }
+      if (_selectedSalesperson == null) {
+        if (showMessage) _showSnack('Select a salesperson.');
+        return false;
+      }
+      if (_validUntil.isBefore(_quotationDate)) {
+        if (showMessage) {
+          _showSnack('Valid until cannot be before quotation date.');
+        }
+        return false;
+      }
     }
-    return null;
+    if (_step == 1 && _items.isEmpty) {
+      if (showMessage) _showSnack('Add at least one product.');
+      return false;
+    }
+    return true;
+  }
+
+  void _nextStep() {
+    if (!_validateStep()) return;
+    if (_step < 2) setState(() => _step++);
+  }
+
+  void _previousStep() {
+    if (_step == 0) {
+      Navigator.of(context).maybePop();
+      return;
+    }
+    setState(() => _step--);
   }
 
   Future<void> _saveQuotation() async {
     if (_isSaving) return;
-
-    final customer = _selectedCustomerModel;
-    if (customer == null) {
-      _showSnack('Select a customer before saving.');
-      setState(() => _currentStep = 0);
+    if (!_validateStep()) return;
+    if (_items.isEmpty) {
+      _showSnack('Add at least one product.');
+      setState(() => _step = 1);
       return;
     }
 
-    final salesperson = _selectedSalespersonModel;
-    if (salesperson == null) {
-      _showSnack('Select a salesperson before saving.');
-      setState(() => _currentStep = 0);
-      return;
-    }
-
-    final quotationDate = _parseDate(_quotationDateController.text);
-    final validUntil = _parseDate(_validUntilController.text);
-    if (quotationDate == null || validUntil == null) {
-      _showSnack('Enter valid quotation dates.');
-      setState(() => _currentStep = 0);
-      return;
-    }
-
-    final requestItems = <Map<String, dynamic>>[];
-    for (final item in _items) {
-      final product = _selectedProductModel(item);
-      if (product == null || product.id.isEmpty) {
-        _showSnack('Select a product for every quotation item.');
-        setState(() => _currentStep = 2);
-        return;
-      }
-
-      final quantity = _parseNumber(item.quantityController.text);
-      if (quantity <= 0) {
-        _showSnack('Quantity must be greater than zero.');
-        setState(() => _currentStep = 2);
-        return;
-      }
-
-      requestItems.add({
-        'product_id': product.id,
-        'variant_id': product.variantId,
-        'quantity': quantity,
-        'uom': item.uomController.text.trim(),
-        'unit_price': _parseNumber(item.unitPriceController.text),
-        'discount': _parsePercent(item.discountController.text),
-        'tax_rate': _parsePercent(item.taxController.text),
-      });
-    }
-
-    final now = DateTime.now();
-    final request = {
-      'quotation_number': 'QT-${now.millisecondsSinceEpoch}',
-      'quotation_date': _toApiIsoDate(quotationDate),
-      'valid_until': _toApiIsoDate(validUntil),
-      'customer_id': customer.id,
+    final request = <String, dynamic>{
+      'quotation_number': 'QT-${DateTime.now().millisecondsSinceEpoch}',
+      'quotation_date': _apiDate(_quotationDate),
+      'valid_until': _apiDate(_validUntil),
+      'currency': _currency,
+      'status': 'draft',
+      'salesperson_id': _selectedSalesperson!.id,
       'billing_address': _billingAddressController.text.trim(),
-      'salesperson_id': salesperson.id,
-      'currency': _selectedCurrency,
       'shipping_address': _shippingAddressController.text.trim(),
-      'payment_terms': _selectedPaymentTerm,
-      'delivery_terms': _deliveryTermsController.text.trim(),
+      'payment_terms': _paymentTerms,
+      'delivery_terms': _deliveryTerms,
       'notes': _notesController.text.trim(),
-      'terms_conditions': _termsConditionsController.text.trim(),
-      'status': 'Draft',
-      'items': requestItems,
+      'terms_conditions': _termsController.text.trim(),
+      'items': _items.map((item) => item.toApi()).toList(),
     };
+    if (_forCustomer) {
+      request['customer_id'] = _selectedCustomer!.id;
+    } else {
+      request['customer_id'] = '';
+      request['lead_id'] = _selectedLead!.id;
+      request['lead_name'] = _selectedLead!.name;
+    }
 
     setState(() => _isSaving = true);
     try {
       await _apiProvider.createQuotation(request: request);
       if (!mounted) return;
-      _showSnack('Quotation created');
+      _showSnack('Quotation saved');
       Navigator.of(context).pop(true);
     } catch (error) {
       if (!mounted) return;
-      _showSnack('Failed to create quotation: $error');
+      _showSnack('Failed to save quotation: $error');
     } finally {
-      if (mounted) {
-        setState(() => _isSaving = false);
-      }
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 
-  void _onItemChanged() {
-    _syncComputedFields();
-    if (mounted) {
-      setState(() {});
+  void _handleSalesManagerSidebarSelection(String action) {
+    Navigator.of(context).maybePop();
+    if (action == 'Quotations' || action == 'Quotation') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const AdminQuotationsScreen(useSalesManagerShell: true),
+        ),
+      );
+      return;
     }
-  }
-
-  void _addItem() {
-    setState(() {
-      final item = _QuotationItemDraft();
-      item.attachRebuild(_onItemChanged);
-      _items.add(item);
-      _syncComputedFields();
-    });
-  }
-
-  void _removeItem(int index) {
-    if (_items.length == 1) return;
-    setState(() {
-      final item = _items.removeAt(index);
-      item.dispose();
-    });
-  }
-
-  void _handleCustomerSelection(String? customerName) {
-    CustomerModel? customer;
-    for (final option in _customers) {
-      if (option.name == customerName) {
-        customer = option;
-        break;
-      }
+    if (action == 'Dashboard') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerDashboardScreen()),
+      );
+      return;
     }
-
-    setState(() {
-      _selectedCustomer = customerName;
-      if (customer != null) {
-        _billingAddressController.text =
-            customer.billingAddress ?? customer.address ?? '';
-        _shippingAddressController.text =
-            customer.deliveryAddress ?? customer.billingAddress ?? '';
-      }
-    });
-  }
-
-  void _handleProductSelection(_QuotationItemDraft item, String? productName) {
-    _QuotationCatalogItem? product;
-    for (final option in _apiProductOptions) {
-      if (option.name == productName) {
-        product = option;
-        break;
-      }
+    if (action == 'Customers') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const CustomersScreen(useSalesManagerShell: true),
+        ),
+      );
+      return;
     }
-
-    item.productController.text = product?.name ?? '';
-    item.skuController.text = product?.sku ?? '';
-    if (product != null) {
-      item.uomController.text = product.uom;
-      item.unitPriceController.text = product.unitPrice == 0
-          ? ''
-          : product.unitPrice.toStringAsFixed(2);
-      item.taxController.text = _formatTaxValue(product.taxRate);
+    if (action == 'Leads') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const AdminLeadsScreen(useSalesManagerShell: true),
+        ),
+      );
+      return;
     }
-    _syncComputedFields();
-    if (mounted) {
-      setState(() {});
+    if (action == 'Create Order') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const NewAdminOrderScreen(useSalesManagerShell: true),
+        ),
+      );
+      return;
     }
-  }
-
-  String _currencyPrefix() {
-    if (_selectedCurrency == 'INR') return 'INR ';
-    if (_selectedCurrency == 'GBP') return 'GBP ';
-
-    switch (_selectedCurrency) {
-      case 'USD':
-        return '\$';
-      case 'EUR':
-        return '€';
-      case 'AED':
-        return 'AED ';
-      case 'SGD':
-        return 'S\$';
-      case 'GBP':
-        return '£';
-      case 'INR':
-      default:
-        return '₹';
+    if (action == 'Sales Orders') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const AdminOrdersScreen(useSalesManagerShell: true),
+        ),
+      );
+      return;
     }
-  }
-
-  double _parseNumber(String text) {
-    final sanitized = text.trim().replaceAll(RegExp(r'[^0-9.\-]'), '');
-    return double.tryParse(sanitized) ?? 0;
-  }
-
-  double _parsePercent(String text) {
-    return double.tryParse(text.replaceAll('%', '').trim()) ?? 0;
-  }
-
-  String _formatTaxValue(double value) {
-    final normalized = value.toStringAsFixed(value % 1 == 0 ? 0 : 2);
-    return '$normalized%';
-  }
-
-  void _syncComputedFields() {
-    for (final item in _items) {
-      item.lineTotalController.text = _lineTotal(item).toStringAsFixed(2);
+    if (action == 'Stock') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerStockScreen()),
+      );
+      return;
     }
-  }
-
-  double _lineTotal(_QuotationItemDraft item) {
-    final quantity = _parseNumber(item.quantityController.text);
-    final unitPrice = _parseNumber(item.unitPriceController.text);
-    final discount = _parsePercent(item.discountController.text);
-    final tax = _parsePercent(item.taxController.text);
-    final subtotal = quantity * unitPrice;
-    final discounted = subtotal - (subtotal * discount / 100);
-    final taxed = discounted + (discounted * tax / 100);
-    return taxed < 0 ? 0 : taxed;
-  }
-
-  double get _quotationTotal {
-    return _items.fold<double>(0, (sum, item) => sum + _lineTotal(item));
+    if (action == 'Follow-ups' || action == 'Follow-Ups') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerFollowUpsScreen()),
+      );
+      return;
+    }
+    if (action == 'Attendance') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerAttendanceScreen()),
+      );
+      return;
+    }
+    if (action == 'Visits') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerVisitsScreen()),
+      );
+      return;
+    }
+    if (action == 'My Performance') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const SalesManagerPerformanceScreen(),
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: AppColors.background,
-      drawer: const AppDrawer(activeItem: 'Quotation'),
+      backgroundColor: const Color(0xFFF6F8FC),
+      drawer: widget.useSalesManagerShell
+          ? SalesManagerSidebarDrawer(
+              currentPage: 'Quotations',
+              onSelect: _handleSalesManagerSidebarSelection,
+            )
+          : const AppDrawer(activeItem: 'Quotation'),
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final isCompact = constraints.maxWidth < 980;
-
-            return Column(
-              children: [
-                AdminTopBar(
-                  title: 'Quotations',
-                  leadingIcon: Icons.arrow_back_rounded,
-                  onLeadingTap: () => Navigator.of(context).maybePop(),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(18, 10, 18, 18),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(28),
-                        border: Border.all(color: const Color(0xFFE5E7EB)),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.04),
-                            blurRadius: 18,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      child: isCompact
-                          ? Column(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.fromLTRB(
-                                    18,
-                                    18,
-                                    18,
-                                    14,
-                                  ),
-                                  child: _buildCompactStepper(),
-                                ),
-                                const Divider(
-                                  height: 1,
-                                  color: Color(0xFFE5E7EB),
-                                ),
-                                Expanded(child: _buildFormPanel(context)),
-                              ],
-                            )
-                          : Row(
-                              children: [
-                                SizedBox(
-                                  width: 320,
-                                  child: _buildDesktopStepper(),
-                                ),
-                                const VerticalDivider(
-                                  width: 1,
-                                  color: Color(0xFFE5E7EB),
-                                ),
-                                Expanded(child: _buildFormPanel(context)),
-                              ],
-                            ),
-                    ),
+        child: Column(
+          children: [
+            widget.useSalesManagerShell
+                ? const SalesManagerTopBar(title: 'Create Quotation')
+                : AdminTopBar(
+                    title: 'Create Quotation',
+                    leadingIcon: Icons.arrow_back_rounded,
+                    onLeadingTap: () => Navigator.of(context).maybePop(),
                   ),
-                ),
-              ],
-            );
-          },
+            Expanded(
+              child: _isLoading
+                  ? const _CenteredState(
+                      icon: Icons.receipt_long_outlined,
+                      title: 'Loading quotation form',
+                      message: 'Fetching customers, leads, products and staff.',
+                    )
+                  : _loadError != null
+                      ? _CenteredState(
+                          icon: Icons.error_outline_rounded,
+                          title: 'Unable to load quotation form',
+                          message: _loadError!,
+                          actionLabel: 'Retry',
+                          onAction: _loadData,
+                        )
+                      : _buildContent(),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildFormPanel(BuildContext context) {
-    final step = _steps[_currentStep];
+  Widget _buildContent() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final wide = constraints.maxWidth >= 900;
+        final maxWidth = wide ? 860.0 : constraints.maxWidth;
+        return Center(
+          child: SizedBox(
+            width: maxWidth,
+            child: Column(
+              children: [
+                _buildStepper(),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.fromLTRB(
+                      wide ? 24 : 16,
+                      10,
+                      wide ? 24 : 16,
+                      16,
+                    ),
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 220),
+                      child: KeyedSubtree(
+                        key: ValueKey<int>(_step),
+                        child: _step == 0
+                            ? _buildDetailsStep()
+                            : _step == 1
+                                ? _buildItemsStep()
+                                : _buildReviewStep(),
+                      ),
+                    ),
+                  ),
+                ),
+                _buildBottomActions(),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(22, 22, 22, 16),
-          child: Row(
+  Widget _buildStepper() {
+    final labels = const ['Details', 'Items', 'Review'];
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      padding: const EdgeInsets.fromLTRB(18, 12, 18, 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 18,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          for (var i = 0; i < labels.length; i++)
+            Expanded(
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          height: 2,
+                          color: i == 0
+                              ? Colors.transparent
+                              : (_step >= i
+                                  ? const Color(0xFF284BFF)
+                                  : AppColors.border),
+                        ),
+                      ),
+                      Container(
+                        width: 22,
+                        height: 22,
+                        decoration: BoxDecoration(
+                          color:
+                              _step >= i ? const Color(0xFF284BFF) : Colors.white,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: _step >= i
+                                ? const Color(0xFF284BFF)
+                                : AppColors.borderStrong,
+                          ),
+                        ),
+                        child: Center(
+                          child: _step > i
+                              ? const Icon(
+                                  Icons.check_rounded,
+                                  size: 14,
+                                  color: Colors.white,
+                                )
+                              : Text(
+                                  '${i + 1}',
+                                  style: TextStyle(
+                                    color: _step >= i
+                                        ? Colors.white
+                                        : AppColors.textMuted,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Container(
+                          height: 2,
+                          color: i == labels.length - 1
+                              ? Colors.transparent
+                              : (_step > i
+                                  ? const Color(0xFF284BFF)
+                                  : AppColors.border),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    labels[i],
+                    style: TextStyle(
+                      color:
+                          _step == i ? const Color(0xFF1234D8) : AppColors.textMuted,
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailsStep() {
+    return _SectionCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const _SectionTitle('Quotation For'),
+          _SegmentedChoice(
+            firstLabel: 'Customer',
+            secondLabel: 'Lead / Prospect',
+            firstSelected: _forCustomer,
+            onFirst: () => setState(() => _forCustomer = true),
+            onSecond: () => setState(() => _forCustomer = false),
+          ),
+          const SizedBox(height: 14),
+          if (_forCustomer)
+            _SelectTile(
+              label: 'Customer',
+              value: _selectedCustomer?.name,
+              hint: 'Select customer',
+              icon: Icons.business_outlined,
+              onTap: _showCustomerPicker,
+              trailing: IconButton(
+                onPressed: _quickAddCustomer,
+                icon: const Icon(Icons.add_rounded, color: Color(0xFF284BFF)),
+              ),
+            )
+          else
+            _SelectTile(
+              label: 'Lead / Prospect',
+              value: _selectedLead?.name,
+              hint: 'Select lead',
+              icon: Icons.person_add_alt_1_outlined,
+              onTap: _showLeadPicker,
+            ),
+          const SizedBox(height: 12),
+          _SelectTile(
+            label: 'Salesperson',
+            value: _selectedSalesperson?.name,
+            hint: 'Select salesperson',
+            icon: Icons.person_outline_rounded,
+            onTap: _showSalespersonPicker,
+          ),
+          const SizedBox(height: 12),
+          _SelectTile(
+            label: 'Currency',
+            value: _currency == 'INR' ? 'INR - Indian Rupee' : _currency,
+            hint: 'Select currency',
+            icon: Icons.currency_rupee_rounded,
+            onTap: _showCurrencyPicker,
+          ),
+          const SizedBox(height: 12),
+          Row(
             children: [
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      step.title,
-                      style: const TextStyle(
-                        color: Color(0xFF0F172A),
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      _stepSubtitle(_currentStep),
-                      style: const TextStyle(
-                        color: Color(0xFF64748B),
-                        fontSize: 13.5,
-                      ),
-                    ),
-                  ],
+                child: _DateTile(
+                  label: 'Quotation Date',
+                  value: _formatDate(_quotationDate),
+                  onTap: () => _pickDate(isValidUntil: false),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _DateTile(
+                  label: 'Valid Until',
+                  value: _formatDate(_validUntil),
+                  onTap: () => _pickDate(isValidUntil: true),
                 ),
               ),
             ],
           ),
-        ),
-        const Divider(height: 1, color: Color(0xFFE5E7EB)),
-        Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(22, 20, 22, 22),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (_isOptionsLoading) ...[
-                  const LinearProgressIndicator(
-                    minHeight: 3,
-                    color: Color(0xFF0B4A06),
+          const SizedBox(height: 12),
+          _SelectTile(
+            label: 'Payment Terms',
+            value: _paymentTerms,
+            hint: 'Payment terms',
+            icon: Icons.payments_outlined,
+            onTap: _showPaymentPicker,
+          ),
+          const SizedBox(height: 12),
+          _SelectTile(
+            label: 'Delivery Terms',
+            value: _deliveryTerms,
+            hint: 'Delivery terms',
+            icon: Icons.local_shipping_outlined,
+            onTap: _showDeliveryPicker,
+          ),
+          const SizedBox(height: 12),
+          _AppTextField(
+            label: 'Billing Address',
+            controller: _billingAddressController,
+            minLines: 2,
+            maxLines: 3,
+          ),
+          const SizedBox(height: 12),
+          _AppTextField(
+            label: 'Shipping Address',
+            controller: _shippingAddressController,
+            minLines: 2,
+            maxLines: 3,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildItemsStep() {
+    final query = _searchController.text.trim().toLowerCase();
+    final visibleProducts = _products.where((product) {
+      if (query.isEmpty) return true;
+      return product.name.toLowerCase().contains(query) ||
+          product.sku.toLowerCase().contains(query);
+    }).toList();
+
+    return Column(
+      children: [
+        _SectionCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const _SectionTitle('Add Products'),
+              const SizedBox(height: 10),
+              TextField(
+                controller: _searchController,
+                onChanged: (_) => setState(() {}),
+                decoration: _inputDecoration(
+                  'Search products...',
+                  prefixIcon: Icons.search_rounded,
+                ),
+              ),
+              const SizedBox(height: 12),
+              if (visibleProducts.isEmpty)
+                const _EmptyInline('No matching products found.')
+              else
+                for (var i = 0; i < visibleProducts.take(8).length; i++) ...[
+                  _ProductPickerRow(
+                    product: visibleProducts[i],
+                    onAdd: () => _addProduct(visibleProducts[i]),
                   ),
-                  const SizedBox(height: 16),
+                  if (i != visibleProducts.take(8).length - 1)
+                    const SizedBox(height: 8),
                 ],
-                if (_optionsErrorMessage != null) ...[
-                  _OptionsErrorBanner(
-                    message: _optionsErrorMessage!,
-                    onRetry: _loadOptions,
-                  ),
-                  const SizedBox(height: 16),
-                ],
-                _buildCurrentStepForm(),
-              ],
-            ),
+            ],
           ),
         ),
-        const Divider(height: 1, color: Color(0xFFE5E7EB)),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(22, 18, 22, 18),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+        const SizedBox(height: 12),
+        _SectionCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextButton(
-                onPressed: _isSaving || _currentStep == 0
-                    ? null
-                    : () => setState(() => _currentStep--),
-                style: TextButton.styleFrom(
-                  foregroundColor: const Color(0xFF9CA3AF),
-                  backgroundColor: const Color(0xFFF3F4F6),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 14,
+              _SectionTitle('Added Items (${_items.length})'),
+              const SizedBox(height: 10),
+              if (_items.isEmpty)
+                const _EmptyInline('Add products to build this quotation.')
+              else
+                for (var i = 0; i < _items.length; i++) ...[
+                  _QuoteItemRow(
+                    item: _items[i],
+                    onDecrease: () => _changeQuantity(i, -1),
+                    onIncrease: () => _changeQuantity(i, 1),
+                    onRemove: () => _removeItem(i),
                   ),
+                  if (i != _items.length - 1) const SizedBox(height: 8),
+                ],
+              if (_items.isNotEmpty) ...[
+                const SizedBox(height: 14),
+                _TotalsPanel(
+                  subtotal: _subtotal,
+                  discount: _discountTotal,
+                  tax: _taxTotal,
+                  total: _grandTotal,
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildReviewStep() {
+    final customerName =
+        _forCustomer ? (_selectedCustomer?.name ?? '-') : (_selectedLead?.name ?? '-');
+    return Column(
+      children: [
+        _SectionCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const _SectionTitle('Customer & Details'),
+              _ReviewRow('Customer', customerName),
+              _ReviewRow('Salesperson', _selectedSalesperson?.name ?? '-'),
+              _ReviewRow('Currency', _currency),
+              _ReviewRow('Quotation Date', _formatDate(_quotationDate)),
+              _ReviewRow('Valid Until', _formatDate(_validUntil)),
+              _ReviewRow('Payment Terms', _paymentTerms),
+              _ReviewRow('Delivery Terms', _deliveryTerms),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        _SectionCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _SectionTitle('Items (${_items.length})'),
+              const SizedBox(height: 10),
+              for (final item in _items) ...[
+                _ReviewItemRow(item: item),
+                const SizedBox(height: 8),
+              ],
+              const Divider(height: 22, color: AppColors.border),
+              _TotalsPanel(
+                subtotal: _subtotal,
+                discount: _discountTotal,
+                tax: _taxTotal,
+                total: _grandTotal,
+                compact: true,
+              ),
+              const SizedBox(height: 12),
+              _AppTextField(
+                label: 'Notes',
+                controller: _notesController,
+                minLines: 2,
+                maxLines: 3,
+              ),
+              const SizedBox(height: 12),
+              _AppTextField(
+                label: 'Terms & Conditions',
+                controller: _termsController,
+                minLines: 2,
+                maxLines: 3,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBottomActions() {
+    return SafeArea(
+      top: false,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: const Border(top: BorderSide(color: AppColors.border)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 16,
+              offset: const Offset(0, -8),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: _isSaving ? null : _previousStep,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.textPrimary,
+                  side: const BorderSide(color: AppColors.border),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(999),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text('Back'),
+                child: Text(_step == 0 ? 'Cancel' : 'Back'),
               ),
-              const SizedBox(width: 12),
-              ElevatedButton(
-                onPressed: _isSaving
-                    ? null
-                    : () {
-                        if (_currentStep < _steps.length - 1) {
-                          setState(() => _currentStep++);
-                          return;
-                        }
-                        _saveQuotation();
-                      },
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: ElevatedButton(
+                onPressed:
+                    _isSaving ? null : (_step == 2 ? _saveQuotation : _nextStep),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0B4A06),
+                  backgroundColor: const Color(0xFF284BFF),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 14,
-                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  elevation: 0,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(999),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
                 child: Text(
                   _isSaving
                       ? 'Saving...'
-                      : _currentStep < _steps.length - 1
-                      ? 'Next'
-                      : 'Save Quotation',
+                      : _step == 2
+                          ? 'Save Quotation'
+                          : 'Next',
                 ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDesktopStepper() {
-    return Container(
-      color: const Color(0xFFFAFAFA),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 20, 16, 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Quotation Steps',
-              style: TextStyle(
-                color: Color(0xFF0F172A),
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
               ),
             ),
-            const SizedBox(height: 18),
-            for (var i = 0; i < _steps.length; i++) ...[
-              _CircleStepTile(
-                index: i + 1,
-                title: _steps[i].title,
-                icon: _steps[i].icon,
-                selected: _currentStep == i,
-                completed: _currentStep > i,
-                onTap: () => setState(() => _currentStep = i),
-              ),
-              if (i != _steps.length - 1)
-                Container(
-                  margin: const EdgeInsets.only(left: 22),
-                  width: 2,
-                  height: 28,
-                  color: const Color(0xFFE5E7EB),
-                ),
-            ],
           ],
         ),
       ),
     );
   }
 
-  Widget _buildCompactStepper() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Quotation Steps',
+  Future<void> _pickDate({required bool isValidUntil}) async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: isValidUntil ? _validUntil : _quotationDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+    );
+    if (picked == null) return;
+    setState(() {
+      if (isValidUntil) {
+        _validUntil = picked;
+      } else {
+        _quotationDate = picked;
+        if (_validUntil.isBefore(picked)) {
+          _validUntil = picked.add(const Duration(days: 14));
+        }
+      }
+    });
+  }
+
+  Future<void> _showCustomerPicker() async {
+    final customer = await _showOptionSheet<CustomerModel>(
+      title: 'Select customer',
+      items: _customers,
+      label: (customer) => customer.name,
+      subtitle: (customer) => customer.phone ?? customer.email ?? '',
+    );
+    if (customer == null) return;
+    setState(() {
+      _selectedCustomer = customer;
+      _applyCustomerDefaults(customer);
+    });
+  }
+
+  Future<void> _showLeadPicker() async {
+    final lead = await _showOptionSheet<_LeadOption>(
+      title: 'Select lead',
+      items: _leads,
+      label: (lead) => lead.name,
+      subtitle: (lead) => lead.phone,
+    );
+    if (lead == null) return;
+    setState(() {
+      _selectedLead = lead;
+      _applyLeadDefaults(lead);
+    });
+  }
+
+  Future<void> _showSalespersonPicker() async {
+    final user = await _showOptionSheet<AppUser>(
+      title: 'Select salesperson',
+      items: _salespeople,
+      label: (user) => user.name,
+      subtitle: (user) => user.email,
+    );
+    if (user == null) return;
+    setState(() => _selectedSalesperson = user);
+  }
+
+  Future<void> _showCurrencyPicker() async {
+    final value = await _showTextOptions(
+      'Select currency',
+      const ['INR', 'USD', 'AED', 'SGD', 'GBP'],
+    );
+    if (value != null) setState(() => _currency = value);
+  }
+
+  Future<void> _showPaymentPicker() async {
+    final value = await _showTextOptions(
+      'Payment terms',
+      const ['Net 15', 'Net 30', 'Advance', 'Immediate', 'Due on Receipt'],
+    );
+    if (value != null) setState(() => _paymentTerms = value);
+  }
+
+  Future<void> _showDeliveryPicker() async {
+    final value = await _showTextOptions(
+      'Delivery terms',
+      const [
+        'Standard delivery',
+        'Express delivery',
+        'Customer pickup',
+        'Delivery within 2 business days',
+      ],
+    );
+    if (value != null) setState(() => _deliveryTerms = value);
+  }
+
+  Future<String?> _showTextOptions(String title, List<String> items) {
+    return _showOptionSheet<String>(
+      title: title,
+      items: items,
+      label: (value) => value,
+      subtitle: (_) => '',
+    );
+  }
+
+  Future<T?> _showOptionSheet<T>({
+    required String title,
+    required List<T> items,
+    required String Function(T item) label,
+    required String Function(T item) subtitle,
+  }) {
+    return showModalBottomSheet<T>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          margin: const EdgeInsets.all(12),
+          constraints: const BoxConstraints(maxHeight: 520),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(18, 16, 10, 10),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.close_rounded),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1, color: AppColors.border),
+              Flexible(
+                child: items.isEmpty
+                    ? const Padding(
+                        padding: EdgeInsets.all(18),
+                        child: _EmptyInline('No options available.'),
+                      )
+                    : ListView.separated(
+                        shrinkWrap: true,
+                        padding: const EdgeInsets.all(10),
+                        itemCount: items.length,
+                        separatorBuilder: (_, _) => const SizedBox(height: 6),
+                        itemBuilder: (context, index) {
+                          final item = items[index];
+                          final sub = subtitle(item).trim();
+                          return ListTile(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            tileColor: const Color(0xFFF8FAFC),
+                            title: Text(
+                              label(item),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w800,
+                                fontSize: 13,
+                              ),
+                            ),
+                            subtitle: sub.isEmpty
+                                ? null
+                                : Text(sub, style: const TextStyle(fontSize: 11)),
+                            onTap: () => Navigator.of(context).pop(item),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  double get _subtotal => _items.fold(0, (sum, item) => sum + item.subtotal);
+  double get _discountTotal =>
+      _items.fold(0, (sum, item) => sum + item.discountAmount);
+  double get _taxTotal => _items.fold(0, (sum, item) => sum + item.taxAmount);
+  double get _grandTotal => _subtotal - _discountTotal + _taxTotal;
+}
+
+class _QuickAddCustomerDialog extends StatefulWidget {
+  final ApiProvider apiProvider;
+
+  const _QuickAddCustomerDialog({required this.apiProvider});
+
+  @override
+  State<_QuickAddCustomerDialog> createState() => _QuickAddCustomerDialogState();
+}
+
+class _QuickAddCustomerDialogState extends State<_QuickAddCustomerDialog> {
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+  bool _saving = false;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _phoneController.dispose();
+    _emailController.dispose();
+    _addressController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final name = _nameController.text.trim();
+    final phone = _phoneController.text.trim();
+    if (name.isEmpty || phone.isEmpty || _saving) return;
+    setState(() => _saving = true);
+    try {
+      final customer = await widget.apiProvider.createCustomer(
+        request: CustomerCreateRequest(
+          name: name,
+          businessName: name,
+          phone: phone,
+          email: _emailController.text.trim(),
+          billingAddress: _addressController.text.trim(),
+          deliveryAddress: _addressController.text.trim(),
+        ),
+      );
+      if (mounted) Navigator.of(context).pop(customer);
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to add customer: $error')),
+      );
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.all(18),
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 430),
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(22),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.18),
+              blurRadius: 28,
+              offset: const Offset(0, 16),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    'Add Customer',
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: const Icon(Icons.close_rounded),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            _AppTextField(label: 'Customer Name *', controller: _nameController),
+            const SizedBox(height: 10),
+            _AppTextField(
+              label: 'Phone *',
+              controller: _phoneController,
+              keyboardType: TextInputType.phone,
+            ),
+            const SizedBox(height: 10),
+            _AppTextField(
+              label: 'Email',
+              controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
+            ),
+            const SizedBox(height: 10),
+            _AppTextField(
+              label: 'Billing Address',
+              controller: _addressController,
+              minLines: 2,
+              maxLines: 3,
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: _saving ? null : () => Navigator.of(context).pop(),
+                    child: const Text('Cancel'),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _saving ? null : _save,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF284BFF),
+                      foregroundColor: Colors.white,
+                    ),
+                    child: Text(_saving ? 'Saving...' : 'Save'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SectionCard extends StatelessWidget {
+  final Widget child;
+
+  const _SectionCard({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.035),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+}
+
+class _SectionTitle extends StatelessWidget {
+  final String text;
+
+  const _SectionTitle(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: const TextStyle(
+        color: AppColors.textPrimary,
+        fontSize: 15,
+        fontWeight: FontWeight.w900,
+      ),
+    );
+  }
+}
+
+class _SegmentedChoice extends StatelessWidget {
+  final String firstLabel;
+  final String secondLabel;
+  final bool firstSelected;
+  final VoidCallback onFirst;
+  final VoidCallback onSecond;
+
+  const _SegmentedChoice({
+    required this.firstLabel,
+    required this.secondLabel,
+    required this.firstSelected,
+    required this.onFirst,
+    required this.onSecond,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(top: 10),
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(13),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _SegmentButton(
+              label: firstLabel,
+              selected: firstSelected,
+              onTap: onFirst,
+            ),
+          ),
+          Expanded(
+            child: _SegmentButton(
+              label: secondLabel,
+              selected: !firstSelected,
+              onTap: onSecond,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SegmentButton extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _SegmentButton({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(10),
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: selected ? const Color(0xFF284BFF) : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
           style: TextStyle(
-            color: Color(0xFF0F172A),
-            fontSize: 16,
+            color: selected ? Colors.white : AppColors.textSecondary,
+            fontSize: 12,
             fontWeight: FontWeight.w800,
           ),
         ),
-        const SizedBox(height: 14),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              for (var i = 0; i < _steps.length; i++) ...[
-                _CompactCircleStep(
-                  index: i + 1,
-                  title: _steps[i].title,
-                  icon: _steps[i].icon,
-                  selected: _currentStep == i,
-                  completed: _currentStep > i,
-                  onTap: () => setState(() => _currentStep = i),
-                ),
-                if (i != _steps.length - 1)
-                  Container(
-                    width: 32,
-                    height: 2,
-                    color: const Color(0xFFE5E7EB),
-                  ),
-              ],
-            ],
-          ),
-        ),
-      ],
+      ),
     );
   }
+}
 
-  String _stepSubtitle(int step) {
-    switch (step) {
-      case 0:
-        return 'Dates, customer, addresses, currency, and sales ownership.';
-      case 1:
-        return 'Terms, delivery notes, and quotation conditions.';
-      case 2:
-      default:
-        return 'Add products, quantities, and pricing details.';
-    }
-  }
+class _SelectTile extends StatelessWidget {
+  final String label;
+  final String? value;
+  final String hint;
+  final IconData icon;
+  final VoidCallback onTap;
+  final Widget? trailing;
 
-  Widget _buildCurrentStepForm() {
-    switch (_currentStep) {
-      case 0:
-        return _buildQuotationDetailsStep();
-      case 1:
-        return _buildTermsDetailsStep();
-      case 2:
-      default:
-        return _buildItemsStep();
-    }
-  }
+  const _SelectTile({
+    required this.label,
+    required this.value,
+    required this.hint,
+    required this.icon,
+    required this.onTap,
+    this.trailing,
+  });
 
-  Widget _buildQuotationDetailsStep() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final stacked = constraints.maxWidth < 700;
-
-        final children = [
-          _FormDateField(
-            label: 'Quotation Date *',
-            controller: _quotationDateController,
-            hintText: 'dd-mm-yyyy',
-            onTap: () {
-              _pickDate(
-                controller: _quotationDateController,
-                initialDate:
-                    _parseDate(_quotationDateController.text) ?? DateTime.now(),
-              );
-            },
-          ),
-          _FormDateField(
-            label: 'Valid Until *',
-            controller: _validUntilController,
-            hintText: 'dd-mm-yyyy',
-            onTap: () {
-              final initial =
-                  _parseDate(_validUntilController.text) ??
-                  DateTime.now().add(const Duration(days: 15));
-              _pickDate(
-                controller: _validUntilController,
-                initialDate: initial,
-                firstDate: DateTime.now(),
-              );
-            },
-          ),
-          _FormDropdown(
-            label: 'Customer *',
-            value: _selectedCustomer,
-            hintText: 'Select customer',
-            items: _customers.map((customer) => customer.name).toList(),
-            onChanged: _handleCustomerSelection,
-          ),
-          _FormField(
-            label: 'Billing Address *',
-            controller: _billingAddressController,
-            hintText: 'Enter billing address',
-          ),
-          _FormField(
-            label: 'Shipping Address',
-            controller: _shippingAddressController,
-            hintText: 'Enter shipping address',
-          ),
-          _FormDropdown(
-            label: 'Salesperson *',
-            value: _selectedSalesperson,
-            hintText: 'Select salesperson',
-            items: _salespeople.map((user) => user.name).toList(),
-            onChanged: (value) => setState(() => _selectedSalesperson = value),
-          ),
-          _FormDropdown(
-            label: 'Currency *',
-            value: _selectedCurrency,
-            hintText: 'Select currency',
-            items: _currencyOptions,
-            onChanged: (value) {
-              if (value == null) return;
-              setState(() {
-                _selectedCurrency = value;
-                _syncComputedFields();
-              });
-            },
-          ),
-        ];
-
-        if (stacked) {
-          return Column(
-            children: [
-              for (var i = 0; i < children.length; i++) ...[
-                children[i],
-                if (i != children.length - 1) const SizedBox(height: 18),
-              ],
-            ],
-          );
-        }
-
-        return Column(
-          children: [
-            Row(
-              children: [
-                Expanded(child: children[0]),
-                const SizedBox(width: 18),
-                Expanded(child: children[1]),
-              ],
-            ),
-            const SizedBox(height: 18),
-            Row(
-              children: [
-                Expanded(child: children[2]),
-                const SizedBox(width: 18),
-                Expanded(child: children[3]),
-              ],
-            ),
-            const SizedBox(height: 18),
-            Row(
-              children: [
-                Expanded(child: children[4]),
-                const SizedBox(width: 18),
-                Expanded(child: children[5]),
-              ],
-            ),
-            const SizedBox(height: 18),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: SizedBox(width: 360, child: children[6]),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildTermsDetailsStep() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final stacked = constraints.maxWidth < 700;
-
-        final paymentDropdown = _FormDropdown(
-          label: 'Payment Terms *',
-          value: _selectedPaymentTerm,
-          hintText: 'Select payment terms',
-          items: _paymentOptions,
-          onChanged: (value) {
-            if (value == null) return;
-            setState(() => _selectedPaymentTerm = value);
-          },
-        );
-
-        final deliveryDropdown = _FormDropdown(
-          label: 'Delivery Terms',
-          value: _deliveryTermsController.text.isEmpty
-              ? null
-              : _deliveryTermsController.text,
-          hintText: 'Select delivery terms',
-          items: _deliveryOptions,
-          onChanged: (value) {
-            setState(() => _deliveryTermsController.text = value ?? '');
-          },
-        );
-
-        final notesField = _FormField(
-          label: 'Notes',
-          controller: _notesController,
-          hintText: 'Internal remarks',
-          maxLines: 5,
-        );
-
-        final termsField = _FormField(
-          label: 'Terms & Conditions',
-          controller: _termsConditionsController,
-          hintText: 'Terms printed on quotation',
-          maxLines: 5,
-        );
-
-        if (stacked) {
-          return Column(
-            children: [
-              paymentDropdown,
-              const SizedBox(height: 18),
-              deliveryDropdown,
-              const SizedBox(height: 18),
-              notesField,
-              const SizedBox(height: 18),
-              termsField,
-            ],
-          );
-        }
-
-        return Column(
-          children: [
-            Row(
-              children: [
-                Expanded(child: paymentDropdown),
-                const SizedBox(width: 18),
-                Expanded(child: deliveryDropdown),
-              ],
-            ),
-            const SizedBox(height: 18),
-            notesField,
-            const SizedBox(height: 18),
-            termsField,
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildItemsStep() {
+  @override
+  Widget build(BuildContext context) {
+    final hasValue = (value ?? '').trim().isNotEmpty;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text(
-                    'Quotation Items',
-                    style: TextStyle(
-                      color: Color(0xFF0F172A),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    'Add products or services for this estimate.',
-                    style: TextStyle(color: Color(0xFF64748B), fontSize: 13),
-                  ),
-                ],
-              ),
-            ),
-            OutlinedButton.icon(
-              onPressed: _addItem,
-              icon: const Icon(Icons.add, size: 18),
-              label: const Text('Add Item'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFF0F172A),
-                side: const BorderSide(color: Color(0xFFD1D5DB)),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(999),
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 14),
-        for (var i = 0; i < _items.length; i++) ...[
-          _QuotationItemCard(
-            index: i + 1,
-            item: _items[i],
-            productOptions: _apiProductOptions,
-            uomOptions: _uomOptions,
-            taxOptions: _taxOptions,
-            currencyPrefix: _currencyPrefix(),
-            canRemove: _items.length > 1,
-            onProductChanged: (value) =>
-                _handleProductSelection(_items[i], value),
-            onRemove: () => _removeItem(i),
-          ),
-          if (i != _items.length - 1) const SizedBox(height: 14),
-        ],
-        const SizedBox(height: 16),
-        Align(
-          alignment: Alignment.centerRight,
+        _FieldLabel(label),
+        const SizedBox(height: 6),
+        InkWell(
+          borderRadius: BorderRadius.circular(13),
+          onTap: onTap,
           child: Container(
-            width: 170,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            constraints: const BoxConstraints(minHeight: 48),
+            padding: const EdgeInsets.only(left: 12),
             decoration: BoxDecoration(
               color: const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFE5E7EB)),
+              borderRadius: BorderRadius.circular(13),
+              border: Border.all(color: AppColors.border),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                const Text(
-                  'Quotation Total',
-                  style: TextStyle(
-                    color: Color(0xFF0F172A),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
+                Icon(icon, size: 18, color: AppColors.textMuted),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    hasValue ? value! : hint,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color:
+                          hasValue ? AppColors.textSecondary : AppColors.textLightMuted,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  '${_currencyPrefix()}${_quotationTotal.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    color: Color(0xFF0B4A06),
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
+                trailing ??
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12),
+                      child: Icon(Icons.keyboard_arrow_down_rounded, size: 20),
+                    ),
               ],
             ),
           ),
@@ -1106,165 +1398,134 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
   }
 }
 
-class _QuotationStep {
-  final String title;
-  final IconData icon;
-
-  const _QuotationStep(this.title, this.icon);
-}
-
-class _CircleStepTile extends StatelessWidget {
-  final int index;
-  final String title;
-  final IconData icon;
-  final bool selected;
-  final bool completed;
+class _DateTile extends StatelessWidget {
+  final String label;
+  final String value;
   final VoidCallback onTap;
 
-  const _CircleStepTile({
-    required this.index,
-    required this.title,
-    required this.icon,
-    required this.selected,
-    required this.completed,
+  const _DateTile({
+    required this.label,
+    required this.value,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final circleColor = selected || completed
-        ? const Color(0xFF0B4A06)
-        : const Color(0xFFE5E7EB);
-    final iconColor = selected || completed
-        ? Colors.white
-        : const Color(0xFF6B7280);
-    final textColor = selected
-        ? const Color(0xFF0B4A06)
-        : const Color(0xFF64748B);
-
-    return InkWell(
+    return _SelectTile(
+      label: label,
+      value: value,
+      hint: label,
+      icon: Icons.calendar_today_outlined,
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-        decoration: BoxDecoration(
-          color: selected ? Colors.white : Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: selected ? const Color(0xFFD1D5DB) : Colors.transparent,
-          ),
+    );
+  }
+}
+
+class _AppTextField extends StatelessWidget {
+  final String label;
+  final TextEditingController controller;
+  final int minLines;
+  final int maxLines;
+  final TextInputType? keyboardType;
+
+  const _AppTextField({
+    required this.label,
+    required this.controller,
+    this.minLines = 1,
+    this.maxLines = 1,
+    this.keyboardType,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _FieldLabel(label),
+        const SizedBox(height: 6),
+        TextField(
+          controller: controller,
+          minLines: minLines,
+          maxLines: maxLines,
+          keyboardType: keyboardType,
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+          decoration: _inputDecoration('Enter $label'),
         ),
-        child: Row(
-          children: [
-            Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: circleColor,
-              ),
-              alignment: Alignment.center,
-              child: Icon(icon, size: 18, color: iconColor),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Step $index',
-                    style: TextStyle(
-                      color: textColor,
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    title,
-                    style: TextStyle(
-                      color: textColor,
-                      fontSize: 13.5,
-                      fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+      ],
+    );
+  }
+}
+
+class _FieldLabel extends StatelessWidget {
+  final String label;
+
+  const _FieldLabel(this.label);
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      label,
+      style: const TextStyle(
+        color: AppColors.textPrimary,
+        fontSize: 12,
+        fontWeight: FontWeight.w800,
       ),
     );
   }
 }
 
-class _CompactCircleStep extends StatelessWidget {
-  final int index;
-  final String title;
-  final IconData icon;
-  final bool selected;
-  final bool completed;
-  final VoidCallback onTap;
+class _ProductPickerRow extends StatelessWidget {
+  final _ProductOption product;
+  final VoidCallback onAdd;
 
-  const _CompactCircleStep({
-    required this.index,
-    required this.title,
-    required this.icon,
-    required this.selected,
-    required this.completed,
-    required this.onTap,
-  });
+  const _ProductPickerRow({required this.product, required this.onAdd});
 
   @override
   Widget build(BuildContext context) {
-    final circleColor = selected || completed
-        ? const Color(0xFF0B4A06)
-        : const Color(0xFFE5E7EB);
-    final iconColor = selected || completed
-        ? Colors.white
-        : const Color(0xFF6B7280);
-    final textColor = selected
-        ? const Color(0xFF0B4A06)
-        : const Color(0xFF64748B);
-
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(999),
-      child: Column(
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
         children: [
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: circleColor,
+          _ProductThumb(product.name),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  product.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${product.sku}  |  ${_money(product.unitPrice)}',
+                  style: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
             ),
-            alignment: Alignment.center,
-            child: Icon(icon, size: 18, color: iconColor),
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Step $index',
-            style: TextStyle(
-              color: textColor,
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 2),
-          SizedBox(
-            width: 88,
-            child: Text(
-              title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: textColor,
-                fontSize: 12.5,
-                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-              ),
+          IconButton.filled(
+            onPressed: onAdd,
+            icon: const Icon(Icons.add_rounded, size: 18),
+            style: IconButton.styleFrom(
+              backgroundColor: const Color(0xFF284BFF),
+              foregroundColor: Colors.white,
+              minimumSize: const Size(34, 34),
             ),
           ),
         ],
@@ -1273,283 +1534,78 @@ class _CompactCircleStep extends StatelessWidget {
   }
 }
 
-class _QuotationItemDraft {
-  final TextEditingController productController = TextEditingController();
-  final TextEditingController skuController = TextEditingController();
-  final TextEditingController quantityController = TextEditingController(
-    text: '1',
-  );
-  final TextEditingController uomController = TextEditingController();
-  final TextEditingController unitPriceController = TextEditingController();
-  final TextEditingController discountController = TextEditingController(
-    text: '0',
-  );
-  final TextEditingController taxController = TextEditingController();
-  final TextEditingController lineTotalController = TextEditingController();
-
-  VoidCallback? _listener;
-
-  void attachRebuild(VoidCallback listener) {
-    _listener = listener;
-    productController.addListener(listener);
-    skuController.addListener(listener);
-    quantityController.addListener(listener);
-    uomController.addListener(listener);
-    unitPriceController.addListener(listener);
-    discountController.addListener(listener);
-    taxController.addListener(listener);
-  }
-
-  void detachRebuild() {
-    final listener = _listener;
-    if (listener == null) return;
-    productController.removeListener(listener);
-    skuController.removeListener(listener);
-    quantityController.removeListener(listener);
-    uomController.removeListener(listener);
-    unitPriceController.removeListener(listener);
-    discountController.removeListener(listener);
-    taxController.removeListener(listener);
-    _listener = null;
-  }
-
-  void dispose() {
-    detachRebuild();
-    productController.dispose();
-    skuController.dispose();
-    quantityController.dispose();
-    uomController.dispose();
-    unitPriceController.dispose();
-    discountController.dispose();
-    taxController.dispose();
-    lineTotalController.dispose();
-  }
-}
-
-class _QuotationItemCard extends StatelessWidget {
-  final int index;
-  final _QuotationItemDraft item;
-  final List<_QuotationCatalogItem> productOptions;
-  final List<String> uomOptions;
-  final List<String> taxOptions;
-  final String currencyPrefix;
-  final bool canRemove;
-  final ValueChanged<String?> onProductChanged;
+class _QuoteItemRow extends StatelessWidget {
+  final _QuoteItem item;
+  final VoidCallback onDecrease;
+  final VoidCallback onIncrease;
   final VoidCallback onRemove;
 
-  const _QuotationItemCard({
-    required this.index,
+  const _QuoteItemRow({
     required this.item,
-    required this.productOptions,
-    required this.uomOptions,
-    required this.taxOptions,
-    required this.currencyPrefix,
-    required this.canRemove,
-    required this.onProductChanged,
+    required this.onDecrease,
+    required this.onIncrease,
     required this.onRemove,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: const Color(0xFFFCFCFD),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: AppColors.border),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            children: [
-              Text(
-                'Item $index',
-                style: const TextStyle(
-                  color: Color(0xFF0F172A),
-                  fontSize: 15,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const Spacer(),
-              TextButton.icon(
-                onPressed: canRemove ? onRemove : null,
-                icon: Icon(
-                  Icons.delete_outline_rounded,
-                  size: 18,
-                  color: canRemove
-                      ? const Color(0xFFEF4444)
-                      : const Color(0xFF9CA3AF),
-                ),
-                label: Text(
-                  'Remove',
-                  style: TextStyle(
-                    color: canRemove
-                        ? const Color(0xFF9CA3AF)
-                        : const Color(0xFFD1D5DB),
-                    fontWeight: FontWeight.w600,
+          _ProductThumb(item.product.name),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.product.name,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 2),
+                Text(
+                  '${_money(item.product.unitPrice)} x ${_qty(item.quantity)} ${item.product.uom}',
+                  style: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 16),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final stacked = constraints.maxWidth < 840;
-              final skuField = _FormField(
-                label: 'SKU',
-                controller: item.skuController,
-                hintText: 'Auto-filled product code',
-                readOnly: true,
-                enabled: false,
-              );
-              final qtyField = _FormField(
-                label: 'Quantity *',
-                controller: item.quantityController,
-                hintText: '0',
-                keyboardType: TextInputType.number,
-              );
-              final uomField = _FormDropdown(
-                label: 'UOM *',
-                value: item.uomController.text.isEmpty
-                    ? null
-                    : item.uomController.text,
-                hintText: 'Select UOM',
-                items: uomOptions,
-                onChanged: (value) => item.uomController.text = value ?? '',
-              );
-              final unitField = _FormField(
-                label: 'Unit Price *',
-                controller: item.unitPriceController,
-                hintText: '0',
-                keyboardType: TextInputType.number,
-              );
-              final discountField = _FormField(
-                label: 'Discount (%)',
-                controller: item.discountController,
-                hintText: '0',
-                keyboardType: TextInputType.number,
-              );
-              final taxField = _FormDropdown(
-                label: 'Tax (%)',
-                value: item.taxController.text.isEmpty
-                    ? null
-                    : item.taxController.text,
-                hintText: 'Select tax',
-                items: taxOptions,
-                onChanged: (value) => item.taxController.text = value ?? '',
-              );
-              final lineTotalField = _FormField(
-                label: 'Line Total',
-                controller: item.lineTotalController,
-                hintText: '0.00',
-                readOnly: true,
-                enabled: false,
-                prefixText: currencyPrefix,
-              );
-
-              if (stacked) {
-                return Column(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: _FormDropdown(
-                            label: 'Product *',
-                            value: item.productController.text.isEmpty
-                                ? null
-                                : item.productController.text,
-                            hintText: 'Select product or service',
-                            items: productOptions
-                                .map((product) => product.name)
-                                .toList(),
-                            onChanged: onProductChanged,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(child: skuField),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    Row(
-                      children: [
-                        Expanded(child: qtyField),
-                        const SizedBox(width: 12),
-                        Expanded(child: uomField),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    Row(
-                      children: [
-                        Expanded(child: unitField),
-                        const SizedBox(width: 12),
-                        Expanded(child: discountField),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    Row(
-                      children: [
-                        Expanded(child: taxField),
-                        const SizedBox(width: 12),
-                        Expanded(child: lineTotalField),
-                      ],
-                    ),
-                  ],
-                );
-              }
-
-              return Column(
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        flex: 4,
-                        child: _FormDropdown(
-                          label: 'Product *',
-                          value: item.productController.text.isEmpty
-                              ? null
-                              : item.productController.text,
-                          hintText: 'Select product or service',
-                          items: productOptions
-                              .map((product) => product.name)
-                              .toList(),
-                          onChanged: onProductChanged,
-                        ),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(flex: 4, child: skuField),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  Row(
-                    children: [
-                      Expanded(child: qtyField),
-                      const SizedBox(width: 14),
-                      Expanded(child: uomField),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  Row(
-                    children: [
-                      Expanded(child: unitField),
-                      const SizedBox(width: 14),
-                      Expanded(child: discountField),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  Row(
-                    children: [
-                      Expanded(child: taxField),
-                      const SizedBox(width: 14),
-                      Expanded(child: lineTotalField),
-                    ],
-                  ),
-                ],
-              );
-            },
+          _QtyButton(icon: Icons.remove_rounded, onTap: onDecrease),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Text(
+              _qty(item.quantity),
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900),
+            ),
+          ),
+          _QtyButton(icon: Icons.add_rounded, onTap: onIncrease),
+          const SizedBox(width: 8),
+          Text(
+            _money(item.lineTotal),
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900),
+          ),
+          IconButton(
+            onPressed: onRemove,
+            icon: const Icon(
+              Icons.close_rounded,
+              color: Color(0xFFEF4444),
+              size: 18,
+            ),
           ),
         ],
       ),
@@ -1557,70 +1613,378 @@ class _QuotationItemCard extends StatelessWidget {
   }
 }
 
-class _QuotationCatalogItem {
+class _QtyButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _QtyButton({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(9),
+      onTap: onTap,
+      child: Container(
+        width: 26,
+        height: 26,
+        decoration: BoxDecoration(
+          color: const Color(0xFFF1F5F9),
+          borderRadius: BorderRadius.circular(9),
+        ),
+        child: Icon(icon, size: 15, color: AppColors.textSecondary),
+      ),
+    );
+  }
+}
+
+class _ReviewRow extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _ReviewRow(this.label, this.value);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 9),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: AppColors.textMuted,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ReviewItemRow extends StatelessWidget {
+  final _QuoteItem item;
+
+  const _ReviewItemRow({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        _ProductThumb(item.product.name, size: 42),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                item.product.name,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              Text(
+                '${_qty(item.quantity)} x ${_money(item.product.unitPrice)}',
+                style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+              ),
+            ],
+          ),
+        ),
+        Text(
+          _money(item.lineTotal),
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900),
+        ),
+      ],
+    );
+  }
+}
+
+class _TotalsPanel extends StatelessWidget {
+  final double subtotal;
+  final double discount;
+  final double tax;
+  final double total;
+  final bool compact;
+
+  const _TotalsPanel({
+    required this.subtotal,
+    required this.discount,
+    required this.tax,
+    required this.total,
+    this.compact = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        children: [
+          _TotalRow('Subtotal', subtotal),
+          _TotalRow('Discount', -discount),
+          _TotalRow('Tax', tax),
+          Divider(height: compact ? 16 : 20, color: AppColors.border),
+          _TotalRow('Grand Total', total, strong: true),
+        ],
+      ),
+    );
+  }
+}
+
+class _TotalRow extends StatelessWidget {
+  final String label;
+  final double value;
+  final bool strong;
+
+  const _TotalRow(this.label, this.value, {this.strong = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                color: strong ? AppColors.textPrimary : AppColors.textMuted,
+                fontSize: strong ? 13 : 12,
+                fontWeight: strong ? FontWeight.w900 : FontWeight.w700,
+              ),
+            ),
+          ),
+          Text(
+            _money(value),
+            style: TextStyle(
+              color: strong ? AppColors.textPrimary : AppColors.textSecondary,
+              fontSize: strong ? 14 : 12,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProductThumb extends StatelessWidget {
+  final String seed;
+  final double size;
+
+  const _ProductThumb(this.seed, {this.size = 48});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = [
+      const Color(0xFFE0F2FE),
+      const Color(0xFFDCFCE7),
+      const Color(0xFFFFEDD5),
+      const Color(0xFFF3E8FF),
+    ];
+    final color = colors[seed.hashCode.abs() % colors.length];
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Icon(Icons.inventory_2_outlined, color: AppColors.textSecondary),
+    );
+  }
+}
+
+class _EmptyInline extends StatelessWidget {
+  final String text;
+
+  const _EmptyInline(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+      ),
+    );
+  }
+}
+
+class _CenteredState extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String message;
+  final String? actionLabel;
+  final VoidCallback? onAction;
+
+  const _CenteredState({
+    required this.icon,
+    required this.title,
+    required this.message,
+    this.actionLabel,
+    this.onAction,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 42, color: AppColors.textMuted),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+            ),
+            if (actionLabel != null && onAction != null) ...[
+              const SizedBox(height: 14),
+              ElevatedButton(onPressed: onAction, child: Text(actionLabel!)),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LeadOption {
+  final String id;
+  final String name;
+  final String phone;
+  final String status;
+  final String address;
+  final String salespersonId;
+
+  const _LeadOption({
+    required this.id,
+    required this.name,
+    required this.phone,
+    required this.status,
+    required this.address,
+    required this.salespersonId,
+  });
+
+  bool get isQuotable {
+    final value = status.toLowerCase();
+    return value.isEmpty ||
+        value == 'new' ||
+        value == 'contacted' ||
+        value == 'qualified';
+  }
+
+  factory _LeadOption.fromJson(Map<String, dynamic> json) {
+    final lead = _readMap(json, const ['lead']);
+    final data = lead.isEmpty ? json : <String, dynamic>{...json, ...lead};
+    return _LeadOption(
+      id: _readText(data, const ['id', 'lead_id', 'leadId']),
+      name: _readText(data, const [
+        'name',
+        'business_name',
+        'customer_name',
+        'lead_name',
+        'company_name',
+      ]),
+      phone: _readText(data, const ['phone', 'mobile', 'contact_number']),
+      status: _readText(data, const ['status', 'lead_status']),
+      address: _readText(data, const ['address', 'billing_address', 'city']),
+      salespersonId: _readText(data, const [
+        'salesperson_id',
+        'assigned_to_id',
+        'assigned_sales_officer_id',
+      ]),
+    );
+  }
+}
+
+class _ProductOption {
   final String id;
   final String variantId;
   final String name;
   final String sku;
-  final String description;
   final String uom;
   final double unitPrice;
   final double taxRate;
 
-  const _QuotationCatalogItem({
-    this.id = '',
-    this.variantId = '',
+  const _ProductOption({
+    required this.id,
+    required this.variantId,
     required this.name,
     required this.sku,
-    required this.description,
     required this.uom,
-    this.unitPrice = 0,
-    this.taxRate = 0,
+    required this.unitPrice,
+    required this.taxRate,
   });
 
-  factory _QuotationCatalogItem.fromJson(Map<String, dynamic> json) {
-    return _QuotationCatalogItem(
-      id: _quotationProductText(json, const [
-        'id',
-        'product_id',
-        'productId',
-      ], fallback: ''),
-      variantId: _quotationProductText(json, const [
+  factory _ProductOption.fromJson(Map<String, dynamic> json) {
+    final product = _readMap(json, const ['product']);
+    final data = product.isEmpty ? json : <String, dynamic>{...json, ...product};
+    return _ProductOption(
+      id: _readText(data, const ['id', 'product_id', 'productId']),
+      variantId: _readText(data, const [
         'variant_id',
         'variantId',
         'default_variant_id',
-      ], fallback: ''),
-      name: _quotationProductText(json, const [
-        'name',
-        'product_name',
-        'title',
-      ], fallback: ''),
-      sku: _quotationProductText(json, const [
-        'sku',
-        'product_sku',
-        'hsn',
-        'hsn_sac',
-        'barcode',
-      ], fallback: ''),
-      description: _quotationProductText(json, const [
-        'description',
-        'short_description',
-        'details',
-      ], fallback: ''),
-      uom: _quotationProductText(json, const [
+      ]),
+      name: _readText(data, const ['name', 'product_name', 'title']),
+      sku: _readText(data, const ['sku', 'product_sku', 'hsn', 'barcode']),
+      uom: _readText(data, const [
         'uom',
         'unit',
         'unit_of_measure',
         'measurement_unit',
       ], fallback: 'unit'),
-      unitPrice: _quotationProductNumber(json, const [
+      unitPrice: _readNumber(data, const [
         'price',
         'selling_price',
         'sellingPrice',
         'mrp',
         'unit_price',
       ]),
-      taxRate: _quotationProductNumber(json, const [
+      taxRate: _readNumber(data, const [
         'tax',
         'tax_rate',
         'taxRate',
@@ -1631,44 +1995,111 @@ class _QuotationCatalogItem {
   }
 }
 
-class _OptionsErrorBanner extends StatelessWidget {
-  final String message;
-  final VoidCallback onRetry;
+class _QuoteItem {
+  final _ProductOption product;
+  final double quantity;
+  final double discountPercent;
 
-  const _OptionsErrorBanner({required this.message, required this.onRetry});
+  const _QuoteItem({
+    required this.product,
+    required this.quantity,
+    this.discountPercent = 0,
+  });
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFFBFA),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFFCA5A5)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.error_outline_rounded, color: Color(0xFFDC2626)),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              message,
-              style: const TextStyle(
-                color: Color(0xFF7F1D1D),
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          TextButton(onPressed: onRetry, child: const Text('Retry')),
-        ],
-      ),
+  double get subtotal => quantity * product.unitPrice;
+  double get discountAmount => subtotal * discountPercent / 100;
+  double get taxable => subtotal - discountAmount;
+  double get taxAmount => taxable * product.taxRate / 100;
+  double get lineTotal => taxable + taxAmount;
+
+  Map<String, dynamic> toApi() {
+    return {
+      'product_id': product.id,
+      'variant_id': product.variantId,
+      'quantity': quantity,
+      'unit_price': product.unitPrice,
+      'discount': discountPercent,
+      'tax_rate': product.taxRate,
+      'uom': product.uom,
+    };
+  }
+
+  _QuoteItem copyWith({double? quantity, double? discountPercent}) {
+    return _QuoteItem(
+      product: product,
+      quantity: quantity ?? this.quantity,
+      discountPercent: discountPercent ?? this.discountPercent,
     );
   }
 }
 
-String _quotationProductText(
+InputDecoration _inputDecoration(String hint, {IconData? prefixIcon}) {
+  return InputDecoration(
+    hintText: hint,
+    hintStyle: const TextStyle(color: AppColors.textLightMuted, fontSize: 12),
+    prefixIcon: prefixIcon == null ? null : Icon(prefixIcon, size: 18),
+    filled: true,
+    fillColor: const Color(0xFFF8FAFC),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(13),
+      borderSide: const BorderSide(color: AppColors.border),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(13),
+      borderSide: const BorderSide(color: AppColors.border),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(13),
+      borderSide: const BorderSide(color: Color(0xFF284BFF), width: 1.4),
+    ),
+  );
+}
+
+String _formatDate(DateTime value) {
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+  return '${value.day.toString().padLeft(2, '0')} ${months[value.month - 1]} ${value.year}';
+}
+
+String _apiDate(DateTime value) {
+  return '${value.year.toString().padLeft(4, '0')}-'
+      '${value.month.toString().padLeft(2, '0')}-'
+      '${value.day.toString().padLeft(2, '0')}';
+}
+
+String _money(double value) {
+  final sign = value < 0 ? '- ' : '';
+  final absolute = value.abs();
+  return '${sign}Rs ${absolute.toStringAsFixed(0)}';
+}
+
+String _qty(double value) {
+  if (value == value.roundToDouble()) return value.toStringAsFixed(0);
+  return value.toStringAsFixed(2);
+}
+
+Map<String, dynamic> _readMap(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value is Map<String, dynamic>) return value;
+  }
+  return const {};
+}
+
+String _readText(
   Map<String, dynamic> json,
   List<String> keys, {
   String fallback = '',
@@ -1676,198 +2107,24 @@ String _quotationProductText(
   for (final key in keys) {
     final value = json[key];
     if (value is Map<String, dynamic>) {
-      final nested = _quotationProductText(value, const ['name'], fallback: '');
+      final nested = _readText(value, const ['name', 'display_name']);
       if (nested.isNotEmpty) return nested;
     }
     final text = value?.toString().trim();
-    if (text != null && text.isNotEmpty) return text;
+    if (text != null && text.isNotEmpty && text.toLowerCase() != 'null') {
+      return text;
+    }
   }
   return fallback;
 }
 
-double _quotationProductNumber(Map<String, dynamic> json, List<String> keys) {
+double _readNumber(Map<String, dynamic> json, List<String> keys) {
   for (final key in keys) {
     final value = json[key];
     if (value is num) return value.toDouble();
-    if (value != null) {
-      final sanitized = value.toString().replaceAll(RegExp(r'[^0-9.\-]'), '');
-      final parsed = double.tryParse(sanitized);
-      if (parsed != null) return parsed;
-    }
+    final text = value?.toString().replaceAll(RegExp(r'[^0-9.\-]'), '');
+    final parsed = double.tryParse(text ?? '');
+    if (parsed != null) return parsed;
   }
   return 0;
-}
-
-class _FormField extends StatelessWidget {
-  final String label;
-  final TextEditingController controller;
-  final String hintText;
-  final TextInputType? keyboardType;
-  final int maxLines;
-  final bool readOnly;
-  final bool enabled;
-  final String? prefixText;
-
-  const _FormField({
-    required this.label,
-    required this.controller,
-    required this.hintText,
-    this.keyboardType,
-    this.maxLines = 1,
-    this.readOnly = false,
-    this.enabled = true,
-    this.prefixText,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return _LabeledField(
-      label: label,
-      child: TextField(
-        controller: controller,
-        keyboardType: keyboardType,
-        maxLines: maxLines,
-        readOnly: readOnly,
-        enabled: enabled,
-        decoration: _inputDecoration(hintText, prefixText: prefixText),
-      ),
-    );
-  }
-}
-
-class _FormDateField extends StatelessWidget {
-  final String label;
-  final TextEditingController controller;
-  final String hintText;
-  final VoidCallback onTap;
-
-  const _FormDateField({
-    required this.label,
-    required this.controller,
-    required this.hintText,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return _LabeledField(
-      label: label,
-      child: TextField(
-        controller: controller,
-        readOnly: true,
-        onTap: onTap,
-        decoration: _inputDecoration(
-          hintText,
-          suffixIcon: const Icon(
-            Icons.calendar_month_outlined,
-            color: Color(0xFF94A3B8),
-            size: 20,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _FormDropdown extends StatelessWidget {
-  final String label;
-  final String? value;
-  final String hintText;
-  final List<String> items;
-  final ValueChanged<String?> onChanged;
-
-  const _FormDropdown({
-    required this.label,
-    required this.value,
-    required this.hintText,
-    required this.items,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final effectiveValue = value != null && items.contains(value)
-        ? value
-        : null;
-
-    return _LabeledField(
-      label: label,
-      child: DropdownButtonFormField<String>(
-        key: ValueKey<String?>('$label-$effectiveValue'),
-        initialValue: effectiveValue,
-        isExpanded: true,
-        menuMaxHeight: 280,
-        icon: const Icon(
-          Icons.keyboard_arrow_down_rounded,
-          color: Color(0xFF94A3B8),
-        ),
-        decoration: _inputDecoration(hintText),
-        items: items
-            .map(
-              (item) => DropdownMenuItem<String>(
-                value: item,
-                child: Text(item, overflow: TextOverflow.ellipsis),
-              ),
-            )
-            .toList(),
-        onChanged: onChanged,
-      ),
-    );
-  }
-}
-
-class _LabeledField extends StatelessWidget {
-  final String label;
-  final Widget child;
-
-  const _LabeledField({required this.label, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: Text(
-            label,
-            style: const TextStyle(
-              color: Color(0xFF0F172A),
-              fontSize: 13.5,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-        child,
-      ],
-    );
-  }
-}
-
-InputDecoration _inputDecoration(
-  String hintText, {
-  Widget? suffixIcon,
-  String? prefixText,
-}) {
-  return InputDecoration(
-    hintText: hintText,
-    hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13.5),
-    filled: true,
-    fillColor: Colors.white,
-    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
-    ),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: Color(0xFF0B4A06)),
-    ),
-    prefixText: prefixText,
-    suffixIcon: suffixIcon,
-  );
 }

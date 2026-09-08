@@ -8,6 +8,8 @@ import '../../services/api_service.dart';
 
 class SalesManagerTopBar extends StatefulWidget {
   final String title;
+  final IconData? leadingIcon;
+  final VoidCallback? onLeadingTap;
   final VoidCallback? onNotificationTap;
   final String? profileName;
   final String? profileRole;
@@ -16,6 +18,8 @@ class SalesManagerTopBar extends StatefulWidget {
   const SalesManagerTopBar({
     super.key,
     required this.title,
+    this.leadingIcon,
+    this.onLeadingTap,
     this.onNotificationTap,
     this.profileName,
     this.profileRole,
@@ -131,22 +135,11 @@ class _SalesManagerTopBarState extends State<SalesManagerTopBar> {
       ),
       child: Row(
         children: [
-          Builder(
-            builder: (context) {
-              return InkWell(
-                onTap: () => Scaffold.of(context).openDrawer(),
-                borderRadius: BorderRadius.circular(20),
-                child: const SizedBox(
-                  width: 40,
-                  height: 40,
-                  child: Icon(
-                    Icons.menu_rounded,
-                    color: AppColors.primary,
-                    size: 26,
-                  ),
-                ),
-              );
-            },
+          _LeadingButton(
+            icon: widget.leadingIcon ?? Icons.menu_rounded,
+            onTap:
+                widget.onLeadingTap ??
+                () => Scaffold.maybeOf(context)?.openDrawer(),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -204,6 +197,26 @@ class _SalesManagerTopBarState extends State<SalesManagerTopBar> {
     final second = parts[1].isNotEmpty ? parts[1][0] : '';
     final initials = (first + second).trim();
     return initials.isEmpty ? 'SM' : initials.toUpperCase();
+  }
+}
+
+class _LeadingButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback? onTap;
+
+  const _LeadingButton({required this.icon, this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: SizedBox(
+        width: 40,
+        height: 40,
+        child: Icon(icon, color: AppColors.primary, size: 26),
+      ),
+    );
   }
 }
 

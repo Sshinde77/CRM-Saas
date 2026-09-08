@@ -136,6 +136,10 @@ class _SalesManagerDashboardScreenState
       case 'Create Order':
         _openCreateOrder();
         return;
+      case 'Quotations':
+      case 'Quotation':
+        _openQuotations();
+        return;
       case 'Sales Orders':
         _openSalesOrders();
         return;
@@ -293,13 +297,17 @@ class _SalesManagerDashboardScreenState
 
   void _openCreateQuotation() {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const NewQuotationScreen()),
+      MaterialPageRoute(
+        builder: (_) => const NewQuotationScreen(useSalesManagerShell: true),
+      ),
     );
   }
 
   void _openQuotations() {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const AdminQuotationsScreen()),
+      MaterialPageRoute(
+        builder: (_) => const AdminQuotationsScreen(useSalesManagerShell: true),
+      ),
     );
   }
 

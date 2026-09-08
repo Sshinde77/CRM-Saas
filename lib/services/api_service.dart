@@ -30,6 +30,29 @@ class ApiException implements Exception {
   }
 }
 
+class PaginatedOrdersResult {
+  final List<Map<String, dynamic>> orders;
+  final int currentPage;
+  final int pageSize;
+  final int totalItems;
+  final int totalPages;
+
+  const PaginatedOrdersResult({
+    required this.orders,
+    required this.currentPage,
+    required this.pageSize,
+    required this.totalItems,
+    required this.totalPages,
+  });
+
+  bool get hasPreviousPage => currentPage > 1;
+
+  bool get hasNextPage {
+    if (totalPages > 0) return currentPage < totalPages;
+    return orders.length >= pageSize;
+  }
+}
+
 class ApiService {
   static String? _accessToken;
   static String? _refreshToken;
@@ -437,8 +460,11 @@ class ApiService {
         final systemRole = (user.systemRole ?? '').trim().toLowerCase();
         final roleName = user.roleDetail?.name.trim().toLowerCase();
         return role == 'sales_officer' ||
+            role == 'admin' ||
             systemRole == 'staff' ||
+            systemRole == 'admin' ||
             roleName == 'sales officer' ||
+            roleName == 'admin' ||
             roleName == 'staff';
       }).toList();
     }
@@ -641,11 +667,193 @@ class ApiService {
     );
   }
 
-  Future<List<Map<String, dynamic>>> fetchOrders() {
+  Future<List<Map<String, dynamic>>> fetchOrders({
+    String? status,
+    String? fulfilmentStatus,
+    String? customerId,
+    String? assignedDeliveryPartnerId,
+    String? search,
+  }) {
     return fetchRawList(
       endpoint: ApiEndpoints.ordersList,
+      queryParameters: _cleanQuery({
+        'status': status,
+        'fulfilment_status': fulfilmentStatus,
+        'customer_id': customerId,
+        'assigned_delivery_partner_id': assignedDeliveryPartnerId,
+        'search': search,
+      }),
       candidateKeys: const ['orders', 'data', 'items', 'results'],
       fallbackMessage: 'Invalid orders response.',
+    );
+  }
+
+  Future<PaginatedOrdersResult> fetchPaginatedOrders({
+    int page = 1,
+    int limit = 10,
+    String? status,
+    String? fulfilmentStatus,
+    String? customerId,
+    String? assignedDeliveryPartnerId,
+    String? search,
+  }) async {
+    final response = await _send(
+      method: 'GET',
+      endpoint: ApiEndpoints.ordersList,
+      requiresAuth: true,
+      queryParameters: _cleanQuery({
+        'page': '$page',
+        'limit': '$limit',
+        'per_page': '$limit',
+        'page_size': '$limit',
+        'status': status,
+        'fulfilment_status': fulfilmentStatus,
+        'customer_id': customerId,
+        'assigned_delivery_partner_id': assignedDeliveryPartnerId,
+        'search': search,
+      }),
+    );
+    final decoded = _tryDecodeBody(response.body.trim());
+    final rawItems = _extractGenericList(
+      decoded,
+      const ['orders', 'data', 'items', 'results'],
+      fallbackMessage: 'Invalid orders response.',
+    );
+    final meta = decoded is Map<String, dynamic>
+        ? _extractPaginationMeta(decoded)
+        : const <String, dynamic>{};
+
+    return PaginatedOrdersResult(
+      orders: rawItems.whereType<Map<String, dynamic>>().toList(),
+      currentPage: _readMetaInt(meta, const ['page', 'current_page', 'currentPage'], page),
+      pageSize: _readMetaInt(
+        meta,
+        const ['limit', 'per_page', 'perPage', 'page_size', 'pageSize'],
+        limit,
+      ),
+      totalItems: _readMetaInt(
+        meta,
+        const ['total', 'total_items', 'totalItems', 'count'],
+        ((page - 1) * limit) + rawItems.length,
+      ),
+      totalPages: _readMetaInt(meta, const ['total_pages', 'totalPages', 'pages'], 0),
+    );
+  }
+
+  Future<Map<String, dynamic>> fetchOrderById(String orderId) async {
+    final id = orderId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing order id.');
+    }
+
+    final response = await _send(
+      method: 'GET',
+      endpoint: ApiEndpoints.ordersDetail(id),
+      requiresAuth: true,
+    );
+    return _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid order detail response.',
+    );
+  }
+
+  Future<Map<String, dynamic>> createOrder({
+    required Map<String, dynamic> request,
+  }) async {
+    final response = await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.ordersList,
+      requiresAuth: true,
+      body: request,
+    );
+    return _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid create order response.',
+    );
+  }
+
+  Future<Map<String, dynamic>> updateOrder({
+    required String orderId,
+    required Map<String, dynamic> request,
+  }) async {
+    final id = orderId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing order id.');
+    }
+
+    final response = await _send(
+      method: 'PATCH',
+      endpoint: ApiEndpoints.ordersDetail(id),
+      requiresAuth: true,
+      body: request,
+    );
+    return _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid update order response.',
+    );
+  }
+
+  Future<Map<String, dynamic>> assignOrderDeliveryPartner({
+    required String orderId,
+    required String deliveryPartnerId,
+  }) async {
+    final id = orderId.trim();
+    final partnerId = deliveryPartnerId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing order id.');
+    }
+    if (partnerId.isEmpty) {
+      throw const ApiException(message: 'Missing delivery partner id.');
+    }
+
+    final response = await _send(
+      method: 'PATCH',
+      endpoint: ApiEndpoints.ordersAssignDeliveryPartner(id),
+      requiresAuth: true,
+      body: {'delivery_partner_id': partnerId},
+    );
+    return _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid assign delivery partner response.',
+    );
+  }
+
+  Future<Map<String, dynamic>> confirmOrder(String orderId) async {
+    final id = orderId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing order id.');
+    }
+
+    final response = await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.ordersConfirm(id),
+      requiresAuth: true,
+    );
+    return _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid confirm order response.',
+    );
+  }
+
+  Future<Map<String, dynamic>> cancelOrder({
+    required String orderId,
+    required String reason,
+    String? notes,
+  }) async {
+    final id = orderId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing order id.');
+    }
+
+    final response = await _send(
+      method: 'PATCH',
+      endpoint: ApiEndpoints.ordersCancel(id),
+      requiresAuth: true,
+      body: _cleanQuery({'reason': reason, 'notes': notes}),
+    );
+    return _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid cancel order response.',
     );
   }
 
@@ -1196,6 +1404,23 @@ class ApiService {
       }),
       candidateKeys: const ['products', 'data', 'items', 'results'],
       fallbackMessage: 'Invalid products response.',
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> fetchStockBoard({
+    String? search,
+    String? categoryId,
+    bool? isActive,
+  }) {
+    return fetchRawList(
+      endpoint: ApiEndpoints.inventoryList,
+      queryParameters: _cleanQuery({
+        'search': search,
+        'category_id': categoryId,
+        'is_active': isActive?.toString(),
+      }),
+      candidateKeys: const ['inventory', 'stock', 'products', 'data', 'items', 'results'],
+      fallbackMessage: 'Invalid inventory response.',
     );
   }
 
@@ -2373,4 +2598,30 @@ class ApiService {
 
     return body;
   }
+}
+
+Map<String, dynamic> _extractPaginationMeta(Map<String, dynamic> decoded) {
+  for (final key in const ['meta', 'pagination', 'page_info', 'pageInfo']) {
+    final value = decoded[key];
+    if (value is Map<String, dynamic>) return value;
+    if (value is Map) return Map<String, dynamic>.from(value);
+  }
+  return decoded;
+}
+
+int _readMetaInt(
+  Map<String, dynamic> source,
+  List<String> keys,
+  int fallback,
+) {
+  for (final key in keys) {
+    final value = source[key];
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) {
+      final parsed = int.tryParse(value.trim());
+      if (parsed != null) return parsed;
+    }
+  }
+  return fallback;
 }

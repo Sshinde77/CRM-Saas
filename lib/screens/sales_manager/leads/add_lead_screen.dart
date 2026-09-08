@@ -9,6 +9,7 @@ import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
 import '../../admin/customers/customers_screen.dart';
 import '../../admin/orders/admin_orders_screen.dart';
 import '../../admin/orders/new_admin_order_screen.dart';
+import '../../admin/quotations/admin_quotations_screen.dart';
 import '../dashboard/sales_manager_dashboard_screen.dart';
 import '../visits/sales_manager_visits_screen.dart';
 
@@ -368,6 +369,14 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (_) => const NewAdminOrderScreen(useSalesManagerShell: true),
+        ),
+      );
+      return;
+    }
+    if (action == 'Quotations' || action == 'Quotation') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const AdminQuotationsScreen(useSalesManagerShell: true),
         ),
       );
       return;

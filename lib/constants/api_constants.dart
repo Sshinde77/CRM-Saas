@@ -58,6 +58,11 @@ class ApiEndpoints {
   static const String customersDocumentsTemplate =
       '/customers/{customer_id}/documents';
   static const String ordersList = '/orders';
+  static const String ordersDetailTemplate = '/orders/{order_id}';
+  static const String ordersConfirmTemplate = '/orders/{order_id}/confirm';
+  static const String ordersCancelTemplate = '/orders/{order_id}/cancel';
+  static const String ordersAssignDeliveryPartnerTemplate =
+      '/orders/{order_id}/assign-delivery-partner';
   static const String leadsList = '/leads';
   static const String leadsDetailTemplate = '/leads/{lead_id}';
   static const String leadsConvertTemplate =
@@ -76,6 +81,7 @@ class ApiEndpoints {
   static const String deliveriesConfirmTemplate =
       '/deliveries/{delivery_id}/confirm';
   static const String vehicleStock = '/vehicle-stock';
+  static const String inventoryList = '/inventory';
   static const String vehicleStockLoading = '/vehicle-stock/loading';
   static const String vehicleStockCurrentTemplate =
       '/vehicle-stock/current/{delivery_partner_id}';
@@ -138,6 +144,18 @@ class ApiEndpoints {
 
   static String fileDetail(String fileId) =>
       fileDetailTemplate.replaceFirst('{file_id}', fileId);
+
+  static String ordersDetail(String orderId) =>
+      ordersDetailTemplate.replaceFirst('{order_id}', orderId);
+
+  static String ordersConfirm(String orderId) =>
+      ordersConfirmTemplate.replaceFirst('{order_id}', orderId);
+
+  static String ordersCancel(String orderId) =>
+      ordersCancelTemplate.replaceFirst('{order_id}', orderId);
+
+  static String ordersAssignDeliveryPartner(String orderId) =>
+      ordersAssignDeliveryPartnerTemplate.replaceFirst('{order_id}', orderId);
 
   static String quotationsDetail(String quotationId) =>
       quotationsDetailTemplate.replaceFirst('{quotation_id}', quotationId);

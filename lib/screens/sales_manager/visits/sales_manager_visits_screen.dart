@@ -5,6 +5,7 @@ import '../../admin/customers/customers_screen.dart';
 import '../../admin/leads/admin_leads_screen.dart';
 import '../../admin/orders/admin_orders_screen.dart';
 import '../../admin/orders/new_admin_order_screen.dart';
+import '../../admin/quotations/admin_quotations_screen.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
 import '../attendance/sales_manager_attendance_screen.dart';
@@ -88,6 +89,14 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (_) => const NewAdminOrderScreen(useSalesManagerShell: true),
+        ),
+      );
+      return;
+    }
+    if (action == 'Quotations' || action == 'Quotation') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const AdminQuotationsScreen(useSalesManagerShell: true),
         ),
       );
       return;

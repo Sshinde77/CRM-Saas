@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../providers/api_provider.dart';
 import '../../admin/customers/customers_screen.dart';
 import '../../admin/leads/admin_leads_screen.dart';
 import '../../admin/orders/admin_orders_screen.dart';
 import '../../admin/orders/new_admin_order_screen.dart';
+import '../../admin/quotations/admin_quotations_screen.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
+import '../attendance/sales_manager_attendance_screen.dart';
 import '../dashboard/sales_manager_dashboard_screen.dart';
+import '../follow_ups/sales_manager_follow_ups_screen.dart';
+import '../performance/sales_manager_performance_screen.dart';
 import '../visits/sales_manager_visits_screen.dart';
 
 class SalesManagerStockScreen extends StatefulWidget {
@@ -22,8 +27,17 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
 
+  late ApiProvider _apiProvider;
+  bool _providerReady = false;
+  bool _isLoading = true;
+  String? _errorMessage;
   int _selectedTab = 0;
   String _selectedCategory = 'All categories';
+  String? _selectedCategoryId;
+  String _selectedSort = 'Name A-Z';
+  final Map<String, _StockCategory> _knownCategories = {
+    'All categories': const _StockCategory('All categories', null),
+  };
 
   final List<String> _tabs = const [
     'All',
@@ -31,149 +45,107 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
     'Out of Stock',
     'Inactive',
   ];
-  final List<String> _categories = const [
-    'All categories',
-    'Beverages',
-    'Snacks',
-    'Stationery',
-    'Personal Care',
-    'Accessories',
+  static const List<String> _sortOptions = [
+    'Name A-Z',
+    'Name Z-A',
+    'Stock High to Low',
+    'Stock Low to High',
+    'SKU A-Z',
+    'Recently Added',
   ];
 
-  final List<_StockItem> _items = const [
-    _StockItem(
-      name: 'Ballpoint Pen Pack',
-      sku: '--',
-      variants: 2,
-      stock: 320,
-      category: 'Stationery',
-      status: 'In Stock',
-      icon: Icons.edit_note_rounded,
-      iconColor: AppColors.primary,
-      accentColor: AppColors.green,
-    ),
-    _StockItem(
-      name: 'Classic Salted Chips 150g',
-      sku: 'DEMO-20260816-215942-CLASSI',
-      variants: 0,
-      stock: 391,
-      category: 'Snacks',
-      status: 'In Stock',
-      icon: Icons.fastfood_rounded,
-      iconColor: AppColors.blue,
-      accentColor: AppColors.blue,
-    ),
-    _StockItem(
-      name: 'Cola Can 330ml (Case of 24)',
-      sku: 'DEMO-20260816-215942-COLAC',
-      variants: 0,
-      stock: 110,
-      category: 'Beverages',
-      status: 'In Stock',
-      icon: Icons.local_drink_rounded,
-      iconColor: AppColors.primary900,
-      accentColor: AppColors.green,
-    ),
-    _StockItem(
-      name: 'Cotton T-Shirt',
-      sku: '--',
-      variants: 3,
-      stock: 200,
-      category: 'Accessories',
-      status: 'In Stock',
-      icon: Icons.checkroom_rounded,
-      iconColor: AppColors.orange,
-      accentColor: AppColors.blue,
-    ),
-    _StockItem(
-      name: 'Herbal Shampoo 340ml',
-      sku: 'DEMO-20260816-215942-HERBAL',
-      variants: 0,
-      stock: 97,
-      category: 'Personal Care',
-      status: 'In Stock',
-      icon: Icons.spa_rounded,
-      iconColor: AppColors.green,
-      accentColor: AppColors.green,
-    ),
-    _StockItem(
-      name: 'Mango Juice',
-      sku: '--',
-      variants: 3,
-      stock: 240,
-      category: 'Beverages',
-      status: 'In Stock',
-      icon: Icons.local_drink_outlined,
-      iconColor: AppColors.orange,
-      accentColor: AppColors.blue,
-    ),
-    _StockItem(
-      name: 'Sparkling Mineral Water 1L',
-      sku: 'DEMO-20260816-215942-SPARKL',
-      variants: 0,
-      stock: 538,
-      category: 'Beverages',
-      status: 'In Stock',
-      icon: Icons.water_drop_rounded,
-      iconColor: AppColors.blue,
-      accentColor: AppColors.green,
-    ),
-    _StockItem(
-      name: 'USB-C Charging Cable 1m',
-      sku: 'DEMO-20260816-215942-USB-C',
-      variants: 0,
-      stock: 197,
-      category: 'Accessories',
-      status: 'In Stock',
-      icon: Icons.usb_rounded,
-      iconColor: AppColors.primary,
-      accentColor: AppColors.blue,
-    ),
-    _StockItem(
-      name: 'Ballpoint Pen Pack',
-      sku: '--',
-      variants: 2,
-      stock: 316,
-      category: 'Stationery',
-      status: 'In Stock',
-      icon: Icons.edit_note_rounded,
-      iconColor: AppColors.primary,
-      accentColor: AppColors.green,
-    ),
-    _StockItem(
-      name: 'Classic Salted Chips 150g',
-      sku: 'DEMO-20260816-220627-CLASSI',
-      variants: 0,
-      stock: 385,
-      category: 'Snacks',
-      status: 'In Stock',
-      icon: Icons.fastfood_rounded,
-      iconColor: AppColors.blue,
-      accentColor: AppColors.blue,
-    ),
-    _StockItem(
-      name: 'Premium Mouthwash 250ml',
-      sku: 'DEMO-20260816-220627-MOU',
-      variants: 0,
-      stock: 0,
-      category: 'Personal Care',
-      status: 'Out of Stock',
-      icon: Icons.medical_services_outlined,
-      iconColor: AppColors.red,
-      accentColor: AppColors.red,
-    ),
-    _StockItem(
-      name: 'Promo Tote Bag',
-      sku: 'DEMO-20260816-220627-TOTE',
-      variants: 1,
-      stock: 0,
-      category: 'Accessories',
-      status: 'Inactive',
-      icon: Icons.shopping_bag_outlined,
-      iconColor: AppColors.orange,
-      accentColor: AppColors.orange,
-    ),
-  ];
+  List<_StockItem> _apiItems = [];
+
+  List<_StockItem> get _sourceItems => _apiItems;
+
+  List<_StockCategory> get _categoryOptions {
+    final options = <String, _StockCategory>{..._knownCategories};
+    for (final item in _sourceItems) {
+      if (item.category.trim().isEmpty) continue;
+      options[item.category] = _StockCategory(item.category, item.categoryId);
+    }
+    if (_selectedCategory != 'All categories') {
+      options.putIfAbsent(
+        _selectedCategory,
+        () => _StockCategory(_selectedCategory, _selectedCategoryId),
+      );
+    }
+    return options.values.toList();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_providerReady) return;
+    _apiProvider = ApiProviderScope.of(context);
+    _providerReady = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _loadStock();
+    });
+  }
+
+  Future<void> _loadStock() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final rows = await _apiProvider.fetchStockBoard(
+        search: _searchController.text.trim().isEmpty
+            ? null
+            : _searchController.text.trim(),
+        categoryId: _selectedCategoryId,
+      );
+      final createdAtByProduct = await _loadProductCreatedAtMap();
+      if (!mounted) return;
+      setState(() {
+        _apiItems = rows
+            .map(_StockItem.fromJson)
+            .map(
+              (item) => item.copyWith(
+                createdAt: item.createdAt ?? createdAtByProduct[item.id],
+              ),
+            )
+            .toList();
+        for (final item in _apiItems) {
+          if (item.category.trim().isNotEmpty) {
+            _knownCategories[item.category] =
+                _StockCategory(item.category, item.categoryId);
+          }
+        }
+        _isLoading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _apiItems = [];
+        _errorMessage = error.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<Map<String, DateTime>> _loadProductCreatedAtMap() async {
+    try {
+      final products = await _apiProvider.fetchProducts(
+        search: _searchController.text.trim().isEmpty
+            ? null
+            : _searchController.text.trim(),
+        categoryId: _selectedCategoryId,
+      );
+      return {
+        for (final product in products)
+          if (_readString(product, const ['id', '_id']).isNotEmpty)
+            _readString(product, const ['id', '_id']): _readDate(
+                  _readString(product, const ['created_at', 'createdAt']),
+                ) ??
+                DateTime(1900),
+      };
+    } catch (_) {
+      return const {};
+    }
+  }
 
   @override
   void dispose() {
@@ -224,6 +196,15 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
           ),
         );
         return;
+      case 'Quotations':
+      case 'Quotation':
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) =>
+                const AdminQuotationsScreen(useSalesManagerShell: true),
+          ),
+        );
+        return;
       case 'Sales Orders':
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
@@ -236,6 +217,24 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
           MaterialPageRoute(builder: (_) => const SalesManagerVisitsScreen()),
         );
         return;
+      case 'Follow-ups':
+      case 'Follow-Ups':
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const SalesManagerFollowUpsScreen()),
+        );
+        return;
+      case 'Attendance':
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const SalesManagerAttendanceScreen()),
+        );
+        return;
+      case 'My Performance':
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => const SalesManagerPerformanceScreen(),
+          ),
+        );
+        return;
       default:
         _showSnack('$action is not wired yet');
     }
@@ -244,11 +243,11 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
   List<_StockItem> get _filteredItems {
     final query = _searchController.text.trim().toLowerCase();
 
-    return _items.where((item) {
+    final filtered = _sourceItems.where((item) {
       final statusMatch = switch (_selectedTab) {
-        1 => item.status == 'In Stock',
-        2 => item.status == 'Out of Stock',
-        3 => item.status == 'Inactive',
+        1 => item.isActive,
+        2 => item.stock <= 0,
+        3 => !item.isActive,
         _ => true,
       };
       final categoryMatch =
@@ -258,9 +257,31 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
           query.isEmpty ||
           item.name.toLowerCase().contains(query) ||
           item.sku.toLowerCase().contains(query) ||
+          item.brand.toLowerCase().contains(query) ||
           item.category.toLowerCase().contains(query);
       return statusMatch && categoryMatch && queryMatch;
     }).toList();
+
+    filtered.sort((a, b) {
+      switch (_selectedSort) {
+        case 'Name Z-A':
+          return b.name.toLowerCase().compareTo(a.name.toLowerCase());
+        case 'Stock High to Low':
+          return b.stock.compareTo(a.stock);
+        case 'Stock Low to High':
+          return a.stock.compareTo(b.stock);
+        case 'SKU A-Z':
+          return a.sku.toLowerCase().compareTo(b.sku.toLowerCase());
+        case 'Recently Added':
+          return (b.createdAt ?? DateTime(1900)).compareTo(
+            a.createdAt ?? DateTime(1900),
+          );
+        default:
+          return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+      }
+    });
+
+    return filtered;
   }
 
   @override
@@ -279,18 +300,23 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
           children: [
             const SalesManagerTopBar(title: 'Stock'),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(12, 12, 12, 22),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 1620),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildSummaryGrid(),
-                        const SizedBox(height: 16),
-                        _buildMainPanel(items),
-                      ],
+              child: RefreshIndicator(
+                color: AppColors.primary,
+                onRefresh: _loadStock,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(12, 10, 12, 18),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 1320),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildSummaryGrid(),
+                          const SizedBox(height: 10),
+                          _buildMainPanel(items),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -306,25 +332,27 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isCompact = constraints.maxWidth < 900;
+        final items = _sourceItems;
         final children = [
           _SummaryCard(
             title: 'Tracked Products',
-            value: '${_items.length}',
+            value: '${items.length}',
             icon: Icons.inventory_2_outlined,
             iconColor: AppColors.primary,
             iconBackground: AppColors.primary.withValues(alpha: 0.14),
           ),
           _SummaryCard(
-            title: 'Total Stock Units',
-            value: '${_items.fold<int>(0, (sum, item) => sum + item.stock)}',
-            icon: Icons.inventory_2_outlined,
+            title: 'Total Inventory',
+            value:
+                '${items.fold<int>(0, (sum, item) => sum + item.totalInventory)}',
+            icon: Icons.warehouse_outlined,
             iconColor: AppColors.blue,
             iconBackground: AppColors.blue.withValues(alpha: 0.14),
           ),
           _SummaryCard(
             title: 'Out of Stock',
             value:
-                '${_items.where((item) => item.status == "Out of Stock").length}',
+                '${items.where((item) => item.stock <= 0).length}',
             icon: Icons.cancel_outlined,
             iconColor: AppColors.red,
             iconBackground: AppColors.red.withValues(alpha: 0.14),
@@ -332,7 +360,7 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
           _SummaryCard(
             title: 'Inactive',
             value:
-                '${_items.where((item) => item.status == "Inactive").length}',
+                '${items.where((item) => !item.isActive).length}',
             icon: Icons.visibility_off_outlined,
             iconColor: AppColors.orange,
             iconBackground: AppColors.orange.withValues(alpha: 0.16),
@@ -436,6 +464,8 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
                     _searchField(),
                     const SizedBox(height: 10),
                     _categoryField(),
+                    const SizedBox(height: 10),
+                    _sortField(),
                   ],
                 );
               }
@@ -445,6 +475,8 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
                   Expanded(child: _searchField()),
                   const SizedBox(width: 10),
                   SizedBox(width: 230, child: _categoryField()),
+                  const SizedBox(width: 10),
+                  SizedBox(width: 210, child: _sortField()),
                 ],
               );
             },
@@ -453,13 +485,26 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: SizedBox(
-              width: 1180,
+              width: 1240,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildHeaderRow(),
                   const SizedBox(height: 8),
-                  if (items.isEmpty)
+                  if (_isLoading)
+                    const _StockStatePanel(
+                      icon: Icons.hourglass_empty_rounded,
+                      title: 'Loading stock board...',
+                    )
+                  else if (_errorMessage != null)
+                    _StockStatePanel(
+                      icon: Icons.cloud_off_rounded,
+                      title: 'Could not load stock',
+                      subtitle: _errorMessage!,
+                      actionLabel: 'Retry',
+                      onAction: _loadStock,
+                    )
+                  else if (items.isEmpty)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 40),
                       child: Center(
@@ -503,7 +548,7 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
           Expanded(
             child: TextField(
               controller: _searchController,
-              onChanged: (_) => setState(() {}),
+              onChanged: (_) => _loadStock(),
               cursorColor: AppColors.primary,
               style: const TextStyle(
                 color: AppColors.textPrimary,
@@ -545,12 +590,12 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
             Icons.keyboard_arrow_down_rounded,
             color: AppColors.textLightMuted,
           ),
-          items: _categories
+          items: _categoryOptions
               .map(
                 (category) => DropdownMenuItem<String>(
-                  value: category,
+                  value: category.label,
                   child: Text(
-                    category,
+                    category.label,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: AppColors.textPrimary,
@@ -563,7 +608,57 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
               .toList(),
           onChanged: (value) {
             if (value == null) return;
-            setState(() => _selectedCategory = value);
+            final category = _categoryOptions.firstWhere(
+              (option) => option.label == value,
+              orElse: () => _StockCategory(value, null),
+            );
+            setState(() {
+              _selectedCategory = category.label;
+              _selectedCategoryId = category.id;
+            });
+            _loadStock();
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _sortField() {
+    return Container(
+      height: 36,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceSoft,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.8)),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: _selectedSort,
+          isExpanded: true,
+          icon: const Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: AppColors.textLightMuted,
+          ),
+          items: _sortOptions
+              .map(
+                (sort) => DropdownMenuItem<String>(
+                  value: sort,
+                  child: Text(
+                    sort,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              )
+              .toList(),
+          onChanged: (value) {
+            if (value == null) return;
+            setState(() => _selectedSort = value);
           },
         ),
       ),
@@ -582,6 +677,7 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
       children: const [
         Expanded(flex: 6, child: Text('PRODUCT', style: labelStyle)),
         Expanded(flex: 3, child: Text('SKU', style: labelStyle)),
+        Expanded(flex: 2, child: Text('INVENTORY', style: labelStyle)),
         Expanded(flex: 1, child: Text('VARIANTS', style: labelStyle)),
         Expanded(flex: 2, child: Text('CURRENT STOCK', style: labelStyle)),
         Expanded(flex: 2, child: Text('STATUS', style: labelStyle)),
@@ -704,15 +800,33 @@ class _StockTableRow extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: Text(
-                    item.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w700,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      if (item.brand.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          item.brand,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
               ],
@@ -732,6 +846,17 @@ class _StockTableRow extends StatelessWidget {
             ),
           ),
           Expanded(
+            flex: 2,
+            child: Text(
+              '${item.totalInventory}',
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          Expanded(
             flex: 1,
             child: Text(
               '${item.variants}',
@@ -746,8 +871,8 @@ class _StockTableRow extends StatelessWidget {
             flex: 2,
             child: Text(
               '${item.stock}',
-              style: const TextStyle(
-                color: AppColors.textPrimary,
+              style: TextStyle(
+                color: item.stock <= 0 ? AppColors.red : AppColors.textPrimary,
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
               ),
@@ -757,13 +882,26 @@ class _StockTableRow extends StatelessWidget {
             flex: 2,
             child: Align(
               alignment: Alignment.centerLeft,
-              child: _StatusPill(
-                label: item.status,
-                color: item.status == 'Out of Stock'
-                    ? AppColors.red
-                    : item.status == 'Inactive'
-                    ? AppColors.orange
-                    : AppColors.green,
+              child: Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  if (!item.isActive)
+                    const _StatusPill(
+                      label: 'Inactive',
+                      color: AppColors.orange,
+                    ),
+                  if (item.stock <= 0)
+                    const _StatusPill(
+                      label: 'Out of Stock',
+                      color: AppColors.red,
+                    ),
+                  if (item.isActive && item.stock > 0)
+                    const _StatusPill(
+                      label: 'In Stock',
+                      color: AppColors.green,
+                    ),
+                ],
               ),
             ),
           ),
@@ -799,26 +937,304 @@ class _StatusPill extends StatelessWidget {
   }
 }
 
+class _StockStatePanel extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+  final String? actionLabel;
+  final VoidCallback? onAction;
+
+  const _StockStatePanel({
+    required this.icon,
+    required this.title,
+    this.subtitle,
+    this.actionLabel,
+    this.onAction,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 12),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceSoft,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.75)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: AppColors.textSecondary, size: 28),
+          const SizedBox(height: 8),
+          Text(
+            title,
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          if (subtitle != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              subtitle!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+          if (actionLabel != null && onAction != null) ...[
+            const SizedBox(height: 10),
+            OutlinedButton(onPressed: onAction, child: Text(actionLabel!)),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
 class _StockItem {
+  final String id;
   final String name;
   final String sku;
+  final String brand;
+  final int totalInventory;
   final int variants;
   final int stock;
   final String category;
+  final String? categoryId;
   final String status;
+  final bool isActive;
+  final DateTime? createdAt;
   final IconData icon;
   final Color iconColor;
   final Color accentColor;
 
   const _StockItem({
+    this.id = '',
     required this.name,
     required this.sku,
+    this.brand = '',
+    required this.totalInventory,
     required this.variants,
     required this.stock,
     required this.category,
+    this.categoryId,
     required this.status,
+    this.isActive = true,
+    this.createdAt,
     required this.icon,
     required this.iconColor,
     required this.accentColor,
   });
+
+  factory _StockItem.fromJson(Map<String, dynamic> json) {
+    final product = _readMap(json, const ['product', 'product_details']);
+    final source = product.isEmpty ? json : <String, dynamic>{...json, ...product};
+    final brand = _readMap(source, const ['brand']);
+    final category = _readMap(source, const ['category']);
+    final stock = _readInt(source, const [
+      'total_stock',
+      'totalStock',
+      'total_inventory',
+      'totalInventory',
+      'current_stock',
+      'currentStock',
+      'stock',
+      'quantity',
+    ]);
+    final totalInventory = _readInt(source, const [
+      'total_inventory',
+      'totalInventory',
+      'inventory',
+      'inventory_count',
+      'inventoryCount',
+    ]);
+    final isActive = _readBool(source, const ['is_active', 'isActive', 'active'], fallback: true);
+    final status = !isActive
+        ? 'Inactive'
+        : stock <= 0
+        ? 'Out of Stock'
+        : 'In Stock';
+    final statusColor = status == 'Out of Stock'
+        ? AppColors.red
+        : status == 'Inactive'
+        ? AppColors.orange
+        : AppColors.green;
+
+    return _StockItem(
+      id: _firstNonEmpty([
+        _readString(source, const ['product_id', 'productId']),
+        _readString(source, const ['id', '_id']),
+      ]),
+      name: _readString(source, const ['name', 'product_name', 'productName'], fallback: 'Product'),
+      sku: _readString(source, const ['sku', 'product_sku', 'productSku'], fallback: '--'),
+      brand: _firstNonEmpty([
+        _readString(source, const ['brand_name', 'brandName']),
+        _readDirectString(source, 'brand'),
+        _readString(brand, const ['name']),
+      ]),
+      totalInventory: totalInventory > 0 ? totalInventory : stock,
+      variants: _readList(source, const ['variations', 'variants']).length,
+      stock: stock,
+      category: _firstNonEmpty([
+        _readString(source, const ['product_type', 'productType', 'category_name', 'categoryName']),
+        _readString(category, const ['name']),
+        'Uncategorized',
+      ]),
+      categoryId: _firstNonEmpty([
+        _readString(source, const ['category_id', 'categoryId']),
+        _readString(category, const ['id', '_id']),
+        _readString(source, const ['product_type', 'productType']),
+      ]),
+      status: status,
+      isActive: isActive,
+      createdAt: _readDate(
+        _readString(source, const ['created_at', 'createdAt', 'created_on']),
+      ),
+      icon: _iconForProduct(source),
+      iconColor: statusColor,
+      accentColor: statusColor,
+    );
+  }
+
+  _StockItem copyWith({DateTime? createdAt}) {
+    return _StockItem(
+      id: id,
+      name: name,
+      sku: sku,
+      brand: brand,
+      totalInventory: totalInventory,
+      variants: variants,
+      stock: stock,
+      category: category,
+      categoryId: categoryId,
+      status: status,
+      isActive: isActive,
+      createdAt: createdAt ?? this.createdAt,
+      icon: icon,
+      iconColor: iconColor,
+      accentColor: accentColor,
+    );
+  }
+}
+
+String _readDirectString(Map<String, dynamic> source, String key) {
+  final value = source[key];
+  if (value is! String) return '';
+  final text = value.trim();
+  return text.isNotEmpty && text.toLowerCase() != 'null' ? text : '';
+}
+
+Map<String, dynamic> _readMap(Map<String, dynamic> source, List<String> keys) {
+  for (final key in keys) {
+    final value = source[key];
+    if (value is Map<String, dynamic>) return value;
+    if (value is Map) return Map<String, dynamic>.from(value);
+  }
+  return const {};
+}
+
+List<dynamic> _readList(Map<String, dynamic> source, List<String> keys) {
+  for (final key in keys) {
+    final value = source[key];
+    if (value is List) return value;
+  }
+  return const [];
+}
+
+String _readString(
+  Map<String, dynamic> source,
+  List<String> keys, {
+  String fallback = '',
+}) {
+  for (final key in keys) {
+    final value = source[key];
+    if (value == null) continue;
+    final text = value.toString().trim();
+    if (text.isNotEmpty && text.toLowerCase() != 'null') return text;
+  }
+  return fallback;
+}
+
+int _readInt(Map<String, dynamic> source, List<String> keys) {
+  for (final key in keys) {
+    final value = source[key];
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) {
+      final parsed = int.tryParse(value.replaceAll(RegExp(r'[^0-9\-]'), ''));
+      if (parsed != null) return parsed;
+    }
+  }
+  return 0;
+}
+
+bool _readBool(
+  Map<String, dynamic> source,
+  List<String> keys, {
+  bool fallback = false,
+}) {
+  for (final key in keys) {
+    final value = source[key];
+    if (value is bool) return value;
+    if (value is num) return value != 0;
+    if (value is String) {
+      final normalized = value.trim().toLowerCase();
+      if (normalized == 'true' || normalized == 'active' || normalized == '1') {
+        return true;
+      }
+      if (normalized == 'false' ||
+          normalized == 'inactive' ||
+          normalized == '0') {
+        return false;
+      }
+    }
+  }
+  return fallback;
+}
+
+DateTime? _readDate(String value) {
+  if (value.trim().isEmpty) return null;
+  return DateTime.tryParse(value);
+}
+
+String _firstNonEmpty(List<String> values) {
+  for (final value in values) {
+    final trimmed = value.trim();
+    if (trimmed.isNotEmpty) return trimmed;
+  }
+  return '';
+}
+
+IconData _iconForProduct(Map<String, dynamic> source) {
+  final text = '${_readString(source, const ['name', 'product_name'])} '
+          '${_readString(source, const ['product_type', 'category_name'])}'
+      .toLowerCase();
+  if (text.contains('drink') || text.contains('water') || text.contains('juice')) {
+    return Icons.local_drink_rounded;
+  }
+  if (text.contains('food') || text.contains('snack') || text.contains('chips')) {
+    return Icons.fastfood_rounded;
+  }
+  if (text.contains('shirt') || text.contains('bag')) {
+    return Icons.shopping_bag_outlined;
+  }
+  if (text.contains('cable') || text.contains('usb')) {
+    return Icons.usb_rounded;
+  }
+  if (text.contains('care') || text.contains('shampoo')) {
+    return Icons.spa_rounded;
+  }
+  return Icons.inventory_2_outlined;
+}
+
+class _StockCategory {
+  final String label;
+  final String? id;
+
+  const _StockCategory(this.label, this.id);
 }

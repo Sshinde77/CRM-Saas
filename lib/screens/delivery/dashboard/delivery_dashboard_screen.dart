@@ -7,7 +7,6 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../providers/api_provider.dart';
 import '../../../routes/app_router.dart';
 import '../../../widgets/delivery/delivery_partner_sidebar.dart';
-import '../../../widgets/delivery/delivery_top_bar.dart';
 
 class DeliveryDashboardScreen extends StatefulWidget {
   const DeliveryDashboardScreen({super.key});
@@ -21,6 +20,7 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late Future<_DashboardData> _dashboardFuture;
   bool _didStartLoad = false;
+  bool _isCheckingIn = false;
 
   @override
   void didChangeDependencies() {
@@ -61,6 +61,7 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
 
     return _DashboardData(
       userName: currentUser?.name ?? 'Partner',
+      profilePhoto: currentUser?.profilePhoto,
       deliveries: deliveries,
       vehicleStock: vehicleStock,
       todayAttendance: _AttendanceRecord.todayFrom(attendanceRecords),
@@ -79,16 +80,41 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
       ..showSnackBar(SnackBar(content: Text('$label screen is coming next.')));
   }
 
-  void _shareLocation() {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Location API is ready. Add GPS permissions to send live coordinates.',
+  void _navigateBottomItem(String label, String? route) {
+    if (route == null) {
+      _showComingSoon(label);
+      return;
+    }
+    Navigator.of(context).pushNamed(route);
+  }
+
+  Future<void> _checkInNow() async {
+    if (_isCheckingIn) return;
+
+    setState(() => _isCheckingIn = true);
+    try {
+      await ApiProviderScope.of(context).checkInAttendance('office_check_in');
+      await _refresh();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(content: Text('Checked in successfully.')),
+        );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text('Failed to check in. Please try again.'),
           ),
-        ),
-      );
+        );
+    } finally {
+      if (mounted) {
+        setState(() => _isCheckingIn = false);
+      }
+    }
   }
 
   @override
@@ -99,6 +125,38 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
       drawer: const DeliveryPartnerSidebar(
         currentRoute: AppRoutes.deliveryDashboard,
       ),
+      bottomNavigationBar: _DeliveryBottomNavigation(
+        currentIndex: 0,
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              break;
+            case 1:
+              _navigateBottomItem('Orders', AppRoutes.deliveryDeliveries);
+            case 2:
+              _navigateBottomItem('Collections', null);
+            case 3:
+              _navigateBottomItem('Attendance', AppRoutes.deliveryAttendance);
+            case 4:
+              _scaffoldKey.currentState?.openDrawer();
+          }
+        },
+      ),
+      floatingActionButton: FutureBuilder<_DashboardData>(
+        future: _dashboardFuture,
+        builder: (context, snapshot) {
+          final data = snapshot.data;
+          if (data == null || data.isCheckedIn) {
+            return const SizedBox.shrink();
+          }
+
+          return _FloatingCheckInButton(
+            busy: _isCheckingIn,
+            onPressed: _checkInNow,
+          );
+        },
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       body: SafeArea(
         bottom: false,
         child: FutureBuilder<_DashboardData>(
@@ -118,12 +176,10 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
                 ),
                 slivers: [
                   SliverToBoxAdapter(
-                    child: DeliveryTopBar(
-                      title: 'Good Morning, ${data?.firstName ?? 'Partner'}',
-                      subtitle: 'Have a safe and productive day!',
-                      leadingIcon: Icons.menu_rounded,
-                      onLeadingTap: () =>
-                          _scaffoldKey.currentState?.openDrawer(),
+                    child: _DashboardHeader(
+                      data: data,
+                      onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
+                      onBellTap: () => _showComingSoon('Notifications'),
                     ),
                   ),
                   SliverToBoxAdapter(
@@ -139,9 +195,9 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
                             child: Padding(
                               padding: EdgeInsets.fromLTRB(
                                 horizontalPadding,
-                                AppSpacing.sm,
+                                0,
                                 horizontalPadding,
-                                AppSpacing.section,
+                                AppSpacing.xl + 70,
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -160,17 +216,6 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
                                   else if (data != null)
                                     _DashboardContent(
                                       data: data,
-                                      onShareLocation: _shareLocation,
-                                      onPendingDeliveries: () => Navigator.of(
-                                        context,
-                                      ).pushNamed(AppRoutes.deliveryAttendance),
-                                      onEndDayReturn: () => Navigator.of(
-                                        context,
-                                      ).pushNamed(AppRoutes.deliveryEndOfDay),
-                                      onViewAllItems: () =>
-                                          Navigator.of(context).pushNamed(
-                                            AppRoutes.deliveryVehicleStock,
-                                          ),
                                       onViewAllDeliveries: () => Navigator.of(
                                         context,
                                       ).pushNamed(AppRoutes.deliveryDeliveries),
@@ -195,18 +240,10 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
 
 class _DashboardContent extends StatelessWidget {
   final _DashboardData data;
-  final VoidCallback onShareLocation;
-  final VoidCallback onPendingDeliveries;
-  final VoidCallback onEndDayReturn;
-  final VoidCallback onViewAllItems;
   final VoidCallback onViewAllDeliveries;
 
   const _DashboardContent({
     required this.data,
-    required this.onShareLocation,
-    required this.onPendingDeliveries,
-    required this.onEndDayReturn,
-    required this.onViewAllItems,
     required this.onViewAllDeliveries,
   });
 
@@ -215,22 +252,8 @@ class _DashboardContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _HeroSummaryCard(
-          data: data,
-          onShareLocation: onShareLocation,
-          onPendingDeliveries: onPendingDeliveries,
-          onEndDayReturn: onEndDayReturn,
-        ),
-        const SizedBox(height: AppSpacing.md),
-        _StatsGrid(data: data),
-        const SizedBox(height: AppSpacing.md),
+        const SizedBox(height: AppSpacing.sm),
         _CollectionsCard(data: data),
-        const SizedBox(height: AppSpacing.md),
-        _PrioritiesCard(data: data),
-        const SizedBox(height: AppSpacing.md),
-        _VehicleLoadCard(session: data.vehicleStock, onViewAll: onViewAllItems),
-        const SizedBox(height: AppSpacing.md),
-        _DeliveryStatusCard(data: data),
         const SizedBox(height: AppSpacing.md),
         _DeliveriesPreviewCard(
           deliveries: data.deliveries.take(4).toList(),
@@ -238,6 +261,448 @@ class _DashboardContent extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.xl),
       ],
+    );
+  }
+}
+
+class _DashboardHeader extends StatelessWidget {
+  final _DashboardData? data;
+  final VoidCallback onMenuTap;
+  final VoidCallback onBellTap;
+
+  const _DashboardHeader({
+    required this.data,
+    required this.onMenuTap,
+    required this.onBellTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final name = data?.userName.trim();
+    final displayName = name == null || name.isEmpty ? 'Partner' : name;
+
+    const statsHeight =
+        _OverlappingStatsGrid._tileHeight * 3 +
+        _OverlappingStatsGrid._spacing * 2;
+    const statsOverlap = _OverlappingStatsGrid._overlap;
+    final hasStats = data != null;
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 50),
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(0),
+                  bottom: Radius.circular(4),
+                ),
+                gradient: const LinearGradient(
+                  colors: [
+                    AppColors.deliveryDashboardHeaderStart,
+                    AppColors.deliveryDashboardHeaderMid,
+                    AppColors.deliveryDashboardHeaderEnd,
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.deliveryHeroShadow.withValues(alpha: 0.22),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      _HeaderIconButton(
+                        icon: Icons.menu_rounded,
+                        onTap: onMenuTap,
+                      ),
+                      const Expanded(
+                        child: Text(
+                          'Dashboard',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: AppColors.surface,
+                            fontSize: 20,
+                            height: 1,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          _HeaderIconButton(
+                            icon: Icons.notifications_none_rounded,
+                            onTap: onBellTap,
+                          ),
+                          Positioned(
+                            right: 3,
+                            top: 1,
+                            child: Container(
+                              width: 9,
+                              height: 9,
+                              decoration: const BoxDecoration(
+                                color: AppColors.deliveryDashboardOnlineDot,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 22),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final compact = constraints.maxWidth < 360;
+
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: Row(
+                              children: [
+                                _ProfileAvatar(
+                                  imageUrl: data?.profilePhoto,
+                                  size: compact ? 34 : 40,
+                                ),
+                                SizedBox(width: compact ? 8 : 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Hello, $displayName',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: AppColors.surface,
+                                          fontSize: compact ? 16 : 19,
+                                          height: 1.08,
+                                          fontWeight: FontWeight.w900,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Delivery Person',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: AppColors.surface,
+                                          fontSize: compact ? 12 : 15,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(width: compact ? 8 : 12),
+                          _DatePill(compact: compact),
+                        ],
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            if (hasStats) const SizedBox(height: statsHeight - statsOverlap),
+          ],
+        ),
+        if (hasStats)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final horizontalPadding = constraints.maxWidth >= 600
+                    ? AppSpacing.screen
+                    : AppSpacing.screenSmall;
+
+                return Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 820),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: horizontalPadding,
+                      ),
+                      child: _StatsGrid(data: data!),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _ProfileAvatar extends StatelessWidget {
+  final String? imageUrl;
+  final double size;
+
+  const _ProfileAvatar({required this.imageUrl, required this.size});
+
+  @override
+  Widget build(BuildContext context) {
+    final photo = imageUrl?.trim();
+
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: AppColors.deliveryProfileAvatarBg,
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: AppColors.deliveryProfileAvatarBorder,
+          width: 1.5,
+        ),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: photo == null || photo.isEmpty
+          ? Icon(
+              Icons.person_rounded,
+              color: AppColors.deliveryDashboardHeaderEnd,
+              size: size * 0.58,
+            )
+          : Image.network(
+              photo,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Icon(
+                  Icons.person_rounded,
+                  color: AppColors.deliveryDashboardHeaderEnd,
+                  size: size * 0.58,
+                );
+              },
+            ),
+    );
+  }
+}
+
+class _HeaderIconButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _HeaderIconButton({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkResponse(
+      onTap: onTap,
+      radius: 28,
+      child: SizedBox(
+        width: 36,
+        height: 36,
+        child: Icon(icon, color: AppColors.surface, size: 28),
+      ),
+    );
+  }
+}
+
+class _DatePill extends StatelessWidget {
+  final bool compact;
+
+  const _DatePill({this.compact = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 8 : 12,
+        vertical: compact ? 7 : 9,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.secondary.withValues(alpha: 0.10),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Today ${_formatDateLong(DateTime.now())}',
+            style: TextStyle(
+              color: AppColors.deliveryDashboardHeaderEnd,
+              fontSize: compact ? 10.5 : 13,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          SizedBox(width: compact ? 3 : 5),
+          Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: AppColors.deliveryDashboardHeaderEnd,
+            size: compact ? 16 : 19,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FloatingCheckInButton extends StatelessWidget {
+  final bool busy;
+  final VoidCallback onPressed;
+
+  const _FloatingCheckInButton({required this.busy, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return FloatingActionButton.extended(
+      heroTag: 'delivery-dashboard-check-in',
+      onPressed: busy ? null : onPressed,
+      backgroundColor: AppColors.deliveryCheckInButton,
+      foregroundColor: AppColors.surface,
+      elevation: 8,
+      icon: busy
+          ? const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.2,
+                color: AppColors.surface,
+              ),
+            )
+          : const Icon(Icons.login_rounded, size: 20),
+      label: Text(
+        busy ? 'Checking in' : 'Check In',
+        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+      ),
+    );
+  }
+}
+
+class _DeliveryBottomNavigation extends StatelessWidget {
+  final int currentIndex;
+  final ValueChanged<int> onTap;
+
+  const _DeliveryBottomNavigation({
+    required this.currentIndex,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const items = [
+      _BottomNavInfo(Icons.home_rounded, 'Dashboard'),
+      _BottomNavInfo(Icons.assignment_outlined, 'Orders'),
+      _BottomNavInfo(Icons.account_balance_wallet_outlined, 'Collections'),
+      _BottomNavInfo(Icons.event_available_outlined, 'Attendance'),
+      _BottomNavInfo(Icons.more_horiz_rounded, 'More'),
+    ];
+
+    return SafeArea(
+      top: false,
+      child: Container(
+        height: 76,
+        margin: const EdgeInsets.fromLTRB(0, 6, 0, 0),
+        padding: const EdgeInsets.all(7),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(0),
+          gradient: const LinearGradient(
+            colors: [
+              AppColors.deliveryDashboardNavStart,
+              AppColors.deliveryDashboardNavEnd,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.deliveryHeroShadow.withValues(alpha: 0.22),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            for (var index = 0; index < items.length; index++)
+              Expanded(
+                child: _BottomNavItem(
+                  info: items[index],
+                  selected: currentIndex == index,
+                  onTap: () => onTap(index),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BottomNavItem extends StatelessWidget {
+  final _BottomNavInfo info;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _BottomNavItem({
+    required this.info,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOut,
+        height: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 7),
+        decoration: BoxDecoration(
+          color: selected
+              ? AppColors.deliveryDashboardNavActive.withValues(alpha: 0.78)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(info.icon, color: AppColors.surface, size: selected ? 25 : 23),
+            const SizedBox(height: 4),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                info.label,
+                maxLines: 1,
+                style: TextStyle(
+                  color: AppColors.surface.withValues(
+                    alpha: selected ? 1 : 0.88,
+                  ),
+                  fontSize: selected ? 11 : 10,
+                  fontWeight: selected ? FontWeight.w900 : FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -342,14 +807,16 @@ class _HeroSummaryCard extends StatelessWidget {
                                   Container(
                                     width: 1,
                                     height: 44,
-                                    color: Colors.white.withValues(alpha: 0.20),
+                                    color: AppColors.surface.withValues(
+                                      alpha: 0.20,
+                                    ),
                                   ),
                                   const SizedBox(width: AppSpacing.sm),
                                   Expanded(
                                     child: _HeroMetric(
                                       title: "Today's Deliveries",
                                       value: data.deliveriesToday.toString(),
-                                      color: Colors.white,
+                                      color: AppColors.surface,
                                       isNumber: true,
                                     ),
                                   ),
@@ -362,7 +829,7 @@ class _HeroSummaryCard extends StatelessWidget {
                                     width: 28,
                                     height: 28,
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withValues(
+                                      color: AppColors.surface.withValues(
                                         alpha: 0.14,
                                       ),
                                       borderRadius: BorderRadius.circular(
@@ -386,7 +853,7 @@ class _HeroSummaryCard extends StatelessWidget {
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                           style: TextStyle(
-                                            color: Colors.white.withValues(
+                                            color: AppColors.surface.withValues(
                                               alpha: 0.78,
                                             ),
                                             fontSize: 11,
@@ -400,7 +867,7 @@ class _HeroSummaryCard extends StatelessWidget {
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                           style: const TextStyle(
-                                            color: Colors.white,
+                                            color: AppColors.surface,
                                             fontSize: 14,
                                             fontWeight: FontWeight.w800,
                                           ),
@@ -420,13 +887,13 @@ class _HeroSummaryCard extends StatelessWidget {
                   Container(
                     height: AppSizes.buttonHeight,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: AppColors.surface,
                       borderRadius: BorderRadius.circular(
                         AppSizes.controlRadius,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.08),
+                          color: AppColors.secondary.withValues(alpha: 0.08),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -516,7 +983,7 @@ class _HeroMetric extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.78),
+                  color: AppColors.surface.withValues(alpha: 0.78),
                   fontSize: 11,
                   height: 1.2,
                   fontWeight: FontWeight.w600,
@@ -528,7 +995,7 @@ class _HeroMetric extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.surface,
                   fontSize: isNumber ? AppSizes.iconLarge : 14,
                   height: 1.15,
                   fontWeight: FontWeight.w800,
@@ -609,6 +1076,37 @@ class _HeroActionDivider extends StatelessWidget {
   }
 }
 
+class _OverlappingStatsGrid extends StatelessWidget {
+  final _DashboardData data;
+
+  const _OverlappingStatsGrid({required this.data});
+
+  static const double _overlap = 44;
+  static const double _tileHeight = 78;
+  static const double _spacing = 8;
+  static const double _crossSpacing = 6;
+
+  @override
+  Widget build(BuildContext context) {
+    const gridHeight = _tileHeight * 3 + _spacing * 2;
+
+    return SizedBox(
+      height: gridHeight - _overlap,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned(
+            left: 0,
+            right: 0,
+            top: -_overlap,
+            child: _StatsGrid(data: data),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _StatsGrid extends StatelessWidget {
   final _DashboardData data;
 
@@ -618,32 +1116,46 @@ class _StatsGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final stats = [
       _StatInfo(
+        icon: Icons.receipt_long_outlined,
+        value: data.totalOrdersCompany,
+        label: 'Total Orders (Company)',
+        color: AppColors.deliveryKpiMintIcon,
+        background: AppColors.deliveryKpiMintBg,
+      ),
+      _StatInfo(
+        icon: Icons.fact_check_outlined,
+        value: data.assignedOrders,
+        label: 'My Assigned Orders',
+        color: AppColors.deliveryKpiYellowIcon,
+        background: AppColors.deliveryKpiYellowBg,
+      ),
+      _StatInfo(
+        icon: Icons.check_box_outlined,
+        value: data.acceptedOrders,
+        label: 'Accepted Orders',
+        color: AppColors.deliveryKpiGreenIcon,
+        background: AppColors.deliveryKpiGreenBg,
+      ),
+      _StatInfo(
         icon: Icons.local_shipping_outlined,
-        value: data.deliveriesToday,
-        label: 'Deliveries Today',
-        color: AppColors.deliveryBlue,
-        background: AppColors.deliveryBlueSoft,
+        value: data.deliveredOrders,
+        label: 'Delivered Orders',
+        color: AppColors.deliveryKpiAquaIcon,
+        background: AppColors.deliveryKpiAquaBg,
       ),
       _StatInfo(
-        icon: Icons.check_circle_outline_rounded,
-        value: data.completedToday,
-        label: 'Completed Today',
-        color: AppColors.deliveryGreen,
-        background: AppColors.deliveryGreenSoft,
+        icon: Icons.pending_actions_outlined,
+        value: data.pendingOrders,
+        label: 'Pending Orders',
+        color: AppColors.deliveryKpiRedIcon,
+        background: AppColors.deliveryKpiRedBg,
       ),
       _StatInfo(
-        icon: Icons.schedule_rounded,
-        value: data.pendingToday,
-        label: 'Pending Today',
-        color: AppColors.deliveryOrange,
-        background: AppColors.deliveryOrangeSoft,
-      ),
-      _StatInfo(
-        icon: Icons.currency_rupee_rounded,
-        value: data.paymentPending,
-        label: 'Payment Pending',
-        color: AppColors.deliveryViolet,
-        background: AppColors.deliveryVioletSoft,
+        icon: Icons.disabled_by_default_outlined,
+        value: data.canceledOrders,
+        label: 'Canceled Orders',
+        color: AppColors.deliveryKpiRedIcon,
+        background: AppColors.deliveryKpiRedBg,
       ),
     ];
 
@@ -653,9 +1165,9 @@ class _StatsGrid extends StatelessWidget {
       itemCount: stats.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 1.78,
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
+        mainAxisExtent: _OverlappingStatsGrid._tileHeight,
+        crossAxisSpacing: _OverlappingStatsGrid._crossSpacing,
+        mainAxisSpacing: _OverlappingStatsGrid._spacing,
       ),
       itemBuilder: (context, index) => _StatCard(info: stats[index]),
     );
@@ -670,35 +1182,49 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _SurfaceCard(
-      padding: const EdgeInsets.all(11),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      child: Row(
         children: [
-          _MiniIcon(
-            icon: info.icon,
-            color: info.color,
-            background: info.background,
-          ),
-          const Spacer(),
-          Text(
-            info.value.toString(),
-            style: const TextStyle(
-              fontSize: 21,
-              height: 1,
-              fontWeight: FontWeight.w800,
-              color: AppColors.deliveryInk,
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: info.background,
+              borderRadius: BorderRadius.circular(10),
             ),
+            child: Icon(info.icon, color: info.color, size: 23),
           ),
-          const SizedBox(height: 4),
-          Text(
-            info.label,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 11,
-              height: 1.15,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textMuted,
+          const SizedBox(width: 9),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  info.label,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    height: 1.14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.deliveryDashboardText,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  info.value.toString().padLeft(
+                    info.label == 'Canceled Orders' ? 2 : 1,
+                    '0',
+                  ),
+                  style: const TextStyle(
+                    fontSize: 21,
+                    height: 1,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.deliveryDashboardText,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -770,7 +1296,7 @@ class _CollectionsCard extends StatelessWidget {
                 _MiniIcon(
                   icon: Icons.currency_rupee_rounded,
                   color: AppColors.deliveryViolet,
-                  background: Colors.white,
+                  background: AppColors.surface,
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -845,7 +1371,7 @@ class _CollectionMetricTile extends StatelessWidget {
           _MiniIcon(
             icon: info.icon,
             color: info.color,
-            background: Colors.white,
+            background: AppColors.surface,
           ),
           const SizedBox(width: 8),
           Expanded(
@@ -1443,12 +1969,12 @@ class _SurfaceCard extends StatelessWidget {
       width: double.infinity,
       padding: padding,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppSizes.cardRadius),
         border: Border.all(color: AppColors.deliverySurfaceBorder),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.035),
+            color: AppColors.secondary.withValues(alpha: 0.035),
             blurRadius: 14,
             offset: const Offset(0, 8),
           ),
@@ -1535,7 +2061,7 @@ class _ErrorPanel extends StatelessWidget {
           FilledButton.icon(
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.deliveryBlue,
-              foregroundColor: Colors.white,
+              foregroundColor: AppColors.surface,
               minimumSize: const Size(130, AppSizes.buttonHeight),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppSizes.controlRadius),
@@ -1553,12 +2079,14 @@ class _ErrorPanel extends StatelessWidget {
 
 class _DashboardData {
   final String userName;
+  final String? profilePhoto;
   final List<_DeliveryItem> deliveries;
   final _VehicleStockSession? vehicleStock;
   final _AttendanceRecord? todayAttendance;
 
   const _DashboardData({
     required this.userName,
+    required this.profilePhoto,
     required this.deliveries,
     required this.vehicleStock,
     required this.todayAttendance,
@@ -1583,9 +2111,20 @@ class _DashboardData {
 
   int get deliveriesToday => todaysDeliveries.length;
 
+  int get totalOrdersCompany => deliveries.length;
+
+  int get assignedOrders => deliveries.length;
+
   int get completedToday => todaysDeliveries
       .where((delivery) => delivery.status == 'delivered')
       .length;
+
+  int get deliveredOrders =>
+      deliveries.where((delivery) => delivery.status == 'delivered').length;
+
+  int get acceptedOrders => deliveries.where((delivery) {
+    return delivery.status == 'accepted' || delivery.status == 'loaded';
+  }).length;
 
   int get pendingToday => todaysDeliveries.where((delivery) {
     return const {
@@ -1594,6 +2133,20 @@ class _DashboardData {
       'loaded',
       'in_transit',
     }.contains(delivery.status);
+  }).length;
+
+  int get pendingOrders => deliveries.where((delivery) {
+    return const {
+      'planned',
+      'pending',
+      'accepted',
+      'loaded',
+      'in_transit',
+    }.contains(delivery.status);
+  }).length;
+
+  int get canceledOrders => deliveries.where((delivery) {
+    return delivery.status == 'canceled' || delivery.status == 'cancelled';
   }).length;
 
   int get paymentPending =>
@@ -1932,6 +2485,13 @@ class _StatusInfo {
   const _StatusInfo(this.label, this.count, this.color);
 }
 
+class _BottomNavInfo {
+  final IconData icon;
+  final String label;
+
+  const _BottomNavInfo(this.icon, this.label);
+}
+
 class _DashboardException implements Exception {
   final String message;
 
@@ -2018,4 +2578,22 @@ String _formatMoney(double value) {
     }
   }
   return '${rounded < 0 ? '-' : ''}Rs ${buffer.toString()}';
+}
+
+String _formatDateLong(DateTime value) {
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+  return '${value.day} ${months[value.month - 1]} ${value.year}';
 }

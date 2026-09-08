@@ -4,11 +4,29 @@ import '../../../constants/app_colors.dart';
 import '../../../providers/api_provider.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
+import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
+import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
+import '../../sales_manager/attendance/sales_manager_attendance_screen.dart';
+import '../../sales_manager/dashboard/sales_manager_dashboard_screen.dart';
+import '../../sales_manager/follow_ups/sales_manager_follow_ups_screen.dart';
+import '../../sales_manager/performance/sales_manager_performance_screen.dart';
+import '../../sales_manager/stock/sales_manager_stock_screen.dart';
+import '../../sales_manager/visits/sales_manager_visits_screen.dart';
+import '../customers/customers_screen.dart';
+import '../leads/admin_leads_screen.dart';
+import '../orders/admin_orders_screen.dart';
+import '../orders/new_admin_order_screen.dart';
+import 'admin_quotations_screen.dart';
 
 class QuotationDetailScreen extends StatefulWidget {
   final String quotationId;
+  final bool useSalesManagerShell;
 
-  const QuotationDetailScreen({super.key, required this.quotationId});
+  const QuotationDetailScreen({
+    super.key,
+    required this.quotationId,
+    this.useSalesManagerShell = false,
+  });
 
   @override
   State<QuotationDetailScreen> createState() => _QuotationDetailScreenState();
@@ -171,20 +189,112 @@ class _QuotationDetailScreenState extends State<QuotationDetailScreen> {
     });
   }
 
+  void _handleSalesManagerSidebarSelection(String action) {
+    Navigator.of(context).maybePop();
+    if (action == 'Quotations' || action == 'Quotation') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const AdminQuotationsScreen(useSalesManagerShell: true),
+        ),
+      );
+      return;
+    }
+    if (action == 'Dashboard') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerDashboardScreen()),
+      );
+      return;
+    }
+    if (action == 'Customers') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const CustomersScreen(useSalesManagerShell: true),
+        ),
+      );
+      return;
+    }
+    if (action == 'Leads') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const AdminLeadsScreen(useSalesManagerShell: true),
+        ),
+      );
+      return;
+    }
+    if (action == 'Create Order') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const NewAdminOrderScreen(useSalesManagerShell: true),
+        ),
+      );
+      return;
+    }
+    if (action == 'Sales Orders') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const AdminOrdersScreen(useSalesManagerShell: true),
+        ),
+      );
+      return;
+    }
+    if (action == 'Stock') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerStockScreen()),
+      );
+      return;
+    }
+    if (action == 'Follow-ups' || action == 'Follow-Ups') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerFollowUpsScreen()),
+      );
+      return;
+    }
+    if (action == 'Attendance') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerAttendanceScreen()),
+      );
+      return;
+    }
+    if (action == 'Visits') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SalesManagerVisitsScreen()),
+      );
+      return;
+    }
+    if (action == 'My Performance') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const SalesManagerPerformanceScreen(),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
-      drawer: const AppDrawer(activeItem: 'Quotation'),
+      drawer: widget.useSalesManagerShell
+          ? SalesManagerSidebarDrawer(
+              currentPage: 'Quotations',
+              onSelect: _handleSalesManagerSidebarSelection,
+            )
+          : const AppDrawer(activeItem: 'Quotation'),
       body: SafeArea(
         child: Column(
           children: [
-            AdminTopBar(
-              title: 'Quotation Detail',
-              leadingIcon: Icons.arrow_back_rounded,
-              onLeadingTap: () => Navigator.of(context).maybePop(),
-            ),
+            widget.useSalesManagerShell
+                ? SalesManagerTopBar(
+                    title: 'Quotation Detail',
+                    leadingIcon: Icons.arrow_back_rounded,
+                    onLeadingTap: () => Navigator.of(context).maybePop(),
+                  )
+                : AdminTopBar(
+                    title: 'Quotation Detail',
+                    leadingIcon: Icons.arrow_back_rounded,
+                    onLeadingTap: () => Navigator.of(context).maybePop(),
+                  ),
             Expanded(
               child: RefreshIndicator(
                 color: AppColors.primary,
@@ -207,7 +317,7 @@ class _QuotationDetailScreenState extends State<QuotationDetailScreen> {
 
     if (_errorMessage != null) {
       return ListView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(16),
         children: [
           _ErrorPanel(message: _errorMessage!, onRetry: _loadQuotation),
         ],
@@ -217,7 +327,7 @@ class _QuotationDetailScreenState extends State<QuotationDetailScreen> {
     final quotation = _quotation;
     if (quotation == null) {
       return ListView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(16),
         children: [
           _ErrorPanel(message: 'Quotation not found.', onRetry: _loadQuotation),
         ],
@@ -230,10 +340,10 @@ class _QuotationDetailScreenState extends State<QuotationDetailScreen> {
 
         return ListView(
           padding: EdgeInsets.fromLTRB(
-            compact ? 14 : 22,
-            14,
-            compact ? 14 : 22,
-            24,
+            compact ? 10 : 16,
+            10,
+            compact ? 10 : 16,
+            16,
           ),
           children: [
             _HeroPanel(
@@ -246,16 +356,16 @@ class _QuotationDetailScreenState extends State<QuotationDetailScreen> {
               onConvert: _openConvertDialog,
               onDelete: _deleteQuotation,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
             _StatsGrid(quotation: quotation),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
             _ItemsSection(items: quotation.items, compact: compact),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
             if (compact)
               Column(
                 children: [
                   _CustomerDeliveryCard(quotation: quotation),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 10),
                   _QuotationInfoCard(quotation: quotation),
                 ],
               )
@@ -264,13 +374,13 @@ class _QuotationDetailScreenState extends State<QuotationDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(child: _CustomerDeliveryCard(quotation: quotation)),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 10),
                   Expanded(child: _QuotationInfoCard(quotation: quotation)),
                 ],
               ),
             if (quotation.notes.isNotEmpty ||
                 quotation.termsConditions.isNotEmpty) ...[
-              const SizedBox(height: 16),
+              const SizedBox(height: 10),
               _OptionalSections(quotation: quotation),
             ],
           ],
@@ -347,9 +457,9 @@ class _HeroPanel extends StatelessWidget {
     ];
 
     return Container(
-      padding: const EdgeInsets.all(22),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(20),
         gradient: const LinearGradient(
           colors: [Color(0xFF082F0A), Color(0xFF0B4A06), Color(0xFF0F766E)],
           begin: Alignment.topLeft,
@@ -358,8 +468,8 @@ class _HeroPanel extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF0B4A06).withValues(alpha: 0.22),
-            blurRadius: 24,
-            offset: const Offset(0, 12),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -370,11 +480,11 @@ class _HeroPanel extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 58,
-                height: 58,
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.14),
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(14),
                   border: Border.all(
                     color: Colors.white.withValues(alpha: 0.22),
                   ),
@@ -382,26 +492,25 @@ class _HeroPanel extends StatelessWidget {
                 child: const Icon(
                   Icons.request_quote_outlined,
                   color: Colors.white,
-                  size: 30,
+                  size: 23,
                 ),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Wrap(
-                      spacing: 10,
-                      runSpacing: 8,
+                      spacing: 8,
+                      runSpacing: 6,
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         Text(
                           quotation.number,
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 25,
+                            fontSize: 19,
                             fontWeight: FontWeight.w900,
-                            letterSpacing: -0.5,
                           ),
                         ),
                         _StatusChip(
@@ -411,12 +520,12 @@ class _HeroPanel extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 4),
                     Text(
                       quotation.customerName,
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.86),
-                        fontSize: 14.5,
+                        fontSize: 12.5,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -425,8 +534,8 @@ class _HeroPanel extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          Wrap(spacing: 10, runSpacing: 10, children: actions),
+          const SizedBox(height: 12),
+          Wrap(spacing: 8, runSpacing: 8, children: actions),
         ],
       ),
     );
@@ -443,7 +552,7 @@ class _StatsGrid extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
-        final cardWidth = width < 680 ? width : (width - 36) / 4;
+        final cardWidth = width < 680 ? (width - 8) / 2 : (width - 24) / 4;
         final stats = [
           _StatData(
             'Subtotal',
@@ -468,8 +577,8 @@ class _StatsGrid extends StatelessWidget {
         ];
 
         return Wrap(
-          spacing: 12,
-          runSpacing: 12,
+          spacing: 8,
+          runSpacing: 8,
           children: [
             for (final stat in stats)
               SizedBox(
@@ -496,7 +605,7 @@ class _ItemsSection extends StatelessWidget {
       icon: Icons.list_alt_rounded,
       child: items.isEmpty
           ? const Padding(
-              padding: EdgeInsets.all(18),
+              padding: EdgeInsets.all(12),
               child: Text(
                 'No quotation items found.',
                 style: TextStyle(color: AppColors.textSecondary),
@@ -507,7 +616,7 @@ class _ItemsSection extends StatelessWidget {
               children: [
                 for (var i = 0; i < items.length; i++) ...[
                   _ItemMobileCard(item: items[i]),
-                  if (i != items.length - 1) const SizedBox(height: 10),
+                  if (i != items.length - 1) const SizedBox(height: 8),
                 ],
               ],
             )
@@ -530,10 +639,10 @@ class _ItemsTable extends StatelessWidget {
         child: Column(
           children: [
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               decoration: BoxDecoration(
                 color: AppColors.surfaceSoft,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: const Row(
                 children: [
@@ -550,8 +659,8 @@ class _ItemsTable extends StatelessWidget {
             for (final item in items)
               Padding(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 14,
+                  horizontal: 10,
+                  vertical: 9,
                 ),
                 child: Row(
                   children: [
@@ -561,7 +670,7 @@ class _ItemsTable extends StatelessWidget {
                         item.productName,
                         style: const TextStyle(
                           color: AppColors.textPrimary,
-                          fontSize: 13.5,
+                          fontSize: 12,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
@@ -643,7 +752,7 @@ class _OptionalSections extends StatelessWidget {
             child: _LongText(quotation.notes),
           ),
         if (quotation.notes.isNotEmpty && quotation.termsConditions.isNotEmpty)
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
         if (quotation.termsConditions.isNotEmpty)
           _SectionCard(
             title: 'Terms & Conditions',
@@ -785,16 +894,16 @@ class _SectionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.borderLight),
         boxShadow: [
           BoxShadow(
             color: AppColors.textPrimary.withValues(alpha: 0.04),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -803,19 +912,19 @@ class _SectionCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, color: AppColors.primary, size: 20),
-              const SizedBox(width: 8),
+              Icon(icon, color: AppColors.primary, size: 17),
+              const SizedBox(width: 7),
               Text(
                 title,
                 style: const TextStyle(
                   color: AppColors.textPrimary,
-                  fontSize: 16,
+                  fontSize: 13.5,
                   fontWeight: FontWeight.w900,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
           child,
         ],
       ),
@@ -831,24 +940,24 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.borderLight),
       ),
       child: Row(
         children: [
           Container(
-            width: 42,
-            height: 42,
+            width: 34,
+            height: 34,
             decoration: BoxDecoration(
               color: AppColors.surfaceSoft,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(11),
             ),
-            child: Icon(stat.icon, color: AppColors.primary, size: 21),
+            child: Icon(stat.icon, color: AppColors.primary, size: 17),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 9),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -857,18 +966,18 @@ class _StatCard extends StatelessWidget {
                   stat.label,
                   style: const TextStyle(
                     color: AppColors.textSecondary,
-                    fontSize: 12,
+                    fontSize: 10.5,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
                 Text(
                   stat.value,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: AppColors.textPrimary,
-                    fontSize: 18,
+                    fontSize: 14.5,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -907,9 +1016,9 @@ class _ActionPill extends StatelessWidget {
         foregroundColor: color,
         disabledBackgroundColor: Colors.white.withValues(alpha: 0.55),
         disabledForegroundColor: color.withValues(alpha: 0.45),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-        textStyle: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800),
+        textStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
       ),
     );
   }
@@ -929,7 +1038,7 @@ class _StatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(999),
@@ -938,19 +1047,19 @@ class _StatusChip extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 7,
-            height: 7,
+            width: 6,
+            height: 6,
             decoration: BoxDecoration(
               color: foreground,
               shape: BoxShape.circle,
             ),
           ),
-          const SizedBox(width: 7),
+          const SizedBox(width: 6),
           Text(
             label,
             style: TextStyle(
               color: foreground,
-              fontSize: 12,
+              fontSize: 10.5,
               fontWeight: FontWeight.w900,
             ),
           ),
@@ -969,17 +1078,17 @@ class _DetailRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 13),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 130,
+            width: 112,
             child: Text(
               label,
               style: const TextStyle(
                 color: AppColors.textSecondary,
-                fontSize: 12.5,
+                fontSize: 11,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -989,9 +1098,9 @@ class _DetailRow extends StatelessWidget {
               value.isEmpty ? '-' : value,
               style: const TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 13.5,
+                fontSize: 12,
                 fontWeight: FontWeight.w700,
-                height: 1.35,
+                height: 1.25,
               ),
             ),
           ),
@@ -1012,9 +1121,9 @@ class _LongText extends StatelessWidget {
       value,
       style: const TextStyle(
         color: AppColors.textPrimary,
-        fontSize: 13.5,
+        fontSize: 12,
         fontWeight: FontWeight.w600,
-        height: 1.45,
+        height: 1.35,
       ),
     );
   }
@@ -1028,10 +1137,10 @@ class _ItemMobileCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: AppColors.background,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppColors.borderLight),
       ),
       child: Column(
@@ -1044,7 +1153,7 @@ class _ItemMobileCard extends StatelessWidget {
               fontWeight: FontWeight.w900,
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 7),
           _DetailRow('Qty / UOM', '${item.quantityText} ${item.uom}'),
           _DetailRow('Unit Price', _formatMoney(item.unitPrice)),
           _DetailRow(
@@ -1069,9 +1178,8 @@ class _TableHeader extends StatelessWidget {
       label.toUpperCase(),
       style: const TextStyle(
         color: AppColors.textSecondary,
-        fontSize: 11,
+        fontSize: 10,
         fontWeight: FontWeight.w900,
-        letterSpacing: 0.8,
       ),
     );
   }
@@ -1090,7 +1198,7 @@ class _TableValue extends StatelessWidget {
       overflow: TextOverflow.ellipsis,
       style: const TextStyle(
         color: AppColors.textPrimary,
-        fontSize: 13,
+        fontSize: 11.5,
         fontWeight: FontWeight.w700,
       ),
     );
@@ -1106,10 +1214,10 @@ class _ErrorPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.borderLight),
       ),
       child: Column(
@@ -1117,15 +1225,15 @@ class _ErrorPanel extends StatelessWidget {
           const Icon(
             Icons.cloud_off_rounded,
             color: AppColors.textSecondary,
-            size: 42,
+            size: 34,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Text(
             message,
             textAlign: TextAlign.center,
             style: const TextStyle(color: AppColors.textSecondary),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 10),
           OutlinedButton(onPressed: onRetry, child: const Text('Retry')),
         ],
       ),

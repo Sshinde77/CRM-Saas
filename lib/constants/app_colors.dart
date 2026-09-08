@@ -63,4 +63,26 @@ class AppColors {
   static const Color deliveryYellowSoft = surfaceOverlay;
   static const Color deliveryVioletBadge = adminSidebarBg;
   static const Color deliveryBlueBadge = adminSidebarBg;
+  static const Color deliveryDashboardHeaderStart = Color(0xFF005F43);
+  static const Color deliveryDashboardHeaderMid = Color(0xFF00995D);
+  static const Color deliveryDashboardHeaderEnd = Color(0xFF00533D);
+  static const Color deliveryDashboardNavStart = Color(0xFF006947);
+  static const Color deliveryDashboardNavEnd = Color(0xFF004F3C);
+  static const Color deliveryDashboardNavActive = Color(0xFF0AA06C);
+  static const Color deliveryDashboardOnlineDot = Color(0xFF25D66F);
+  static const Color deliveryDashboardText = Color(0xFF004B3E);
+  static const Color deliveryKpiMintIcon = Color(0xFF009B68);
+  static const Color deliveryKpiMintBg = Color(0xFFD7F8E7);
+  static const Color deliveryKpiYellowIcon = Color(0xFF8A8F00);
+  static const Color deliveryKpiYellowBg = Color(0xFFFFF3A8);
+  static const Color deliveryKpiGreenIcon = Color(0xFF05A927);
+  static const Color deliveryKpiGreenBg = Color(0xFFD7FBE2);
+  static const Color deliveryKpiAquaIcon = Color(0xFF0A8E68);
+  static const Color deliveryKpiAquaBg = Color(0xFFD8F8F0);
+  static const Color deliveryKpiRedIcon = Color(0xFFE11D35);
+  static const Color deliveryKpiRedBg = Color(0xFFFFE2E6);
+  static const Color deliveryProfileAvatarBg = Color(0xFFE5F7EE);
+  static const Color deliveryProfileAvatarBorder = Color(0xFFFFFFFF);
+  static const Color deliveryCheckInButton = Color(0xFF00995D);
+  static const Color deliveryCheckInButtonShadow = Color(0xFF00533D);
 }

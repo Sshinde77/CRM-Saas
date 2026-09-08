@@ -38,6 +38,11 @@ class SalesManagerSidebar extends StatelessWidget {
       const _SidebarItem('Customers', Icons.groups_outlined),
       const _SidebarItem('Leads', Icons.person_add_alt_1_outlined),
       const _SidebarItem('Quotations', Icons.description_outlined),
+      const _SidebarItem(
+        'Orders',
+        Icons.receipt_long_outlined,
+        actionLabel: 'Sales Orders',
+      ),
       const _SidebarItem('Create Order', Icons.shopping_cart_outlined),
       const _SidebarItem('Stock', Icons.inventory_2_outlined),
       const _SidebarItem('Visits', Icons.place_outlined),
@@ -77,13 +82,13 @@ class SalesManagerSidebar extends StatelessWidget {
                 separatorBuilder: (_, _) => const SizedBox(height: 8),
                 itemBuilder: (context, index) {
                   final item = items[index];
-                  final selected = _isSelected(item.label, currentPage);
+                  final selected = _isSelected(item, currentPage);
 
                   return Material(
                     color: Colors.transparent,
                     child: InkWell(
                       borderRadius: BorderRadius.circular(18),
-                      onTap: () => onSelect(item.label),
+                      onTap: () => onSelect(item.actionLabel ?? item.label),
                       child: Ink(
                         decoration: BoxDecoration(
                           color: selected
@@ -155,9 +160,12 @@ class SalesManagerSidebar extends StatelessWidget {
     );
   }
 
-  bool _isSelected(String itemLabel, String currentPage) {
+  bool _isSelected(_SidebarItem item, String currentPage) {
+    final itemLabel = item.label;
+    final actionLabel = item.actionLabel;
     if (itemLabel == currentPage) return true;
-    if (itemLabel == 'Create Order' && currentPage == 'Sales Orders') {
+    if (actionLabel != null && actionLabel == currentPage) return true;
+    if (itemLabel == 'Orders' && currentPage == 'Sales Orders') {
       return true;
     }
     if (itemLabel == 'Follow-ups' && currentPage == 'Follow-Ups') {
@@ -170,6 +178,7 @@ class SalesManagerSidebar extends StatelessWidget {
 class _SidebarItem {
   final String label;
   final IconData icon;
+  final String? actionLabel;
 
-  const _SidebarItem(this.label, this.icon);
+  const _SidebarItem(this.label, this.icon, {this.actionLabel});
 }

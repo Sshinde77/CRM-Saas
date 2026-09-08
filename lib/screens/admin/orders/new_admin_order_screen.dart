@@ -11,6 +11,7 @@ import '../../sales_manager/stock/sales_manager_stock_screen.dart';
 import '../../sales_manager/visits/sales_manager_visits_screen.dart';
 import '../customers/customers_screen.dart';
 import '../leads/admin_leads_screen.dart';
+import '../quotations/admin_quotations_screen.dart';
 import 'admin_orders_screen.dart';
 
 class NewAdminOrderScreen extends StatefulWidget {
@@ -220,6 +221,14 @@ class _NewAdminOrderScreenState extends State<NewAdminOrderScreen> {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (_) => const AdminOrdersScreen(useSalesManagerShell: true),
+        ),
+      );
+      return;
+    }
+    if (action == 'Quotations' || action == 'Quotation') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const AdminQuotationsScreen(useSalesManagerShell: true),
         ),
       );
       return;
