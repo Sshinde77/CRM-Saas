@@ -3,42 +3,47 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import '../constants/api_constants.dart';
+import '../models/customer_model.dart';
+import '../providers/api_provider.dart';
+
 class PaymentCollectionScreen extends StatefulWidget {
   const PaymentCollectionScreen({
     super.key,
-    required this.customersUrl,
-    required this.collectPaymentUrl,
+    this.customersUrl,
+    this.customerDetailUrlTemplate,
+    this.collectPaymentUrl,
     this.authToken,
   });
 
-  final String customersUrl;
-  final String collectPaymentUrl;
+  final String? customersUrl;
+  final String? customerDetailUrlTemplate;
+  final String? collectPaymentUrl;
   final String? authToken;
 
   @override
-  State<PaymentCollectionScreen> createState() =>
-      _PaymentCollectionScreenState();
+  State<PaymentCollectionScreen> createState() => _PaymentCollectionScreenState();
 }
 
 class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
-  final _noteController = TextEditingController();
+  final _referenceController = TextEditingController();
+  final _notesController = TextEditingController();
 
   List<_PaymentCustomer> _customers = const [];
   _PaymentCustomer? _selectedCustomer;
-  bool _isLoading = true;
-  bool _isSubmitting = false;
-  String? _errorMessage;
+  String _paymentMode = 'cash';
+  bool _loadingCustomers = true;
+  bool _loadingDetail = false;
+  bool _submitting = false;
+  String? _error;
 
-  double get _collectedAmount =>
-      double.tryParse(_amountController.text.trim()) ?? 0;
+  String get _paymentUrlTemplate => widget.collectPaymentUrl ?? ApiConstants.baseUrl + ApiEndpoints.customersPaymentsTemplate;
 
-  double get _remainingAmount {
-    final pending = _selectedCustomer?.pendingAmount ?? 0;
-    final remaining = pending - _collectedAmount;
-    return remaining < 0 ? 0 : remaining;
-  }
+  double get _amountCollected => double.tryParse(_amountController.text.trim()) ?? 0;
+  double get _amountDue => _selectedCustomer?.pendingAmount ?? 0;
+  double get _remainingAmount => (_amountDue - _amountCollected).clamp(0, double.infinity).toDouble();
 
   @override
   void initState() {
@@ -50,501 +55,386 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
   @override
   void dispose() {
     _amountController.dispose();
-    _noteController.dispose();
+    _referenceController.dispose();
+    _notesController.dispose();
     super.dispose();
   }
 
   Future<void> _loadCustomers() async {
     setState(() {
-      _isLoading = true;
-      _errorMessage = null;
+      _loadingCustomers = true;
+      _error = null;
     });
-
     try {
-      final response = await http.get(
-        Uri.parse(widget.customersUrl),
-        headers: _headers,
-      );
-
-      if (response.statusCode < 200 || response.statusCode >= 300) {
-        throw Exception('Unable to load customers');
-      }
-
-      final decoded = jsonDecode(response.body);
-      final rawCustomers = decoded is List
-          ? decoded
-          : decoded['data'] is List
-              ? decoded['data']
-              : decoded['customers'] is List
-                  ? decoded['customers']
-                  : const [];
-
-      final customers = rawCustomers
-          .whereType<Map<String, dynamic>>()
-          .map(_PaymentCustomer.fromJson)
-          .where((customer) => customer.pendingAmount > 0)
-          .toList();
-
+      final customers = await ApiProviderScope.of(context).fetchCustomers();
+      if (!mounted) return;
       setState(() {
-        _customers = customers;
-        _isLoading = false;
+        _customers = customers.map(_PaymentCustomer.fromModel).toList();
+        _loadingCustomers = false;
       });
     } catch (_) {
       setState(() {
-        _isLoading = false;
-        _errorMessage = 'Could not load customers. Please try again.';
+        _loadingCustomers = false;
+        _error = 'Could not load customers. Please try again.';
       });
     }
   }
 
-  Future<void> _collectPayment() async {
-    if (!_formKey.currentState!.validate() || _selectedCustomer == null) {
-      return;
-    }
-
-    setState(() => _isSubmitting = true);
-
+  Future<void> _selectCustomer(_PaymentCustomer? customer) async {
+    if (customer == null) return;
+    setState(() {
+      _selectedCustomer = customer;
+      _loadingDetail = true;
+      _amountController.clear();
+    });
     try {
-      final collectPaymentUrl = widget.collectPaymentUrl.replaceAll(
-        '{customer_id}',
-        _selectedCustomer!.id.toString(),
+      final detail = await ApiProviderScope.of(context).fetchCustomerById(
+        customer.id.toString(),
       );
+      final next = _PaymentCustomer.fromModel(detail);
+      if (!mounted) return;
+      setState(() {
+        _selectedCustomer = next;
+        _amountController.text = next.pendingAmount > 0 ? _plainAmount(next.pendingAmount) : '';
+        _loadingDetail = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _loadingDetail = false);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Could not load pending amount.')));
+    }
+  }
+
+  Future<void> _recordCollection() async {
+    if (!_formKey.currentState!.validate() || _selectedCustomer == null) return;
+    setState(() => _submitting = true);
+    try {
+      final url = _paymentUrlTemplate.replaceAll('{customer_id}', _selectedCustomer!.id.toString());
       final response = await http.post(
-        Uri.parse(collectPaymentUrl),
-        headers: {
-          ..._headers,
-          'Content-Type': 'application/json',
-        },
+        Uri.parse(url),
+        headers: {..._headers, ApiConstants.contentTypeHeader: ApiConstants.jsonMimeType},
         body: jsonEncode({
           'customer_id': _selectedCustomer!.id,
-          'amount': _collectedAmount,
+          'amount': _amountCollected,
+          'payment_amount': _amountCollected,
+          'payment_mode': _paymentMode,
+          'payment_method': _paymentMode,
+          'reference': _referenceController.text.trim(),
+          'notes': _notesController.text.trim(),
           'remaining_amount': _remainingAmount,
-          'note': _noteController.text.trim(),
         }),
       );
-
       if (!mounted) return;
-
-      if (response.statusCode < 200 || response.statusCode >= 300) {
-        throw Exception('Unable to collect payment');
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Payment collected successfully')),
-      );
+      if (!_isSuccess(response.statusCode)) throw Exception();
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Collection recorded successfully.')));
       Navigator.of(context).pop(true);
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Payment collection failed')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Collection failed. Please try again.')));
     } finally {
-      if (mounted) {
-        setState(() => _isSubmitting = false);
-      }
+      if (mounted) setState(() => _submitting = false);
     }
   }
 
   Map<String, String> get _headers {
     final token = widget.authToken;
     return {
-      'Accept': 'application/json',
-      if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+      ApiConstants.acceptHeader: ApiConstants.jsonMimeType,
+      if (token != null && token.isNotEmpty)
+        ApiConstants.authorizationHeader: ApiConstants.bearerPrefix + ' ' + token,
     };
   }
 
   @override
   Widget build(BuildContext context) {
-    final textScaler = MediaQuery.textScalerOf(context).clamp(
-      minScaleFactor: 0.9,
-      maxScaleFactor: 1.2,
-    );
-
+    final textScaler = MediaQuery.textScalerOf(context).clamp(minScaleFactor: 0.9, maxScaleFactor: 1.2);
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: textScaler),
       child: Scaffold(
-        backgroundColor: const Color(0xFFF6F8FB),
-        appBar: AppBar(
-          title: const Text('Collect Payment'),
-          centerTitle: false,
-          elevation: 0,
-          backgroundColor: Colors.white,
-          foregroundColor: const Color(0xFF172033),
-          surfaceTintColor: Colors.transparent,
-        ),
+        backgroundColor: const Color(0xFFB6B8BC),
         body: SafeArea(
-          child: _buildBody(context),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Material(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  clipBehavior: Clip.antiAlias,
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _Header(onClose: () => Navigator.of(context).maybePop()),
+                        const Divider(height: 1, color: Color(0xFFE5E7EB)),
+                        Flexible(
+                          child: SingleChildScrollView(
+                            padding: const EdgeInsets.all(24),
+                            child: _body(),
+                          ),
+                        ),
+                        const Divider(height: 1, color: Color(0xFFE5E7EB)),
+                        _Footer(
+                          busy: _submitting,
+                          onCancel: () => Navigator.of(context).maybePop(),
+                          onSubmit: _recordCollection,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildBody(BuildContext context) {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator(strokeWidth: 2.6));
+  Widget _body() {
+    if (_loadingCustomers) {
+      return const SizedBox(height: 280, child: Center(child: CircularProgressIndicator(strokeWidth: 2.6)));
     }
-
-    if (_errorMessage != null) {
-      return _ErrorState(message: _errorMessage!, onRetry: _loadCustomers);
-    }
-
-    return Form(
-      key: _formKey,
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-        children: [
-          _SummaryPanel(
-            pendingAmount: _selectedCustomer?.pendingAmount ?? 0,
-            collectedAmount: _collectedAmount,
-            remainingAmount: _remainingAmount,
-          ),
-          const SizedBox(height: 20),
-          _SectionCard(
-            children: [
-              DropdownButtonFormField<_PaymentCustomer>(
-                value: _selectedCustomer,
-                isExpanded: true,
-                decoration: _inputDecoration(
-                  label: 'Customer',
-                  icon: Icons.person_outline_rounded,
-                ),
-                items: _customers
-                    .map(
-                      (customer) => DropdownMenuItem(
-                        value: customer,
-                        child: Text(
-                          customer.name,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (customer) {
-                  setState(() {
-                    _selectedCustomer = customer;
-                    _amountController.clear();
-                  });
-                },
-                validator: (value) =>
-                    value == null ? 'Please select a customer' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _amountController,
-                enabled: _selectedCustomer != null,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: _inputDecoration(
-                  label: 'Collected Amount',
-                  icon: Icons.payments_outlined,
-                ),
-                validator: (value) {
-                  final amount = double.tryParse((value ?? '').trim());
-                  final pending = _selectedCustomer?.pendingAmount ?? 0;
-
-                  if (amount == null || amount <= 0) {
-                    return 'Enter collected amount';
-                  }
-                  if (amount > pending) {
-                    return 'Amount cannot be more than pending amount';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _noteController,
-                maxLines: 3,
-                decoration: _inputDecoration(
-                  label: 'Note',
-                  icon: Icons.notes_outlined,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          SizedBox(
-            height: 48,
-            child: ElevatedButton.icon(
-              onPressed: _isSubmitting ? null : _collectPayment,
-              icon: _isSubmitting
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.check_circle_outline_rounded, size: 22),
-              label: Text(_isSubmitting ? 'Collecting...' : 'Collected'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1E6BFF),
-                foregroundColor: Colors.white,
-                disabledBackgroundColor: const Color(0xFF9DBAF9),
-                textStyle: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+    if (_error != null) return _ErrorState(message: _error!, onRetry: _loadCustomers);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _Label('Customer'),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<_PaymentCustomer>(
+          value: _selectedCustomer,
+          isExpanded: true,
+          decoration: _decoration(),
+          hint: const Text('Select customer'),
+          items: _customers.map((c) => DropdownMenuItem(value: c, child: Text(c.name, overflow: TextOverflow.ellipsis))).toList(),
+          onChanged: _loadingDetail ? null : _selectCustomer,
+          validator: (v) => v == null ? 'Please select customer' : null,
+        ),
+        const SizedBox(height: 16),
+        _AmountSummary(orderTotal: _amountDue, amountDue: _amountDue, loading: _loadingDetail),
+        const SizedBox(height: 22),
+        const _Label('Payment Mode'),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<String>(
+          value: _paymentMode,
+          isExpanded: true,
+          decoration: _decoration(),
+          items: const [
+            DropdownMenuItem(value: 'cash', child: Text('Cash')),
+            DropdownMenuItem(value: 'upi', child: Text('UPI')),
+            DropdownMenuItem(value: 'bank_transfer', child: Text('Bank Transfer')),
+            DropdownMenuItem(value: 'cheque', child: Text('Cheque')),
+            DropdownMenuItem(value: 'card', child: Text('Card')),
+          ],
+          onChanged: (v) => setState(() => _paymentMode = v ?? 'cash'),
+        ),
+        const SizedBox(height: 22),
+        const _Label('Amount'),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: _amountController,
+          enabled: _selectedCustomer != null && !_loadingDetail,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: _decoration(hintText: '0'),
+          validator: (value) {
+            final amount = double.tryParse((value ?? '').trim());
+            if (_selectedCustomer == null) return 'Please select customer';
+            if (amount == null || amount <= 0) return 'Enter amount';
+            if (amount > _amountDue) return 'Amount cannot be more than pending amount';
+            return null;
+          },
+        ),
+        const SizedBox(height: 22),
+        const _Label('Reference (optional)'),
+        const SizedBox(height: 8),
+        TextFormField(controller: _referenceController, decoration: _decoration(hintText: 'Txn / cheque / UPI reference')),
+        const SizedBox(height: 22),
+        const _Label('Notes (optional)'),
+        const SizedBox(height: 8),
+        TextFormField(controller: _notesController, minLines: 3, maxLines: 4, decoration: _decoration()),
+        const SizedBox(height: 14),
+        Align(
+          alignment: Alignment.centerRight,
+          child: Text('Remaining: ' + _formatMoney(_remainingAmount), style: const TextStyle(color: Color(0xFF667085), fontSize: 12, fontWeight: FontWeight.w700)),
+        ),
+      ],
     );
   }
 
-  InputDecoration _inputDecoration({
-    required String label,
-    required IconData icon,
-  }) {
+  InputDecoration _decoration({String? hintText}) {
     return InputDecoration(
-      labelText: label,
-      prefixIcon: Icon(icon, size: 22),
+      hintText: hintText,
+      hintStyle: const TextStyle(color: Color(0xFF9AA3AF), fontSize: 14, fontWeight: FontWeight.w500),
       filled: true,
-      fillColor: const Color(0xFFF8FAFD),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFF1E6BFF), width: 1.4),
-      ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      fillColor: const Color(0xFFFBFCFE),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+      border: _border(const Color(0xFFE1E6EE)),
+      enabledBorder: _border(const Color(0xFFE1E6EE)),
+      focusedBorder: _border(const Color(0xFF94A3B8), width: 1.2),
+      errorBorder: _border(const Color(0xFFDC2626)),
+      focusedErrorBorder: _border(const Color(0xFFDC2626), width: 1.2),
+    );
+  }
+
+  OutlineInputBorder _border(Color color, {double width = 1}) {
+    return OutlineInputBorder(
+      borderRadius: BorderRadius.circular(18),
+      borderSide: BorderSide(color: color, width: width),
     );
   }
 }
 
-class _SummaryPanel extends StatelessWidget {
-  const _SummaryPanel({
-    required this.pendingAmount,
-    required this.collectedAmount,
-    required this.remainingAmount,
-  });
+class _Header extends StatelessWidget {
+  const _Header({required this.onClose});
+  final VoidCallback onClose;
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 20, 20, 18),
+      child: Row(children: [
+        const Expanded(child: Text('Record Collection', style: TextStyle(color: Color(0xFF172033), fontSize: 18, fontWeight: FontWeight.w800))),
+        IconButton(visualDensity: VisualDensity.compact, onPressed: onClose, icon: const Icon(Icons.close_rounded, color: Color(0xFF64748B), size: 24)),
+      ]),
+    );
+  }
+}
 
-  final double pendingAmount;
-  final double collectedAmount;
-  final double remainingAmount;
+class _Footer extends StatelessWidget {
+  const _Footer({required this.busy, required this.onCancel, required this.onSubmit});
+  final bool busy;
+  final VoidCallback onCancel;
+  final VoidCallback onSubmit;
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+        TextButton(
+          onPressed: busy ? null : onCancel,
+          style: TextButton.styleFrom(minimumSize: const Size(94, 50), foregroundColor: const Color(0xFF172033), backgroundColor: const Color(0xFFF4F5F7), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25))),
+          child: const Text('Cancel'),
+        ),
+        const SizedBox(width: 12),
+        FilledButton(
+          onPressed: busy ? null : onSubmit,
+          style: FilledButton.styleFrom(minimumSize: const Size(162, 50), backgroundColor: const Color(0xFF064B08), foregroundColor: Colors.white, disabledBackgroundColor: const Color(0xFF9AB99B), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25))),
+          child: busy ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Text('Record Collection'),
+        ),
+      ]),
+    );
+  }
+}
 
+class _AmountSummary extends StatelessWidget {
+  const _AmountSummary({required this.orderTotal, required this.amountDue, required this.loading});
+  final double orderTotal;
+  final double amountDue;
+  final bool loading;
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF172033),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF172033).withOpacity(0.12),
-            blurRadius: 14,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Payment Summary',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _AmountTile(
-                  label: 'Pending',
-                  amount: pendingAmount,
-                  color: const Color(0xFFFFC857),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _AmountTile(
-                  label: 'Collected',
-                  amount: collectedAmount,
-                  color: const Color(0xFF6EE7B7),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          _AmountTile(
-            label: 'Remaining',
-            amount: remainingAmount,
-            color: const Color(0xFF93C5FD),
-            isWide: true,
-          ),
-        ],
-      ),
+      decoration: BoxDecoration(color: const Color(0xFFFBFBFC), borderRadius: BorderRadius.circular(18), border: Border.all(color: const Color(0xFFE1E6EE))),
+      child: loading
+          ? const SizedBox(height: 58, child: Center(child: CircularProgressIndicator(strokeWidth: 2.4)))
+          : Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              _AmountRow(label: 'Order Total', value: orderTotal),
+              const SizedBox(height: 4),
+              _AmountRow(label: 'Amount Due', value: amountDue),
+              const SizedBox(height: 12),
+              const Text('Recording a collection does not mark the invoice paid - the accounts team reconciles it.', style: TextStyle(color: Color(0xFF8A94A6), fontSize: 14, height: 1.25, fontWeight: FontWeight.w500)),
+            ]),
     );
   }
 }
 
-class _AmountTile extends StatelessWidget {
-  const _AmountTile({
-    required this.label,
-    required this.amount,
-    required this.color,
-    this.isWide = false,
-  });
-
+class _AmountRow extends StatelessWidget {
+  const _AmountRow({required this.label, required this.value});
   final String label;
-  final double amount;
-  final Color color;
-  final bool isWide;
-
+  final double value;
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: isWide ? double.infinity : null,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: Color(0xFFCBD5E1),
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            _formatAmount(amount),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: color,
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
-      ),
-    );
+    return Row(children: [
+      Expanded(child: Text(label, style: const TextStyle(color: Color(0xFF667085), fontSize: 16, height: 1.1, fontWeight: FontWeight.w500))),
+      Text(_formatMoney(value), style: const TextStyle(color: Color(0xFF172033), fontSize: 16, height: 1.1, fontWeight: FontWeight.w800)),
+    ]);
   }
 }
 
-class _SectionCard extends StatelessWidget {
-  const _SectionCard({required this.children});
-
-  final List<Widget> children;
-
+class _Label extends StatelessWidget {
+  const _Label(this.text);
+  final String text;
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE6EAF0)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Column(children: children),
-    );
+    return Text(text, style: const TextStyle(color: Color(0xFF344054), fontSize: 14, fontWeight: FontWeight.w800));
   }
 }
 
 class _ErrorState extends StatelessWidget {
   const _ErrorState({required this.message, required this.onRetry});
-
   final String message;
   final VoidCallback onRetry;
-
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.cloud_off_outlined,
-              color: Color(0xFF64748B),
-              size: 56,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Color(0xFF334155),
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 16),
-            OutlinedButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh_rounded, size: 20),
-              label: const Text('Retry'),
-            ),
-          ],
-        ),
+    return SizedBox(
+      height: 280,
+      child: Center(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          const Icon(Icons.cloud_off_outlined, color: Color(0xFF64748B), size: 52),
+          const SizedBox(height: 14),
+          Text(message, textAlign: TextAlign.center, style: const TextStyle(color: Color(0xFF334155), fontSize: 14, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 16),
+          OutlinedButton.icon(onPressed: onRetry, icon: const Icon(Icons.refresh_rounded, size: 20), label: const Text('Retry')),
+        ]),
       ),
     );
   }
 }
 
 class _PaymentCustomer {
-  const _PaymentCustomer({
-    required this.id,
-    required this.name,
-    required this.pendingAmount,
-  });
-
+  const _PaymentCustomer({required this.id, required this.name, required this.pendingAmount, required this.raw});
   final dynamic id;
   final String name;
   final double pendingAmount;
+  final Map<String, dynamic> raw;
 
-  factory _PaymentCustomer.fromJson(Map<String, dynamic> json) {
+  @override
+  bool operator ==(Object other) {
+    return other is _PaymentCustomer && other.id.toString() == id.toString();
+  }
+
+  @override
+  int get hashCode => id.toString().hashCode;
+
+  factory _PaymentCustomer.fromModel(CustomerModel customer) {
     return _PaymentCustomer(
-      id: json['id'] ?? json['customer_id'],
-      name: (json['name'] ??
-              json['customer_name'] ??
-              json['full_name'] ??
-              'Unnamed Customer')
-          .toString(),
-      pendingAmount: _toDouble(
-        json['pending_amount'] ??
-            json['pendingAmount'] ??
-            json['due_amount'] ??
-            json['remaining_amount'] ??
-            0,
-      ),
+      id: customer.id,
+      name: customer.name.trim().isNotEmpty ? customer.name : 'Unnamed Customer',
+      pendingAmount: (customer.outstanding ?? 0).toDouble(),
+      raw: const {},
     );
   }
+
+
 }
 
-double _toDouble(dynamic value) {
-  if (value is num) return value.toDouble();
-  return double.tryParse(value?.toString() ?? '') ?? 0;
+bool _isSuccess(int statusCode) => statusCode >= 200 && statusCode < 300;
+String _plainAmount(double value) {
+  if (value == value.roundToDouble()) return value.round().toString();
+  return value.toStringAsFixed(2);
 }
 
-String _formatAmount(double value) {
-  return value.toStringAsFixed(value.truncateToDouble() == value ? 0 : 2);
+String _formatMoney(double value) {
+  final rounded = value.round();
+  final source = rounded.abs().toString();
+  final buffer = StringBuffer();
+  for (var i = 0; i < source.length; i++) {
+    final remaining = source.length - i;
+    buffer.write(source[i]);
+    if (remaining > 1 && remaining % 3 == 1) buffer.write(',');
+  }
+  return (rounded < 0 ? '-Rs ' : 'Rs ') + buffer.toString();
 }
