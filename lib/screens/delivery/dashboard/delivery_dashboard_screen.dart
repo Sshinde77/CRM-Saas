@@ -9,6 +9,7 @@ import '../../../providers/api_provider.dart';
 import '../../../routes/app_router.dart';
 import '../../../widgets/delivery/delivery_partner_sidebar.dart';
 import '../../payment_collection_screen.dart';
+import '../../admin/customers/add_customer_screen.dart';
 import '../orders/create_delivery_order_screen.dart';
 
 class DeliveryDashboardScreen extends StatefulWidget {
@@ -118,13 +119,13 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
         child: Align(
           alignment: Alignment.bottomCenter,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 112),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 112),
             child: Material(
               type: MaterialType.transparency,
               child: SizedBox(
-                width: 320,
+                width: 480,
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(8),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -141,6 +142,14 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
                           icon: Icons.add_shopping_cart_rounded,
                           label: 'Create Orders',
                           onTap: () => Navigator.pop(menuContext, 'create'),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _OrderActionTile(
+                          icon: Icons.person_add_alt_1_rounded,
+                          label: 'Create Customer',
+                          onTap: () => Navigator.pop(menuContext, 'customer'),
                         ),
                       ),
                     ],
@@ -169,6 +178,10 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
       if (result == true && mounted) {
         await _refresh();
       }
+    } else if (action == 'customer') {
+      await Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const AddCustomerScreen()),
+      );
     } else {
       await Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => const CreateDeliveryOrderScreen()),
