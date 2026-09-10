@@ -5,6 +5,7 @@ import '../screens/admin/notifications/notifications_screen.dart';
 import '../screens/admin/audit_logs/audit_logs_screen.dart';
 import '../screens/admin/vehicles/vehicle_stock_screen.dart';
 import '../screens/delivery/attendance/delivery_attendance_screen.dart';
+import '../screens/delivery/collections/delivery_collection_list_screen.dart';
 import '../screens/delivery/dashboard/delivery_dashboard_screen.dart';
 import '../screens/delivery/deliveries/assigned_deliveries_screen.dart';
 import '../screens/delivery/deliveries/delivery_detail_screen.dart';
@@ -24,6 +25,7 @@ class AppRoutes {
   static const String adminVehicleStock = '/admin/vehicle-stock';
   static const String deliveryDashboard = '/delivery/dashboard';
   static const String deliveryDeliveries = '/delivery/deliveries';
+  static const String deliveryCollections = '/delivery/collections';
   static const String deliveryVehicleStock = '/delivery/vehicle-stock';
   static const String deliveryAttendance = '/delivery/attendance';
   static const String deliveryLeaves = '/delivery/leaves';
@@ -47,6 +49,8 @@ class AppRouter {
       AppRoutes.adminVehicleStock: (_) => const VehicleStockScreen(),
       AppRoutes.deliveryDashboard: (_) => const DeliveryDashboardScreen(),
       AppRoutes.deliveryDeliveries: (_) => const AssignedDeliveriesScreen(),
+      AppRoutes.deliveryCollections: (_) =>
+          const DeliveryCollectionListScreen(),
       AppRoutes.deliveryAttendance: (_) => const DeliveryAttendanceScreen(),
       AppRoutes.deliveryVehicleStock: (_) => const DeliveryVehicleStockScreen(),
       AppRoutes.deliveryVehicleLoading: (_) =>

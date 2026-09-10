@@ -134,7 +134,7 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
             case 1:
               _navigateBottomItem('Orders', AppRoutes.deliveryDeliveries);
             case 2:
-              _navigateBottomItem('Collections', null);
+              _navigateBottomItem('Collections', AppRoutes.deliveryCollections);
             case 3:
               _navigateBottomItem('Attendance', AppRoutes.deliveryAttendance);
             case 4:
