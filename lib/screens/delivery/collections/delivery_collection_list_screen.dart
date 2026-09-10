@@ -80,11 +80,15 @@ class _DeliveryCollectionListScreenState
       case 0:
         Navigator.of(context).pushReplacementNamed(AppRoutes.deliveryDashboard);
       case 1:
-        Navigator.of(context).pushReplacementNamed(AppRoutes.deliveryDeliveries);
+        Navigator.of(
+          context,
+        ).pushReplacementNamed(AppRoutes.deliveryDeliveries);
       case 2:
         break;
       case 3:
-        Navigator.of(context).pushReplacementNamed(AppRoutes.deliveryAttendance);
+        Navigator.of(
+          context,
+        ).pushReplacementNamed(AppRoutes.deliveryAttendance);
       case 4:
         _scaffoldKey.currentState?.openDrawer();
     }
@@ -92,10 +96,9 @@ class _DeliveryCollectionListScreenState
 
   @override
   Widget build(BuildContext context) {
-    final textScaler = MediaQuery.textScalerOf(context).clamp(
-      minScaleFactor: 0.9,
-      maxScaleFactor: 1.2,
-    );
+    final textScaler = MediaQuery.textScalerOf(
+      context,
+    ).clamp(minScaleFactor: 0.9, maxScaleFactor: 1.2);
 
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: textScaler),
@@ -184,7 +187,8 @@ class _DeliveryCollectionListScreenState
                                 },
                               )
                             : _CollectionContent(
-                                data: data ??
+                                data:
+                                    data ??
                                     const _CollectionDashboardData(
                                       deliveries: [],
                                     ),
@@ -714,10 +718,7 @@ class _BottomNavItem extends StatelessWidget {
 }
 
 class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({
-    required this.title,
-    this.trailingIcon,
-  });
+  const _SectionHeader({required this.title, this.trailingIcon});
 
   final String title;
   final IconData? trailingIcon;
@@ -991,11 +992,12 @@ class _CollectionDelivery {
       'cash' => 'Cash',
       'bank_transfer' => 'Bank',
       '' => 'Not set',
-      _ => paymentMode
-          .split('_')
-          .where((part) => part.isNotEmpty)
-          .map((part) => "${part[0].toUpperCase()}${part.substring(1)}")
-          .join(' '),
+      _ =>
+        paymentMode
+            .split('_')
+            .where((part) => part.isNotEmpty)
+            .map((part) => "${part[0].toUpperCase()}${part.substring(1)}")
+            .join(' '),
     };
   }
 
