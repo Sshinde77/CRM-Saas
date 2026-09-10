@@ -596,39 +596,44 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 6),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        tooltip: 'Remove one ${p.name}',
-                        visualDensity: VisualDensity.compact,
-                        onPressed: quantity == 0
-                            ? null
-                            : () => setState(
-                                () => _quantities[p.id] = quantity - 1,
-                              ),
-                        icon: const Icon(Icons.remove, size: 18),
-                      ),
-                      Text(
-                        '$quantity',
-                        style: const TextStyle(fontWeight: FontWeight.w700),
-                      ),
-                      IconButton(
-                        tooltip: 'Add one ${p.name}',
-                        visualDensity: VisualDensity.compact,
-                        color: _green,
-                        onPressed: () =>
-                            setState(() => _quantities[p.id] = quantity + 1),
-                        icon: const Icon(Icons.add, size: 18),
-                      ),
-                    ],
-                  ),
                 ],
               ),
             ),
-            if (quantity > 0)
-              const Icon(Icons.check_circle, color: _green, size: 18),
+            const SizedBox(width: 8),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (quantity > 0)
+                  const Icon(Icons.check_circle, color: _green, size: 18),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      tooltip: 'Remove one ${p.name}',
+                      visualDensity: VisualDensity.compact,
+                      onPressed: quantity == 0
+                          ? null
+                          : () => setState(
+                              () => _quantities[p.id] = quantity - 1,
+                            ),
+                      icon: const Icon(Icons.remove, size: 18),
+                    ),
+                    Text(
+                      '$quantity',
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    IconButton(
+                      tooltip: 'Add one ${p.name}',
+                      visualDensity: VisualDensity.compact,
+                      color: _green,
+                      onPressed: () =>
+                          setState(() => _quantities[p.id] = quantity + 1),
+                      icon: const Icon(Icons.add, size: 18),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ],
         ),
       );

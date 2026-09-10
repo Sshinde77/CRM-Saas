@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../../../widgets/delivery/delivery_bottom_navigation.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../constants/app_colors.dart';
@@ -281,20 +283,6 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
     Navigator.of(context).pushNamed(AppRoutes.deliveryDetail(delivery.id));
   }
 
-  void _showComingSoon(String label) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text('$label screen is coming next.')));
-  }
-
-  void _navigateBottomItem(String label, String? route) {
-    if (route == null) {
-      _showComingSoon(label);
-      return;
-    }
-    Navigator.of(context).pushNamed(route);
-  }
-
   void _showSnack({
     required String title,
     required String message,
@@ -356,25 +344,9 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
       drawer: const DeliveryPartnerSidebar(
         currentRoute: AppRoutes.deliveryDeliveries,
       ),
-      bottomNavigationBar: _DeliveryBottomNavigation(
+      bottomNavigationBar: DeliveryBottomNavigation(
         currentIndex: 1,
-        onTap: (index) {
-          switch (index) {
-            case 0:
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                AppRoutes.deliveryDashboard,
-                (route) => false,
-              );
-            case 1:
-              break;
-            case 2:
-              _navigateBottomItem('Collections', null);
-            case 3:
-              _navigateBottomItem('Attendance', AppRoutes.deliveryAttendance);
-            case 4:
-              _scaffoldKey.currentState?.openDrawer();
-          }
-        },
+        onCollectionCreated: _loadDeliveries,
       ),
       body: SafeArea(
         bottom: false,
@@ -629,119 +601,6 @@ class _FilterTab extends StatelessWidget {
             fontSize: 12,
             fontWeight: FontWeight.w800,
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _DeliveryBottomNavigation extends StatelessWidget {
-  final int currentIndex;
-  final ValueChanged<int> onTap;
-
-  const _DeliveryBottomNavigation({
-    required this.currentIndex,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    const items = [
-      _BottomNavInfo(Icons.home_rounded, 'Dashboard'),
-      _BottomNavInfo(Icons.assignment_outlined, 'Orders'),
-      _BottomNavInfo(Icons.account_balance_wallet_outlined, 'Collections'),
-      _BottomNavInfo(Icons.event_available_outlined, 'Attendance'),
-      _BottomNavInfo(Icons.more_horiz_rounded, 'More'),
-    ];
-
-    return SafeArea(
-      top: false,
-      child: Container(
-        height: 76,
-        margin: const EdgeInsets.fromLTRB(0, 6, 0, 0),
-        padding: const EdgeInsets.all(7),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(0),
-          gradient: const LinearGradient(
-            colors: [
-              AppColors.deliveryDashboardNavStart,
-              AppColors.deliveryDashboardNavEnd,
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.deliveryHeroShadow.withValues(alpha: 0.22),
-              blurRadius: 16,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            for (var index = 0; index < items.length; index++)
-              Expanded(
-                child: _BottomNavItem(
-                  info: items[index],
-                  selected: currentIndex == index,
-                  onTap: () => onTap(index),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _BottomNavItem extends StatelessWidget {
-  final _BottomNavInfo info;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _BottomNavItem({
-    required this.info,
-    required this.selected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeOut,
-        height: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 7),
-        decoration: BoxDecoration(
-          color: selected
-              ? AppColors.deliveryDashboardNavActive.withValues(alpha: 0.78)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(info.icon, color: AppColors.surface, size: selected ? 25 : 23),
-            const SizedBox(height: 4),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                info.label,
-                maxLines: 1,
-                style: TextStyle(
-                  color: AppColors.surface.withValues(
-                    alpha: selected ? 1 : 0.88,
-                  ),
-                  fontSize: selected ? 11 : 10,
-                  fontWeight: selected ? FontWeight.w900 : FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
         ),
       ),
     );
@@ -2040,13 +1899,6 @@ class _StatusFilterInfo {
   final String label;
 
   const _StatusFilterInfo(this.value, this.label);
-}
-
-class _BottomNavInfo {
-  final IconData icon;
-  final String label;
-
-  const _BottomNavInfo(this.icon, this.label);
 }
 
 const List<_StatusFilterInfo> _statusFilterTabs = [

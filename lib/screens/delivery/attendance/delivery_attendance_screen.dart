@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../widgets/delivery/delivery_bottom_navigation.dart';
+
 import '../../../constants/app_colors.dart';
 import '../../../core/theme/app_sizes.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -72,6 +74,10 @@ class _DeliveryAttendanceScreenState extends State<DeliveryAttendanceScreen> {
       backgroundColor: const Color(0xFFF8FAF9),
       drawer: const DeliveryPartnerSidebar(
         currentRoute: AppRoutes.deliveryAttendance,
+      ),
+      bottomNavigationBar: DeliveryBottomNavigation(
+        currentIndex: 3,
+        onCollectionCreated: _refresh,
       ),
       body: SafeArea(
         bottom: false,
