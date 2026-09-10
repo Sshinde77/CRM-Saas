@@ -132,9 +132,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
   }
 
   Future<void> _openCreateQuotationScreen() async {
-    final result = await Navigator.of(
-      context,
-    ).push(
+    final result = await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => NewQuotationScreen(
           useSalesManagerShell: widget.useSalesManagerShell,
@@ -148,9 +146,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
   }
 
   Future<void> _openEditQuotationScreen(_QuotationRecord _) async {
-    final result = await Navigator.of(
-      context,
-    ).push(
+    final result = await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => NewQuotationScreen(
           useSalesManagerShell: widget.useSalesManagerShell,

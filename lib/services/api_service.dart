@@ -714,29 +714,41 @@ class ApiService {
       }),
     );
     final decoded = _tryDecodeBody(response.body.trim());
-    final rawItems = _extractGenericList(
-      decoded,
-      const ['orders', 'data', 'items', 'results'],
-      fallbackMessage: 'Invalid orders response.',
-    );
+    final rawItems = _extractGenericList(decoded, const [
+      'orders',
+      'data',
+      'items',
+      'results',
+    ], fallbackMessage: 'Invalid orders response.');
     final meta = decoded is Map<String, dynamic>
         ? _extractPaginationMeta(decoded)
         : const <String, dynamic>{};
 
     return PaginatedOrdersResult(
       orders: rawItems.whereType<Map<String, dynamic>>().toList(),
-      currentPage: _readMetaInt(meta, const ['page', 'current_page', 'currentPage'], page),
-      pageSize: _readMetaInt(
-        meta,
-        const ['limit', 'per_page', 'perPage', 'page_size', 'pageSize'],
-        limit,
-      ),
-      totalItems: _readMetaInt(
-        meta,
-        const ['total', 'total_items', 'totalItems', 'count'],
-        ((page - 1) * limit) + rawItems.length,
-      ),
-      totalPages: _readMetaInt(meta, const ['total_pages', 'totalPages', 'pages'], 0),
+      currentPage: _readMetaInt(meta, const [
+        'page',
+        'current_page',
+        'currentPage',
+      ], page),
+      pageSize: _readMetaInt(meta, const [
+        'limit',
+        'per_page',
+        'perPage',
+        'page_size',
+        'pageSize',
+      ], limit),
+      totalItems: _readMetaInt(meta, const [
+        'total',
+        'total_items',
+        'totalItems',
+        'count',
+      ], ((page - 1) * limit) + rawItems.length),
+      totalPages: _readMetaInt(meta, const [
+        'total_pages',
+        'totalPages',
+        'pages',
+      ], 0),
     );
   }
 
@@ -1419,7 +1431,14 @@ class ApiService {
         'category_id': categoryId,
         'is_active': isActive?.toString(),
       }),
-      candidateKeys: const ['inventory', 'stock', 'products', 'data', 'items', 'results'],
+      candidateKeys: const [
+        'inventory',
+        'stock',
+        'products',
+        'data',
+        'items',
+        'results',
+      ],
       fallbackMessage: 'Invalid inventory response.',
     );
   }
@@ -2609,11 +2628,7 @@ Map<String, dynamic> _extractPaginationMeta(Map<String, dynamic> decoded) {
   return decoded;
 }
 
-int _readMetaInt(
-  Map<String, dynamic> source,
-  List<String> keys,
-  int fallback,
-) {
+int _readMetaInt(Map<String, dynamic> source, List<String> keys, int fallback) {
   for (final key in keys) {
     final value = source[key];
     if (value is int) return value;

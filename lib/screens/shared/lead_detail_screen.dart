@@ -144,7 +144,8 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
     if (action == 'Quotations' || action == 'Quotation') {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => const AdminQuotationsScreen(useSalesManagerShell: true),
+          builder: (_) =>
+              const AdminQuotationsScreen(useSalesManagerShell: true),
         ),
       );
       return;
@@ -307,7 +308,8 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
                       ),
                       const SizedBox(width: 10),
                       ElevatedButton(
-                        onPressed: () => Navigator.of(context).pop(selectedStatus),
+                        onPressed: () =>
+                            Navigator.of(context).pop(selectedStatus),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
@@ -398,10 +400,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
         : '$stampedNote\n\n$existing';
 
     try {
-      await _apiProvider.updateLead(
-        leadId: lead.id,
-        request: {'notes': notes},
-      );
+      await _apiProvider.updateLead(leadId: lead.id, request: {'notes': notes});
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
@@ -409,14 +408,16 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
       await _loadLead();
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to add note: $error')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to add note: $error')));
     }
   }
 
   void _showUnavailable(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _putIfNotBlank(Map<String, dynamic> payload, String key, String value) {
@@ -474,9 +475,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
 
     await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => CustomerDetailsScreen(
-          customerId: customerId,
-        ),
+        builder: (_) => CustomerDetailsScreen(customerId: customerId),
       ),
     );
   }
@@ -586,16 +585,17 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
       }
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to convert lead: $error')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to convert lead: $error')));
     }
   }
 
   Widget _buildBottomActionBar(LeadDetailModel lead) {
     final normalizedStatus = lead.status.trim().toLowerCase();
     final hasCustomer =
-        lead.customerId.trim().isNotEmpty || normalizedStatus.contains('converted');
+        lead.customerId.trim().isNotEmpty ||
+        normalizedStatus.contains('converted');
     final isLost = normalizedStatus.contains('lost');
 
     return SafeArea(
@@ -1146,9 +1146,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
     final isLost = normalized.contains('lost');
     final currentIndex = isLost
         ? -1
-        : stages.indexWhere(
-            (stage) => stage.toLowerCase() == normalized,
-          );
+        : stages.indexWhere((stage) => stage.toLowerCase() == normalized);
 
     return Container(
       width: double.infinity,
@@ -1715,7 +1713,8 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
     } else if (normalized.contains('qualified')) {
       background = const Color(0xFFE9F5E4);
       foreground = AppColors.primary900;
-    } else if (normalized.contains('contact') || normalized.contains('follow')) {
+    } else if (normalized.contains('contact') ||
+        normalized.contains('follow')) {
       background = const Color(0xFFF2F6EE);
       foreground = AppColors.blue;
     } else if (normalized.contains('hot')) {
@@ -1917,11 +1916,7 @@ class _JourneyStep extends StatelessWidget {
       label,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      style: TextStyle(
-        color: color,
-        fontSize: 12,
-        fontWeight: FontWeight.w700,
-      ),
+      style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w700),
     );
   }
 }
@@ -2079,10 +2074,7 @@ class _FollowUpSheetState extends State<_FollowUpSheet> {
             onChanged: (value) => setState(() => _assigneeId = value),
           ),
           const SizedBox(height: 18),
-          _SheetActions(
-            primaryLabel: 'Add Follow-up',
-            onPrimary: _submit,
-          ),
+          _SheetActions(primaryLabel: 'Add Follow-up', onPrimary: _submit),
         ],
       ),
     );
@@ -2099,7 +2091,10 @@ class _FollowUpSheetState extends State<_FollowUpSheet> {
   }
 
   Future<void> _pickTime() async {
-    final picked = await showTimePicker(context: context, initialTime: _dueTime);
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _dueTime,
+    );
     if (picked != null) setState(() => _dueTime = picked);
   }
 
@@ -2205,8 +2200,7 @@ class _VisitSheetState extends State<_VisitSheet> {
               'Create Follow-up Task',
               style: TextStyle(fontWeight: FontWeight.w700),
             ),
-            onChanged: (value) =>
-                setState(() => _createTask = value ?? false),
+            onChanged: (value) => setState(() => _createTask = value ?? false),
           ),
           if (_createTask) ...[
             _SheetTextField(
@@ -2279,7 +2273,10 @@ class _VisitSheetState extends State<_VisitSheet> {
   }
 
   Future<void> _pickTime() async {
-    final picked = await showTimePicker(context: context, initialTime: _dueTime);
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _dueTime,
+    );
     if (picked != null) setState(() => _dueTime = picked);
   }
 
@@ -2345,9 +2342,11 @@ class _ConvertLeadSheetState extends State<_ConvertLeadSheet> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.lead.companyName == '-'
-        ? widget.lead.displayName
-        : widget.lead.companyName);
+    _nameController = TextEditingController(
+      text: widget.lead.companyName == '-'
+          ? widget.lead.displayName
+          : widget.lead.companyName,
+    );
     _contactController = TextEditingController(text: widget.lead.contactName);
     _phoneController = TextEditingController(text: widget.lead.phone);
     _emailController = TextEditingController(text: widget.lead.email);
@@ -2355,9 +2354,15 @@ class _ConvertLeadSheetState extends State<_ConvertLeadSheet> {
     _creditLimitController = TextEditingController();
     _openingBalanceController = TextEditingController();
     _mapsController = TextEditingController();
-    _billingAddressController = TextEditingController(text: widget.lead.address == '-' ? '' : widget.lead.address);
-    _deliveryAddressController = TextEditingController(text: widget.lead.address == '-' ? '' : widget.lead.address);
-    _notesController = TextEditingController(text: widget.lead.notes == '-' ? '' : widget.lead.notes);
+    _billingAddressController = TextEditingController(
+      text: widget.lead.address == '-' ? '' : widget.lead.address,
+    );
+    _deliveryAddressController = TextEditingController(
+      text: widget.lead.address == '-' ? '' : widget.lead.address,
+    );
+    _notesController = TextEditingController(
+      text: widget.lead.notes == '-' ? '' : widget.lead.notes,
+    );
     _customerSince = DateTime.now();
     _salesOfficerId = _matchingStaffId(widget.lead.assignedTo, widget.staff);
   }
@@ -2437,7 +2442,12 @@ class _ConvertLeadSheetState extends State<_ConvertLeadSheet> {
                 child: _SheetDropdown<String>(
                   label: 'Status',
                   value: _status,
-                  items: const ['active', 'inactive', 'blacklisted', 'prospect'],
+                  items: const [
+                    'active',
+                    'inactive',
+                    'blacklisted',
+                    'prospect',
+                  ],
                   itemLabel: _titleCase,
                   onChanged: (value) =>
                       setState(() => _status = value ?? 'active'),
@@ -2569,7 +2579,9 @@ class _ConvertLeadSheetState extends State<_ConvertLeadSheet> {
     final phone = _phoneController.text.trim();
     if (name.isEmpty || phone.isEmpty) {
       setState(() {
-        _nameError = name.isEmpty ? 'Business / customer name is required.' : null;
+        _nameError = name.isEmpty
+            ? 'Business / customer name is required.'
+            : null;
         _phoneError = phone.isEmpty ? 'Phone is required.' : null;
       });
       return;
@@ -3070,7 +3082,11 @@ class _NoteCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.access_time_rounded, color: AppColors.primary, size: 17),
+          const Icon(
+            Icons.access_time_rounded,
+            color: AppColors.primary,
+            size: 17,
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -3449,7 +3465,10 @@ List<_ParsedNote> _parseNotes(String value) {
       .split(RegExp(r'\n\s*\n'))
       .map((entry) {
         final text = entry.trim();
-        final match = RegExp(r'^\[(.+?)\]\s*(.*)$', dotAll: true).firstMatch(text);
+        final match = RegExp(
+          r'^\[(.+?)\]\s*(.*)$',
+          dotAll: true,
+        ).firstMatch(text);
         if (match == null) {
           return _ParsedNote(timestamp: '', text: text);
         }
@@ -3551,8 +3570,9 @@ class _Coordinates {
 _Coordinates? _parseCoordinates(String value) {
   final text = value.trim();
   if (text.isEmpty) return null;
-  final match = RegExp(r'(-?\d+(?:\.\d+)?)[,\s]+(-?\d+(?:\.\d+)?)')
-      .firstMatch(text);
+  final match = RegExp(
+    r'(-?\d+(?:\.\d+)?)[,\s]+(-?\d+(?:\.\d+)?)',
+  ).firstMatch(text);
   if (match == null) return null;
   final lat = double.tryParse(match.group(1) ?? '');
   final lng = double.tryParse(match.group(2) ?? '');

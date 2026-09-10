@@ -96,7 +96,8 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
     if (action == 'Quotations' || action == 'Quotation') {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => const AdminQuotationsScreen(useSalesManagerShell: true),
+          builder: (_) =>
+              const AdminQuotationsScreen(useSalesManagerShell: true),
         ),
       );
       return;

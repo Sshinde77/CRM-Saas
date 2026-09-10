@@ -223,7 +223,9 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
   Future<void> _openEditLeadPage(_LeadRecord lead) async {
     if (lead.id.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Lead edit is unavailable for this item.')),
+        const SnackBar(
+          content: Text('Lead edit is unavailable for this item.'),
+        ),
       );
       return;
     }
@@ -311,7 +313,8 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
     if (action == 'Quotations' || action == 'Quotation') {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => const AdminQuotationsScreen(useSalesManagerShell: true),
+          builder: (_) =>
+              const AdminQuotationsScreen(useSalesManagerShell: true),
         ),
       );
       return;

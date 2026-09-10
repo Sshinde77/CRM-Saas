@@ -176,7 +176,9 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
   }
 
   void _showSnack(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _quickAddCustomer() async {
@@ -195,8 +197,9 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
   }
 
   void _addProduct(_ProductOption product) {
-    final existingIndex =
-        _items.indexWhere((item) => item.product.id == product.id);
+    final existingIndex = _items.indexWhere(
+      (item) => item.product.id == product.id,
+    );
     setState(() {
       if (existingIndex >= 0) {
         _items[existingIndex] = _items[existingIndex].copyWith(
@@ -316,7 +319,8 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
     if (action == 'Quotations' || action == 'Quotation') {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => const AdminQuotationsScreen(useSalesManagerShell: true),
+          builder: (_) =>
+              const AdminQuotationsScreen(useSalesManagerShell: true),
         ),
       );
       return;
@@ -421,14 +425,14 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
                       message: 'Fetching customers, leads, products and staff.',
                     )
                   : _loadError != null
-                      ? _CenteredState(
-                          icon: Icons.error_outline_rounded,
-                          title: 'Unable to load quotation form',
-                          message: _loadError!,
-                          actionLabel: 'Retry',
-                          onAction: _loadData,
-                        )
-                      : _buildContent(),
+                  ? _CenteredState(
+                      icon: Icons.error_outline_rounded,
+                      title: 'Unable to load quotation form',
+                      message: _loadError!,
+                      actionLabel: 'Retry',
+                      onAction: _loadData,
+                    )
+                  : _buildContent(),
             ),
           ],
         ),
@@ -462,8 +466,8 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
                         child: _step == 0
                             ? _buildDetailsStep()
                             : _step == 1
-                                ? _buildItemsStep()
-                                : _buildReviewStep(),
+                            ? _buildItemsStep()
+                            : _buildReviewStep(),
                       ),
                     ),
                   ),
@@ -508,16 +512,17 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
                           color: i == 0
                               ? Colors.transparent
                               : (_step >= i
-                                  ? const Color(0xFF284BFF)
-                                  : AppColors.border),
+                                    ? const Color(0xFF284BFF)
+                                    : AppColors.border),
                         ),
                       ),
                       Container(
                         width: 22,
                         height: 22,
                         decoration: BoxDecoration(
-                          color:
-                              _step >= i ? const Color(0xFF284BFF) : Colors.white,
+                          color: _step >= i
+                              ? const Color(0xFF284BFF)
+                              : Colors.white,
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: _step >= i
@@ -550,8 +555,8 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
                           color: i == labels.length - 1
                               ? Colors.transparent
                               : (_step > i
-                                  ? const Color(0xFF284BFF)
-                                  : AppColors.border),
+                                    ? const Color(0xFF284BFF)
+                                    : AppColors.border),
                         ),
                       ),
                     ],
@@ -560,8 +565,9 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
                   Text(
                     labels[i],
                     style: TextStyle(
-                      color:
-                          _step == i ? const Color(0xFF1234D8) : AppColors.textMuted,
+                      color: _step == i
+                          ? const Color(0xFF1234D8)
+                          : AppColors.textMuted,
                       fontSize: 10.5,
                       fontWeight: FontWeight.w800,
                     ),
@@ -754,8 +760,9 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
   }
 
   Widget _buildReviewStep() {
-    final customerName =
-        _forCustomer ? (_selectedCustomer?.name ?? '-') : (_selectedLead?.name ?? '-');
+    final customerName = _forCustomer
+        ? (_selectedCustomer?.name ?? '-')
+        : (_selectedLead?.name ?? '-');
     return Column(
       children: [
         _SectionCard(
@@ -848,8 +855,9 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
             const SizedBox(width: 10),
             Expanded(
               child: ElevatedButton(
-                onPressed:
-                    _isSaving ? null : (_step == 2 ? _saveQuotation : _nextStep),
+                onPressed: _isSaving
+                    ? null
+                    : (_step == 2 ? _saveQuotation : _nextStep),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF284BFF),
                   foregroundColor: Colors.white,
@@ -863,8 +871,8 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
                   _isSaving
                       ? 'Saving...'
                       : _step == 2
-                          ? 'Save Quotation'
-                          : 'Next',
+                      ? 'Save Quotation'
+                      : 'Next',
                 ),
               ),
             ),
@@ -934,31 +942,34 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
   }
 
   Future<void> _showCurrencyPicker() async {
-    final value = await _showTextOptions(
-      'Select currency',
-      const ['INR', 'USD', 'AED', 'SGD', 'GBP'],
-    );
+    final value = await _showTextOptions('Select currency', const [
+      'INR',
+      'USD',
+      'AED',
+      'SGD',
+      'GBP',
+    ]);
     if (value != null) setState(() => _currency = value);
   }
 
   Future<void> _showPaymentPicker() async {
-    final value = await _showTextOptions(
-      'Payment terms',
-      const ['Net 15', 'Net 30', 'Advance', 'Immediate', 'Due on Receipt'],
-    );
+    final value = await _showTextOptions('Payment terms', const [
+      'Net 15',
+      'Net 30',
+      'Advance',
+      'Immediate',
+      'Due on Receipt',
+    ]);
     if (value != null) setState(() => _paymentTerms = value);
   }
 
   Future<void> _showDeliveryPicker() async {
-    final value = await _showTextOptions(
-      'Delivery terms',
-      const [
-        'Standard delivery',
-        'Express delivery',
-        'Customer pickup',
-        'Delivery within 2 business days',
-      ],
-    );
+    final value = await _showTextOptions('Delivery terms', const [
+      'Standard delivery',
+      'Express delivery',
+      'Customer pickup',
+      'Delivery within 2 business days',
+    ]);
     if (value != null) setState(() => _deliveryTerms = value);
   }
 
@@ -1041,7 +1052,10 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
                             ),
                             subtitle: sub.isEmpty
                                 ? null
-                                : Text(sub, style: const TextStyle(fontSize: 11)),
+                                : Text(
+                                    sub,
+                                    style: const TextStyle(fontSize: 11),
+                                  ),
                             onTap: () => Navigator.of(context).pop(item),
                           );
                         },
@@ -1067,7 +1081,8 @@ class _QuickAddCustomerDialog extends StatefulWidget {
   const _QuickAddCustomerDialog({required this.apiProvider});
 
   @override
-  State<_QuickAddCustomerDialog> createState() => _QuickAddCustomerDialogState();
+  State<_QuickAddCustomerDialog> createState() =>
+      _QuickAddCustomerDialogState();
 }
 
 class _QuickAddCustomerDialogState extends State<_QuickAddCustomerDialog> {
@@ -1105,9 +1120,9 @@ class _QuickAddCustomerDialogState extends State<_QuickAddCustomerDialog> {
       if (mounted) Navigator.of(context).pop(customer);
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to add customer: $error')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to add customer: $error')));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -1155,7 +1170,10 @@ class _QuickAddCustomerDialogState extends State<_QuickAddCustomerDialog> {
               ],
             ),
             const SizedBox(height: 10),
-            _AppTextField(label: 'Customer Name *', controller: _nameController),
+            _AppTextField(
+              label: 'Customer Name *',
+              controller: _nameController,
+            ),
             const SizedBox(height: 10),
             _AppTextField(
               label: 'Phone *',
@@ -1180,7 +1198,9 @@ class _QuickAddCustomerDialogState extends State<_QuickAddCustomerDialog> {
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: _saving ? null : () => Navigator.of(context).pop(),
+                    onPressed: _saving
+                        ? null
+                        : () => Navigator.of(context).pop(),
                     child: const Text('Cancel'),
                   ),
                 ),
@@ -1377,8 +1397,9 @@ class _SelectTile extends StatelessWidget {
                     hasValue ? value! : hint,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color:
-                          hasValue ? AppColors.textSecondary : AppColors.textLightMuted,
+                      color: hasValue
+                          ? AppColors.textSecondary
+                          : AppColors.textLightMuted,
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                     ),
@@ -1702,7 +1723,10 @@ class _ReviewItemRow extends StatelessWidget {
               ),
               Text(
                 '${_qty(item.quantity)} x ${_money(item.product.unitPrice)}',
-                style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+                style: const TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 11,
+                ),
               ),
             ],
           ),
@@ -1812,7 +1836,10 @@ class _ProductThumb extends StatelessWidget {
         color: color,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: const Icon(Icons.inventory_2_outlined, color: AppColors.textSecondary),
+      child: const Icon(
+        Icons.inventory_2_outlined,
+        color: AppColors.textSecondary,
+      ),
     );
   }
 }
@@ -1961,7 +1988,9 @@ class _ProductOption {
 
   factory _ProductOption.fromJson(Map<String, dynamic> json) {
     final product = _readMap(json, const ['product']);
-    final data = product.isEmpty ? json : <String, dynamic>{...json, ...product};
+    final data = product.isEmpty
+        ? json
+        : <String, dynamic>{...json, ...product};
     return _ProductOption(
       id: _readText(data, const ['id', 'product_id', 'productId']),
       variantId: _readText(data, const [

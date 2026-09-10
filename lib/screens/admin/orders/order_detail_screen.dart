@@ -155,7 +155,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     if (action == 'Quotations' || action == 'Quotation') {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => const AdminQuotationsScreen(useSalesManagerShell: true),
+          builder: (_) =>
+              const AdminQuotationsScreen(useSalesManagerShell: true),
         ),
       );
       return;
@@ -273,8 +274,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     }
 
     final order = _order ?? const <String, dynamic>{};
-    final items = _readList(order, const ['items', 'order_items', 'orderItems']);
-    final status = _titleCase(_readString(order, const ['status'], fallback: 'Draft'));
+    final items = _readList(order, const [
+      'items',
+      'order_items',
+      'orderItems',
+    ]);
+    final status = _titleCase(
+      _readString(order, const ['status'], fallback: 'Draft'),
+    );
     final fulfilment = _titleCase(
       _readString(order, const ['fulfilment_method', 'fulfillment_method']),
     );
@@ -283,19 +290,21 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       padding: const EdgeInsets.fromLTRB(10, 10, 10, 16),
       children: [
         _HeaderCard(
-          number: _readString(
-            order,
-            const ['order_number', 'orderNumber', 'number'],
-            fallback: 'Order',
-          ),
+          number: _readString(order, const [
+            'order_number',
+            'orderNumber',
+            'number',
+          ], fallback: 'Order'),
           customer: _customerName(order),
           status: status,
-          total: _formatMoney(_readDouble(order, const [
-            'grand_total',
-            'grandTotal',
-            'total',
-            'total_amount',
-          ])),
+          total: _formatMoney(
+            _readDouble(order, const [
+              'grand_total',
+              'grandTotal',
+              'total',
+              'total_amount',
+            ]),
+          ),
           onConfirm: _isActionLoading ? null : _confirmOrder,
           onCancel: _isActionLoading ? null : _cancelOrder,
         ),
@@ -305,10 +314,29 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           icon: Icons.receipt_long_outlined,
           child: Column(
             children: [
-              _DetailRow('Order Date', _formatAnyDate(order, const ['order_date', 'orderDate', 'created_at'])),
-              _DetailRow('Delivery Date', _formatAnyDate(order, const ['delivery_date', 'deliveryDate'])),
+              _DetailRow(
+                'Order Date',
+                _formatAnyDate(order, const [
+                  'order_date',
+                  'orderDate',
+                  'created_at',
+                ]),
+              ),
+              _DetailRow(
+                'Delivery Date',
+                _formatAnyDate(order, const ['delivery_date', 'deliveryDate']),
+              ),
               _DetailRow('Fulfilment', fulfilment.isEmpty ? '-' : fulfilment),
-              _DetailRow('Payment', _titleCase(_readString(order, const ['payment_type', 'paymentType', 'payment_status']))),
+              _DetailRow(
+                'Payment',
+                _titleCase(
+                  _readString(order, const [
+                    'payment_type',
+                    'paymentType',
+                    'payment_status',
+                  ]),
+                ),
+              ),
               _DetailRow('Source', _sourceLabel(order)),
               _DetailRow('Warehouse', _nestedName(order, const ['warehouse'])),
             ],
@@ -321,8 +349,21 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           child: Column(
             children: [
               _DetailRow('Customer', _customerName(order)),
-              _DetailRow('Delivery Partner', _nestedName(order, const ['delivery_partner', 'deliveryPartner'])),
-              _DetailRow('Delivery Address', _readString(order, const ['delivery_address', 'deliveryAddress', 'shipping_address'])),
+              _DetailRow(
+                'Delivery Partner',
+                _nestedName(order, const [
+                  'delivery_partner',
+                  'deliveryPartner',
+                ]),
+              ),
+              _DetailRow(
+                'Delivery Address',
+                _readString(order, const [
+                  'delivery_address',
+                  'deliveryAddress',
+                  'shipping_address',
+                ]),
+              ),
               _DetailRow('Created By', _creatorName(order)),
             ],
           ),
@@ -334,12 +375,19 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           child: items.isEmpty
               ? const Text(
                   'No items found.',
-                  style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                  ),
                 )
               : Column(
                   children: [
                     for (final item in items)
-                      _ItemTile(item: item is Map ? Map<String, dynamic>.from(item) : const {}),
+                      _ItemTile(
+                        item: item is Map
+                            ? Map<String, dynamic>.from(item)
+                            : const {},
+                      ),
                   ],
                 ),
         ),
@@ -528,7 +576,10 @@ class _ItemTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final quantity = _readString(item, const ['quantity', 'qty'], fallback: '0');
+    final quantity = _readString(item, const [
+      'quantity',
+      'qty',
+    ], fallback: '0');
     final uom = _readString(item, const ['uom', 'unit', 'unit_of_measure']);
     final price = _readDouble(item, const ['unit_price', 'unitPrice', 'price']);
     final total = _readDouble(item, const ['line_total', 'lineTotal', 'total']);
@@ -544,7 +595,11 @@ class _ItemTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            _readString(item, const ['product_name', 'productName', 'name'], fallback: 'Product'),
+            _readString(item, const [
+              'product_name',
+              'productName',
+              'name',
+            ], fallback: 'Product'),
             style: const TextStyle(
               color: AppColors.textPrimary,
               fontSize: 12.5,
@@ -651,7 +706,10 @@ class _StateCard extends StatelessWidget {
             Text(
               subtitle!,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 12,
+              ),
             ),
           ],
           if (actionLabel != null && onAction != null) ...[
@@ -665,7 +723,12 @@ class _StateCard extends StatelessWidget {
 }
 
 Map<String, dynamic> _unwrapOrder(Map<String, dynamic> json) {
-  final nested = _readMap(json, const ['order', 'sales_order', 'salesOrder', 'data']);
+  final nested = _readMap(json, const [
+    'order',
+    'sales_order',
+    'salesOrder',
+    'data',
+  ]);
   return nested.isEmpty ? json : <String, dynamic>{...json, ...nested};
 }
 
@@ -679,7 +742,11 @@ String _customerName(Map<String, dynamic> order) {
 }
 
 String _creatorName(Map<String, dynamic> order) {
-  final creator = _readMap(order, const ['creator', 'created_by_user', 'createdBy']);
+  final creator = _readMap(order, const [
+    'creator',
+    'created_by_user',
+    'createdBy',
+  ]);
   return _firstNonEmpty([
     _readString(order, const ['created_by_name', 'createdByName']),
     _readString(creator, const ['name', 'full_name', 'fullName']),
@@ -689,20 +756,42 @@ String _creatorName(Map<String, dynamic> order) {
 String _nestedName(Map<String, dynamic> source, List<String> keys) {
   final nested = _readMap(source, keys);
   return _firstNonEmpty([
-    _readString(nested, const ['name', 'full_name', 'fullName', 'business_name']),
+    _readString(nested, const [
+      'name',
+      'full_name',
+      'fullName',
+      'business_name',
+    ]),
     _readString(source, keys.map((key) => '${key}_name').toList()),
   ]);
 }
 
 String _sourceLabel(Map<String, dynamic> order) {
-  final raw = _readString(order, const ['source', 'order_source', 'orderSource']);
+  final raw = _readString(order, const [
+    'source',
+    'order_source',
+    'orderSource',
+  ]);
   return _titleCase(raw.isEmpty ? 'office' : raw);
 }
 
 String _formatAnyDate(Map<String, dynamic> source, List<String> keys) {
   final date = DateTime.tryParse(_readString(source, keys));
   if (date == null) return '-';
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
   return '${date.day.toString().padLeft(2, '0')} ${months[date.month - 1]} ${date.year}';
 }
 
@@ -723,7 +812,11 @@ List<dynamic> _readList(Map<String, dynamic> source, List<String> keys) {
   return const [];
 }
 
-String _readString(Map<String, dynamic> source, List<String> keys, {String fallback = ''}) {
+String _readString(
+  Map<String, dynamic> source,
+  List<String> keys, {
+  String fallback = '',
+}) {
   for (final key in keys) {
     final value = source[key];
     if (value == null) continue;
@@ -738,7 +831,9 @@ double _readDouble(Map<String, dynamic> source, List<String> keys) {
     final value = source[key];
     if (value is num) return value.toDouble();
     if (value is String) {
-      final parsed = double.tryParse(value.replaceAll(RegExp(r'[^0-9.\-]'), ''));
+      final parsed = double.tryParse(
+        value.replaceAll(RegExp(r'[^0-9.\-]'), ''),
+      );
       if (parsed != null) return parsed;
     }
   }
@@ -750,9 +845,11 @@ String _titleCase(String value) {
   if (normalized.isEmpty) return '';
   return normalized
       .split(RegExp(r'\s+'))
-      .map((word) => word.isEmpty
-          ? word
-          : '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}')
+      .map(
+        (word) => word.isEmpty
+            ? word
+            : '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}',
+      )
       .join(' ');
 }
 

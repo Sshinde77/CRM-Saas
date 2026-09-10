@@ -87,9 +87,9 @@ class _SalesManagerDashboardScreenState
       final attendanceRows = await provider.fetchMyAttendance();
       attendance = _firstTodayAttendance(
         attendanceRows
-          .map(_AttendanceRecord.fromJson)
-          .where((record) => _isSameDay(record.date, DateTime.now()))
-          .where((record) => record.checkIn != null),
+            .map(_AttendanceRecord.fromJson)
+            .where((record) => _isSameDay(record.date, DateTime.now()))
+            .where((record) => record.checkIn != null),
       );
     } catch (_) {
       attendance = null;
@@ -98,7 +98,9 @@ class _SalesManagerDashboardScreenState
     final user = provider.currentUser;
 
     return _DashboardData(
-      userName: user?.name.trim().isNotEmpty == true ? user!.name.trim() : 'User',
+      userName: user?.name.trim().isNotEmpty == true
+          ? user!.name.trim()
+          : 'User',
       customers: customers,
       orders: orders,
       quotations: quotations,
@@ -312,15 +314,15 @@ class _SalesManagerDashboardScreenState
   }
 
   void _openStock() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const SalesManagerStockScreen()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const SalesManagerStockScreen()));
   }
 
   void _openVisits() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const SalesManagerVisitsScreen()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const SalesManagerVisitsScreen()));
   }
 
   void _openFollowUps() {
@@ -473,9 +475,17 @@ class _QuickActions extends StatelessWidget {
         Icons.description_outlined,
         onCreateQuotation,
       ),
-      _QuickAction('Add Customer', Icons.person_add_alt_1_outlined, onAddCustomer),
+      _QuickAction(
+        'Add Customer',
+        Icons.person_add_alt_1_outlined,
+        onAddCustomer,
+      ),
       _QuickAction('Add Lead', Icons.group_add_outlined, onAddLead),
-      _QuickAction('Schedule Visit', Icons.event_available_outlined, onScheduleVisit),
+      _QuickAction(
+        'Schedule Visit',
+        Icons.event_available_outlined,
+        onScheduleVisit,
+      ),
     ];
 
     return _Panel(
@@ -487,7 +497,11 @@ class _QuickActions extends StatelessWidget {
               for (var i = 0; i < actions.length; i++) ...[
                 Expanded(child: _QuickActionTile(action: actions[i])),
                 if (i != actions.length - 1)
-                  Container(width: 1, height: 42, color: const Color(0xFFE6EBF0)),
+                  Container(
+                    width: 1,
+                    height: 42,
+                    color: const Color(0xFFE6EBF0),
+                  ),
               ],
             ],
           );
@@ -562,8 +576,9 @@ class _SalesTargetCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final progress = (data.monthlySales / _SalesManagerDashboardScreenState._monthlyTarget)
-        .clamp(0.0, 1.0);
+    final progress =
+        (data.monthlySales / _SalesManagerDashboardScreenState._monthlyTarget)
+            .clamp(0.0, 1.0);
     final percent = (progress * 100).round();
 
     return _Panel(
@@ -602,7 +617,10 @@ class _SalesTargetCard extends StatelessWidget {
                   ),
                   const Text(
                     'Target',
-                    style: TextStyle(color: AppColors.textMuted, fontSize: 10.5),
+                    style: TextStyle(
+                      color: AppColors.textMuted,
+                      fontSize: 10.5,
+                    ),
                   ),
                 ],
               ),
@@ -735,10 +753,30 @@ class _OrderStatusCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final statuses = [
-      _StatusTileData('Draft', data.draftOrders, Icons.description_outlined, const Color(0xFF7C3AED)),
-      _StatusTileData('Confirmed', data.confirmedOrders, Icons.fact_check_outlined, const Color(0xFF2563EB)),
-      _StatusTileData('Completed', data.completedOrders, Icons.check_circle_outline_rounded, AppColors.primary),
-      _StatusTileData('Cancelled', data.cancelledOrders, Icons.cancel_outlined, AppColors.deliveryRed),
+      _StatusTileData(
+        'Draft',
+        data.draftOrders,
+        Icons.description_outlined,
+        const Color(0xFF7C3AED),
+      ),
+      _StatusTileData(
+        'Confirmed',
+        data.confirmedOrders,
+        Icons.fact_check_outlined,
+        const Color(0xFF2563EB),
+      ),
+      _StatusTileData(
+        'Completed',
+        data.completedOrders,
+        Icons.check_circle_outline_rounded,
+        AppColors.primary,
+      ),
+      _StatusTileData(
+        'Cancelled',
+        data.cancelledOrders,
+        Icons.cancel_outlined,
+        AppColors.deliveryRed,
+      ),
     ];
 
     return _Panel(
@@ -763,7 +801,8 @@ class _OrderStatusCard extends StatelessWidget {
                   mainAxisSpacing: 8,
                   childAspectRatio: 3.25,
                 ),
-                itemBuilder: (context, index) => _StatusTile(data: statuses[index]),
+                itemBuilder: (context, index) =>
+                    _StatusTile(data: statuses[index]),
               );
             },
           ),
@@ -784,7 +823,11 @@ class _VisitsCard extends StatelessWidget {
     return _Panel(
       child: Column(
         children: [
-          _SectionTitle(title: 'My Visits', action: 'View all visits', onAction: onViewAll),
+          _SectionTitle(
+            title: 'My Visits',
+            action: 'View all visits',
+            onAction: onViewAll,
+          ),
           const SizedBox(height: 6),
           if (visits.isEmpty)
             const _EmptyInline('No visits scheduled.')
@@ -809,7 +852,11 @@ class _RecentOrdersCard extends StatelessWidget {
     return _Panel(
       child: Column(
         children: [
-          _SectionTitle(title: 'Recent Orders', action: 'View all orders', onAction: onViewAll),
+          _SectionTitle(
+            title: 'Recent Orders',
+            action: 'View all orders',
+            onAction: onViewAll,
+          ),
           const SizedBox(height: 8),
           if (orders.isEmpty)
             const _EmptyInline('No orders yet.')
@@ -939,7 +986,7 @@ class _PriorityRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(10),
       child: InkWell(
         onTap: row.onTap,
         borderRadius: BorderRadius.circular(10),
@@ -1081,7 +1128,10 @@ class _OrderRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = _orderStatusColor(order.status);
     return _ListRow(
-      leading: _TintIcon(icon: Icons.description_outlined, color: AppColors.primary),
+      leading: _TintIcon(
+        icon: Icons.description_outlined,
+        color: AppColors.primary,
+      ),
       title: order.number,
       subtitle: order.customer,
       middle: '${_currency(order.total)}\n${_formatShortDate(order.date)}',
@@ -1191,7 +1241,7 @@ class _SectionTitle extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               color: AppColors.textPrimary,
-            fontSize: 14,
+              fontSize: 14,
               fontWeight: FontWeight.w900,
             ),
           ),
@@ -1303,10 +1353,7 @@ class _Panel extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry padding;
 
-  const _Panel({
-    required this.child,
-    this.padding = const EdgeInsets.all(11),
-  });
+  const _Panel({required this.child, this.padding = const EdgeInsets.all(11)});
 
   @override
   Widget build(BuildContext context) {
@@ -1486,7 +1533,8 @@ class _DashboardData {
   }
 
   List<_VisitRecord> get recentVisits {
-    final sorted = [...visits]..sort((a, b) => a.dateTime.compareTo(b.dateTime));
+    final sorted = [...visits]
+      ..sort((a, b) => a.dateTime.compareTo(b.dateTime));
     return sorted.take(3).toList();
   }
 
@@ -1499,7 +1547,9 @@ class _DashboardData {
   }
 
   int get visitsToday {
-    return visits.where((visit) => _isSameDay(visit.dateTime, DateTime.now())).length;
+    return visits
+        .where((visit) => _isSameDay(visit.dateTime, DateTime.now()))
+        .length;
   }
 
   int get pendingFollowUps {
@@ -1587,7 +1637,9 @@ class _DashboardOrder {
         'total_amount',
         'totalAmount',
       ]),
-      status: _normalize(_readString(source, const ['status'], fallback: 'draft')),
+      status: _normalize(
+        _readString(source, const ['status'], fallback: 'draft'),
+      ),
       date: _readDate(
         _readString(source, const [
           'order_date',
@@ -1632,7 +1684,8 @@ class _AttendanceRecord {
   const _AttendanceRecord({required this.date, required this.checkIn});
 
   factory _AttendanceRecord.fromJson(Map<String, dynamic> json) {
-    final date = _readNullableDate(
+    final date =
+        _readNullableDate(
           _readString(json, const ['date', 'attendance_date', 'created_at']),
         ) ??
         DateTime.now();
@@ -1739,9 +1792,7 @@ bool _isSameDay(DateTime a, DateTime b) {
   return a.year == b.year && a.month == b.month && a.day == b.day;
 }
 
-_AttendanceRecord? _firstTodayAttendance(
-  Iterable<_AttendanceRecord> records,
-) {
+_AttendanceRecord? _firstTodayAttendance(Iterable<_AttendanceRecord> records) {
   for (final record in records) {
     return record;
   }

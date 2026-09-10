@@ -110,8 +110,10 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
             .toList();
         for (final item in _apiItems) {
           if (item.category.trim().isNotEmpty) {
-            _knownCategories[item.category] =
-                _StockCategory(item.category, item.categoryId);
+            _knownCategories[item.category] = _StockCategory(
+              item.category,
+              item.categoryId,
+            );
           }
         }
         _isLoading = false;
@@ -137,7 +139,8 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
       return {
         for (final product in products)
           if (_readString(product, const ['id', '_id']).isNotEmpty)
-            _readString(product, const ['id', '_id']): _readDate(
+            _readString(product, const ['id', '_id']):
+                _readDate(
                   _readString(product, const ['created_at', 'createdAt']),
                 ) ??
                 DateTime(1900),
@@ -220,12 +223,16 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
       case 'Follow-ups':
       case 'Follow-Ups':
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const SalesManagerFollowUpsScreen()),
+          MaterialPageRoute(
+            builder: (_) => const SalesManagerFollowUpsScreen(),
+          ),
         );
         return;
       case 'Attendance':
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const SalesManagerAttendanceScreen()),
+          MaterialPageRoute(
+            builder: (_) => const SalesManagerAttendanceScreen(),
+          ),
         );
         return;
       case 'My Performance':
@@ -351,16 +358,14 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
           ),
           _SummaryCard(
             title: 'Out of Stock',
-            value:
-                '${items.where((item) => item.stock <= 0).length}',
+            value: '${items.where((item) => item.stock <= 0).length}',
             icon: Icons.cancel_outlined,
             iconColor: AppColors.red,
             iconBackground: AppColors.red.withValues(alpha: 0.14),
           ),
           _SummaryCard(
             title: 'Inactive',
-            value:
-                '${items.where((item) => !item.isActive).length}',
+            value: '${items.where((item) => !item.isActive).length}',
             icon: Icons.visibility_off_outlined,
             iconColor: AppColors.orange,
             iconBackground: AppColors.orange.withValues(alpha: 0.16),
@@ -1033,7 +1038,9 @@ class _StockItem {
 
   factory _StockItem.fromJson(Map<String, dynamic> json) {
     final product = _readMap(json, const ['product', 'product_details']);
-    final source = product.isEmpty ? json : <String, dynamic>{...json, ...product};
+    final source = product.isEmpty
+        ? json
+        : <String, dynamic>{...json, ...product};
     final brand = _readMap(source, const ['brand']);
     final category = _readMap(source, const ['category']);
     final stock = _readInt(source, const [
@@ -1053,7 +1060,11 @@ class _StockItem {
       'inventory_count',
       'inventoryCount',
     ]);
-    final isActive = _readBool(source, const ['is_active', 'isActive', 'active'], fallback: true);
+    final isActive = _readBool(source, const [
+      'is_active',
+      'isActive',
+      'active',
+    ], fallback: true);
     final status = !isActive
         ? 'Inactive'
         : stock <= 0
@@ -1070,8 +1081,16 @@ class _StockItem {
         _readString(source, const ['product_id', 'productId']),
         _readString(source, const ['id', '_id']),
       ]),
-      name: _readString(source, const ['name', 'product_name', 'productName'], fallback: 'Product'),
-      sku: _readString(source, const ['sku', 'product_sku', 'productSku'], fallback: '--'),
+      name: _readString(source, const [
+        'name',
+        'product_name',
+        'productName',
+      ], fallback: 'Product'),
+      sku: _readString(source, const [
+        'sku',
+        'product_sku',
+        'productSku',
+      ], fallback: '--'),
       brand: _firstNonEmpty([
         _readString(source, const ['brand_name', 'brandName']),
         _readDirectString(source, 'brand'),
@@ -1081,7 +1100,12 @@ class _StockItem {
       variants: _readList(source, const ['variations', 'variants']).length,
       stock: stock,
       category: _firstNonEmpty([
-        _readString(source, const ['product_type', 'productType', 'category_name', 'categoryName']),
+        _readString(source, const [
+          'product_type',
+          'productType',
+          'category_name',
+          'categoryName',
+        ]),
         _readString(category, const ['name']),
         'Uncategorized',
       ]),
@@ -1211,13 +1235,18 @@ String _firstNonEmpty(List<String> values) {
 }
 
 IconData _iconForProduct(Map<String, dynamic> source) {
-  final text = '${_readString(source, const ['name', 'product_name'])} '
-          '${_readString(source, const ['product_type', 'category_name'])}'
-      .toLowerCase();
-  if (text.contains('drink') || text.contains('water') || text.contains('juice')) {
+  final text =
+      '${_readString(source, const ['name', 'product_name'])} '
+              '${_readString(source, const ['product_type', 'category_name'])}'
+          .toLowerCase();
+  if (text.contains('drink') ||
+      text.contains('water') ||
+      text.contains('juice')) {
     return Icons.local_drink_rounded;
   }
-  if (text.contains('food') || text.contains('snack') || text.contains('chips')) {
+  if (text.contains('food') ||
+      text.contains('snack') ||
+      text.contains('chips')) {
     return Icons.fastfood_rounded;
   }
   if (text.contains('shirt') || text.contains('bag')) {

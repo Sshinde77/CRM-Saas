@@ -57,11 +57,16 @@ class _DeliveryVehicleLoadingScreenState
     final authMe = await provider.fetchAuthMe();
     final productRows = await provider.fetchProducts(isActive: true);
     final currentUser = provider.currentUser ?? authMe?.user;
-    final products = productRows
-        .map(_LoadingProduct.fromJson)
-        .where((product) => product.id.isNotEmpty && product.name.isNotEmpty)
-        .toList()
-      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    final products =
+        productRows
+            .map(_LoadingProduct.fromJson)
+            .where(
+              (product) => product.id.isNotEmpty && product.name.isNotEmpty,
+            )
+            .toList()
+          ..sort(
+            (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+          );
 
     if (!mounted) return;
     setState(() {
@@ -111,11 +116,15 @@ class _DeliveryVehicleLoadingScreenState
       return;
     }
 
-    final existingIndex = _items.indexWhere((item) => item.product.id == product.id);
+    final existingIndex = _items.indexWhere(
+      (item) => item.product.id == product.id,
+    );
     setState(() {
       if (existingIndex >= 0) {
         final existing = _items[existingIndex];
-        final updated = existing.copyWith(quantity: existing.quantity + quantity);
+        final updated = existing.copyWith(
+          quantity: existing.quantity + quantity,
+        );
         _items = [..._items]..[existingIndex] = updated;
         _controllerFor(updated).text = updated.quantity.toString();
       } else {
@@ -130,7 +139,9 @@ class _DeliveryVehicleLoadingScreenState
 
   void _removeItem(_LoadingItem item) {
     setState(() {
-      _items = _items.where((candidate) => candidate.product.id != item.product.id).toList();
+      _items = _items
+          .where((candidate) => candidate.product.id != item.product.id)
+          .toList();
       _itemControllers.remove(item.product.id)?.dispose();
     });
   }
@@ -174,9 +185,9 @@ class _DeliveryVehicleLoadingScreenState
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: Theme.of(context).colorScheme.copyWith(
-              primary: AppColors.deliveryGreen,
-            ),
+            colorScheme: Theme.of(
+              context,
+            ).colorScheme.copyWith(primary: AppColors.deliveryGreen),
           ),
           child: child!,
         );
@@ -229,9 +240,9 @@ class _DeliveryVehicleLoadingScreenState
       if (Navigator.of(context).canPop()) {
         Navigator.of(context).pop(true);
       } else {
-        Navigator.of(context).pushReplacementNamed(
-          AppRoutes.deliveryVehicleStock,
-        );
+        Navigator.of(
+          context,
+        ).pushReplacementNamed(AppRoutes.deliveryVehicleStock);
       }
     } on ApiException catch (error) {
       if (!mounted) return;
@@ -372,7 +383,9 @@ class _KpiPanel extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF063B25),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF146C42).withValues(alpha: 0.35)),
+        border: Border.all(
+          color: const Color(0xFF146C42).withValues(alpha: 0.35),
+        ),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF063B25).withValues(alpha: 0.16),
@@ -564,12 +577,13 @@ class _ProductsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final selected = selectedProduct != null &&
+    final selected =
+        selectedProduct != null &&
             products.any((product) => product.id == selectedProduct!.id)
         ? selectedProduct
         : products.isEmpty
-            ? null
-            : products.first;
+        ? null
+        : products.first;
 
     return _SurfaceCard(
       child: Column(
@@ -763,7 +777,9 @@ class _LoadingItemRow extends StatelessWidget {
             child: TextField(
               controller: controller,
               textAlign: TextAlign.center,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
               ],
@@ -843,7 +859,9 @@ class _BottomSummary extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           border: Border(
-            top: BorderSide(color: AppColors.deliveryGreen.withValues(alpha: 0.28)),
+            top: BorderSide(
+              color: AppColors.deliveryGreen.withValues(alpha: 0.28),
+            ),
           ),
           boxShadow: [
             BoxShadow(
@@ -935,11 +953,7 @@ class _SummaryStat extends StatelessWidget {
   final String value;
   final String? suffix;
 
-  const _SummaryStat({
-    required this.label,
-    required this.value,
-    this.suffix,
-  });
+  const _SummaryStat({required this.label, required this.value, this.suffix});
 
   @override
   Widget build(BuildContext context) {
@@ -1012,11 +1026,7 @@ class _FieldRow extends StatelessWidget {
         if (!wide) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _FieldLabel(label),
-              const SizedBox(height: 8),
-              child,
-            ],
+            children: [_FieldLabel(label), const SizedBox(height: 8), child],
           );
         }
         return Row(
@@ -1095,7 +1105,8 @@ class _SelectField extends StatelessWidget {
                   ),
                 ),
               ),
-              if (trailing != null) Icon(trailing, color: const Color(0xFF303746)),
+              if (trailing != null)
+                Icon(trailing, color: const Color(0xFF303746)),
             ],
           ),
         ),
@@ -1320,7 +1331,9 @@ class _InlineError extends StatelessWidget {
 InputDecoration _inputDecoration({required String hint, IconData? icon}) {
   return InputDecoration(
     hintText: hint,
-    prefixIcon: icon == null ? null : Icon(icon, color: const Color(0xFF718096)),
+    prefixIcon: icon == null
+        ? null
+        : Icon(icon, color: const Color(0xFF718096)),
     hintStyle: const TextStyle(
       color: Color(0xFF98A2B3),
       fontWeight: FontWeight.w600,
@@ -1381,10 +1394,7 @@ class _LoadingItem {
   const _LoadingItem({required this.product, required this.quantity});
 
   _LoadingItem copyWith({int? quantity}) {
-    return _LoadingItem(
-      product: product,
-      quantity: quantity ?? this.quantity,
-    );
+    return _LoadingItem(product: product, quantity: quantity ?? this.quantity);
   }
 }
 
@@ -1407,7 +1417,9 @@ class _LoadingProduct {
 
   factory _LoadingProduct.fromJson(Map<String, dynamic> json) {
     final product = _readMap(json, const ['product']);
-    final source = product.isEmpty ? json : <String, dynamic>{...json, ...product};
+    final source = product.isEmpty
+        ? json
+        : <String, dynamic>{...json, ...product};
     return _LoadingProduct(
       id: _readString(source, const ['id', '_id', 'product_id', 'productId']),
       name: _readString(source, const [
@@ -1452,7 +1464,8 @@ class _LoadingProduct {
   IconData get fallbackIcon {
     final text = name.toLowerCase();
     if (text.contains('oil')) return Icons.opacity_rounded;
-    if (text.contains('rice') || text.contains('dal')) return Icons.grass_rounded;
+    if (text.contains('rice') || text.contains('dal'))
+      return Icons.grass_rounded;
     if (text.contains('sugar')) return Icons.inventory_2_outlined;
     return Icons.inventory_2_outlined;
   }

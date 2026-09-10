@@ -139,11 +139,7 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
             .map((item) => item.id == delivery.id ? nextDelivery : item)
             .toList();
       });
-      _showSnack(
-        title: successTitle,
-        message: successMessage,
-        isError: false,
-      );
+      _showSnack(title: successTitle, message: successMessage, isError: false);
     } catch (error) {
       if (!mounted) return;
       _showSnack(
@@ -1083,18 +1079,13 @@ class _DeliveryCardActions extends StatelessWidget {
           alignment: WrapAlignment.end,
           spacing: compact ? 5 : 6,
           runSpacing: compact ? 5 : 6,
-          children: [
-            ...iconActions,
-            _DeliveryIconActionButton(
-              icon: primaryAction.icon,
-              tooltip: primaryAction.label,
-              onPressed: primaryAction.onPressed,
-              compact: compact,
-              background: primaryAction.background,
-              foreground: primaryAction.foreground,
-              busy: busy,
-            ),
-          ],
+          children: iconActions,
+        ),
+        SizedBox(height: compact ? 6 : 8),
+        _DeliveryActionButton(
+          action: primaryAction,
+          busy: busy,
+          compact: compact,
         ),
       ],
     );
@@ -1174,45 +1165,48 @@ class _DeliveryActionButton extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: compact ? 9 : 11),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
-      child: busy
-          ? SizedBox(
-              width: compact ? 13 : 15,
-              height: compact ? 13 : 15,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: action.foreground,
-              ),
-            )
-          : Text(
-              compact ? action.compactLabel : action.label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: compact ? 10.5 : 12,
-                height: 1,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
+      child: SizedBox(
+        width: compact ? 82 : 108,
+        child: Center(
+          child: busy
+              ? SizedBox(
+                  width: compact ? 13 : 15,
+                  height: compact ? 13 : 15,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: action.foreground,
+                  ),
+                )
+              : FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    action.label,
+                    maxLines: 1,
+                    style: TextStyle(
+                      fontSize: compact ? 10.5 : 12,
+                      height: 1,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+        ),
+      ),
     );
   }
 }
 
 class _DeliveryCardAction {
   final String label;
-  final String compactLabel;
-  final IconData icon;
   final VoidCallback onPressed;
   final Color background;
   final Color foreground;
 
   const _DeliveryCardAction({
     required this.label,
-    String? compactLabel,
-    required this.icon,
     required this.onPressed,
     required this.background,
     required this.foreground,
-  }) : compactLabel = compactLabel ?? label;
+  });
 
   static _DeliveryCardAction? forDelivery(
     _AssignedDelivery delivery, {
@@ -1223,7 +1217,6 @@ class _DeliveryCardAction {
     if (delivery.canRespond && onAccept != null) {
       return _DeliveryCardAction(
         label: 'Accept',
-        icon: Icons.check_rounded,
         onPressed: onAccept,
         background: AppColors.deliveryGreen,
         foreground: AppColors.surface,
@@ -1232,8 +1225,6 @@ class _DeliveryCardAction {
     if (delivery.canStartDelivery && onStartDelivery != null) {
       return _DeliveryCardAction(
         label: 'Start Delivery',
-        compactLabel: 'Start',
-        icon: Icons.play_arrow_rounded,
         onPressed: onStartDelivery,
         background: AppColors.deliveryBlue,
         foreground: AppColors.surface,
@@ -1242,8 +1233,6 @@ class _DeliveryCardAction {
     if (delivery.canMarkDelivered && onMarkDelivered != null) {
       return _DeliveryCardAction(
         label: 'Mark Delivered',
-        compactLabel: 'Done',
-        icon: Icons.done_all_rounded,
         onPressed: onMarkDelivered,
         background: AppColors.deliveryGreen,
         foreground: AppColors.surface,
@@ -1805,14 +1794,11 @@ class _AssignedDelivery {
             'maps_latitude',
           ]) ??
           _readNestedDouble(json, 'location', const ['latitude', 'lat']) ??
-          _readPathDouble(json, const [
-            'customer',
-            'address_information',
-            'google_maps_location',
-          ], const [
-            'latitude',
-            'lat',
-          ]) ??
+          _readPathDouble(
+            json,
+            const ['customer', 'address_information', 'google_maps_location'],
+            const ['latitude', 'lat'],
+          ) ??
           _readNestedDouble(json, 'delivery_location', const [
             'latitude',
             'lat',
@@ -1850,15 +1836,11 @@ class _AssignedDelivery {
             'lng',
             'long',
           ]) ??
-          _readPathDouble(json, const [
-            'customer',
-            'address_information',
-            'google_maps_location',
-          ], const [
-            'longitude',
-            'lng',
-            'long',
-          ]) ??
+          _readPathDouble(
+            json,
+            const ['customer', 'address_information', 'google_maps_location'],
+            const ['longitude', 'lng', 'long'],
+          ) ??
           _readNestedDouble(json, 'delivery_location', const [
             'longitude',
             'lng',

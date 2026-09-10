@@ -272,7 +272,9 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
       if (!mounted) return;
       setState(() {
         _apiOrders = result.orders.map(_OrderRecord.fromJson).toList();
-        _currentPage = result.currentPage <= 0 ? _currentPage : result.currentPage;
+        _currentPage = result.currentPage <= 0
+            ? _currentPage
+            : result.currentPage;
         _pageSize = result.pageSize <= 0 ? _pageSize : result.pageSize;
         _totalItems = result.totalItems;
         _totalPages = result.totalPages <= 0 ? 1 : result.totalPages;
@@ -544,7 +546,8 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     if (action == 'Quotations' || action == 'Quotation') {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => const AdminQuotationsScreen(useSalesManagerShell: true),
+          builder: (_) =>
+              const AdminQuotationsScreen(useSalesManagerShell: true),
         ),
       );
       return;
@@ -616,7 +619,8 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
           order.deliveryPartner != _selectedDeliveryPartner) {
         return false;
       }
-      if (_selectedSource != 'All sources' && order.sourceLabel != _selectedSource) {
+      if (_selectedSource != 'All sources' &&
+          order.sourceLabel != _selectedSource) {
         return false;
       }
       if (query.isEmpty) return true;
@@ -701,7 +705,9 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
             .toList();
       case 4:
         return source
-            .where((order) => _normalizeStatus(order.status) == 'out for delivery')
+            .where(
+              (order) => _normalizeStatus(order.status) == 'out for delivery',
+            )
             .toList();
       case 5:
         return source
@@ -709,7 +715,10 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
             .toList();
       case 6:
         return source
-            .where((order) => _normalizeStatus(order.status) == 'partially delivered')
+            .where(
+              (order) =>
+                  _normalizeStatus(order.status) == 'partially delivered',
+            )
             .toList();
       case 7:
         return source
@@ -753,10 +762,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
             ),
           ),
           const Spacer(),
-          if (!isMobile) ...[
-            _topRightActionButton(),
-            const SizedBox(width: 8),
-          ],
+          if (!isMobile) ...[_topRightActionButton(), const SizedBox(width: 8)],
           _roundIconButton(Icons.help_outline_rounded, () {}),
           const SizedBox(width: 8),
           _roundIconButton(Icons.notifications_none_rounded, () {}),
@@ -882,7 +888,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                     borderRadius: BorderRadius.circular(999),
                   ),
                   textStyle: const TextStyle(
-                  fontSize: 11.5,
+                    fontSize: 11.5,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -1406,12 +1412,13 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
   }
 
   Widget _deliveryPartnerDropdown() {
-    final partnerOptions = _displayOrders
-        .map((order) => order.deliveryPartner)
-        .where((partner) => partner.trim().isNotEmpty && partner != '-')
-        .toSet()
-        .toList()
-      ..sort();
+    final partnerOptions =
+        _displayOrders
+            .map((order) => order.deliveryPartner)
+            .where((partner) => partner.trim().isNotEmpty && partner != '-')
+            .toSet()
+            .toList()
+          ..sort();
 
     return _selectDropdown(
       value: _selectedDeliveryPartner,
@@ -1646,101 +1653,98 @@ class _DesktopOrderRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
         child: Row(
           children: [
-          Expanded(
-            flex: 17,
-            child: Text(
-              record.number,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
+            Expanded(
+              flex: 17,
+              child: Text(
+                record.number,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
-          ),
-          Expanded(
-            flex: 22,
-            child: Text(
-              record.customer,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 12,
+            Expanded(
+              flex: 22,
+              child: Text(
+                record.customer,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 12,
+                ),
               ),
             ),
-          ),
-          Expanded(
-            flex: 12,
-            child: Text(
-              record.date,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 12,
+            Expanded(
+              flex: 12,
+              child: Text(
+                record.date,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 12,
+                ),
               ),
             ),
-          ),
-          Expanded(
-            flex: 8,
-            child: Text(
-              record.items,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 12,
+            Expanded(
+              flex: 8,
+              child: Text(
+                record.items,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 12,
+                ),
               ),
             ),
-          ),
-          Expanded(
-            flex: 11,
-            child: Text(
-              record.total,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
+            Expanded(
+              flex: 11,
+              child: Text(
+                record.total,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
-          ),
-          Expanded(
-            flex: 11,
-            child: _StatusChip(
-              label: record.payment,
-              foreground: record.paymentColor,
-              background: record.paymentBackground,
-            ),
-          ),
-          Expanded(
-            flex: 12,
-            child: _StatusChip(
-              label: record.status,
-              foreground: record.statusColor,
-              background: record.statusBackground,
-            ),
-          ),
-          Expanded(
-            flex: 12,
-            child: Text(
-              record.sourceLabel,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 12,
+            Expanded(
+              flex: 11,
+              child: _StatusChip(
+                label: record.payment,
+                foreground: record.paymentColor,
+                background: record.paymentBackground,
               ),
             ),
-          ),
-          Expanded(
-            flex: 16,
-            child: Text(
-              record.deliveryPartner,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 12,
+            Expanded(
+              flex: 12,
+              child: _StatusChip(
+                label: record.status,
+                foreground: record.statusColor,
+                background: record.statusBackground,
               ),
             ),
-          ),
-          SizedBox(
-            width: 28,
-            child: _OrderActionsMenu(
-              record: record,
-              onSelected: onAction,
+            Expanded(
+              flex: 12,
+              child: Text(
+                record.sourceLabel,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 12,
+                ),
+              ),
             ),
-          ),
+            Expanded(
+              flex: 16,
+              child: Text(
+                record.deliveryPartner,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+            SizedBox(
+              width: 28,
+              child: _OrderActionsMenu(record: record, onSelected: onAction),
+            ),
           ],
         ),
       ),
@@ -1780,68 +1784,68 @@ class _OrderMobileCard extends StatelessWidget {
           ],
         ),
         child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  record.number,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w800,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    record.number,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
-              ),
-              _StatusChip(
-                label: record.status,
-                foreground: record.statusColor,
-                background: record.statusBackground,
-              ),
-              _OrderActionsMenu(record: record, onSelected: onAction),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            record.customer,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 11.5,
-              fontWeight: FontWeight.w600,
+                _StatusChip(
+                  label: record.status,
+                  foreground: record.statusColor,
+                  background: record.statusBackground,
+                ),
+                _OrderActionsMenu(record: record, onSelected: onAction),
+              ],
             ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(child: _kv('Date', record.date)),
-              Expanded(child: _kv('Items', record.items)),
-              Expanded(child: _kv('Total', record.total)),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              _StatusChip(
-                label: record.payment,
-                foreground: record.paymentColor,
-                background: record.paymentBackground,
+            const SizedBox(height: 4),
+            Text(
+              record.customer,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 11.5,
+                fontWeight: FontWeight.w600,
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  '${record.sourceLabel}  |  ${record.deliveryPartner}',
-                  textAlign: TextAlign.right,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w600,
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(child: _kv('Date', record.date)),
+                Expanded(child: _kv('Items', record.items)),
+                Expanded(child: _kv('Total', record.total)),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                _StatusChip(
+                  label: record.payment,
+                  foreground: record.paymentColor,
+                  background: record.paymentBackground,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '${record.sourceLabel}  |  ${record.deliveryPartner}',
+                    textAlign: TextAlign.right,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -1976,10 +1980,7 @@ class _OrderActionsMenu extends StatelessWidget {
   final _OrderRecord record;
   final ValueChanged<_OrderAction> onSelected;
 
-  const _OrderActionsMenu({
-    required this.record,
-    required this.onSelected,
-  });
+  const _OrderActionsMenu({required this.record, required this.onSelected});
 
   @override
   Widget build(BuildContext context) {
@@ -1998,10 +1999,7 @@ class _OrderActionsMenu extends StatelessWidget {
           value: _OrderActionType.view,
           child: Text('View Details'),
         ),
-        const PopupMenuItem(
-          value: _OrderActionType.edit,
-          child: Text('Edit'),
-        ),
+        const PopupMenuItem(value: _OrderActionType.edit, child: Text('Edit')),
         const PopupMenuItem(
           value: _OrderActionType.duplicate,
           child: Text('Duplicate'),
@@ -2108,8 +2106,11 @@ class _OrderRecord {
       ], fallback: 'Unpaid'),
     );
     final status = _titleCase(
-      _readString(source, const ['status', 'order_status', 'orderStatus'],
-          fallback: 'Draft'),
+      _readString(source, const [
+        'status',
+        'order_status',
+        'orderStatus',
+      ], fallback: 'Draft'),
     );
     final statusColors = _statusColors(status);
     final paymentColors = _paymentColors(payment);
@@ -2129,11 +2130,12 @@ class _OrderRecord {
       ]),
       date: dateValue == null ? '-' : _formatApiDate(dateValue),
       dateValue: dateValue,
-      items: _readString(
-        source,
-        const ['items_count', 'itemsCount', 'total_items', 'totalItems'],
-        fallback: itemsList.isEmpty ? '-' : itemsList.length.toString(),
-      ),
+      items: _readString(source, const [
+        'items_count',
+        'itemsCount',
+        'total_items',
+        'totalItems',
+      ], fallback: itemsList.isEmpty ? '-' : itemsList.length.toString()),
       total: _formatApiMoney(totalAmount),
       totalAmount: totalAmount,
       payment: payment,
@@ -2143,7 +2145,10 @@ class _OrderRecord {
       statusColor: statusColors.foreground,
       statusBackground: statusColors.background,
       deliveryPartner: _firstNonEmpty([
-        _readString(source, const ['delivery_partner_name', 'deliveryPartnerName']),
+        _readString(source, const [
+          'delivery_partner_name',
+          'deliveryPartnerName',
+        ]),
         _readString(deliveryPartner, const ['name', 'full_name', 'fullName']),
         '-',
       ]),
@@ -2165,10 +2170,7 @@ class _ChipColors {
   const _ChipColors(this.foreground, this.background);
 }
 
-Map<String, dynamic> _readMap(
-  Map<String, dynamic> source,
-  List<String> keys,
-) {
+Map<String, dynamic> _readMap(Map<String, dynamic> source, List<String> keys) {
   for (final key in keys) {
     final value = source[key];
     if (value is Map<String, dynamic>) return value;
@@ -2204,7 +2206,9 @@ double _readDouble(Map<String, dynamic> source, List<String> keys) {
     final value = source[key];
     if (value is num) return value.toDouble();
     if (value is String) {
-      final parsed = double.tryParse(value.replaceAll(RegExp(r'[^0-9.\-]'), ''));
+      final parsed = double.tryParse(
+        value.replaceAll(RegExp(r'[^0-9.\-]'), ''),
+      );
       if (parsed != null) return parsed;
     }
   }
@@ -2242,7 +2246,9 @@ int? _monthNumber(String value) {
     'dec': 12,
   };
   final normalized = value.toLowerCase();
-  return months[normalized.length <= 3 ? normalized : normalized.substring(0, 3)];
+  return months[normalized.length <= 3
+      ? normalized
+      : normalized.substring(0, 3)];
 }
 
 String _firstNonEmpty(List<String> values) {
@@ -2258,9 +2264,11 @@ String _titleCase(String value) {
   if (normalized.isEmpty) return '';
   return normalized
       .split(RegExp(r'\s+'))
-      .map((word) => word.isEmpty
-          ? word
-          : '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}')
+      .map(
+        (word) => word.isEmpty
+            ? word
+            : '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}',
+      )
       .join(' ');
 }
 

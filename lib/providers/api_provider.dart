@@ -400,10 +400,7 @@ class ApiProvider extends ChangeNotifier {
     required String leadId,
     required Map<String, dynamic> request,
   }) {
-    return _apiService.convertLeadToCustomer(
-      leadId: leadId,
-      request: request,
-    );
+    return _apiService.convertLeadToCustomer(leadId: leadId, request: request);
   }
 
   Future<Map<String, dynamic>> createVisit({
