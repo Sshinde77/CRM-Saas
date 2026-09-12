@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:latlong2/latlong.dart';
 
 import '../../../constants/app_colors.dart';
 import '../../../models/customer_model.dart';
 import '../../../providers/api_provider.dart';
 import '../../../services/api_service.dart';
+import 'customer_location_picker_screen.dart';
 
 class CreateDeliveryCustomerScreen extends StatefulWidget {
   const CreateDeliveryCustomerScreen({super.key});
@@ -111,6 +113,27 @@ class _CreateDeliveryCustomerScreenState
       return 'Enter valid latitude and longitude';
     }
     return null;
+  }
+
+  Future<void> _pickLocation() async {
+    FocusScope.of(context).unfocus();
+    LatLng? initialLocation;
+    if (_validateLocation(_location.text) == null) {
+      final parts = _location.text.split(',');
+      initialLocation = LatLng(
+        double.parse(parts[0].trim()),
+        double.parse(parts[1].trim()),
+      );
+    }
+    final selected = await Navigator.of(context).push<LatLng>(
+      MaterialPageRoute(
+        builder: (_) =>
+            CustomerLocationPickerScreen(initialLocation: initialLocation),
+      ),
+    );
+    if (!mounted || selected == null) return;
+    _location.text =
+        '${selected.latitude.toStringAsFixed(6)}, ${selected.longitude.toStringAsFixed(6)}';
   }
 
   Future<void> _save() async {
@@ -415,12 +438,11 @@ class _CreateDeliveryCustomerScreenState
                       enabled: !_saving,
                       textInputAction: TextInputAction.done,
                       decoration: _decoration('12.9352, 77.6245').copyWith(
-                        helperText: 'Enter latitude, longitude',
+                        helperText:
+                            'Pin on the map or enter latitude, longitude',
                         suffixIcon: IconButton(
-                          tooltip: 'Enter location coordinates',
-                          onPressed: _saving
-                              ? null
-                              : _locationFocus.requestFocus,
+                          tooltip: 'Pin location on map',
+                          onPressed: _saving ? null : _pickLocation,
                           icon: const Icon(
                             Icons.my_location_rounded,
                             color: _green,
