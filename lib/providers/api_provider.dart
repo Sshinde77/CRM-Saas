@@ -444,8 +444,8 @@ class ApiProvider extends ChangeNotifier {
     return _apiService.downloadQuotationPdf(quotationId);
   }
 
-  Future<List<Map<String, dynamic>>> fetchWarehouses() {
-    return _apiService.fetchWarehouses();
+  Future<List<Map<String, dynamic>>> fetchWarehouses({bool? isActive}) {
+    return _apiService.fetchWarehouses(isActive: isActive);
   }
 
   Future<Map<String, dynamic>> convertQuotationToOrder({

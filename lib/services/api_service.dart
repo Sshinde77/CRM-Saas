@@ -1322,9 +1322,12 @@ class ApiService {
     return response.bodyBytes;
   }
 
-  Future<List<Map<String, dynamic>>> fetchWarehouses() {
+  Future<List<Map<String, dynamic>>> fetchWarehouses({bool? isActive}) {
     return fetchRawList(
       endpoint: ApiEndpoints.warehousesList,
+      queryParameters: isActive == null
+          ? null
+          : {'is_active': isActive.toString()},
       candidateKeys: const ['warehouses', 'data', 'items', 'results'],
       fallbackMessage: 'Invalid warehouses response.',
     );
@@ -2177,11 +2180,12 @@ class ApiService {
     Duration? timeout,
     bool retryOnTimeout = false,
   }) async {
-    final uri = Uri.parse('$baseUrl$endpoint').replace(
-      queryParameters: queryParameters == null || queryParameters.isEmpty
-          ? null
-          : queryParameters,
-    );
+    final uri = Uri.parse('${baseUrl.replaceFirst(RegExp(r'/$'), '')}$endpoint')
+        .replace(
+          queryParameters: queryParameters == null || queryParameters.isEmpty
+              ? null
+              : queryParameters,
+        );
     final encodedBody = body == null ? null : jsonEncode(body);
 
     final attempts = retryOnTimeout ? 2 : 1;
@@ -2195,7 +2199,6 @@ class ApiService {
         method: method,
         uri: uri,
         headers: headers,
-        body: encodedBody,
         attempt: attempt,
         timeout: effectiveTimeout,
       );
@@ -2212,7 +2215,6 @@ class ApiService {
           method: method,
           uri: uri,
           statusCode: response.statusCode,
-          body: response.body,
           attempt: attempt,
         );
 
@@ -2225,7 +2227,7 @@ class ApiService {
             if (refreshed) {
               headers = _buildHeaders(requiresAuth: requiresAuth);
               debugPrint(
-                '[API RETRY] $method $uri -> retrying after token refresh',
+                '[API RETRY] $method ${_safeUriForLog(uri)} -> retrying after token refresh',
               );
               continue;
             }
@@ -2247,7 +2249,9 @@ class ApiService {
         );
 
         if (attempt < attempts) {
-          debugPrint('[API RETRY] $method $uri -> retrying after timeout');
+          debugPrint(
+            '[API RETRY] $method ${_safeUriForLog(uri)} -> retrying after timeout',
+          );
           attempt++;
           continue;
         }
@@ -2255,6 +2259,18 @@ class ApiService {
         throw const ApiException(
           message:
               'The server is still starting. Please wait while we retry your login.',
+        );
+      } on http.ClientException catch (error) {
+        _logTransportError(
+          method: method,
+          uri: uri,
+          error: error,
+          attempt: attempt,
+        );
+        throw ApiException(
+          message: kIsWeb
+              ? 'Could not connect to the API from this browser. Check that the API allows ${Uri.base.origin} in its CORS settings and that the API is reachable.'
+              : 'Could not connect to the API. Check your network connection and try again.',
         );
       } catch (error) {
         _logTransportError(
@@ -2297,8 +2313,6 @@ class ApiService {
         headers: headers,
         attempt: attempt,
         timeout: effectiveTimeout,
-        fields: fields,
-        fileName: fileName,
       );
 
       try {
@@ -2323,7 +2337,6 @@ class ApiService {
           method: method,
           uri: uri,
           statusCode: response.statusCode,
-          body: response.body,
           attempt: attempt,
         );
 
@@ -2336,7 +2349,7 @@ class ApiService {
             if (refreshed) {
               headers = _buildMultipartHeaders(requiresAuth: requiresAuth);
               debugPrint(
-                '[API RETRY] $method $uri -> retrying after token refresh',
+                '[API RETRY] $method ${_safeUriForLog(uri)} -> retrying after token refresh',
               );
               continue;
             }
@@ -2358,7 +2371,9 @@ class ApiService {
         );
 
         if (attempt < attempts) {
-          debugPrint('[API RETRY] $method $uri -> retrying after timeout');
+          debugPrint(
+            '[API RETRY] $method ${_safeUriForLog(uri)} -> retrying after timeout',
+          );
           attempt++;
           continue;
         }
@@ -2399,7 +2414,6 @@ class ApiService {
       method: 'POST',
       uri: uri,
       headers: headers,
-      body: body,
       attempt: 1,
       timeout: ApiConstants.requestTimeout,
     );
@@ -2416,7 +2430,6 @@ class ApiService {
         method: 'POST',
         uri: uri,
         statusCode: response.statusCode,
-        body: response.body,
         attempt: 1,
       );
 
@@ -2531,17 +2544,17 @@ class ApiService {
     required String method,
     required Uri uri,
     required Map<String, String> headers,
-    String? body,
     required int attempt,
     required Duration timeout,
   }) {
+    if (!kDebugMode) return;
+    final safeUri = _safeUriForLog(uri);
     debugPrint(
-      '[API REQUEST] $method $uri (attempt $attempt, timeout ${timeout.inSeconds}s)',
+      '[API REQUEST] $method $safeUri (query: ${Uri.parse(safeUri).queryParameters}, attempt $attempt, timeout ${timeout.inSeconds}s)',
     );
-    debugPrint('[API REQUEST HEADERS] ${_sanitizeHeaders(headers)}');
-    if (body != null && body.trim().isNotEmpty) {
-      debugPrint('[API REQUEST BODY] $body');
-    }
+    debugPrint(
+      '[API AUTH] ${headers.containsKey(ApiConstants.authorizationHeader) ? 'Bearer attached' : 'none'}',
+    );
   }
 
   void _logMultipartRequest({
@@ -2550,29 +2563,25 @@ class ApiService {
     required Map<String, String> headers,
     required int attempt,
     required Duration timeout,
-    Map<String, String>? fields,
-    required String fileName,
   }) {
+    if (!kDebugMode) return;
     debugPrint(
-      '[API REQUEST] $method $uri (multipart, attempt $attempt, timeout ${timeout.inSeconds}s)',
+      '[API REQUEST] $method ${_safeUriForLog(uri)} (multipart, attempt $attempt, timeout ${timeout.inSeconds}s)',
     );
-    debugPrint('[API REQUEST HEADERS] ${_sanitizeHeaders(headers)}');
-    if (fields != null && fields.isNotEmpty) {
-      debugPrint('[API REQUEST FIELDS] ${jsonEncode(fields)}');
-    }
-    debugPrint('[API REQUEST FILE] $fileName');
+    debugPrint(
+      '[API AUTH] ${headers.containsKey(ApiConstants.authorizationHeader) ? 'Bearer attached' : 'none'}',
+    );
   }
 
   void _logResponse({
     required String method,
     required Uri uri,
     required int statusCode,
-    required String body,
     required int attempt,
   }) {
-    debugPrint('[API RESPONSE] $method $uri -> $statusCode (attempt $attempt)');
+    if (!kDebugMode) return;
     debugPrint(
-      '[API RESPONSE BODY] ${body.trim().isEmpty ? '<empty>' : body.trim()}',
+      '[API RESPONSE] $method ${_safeUriForLog(uri)} -> $statusCode (attempt $attempt)',
     );
   }
 
@@ -2582,16 +2591,27 @@ class ApiService {
     required Object error,
     required int attempt,
   }) {
-    debugPrint('[API ERROR] $method $uri -> $error (attempt $attempt)');
+    if (!kDebugMode) return;
+    final detail = error is ApiException
+        ? 'HTTP ${error.statusCode ?? 'unknown'}'
+        : error.runtimeType.toString();
+    debugPrint(
+      '[API ERROR] $method ${_safeUriForLog(uri)} -> $detail (attempt $attempt)',
+    );
   }
 
-  Map<String, String> _sanitizeHeaders(Map<String, String> headers) {
-    return headers.map((key, value) {
-      if (key.toLowerCase() == ApiConstants.authorizationHeader.toLowerCase()) {
-        return MapEntry(key, value.isEmpty ? value : 'Bearer ***');
-      }
-      return MapEntry(key, value);
+  String _safeUriForLog(Uri uri) {
+    final query = uri.queryParameters.map((key, value) {
+      final sensitive = RegExp(
+        r'token|password|secret|key|session|auth|cookie|credential|jwt',
+        caseSensitive: false,
+      ).hasMatch(key);
+      return MapEntry(key, sensitive ? '[redacted]' : value);
     });
+    return uri
+        .replace(userInfo: '', queryParameters: query.isEmpty ? null : query)
+        .removeFragment()
+        .toString();
   }
 
   String _extractErrorMessage(String body) {

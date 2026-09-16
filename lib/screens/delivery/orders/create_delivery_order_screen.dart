@@ -25,7 +25,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
   List<_OrderProduct> _products = [];
   List<Map<String, dynamic>> _warehouses = [];
   CustomerModel? _customer;
-  String? _warehouse;
+  String? _selectedWarehouseId;
   String _query = '', _category = 'All', _payment = 'Cash';
   bool _homeDelivery = false, _loading = true, _started = false;
   final _loadErrors = <String, String>{};
@@ -65,11 +65,25 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
         if (mounted) setState(() => _products = products);
       }),
       _loadSection('Warehouses', () async {
-        final rows = await api.fetchWarehouses();
+        final rows = await api.fetchWarehouses(isActive: true);
         final warehouses = rows
-            .where((w) => _text(w, ['id', 'warehouse_id']).isNotEmpty)
+            .where(
+              (w) =>
+                  w['is_active'] == true &&
+                  _text(w, ['id', 'warehouse_id']).isNotEmpty &&
+                  _text(w, ['name', 'warehouse_name']).isNotEmpty,
+            )
             .toList();
-        if (mounted) setState(() => _warehouses = warehouses);
+        if (mounted) {
+          setState(() {
+            _warehouses = warehouses;
+            if (!warehouses.any(
+              (w) => _text(w, ['id', 'warehouse_id']) == _selectedWarehouseId,
+            )) {
+              _selectedWarehouseId = null;
+            }
+          });
+        }
       }),
     ]);
     if (mounted) setState(() => _loading = false);
@@ -81,12 +95,25 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
       await fetch().timeout(const Duration(seconds: 30));
       if (mounted) setState(() => _loaded.add(name));
     } catch (error) {
-      final reason = switch (error) {
-        ApiException(statusCode: 403) => 'Your account does not have access.',
+      final detail = switch (error) {
+        ApiException(statusCode: 403, message: final message)
+            when message.toLowerCase().contains('not authenticated') =>
+          'Please sign in again.',
+        ApiException(statusCode: 403, message: final message) =>
+          message.trim().toLowerCase() == 'forbidden'
+              ? 'The API denied access (403).'
+              : message,
         ApiException(statusCode: 401) => 'Please sign in again.',
+        ApiException(:final message) => message,
         TimeoutException() => 'The request timed out.',
         _ => 'Could not load. Please retry.',
       };
+      final reason =
+          name == 'Warehouses' &&
+              error is ApiException &&
+              error.statusCode != null
+          ? 'HTTP ${error.statusCode}: $detail'
+          : detail;
       if (mounted) {
         setState(() => _loadErrors[name] = reason);
       }
@@ -108,6 +135,12 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
       (double.tryParse(_discount.text) ?? 0).clamp(0, _subtotal).toDouble();
   double get _total => _subtotal - _discountValue;
   String _money(double value) => '₹ ${value.toStringAsFixed(2)}';
+  String _warehouseLabel(Map<String, dynamic> warehouse) {
+    final name = _text(warehouse, ['name', 'warehouse_name']);
+    final code = _text(warehouse, ['code']);
+    return code.isEmpty ? name : '$name ($code)';
+  }
+
   String _date(DateTime date) =>
       '${date.day.toString().padLeft(2, '0')} ${const ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][date.month - 1]} ${date.year}';
 
@@ -169,7 +202,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
               ),
               const SizedBox(height: 6),
               Text(
-                'Warehouse: ${_text(_warehouses.firstWhere((w) => _text(w, ['id', 'warehouse_id']) == _warehouse), ['name', 'warehouse_name'])}',
+                'Warehouse: ${_warehouseLabel(_warehouses.firstWhere((w) => _text(w, ['id', 'warehouse_id']) == _selectedWarehouseId))}',
               ),
               const SizedBox(height: 6),
               Text(
@@ -250,7 +283,8 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  onPressed: _loading || _loadErrors.isNotEmpty
+                  onPressed:
+                      _loading || _loadErrors.isNotEmpty || _warehouses.isEmpty
                       ? null
                       : _preview,
                   child: const Text(
@@ -365,8 +399,9 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                 const SizedBox(height: 12),
                 _label('Warehouse *'),
                 DropdownButtonFormField<String>(
+                  key: ObjectKey(_warehouses),
                   isExpanded: true,
-                  initialValue: _warehouse,
+                  initialValue: _selectedWarehouseId,
                   decoration: _decoration(
                     !_loaded.contains('Warehouses') && _loading
                         ? 'Loading warehouses...'
@@ -375,13 +410,13 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                         : _warehouses.isEmpty
                         ? 'No warehouses available'
                         : 'Select warehouse',
-                  ),
+                  ).copyWith(errorText: _loadErrors['Warehouses']),
                   items: _warehouses
                       .map(
                         (w) => DropdownMenuItem(
                           value: _text(w, ['id', 'warehouse_id']),
                           child: Text(
-                            _text(w, ['name', 'warehouse_name']),
+                            _warehouseLabel(w),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -389,9 +424,17 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                       .toList(),
                   onChanged: _warehouses.isEmpty
                       ? null
-                      : (v) => setState(() => _warehouse = v),
+                      : (v) => setState(() => _selectedWarehouseId = v),
                   validator: (v) => v == null ? 'Select a warehouse' : null,
                 ),
+                if (_loadErrors.containsKey('Warehouses'))
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: _loading ? null : _load,
+                      child: const Text('Retry warehouses'),
+                    ),
+                  ),
                 _heading('Add products'),
                 TextField(
                   decoration: _decoration(

@@ -1,7 +1,11 @@
 class ApiConstants {
   const ApiConstants._();
 
-  static const String baseUrl = 'https://api.asynk.in';
+  // A same-origin reverse proxy can be selected for web deployments.
+  static const String baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'https://api.asynk.in',
+  );
   static const Duration requestTimeout = Duration(seconds: 20);
   static const Duration loginRequestTimeout = Duration(seconds: 60);
 

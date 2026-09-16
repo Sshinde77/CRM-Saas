@@ -1,3 +1,4 @@
+import 'package:crm_saas/models/auth_models.dart';
 import 'package:crm_saas/models/customer_model.dart';
 import 'package:crm_saas/providers/api_provider.dart';
 import 'package:crm_saas/screens/delivery/orders/create_delivery_order_screen.dart';
@@ -9,6 +10,17 @@ import 'package:http/testing.dart';
 
 class _OrderProvider extends ApiProvider {
   bool warehouseFails = true;
+  bool inventoryDenied = false;
+  bool? requestedIsActive;
+  List<Map<String, dynamic>> warehouseRows = [
+    {
+      'id': 'main',
+      'name': 'Main Warehouse',
+      'code': 'WH001',
+      'is_active': true,
+    },
+    {'id': 'old', 'name': 'Old Warehouse', 'is_active': false},
+  ];
   int productRequests = 0;
   int extraProducts = 0;
 
@@ -36,13 +48,17 @@ class _OrderProvider extends ApiProvider {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> fetchWarehouses() async {
+  Future<List<Map<String, dynamic>>> fetchWarehouses({bool? isActive}) async {
+    requestedIsActive = isActive;
     if (warehouseFails) {
-      throw const ApiException(statusCode: 403, message: 'Forbidden');
+      throw ApiException(
+        statusCode: 403,
+        message: inventoryDenied
+            ? "You don't have permission to view inventory"
+            : 'Forbidden',
+      );
     }
-    return [
-      {'id': 'main', 'name': 'Main Warehouse'},
-    ];
+    return warehouseRows;
   }
 }
 
@@ -86,21 +102,75 @@ void main() {
     final service = ApiService(
       client: MockClient((request) async {
         expect(request.method, 'GET');
-        expect(request.url.toString(), 'https://api.asynk.in/warehouses');
+        expect(
+          request.url.toString(),
+          'https://api.asynk.in/warehouses?is_active=true',
+        );
         expect(request.headers['accept'], 'application/json');
         expect(request.headers['Authorization'], 'Bearer test-session-token');
-        return http.Response('[{"id":"main","name":"Main Warehouse"}]', 200);
+        return http.Response(
+          '[{"id":"main","name":"Main Warehouse","is_active":true}]',
+          200,
+        );
       }),
     );
     addTearDown(service.close);
-    final warehouses = await service.fetchWarehouses();
+    final warehouses = await service.fetchWarehouses(isActive: true);
     expect(warehouses.single['name'], 'Main Warehouse');
+  });
+
+  test('API diagnostics include status without logging credentials', () async {
+    final logs = <String>[];
+    final previousDebugPrint = debugPrint;
+    debugPrint = (message, {wrapWidth}) {
+      if (message != null) logs.add(message);
+    };
+    addTearDown(() => debugPrint = previousDebugPrint);
+    ApiService.setAccessToken('secret-token-for-test');
+    addTearDown(() => ApiService.setAccessToken(null));
+    final service = ApiService(
+      client: MockClient((request) async {
+        if (request.url.path == '/auth/login') {
+          return http.Response('{"detail":"private-login-response"}', 401);
+        }
+        return http.Response(
+          '{"detail":"You don\'t have permission to view inventory"}',
+          403,
+        );
+      }),
+    );
+    addTearDown(service.close);
+
+    await expectLater(
+      service.login(
+        request: const LoginRequest(
+          email: 'test@example.com',
+          password: 'private-password-for-test',
+        ),
+      ),
+      throwsA(isA<ApiException>()),
+    );
+    await expectLater(
+      service.fetchWarehouses(isActive: true),
+      throwsA(isA<ApiException>().having((e) => e.statusCode, 'status', 403)),
+    );
+
+    final output = logs.join('\n');
+    expect(
+      output,
+      contains('GET https://api.asynk.in/warehouses?is_active=true'),
+    );
+    expect(output, contains('-> 403'));
+    expect(output, contains('Bearer attached'));
+    expect(output, isNot(contains('secret-token-for-test')));
+    expect(output, isNot(contains('private-password-for-test')));
+    expect(output, isNot(contains('private-login-response')));
   });
 
   testWidgets('warehouse failure preserves form and products; retry recovers', (
     tester,
   ) async {
-    final provider = _OrderProvider();
+    final provider = _OrderProvider()..inventoryDenied = true;
     addTearDown(provider.dispose);
     await tester.pumpWidget(
       ApiProviderScope(
@@ -112,9 +182,17 @@ void main() {
 
     expect(find.text('Customer *'), findsOneWidget);
     expect(
-      find.text('Warehouses: Your account does not have access.'),
+      find.text(
+        "Warehouses: HTTP 403: You don't have permission to view inventory",
+      ),
       findsOneWidget,
     );
+    expect(find.text('Retry warehouses'), findsOneWidget);
+    expect(
+      find.text("HTTP 403: You don't have permission to view inventory"),
+      findsOneWidget,
+    );
+    expect(provider.requestedIsActive, isTrue);
     expect(
       tester
           .widget<FilledButton>(
@@ -151,7 +229,9 @@ void main() {
     await tester.ensureVisible(warehouseField);
     await tester.tap(warehouseField);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Main Warehouse').last);
+    expect(tester.state<FormFieldState<String>>(warehouseField).value, isNull);
+    expect(find.text('Old Warehouse'), findsNothing);
+    await tester.tap(find.text('Main Warehouse (WH001)').last);
     await tester.pumpAndSettle();
     expect(tester.state<FormFieldState<String>>(warehouseField).value, 'main');
     expect(
@@ -161,6 +241,34 @@ void main() {
           )
           .onPressed,
       isNotNull,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('empty active warehouse list leaves the order unavailable', (
+    tester,
+  ) async {
+    final provider = _OrderProvider()
+      ..warehouseFails = false
+      ..warehouseRows = [];
+    addTearDown(provider.dispose);
+    await tester.pumpWidget(
+      ApiProviderScope(
+        notifier: provider,
+        child: const MaterialApp(home: CreateDeliveryOrderScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(provider.requestedIsActive, isTrue);
+    expect(find.text('No warehouses available'), findsOneWidget);
+    expect(
+      tester
+          .widget<FilledButton>(
+            find.widgetWithText(FilledButton, 'Preview Sales Order'),
+          )
+          .onPressed,
+      isNull,
     );
     expect(tester.takeException(), isNull);
   });
