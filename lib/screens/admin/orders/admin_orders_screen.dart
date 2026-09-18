@@ -480,13 +480,14 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
   }
 
   Future<void> _openNewOrder() async {
-    Navigator.of(context).push(
+    await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => NewAdminOrderScreen(
           useSalesManagerShell: widget.useSalesManagerShell,
         ),
       ),
     );
+    if (mounted) _loadOrders();
   }
 
   Future<void> _openOrderDetails(_OrderRecord record) async {

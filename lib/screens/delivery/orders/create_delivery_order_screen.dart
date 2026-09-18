@@ -9,7 +9,9 @@ import '../../../providers/api_provider.dart';
 import '../../../services/api_service.dart';
 
 class CreateDeliveryOrderScreen extends StatefulWidget {
-  const CreateDeliveryOrderScreen({super.key});
+  final Widget? drawer;
+
+  const CreateDeliveryOrderScreen({super.key, this.drawer});
 
   @override
   State<CreateDeliveryOrderScreen> createState() =>
@@ -18,6 +20,7 @@ class CreateDeliveryOrderScreen extends StatefulWidget {
 
 class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
   static const _green = AppColors.deliveryGreen;
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   final _form = GlobalKey<FormState>();
   final _quantities = <String, int>{};
   final _productScrollController = ScrollController();
@@ -245,11 +248,29 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
     final selectedCustomer = _customer;
 
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: widget.drawer,
       backgroundColor: AppColors.deliveryBackground,
       appBar: AppBar(
         title: const Text('Create Order'),
         backgroundColor: AppColors.deliveryDashboardHeaderEnd,
         foregroundColor: AppColors.surface,
+        leading: widget.drawer == null
+            ? null
+            : IconButton(
+                tooltip: 'Open menu',
+                icon: const Icon(Icons.menu),
+                onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+              ),
+        actions: widget.drawer == null
+            ? null
+            : [
+                IconButton(
+                  tooltip: 'Back',
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () => Navigator.of(context).maybePop(),
+                ),
+              ],
       ),
       bottomNavigationBar: SafeArea(
         child: Container(
@@ -1221,10 +1242,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                   fontWeight: FontWeight.w800,
                 ),
               ),
-              if (_error != null) ...[
-                const SizedBox(height: 12),
-                _errorCard(),
-              ],
+              if (_error != null) ...[const SizedBox(height: 12), _errorCard()],
               const SizedBox(height: 12),
               _card(
                 child: Row(

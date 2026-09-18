@@ -4,6 +4,7 @@ import 'package:crm_saas/models/auth_models.dart';
 import 'package:crm_saas/models/customer_model.dart';
 import 'package:crm_saas/constants/app_colors.dart';
 import 'package:crm_saas/providers/api_provider.dart';
+import 'package:crm_saas/screens/admin/orders/new_admin_order_screen.dart';
 import 'package:crm_saas/screens/delivery/orders/create_delivery_order_screen.dart';
 import 'package:crm_saas/services/api_service.dart';
 import 'package:crm_saas/theme/app_theme.dart';
@@ -88,6 +89,55 @@ class _OrderProvider extends ApiProvider {
 }
 
 void main() {
+  for (final salesManager in [false, true]) {
+    testWidgets(
+      '${salesManager ? 'Sales Manager' : 'Admin'} Create Order opens the shared live form',
+      (tester) async {
+        final provider = _OrderProvider()
+          ..warehouseFails = false
+          ..includeCustomer = true;
+        addTearDown(provider.dispose);
+        await tester.pumpWidget(
+          ApiProviderScope(
+            notifier: provider,
+            child: MaterialApp(
+              home: NewAdminOrderScreen(useSalesManagerShell: salesManager),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('Customer *'), findsOneWidget);
+        expect(find.text('Warehouse *'), findsOneWidget);
+        expect(find.text('Preview Sales Order'), findsOneWidget);
+        expect(provider.productRequests, 1);
+        expect(find.text('Create Order is not wired yet'), findsNothing);
+
+        await tester.tap(find.byType(DropdownButtonFormField<CustomerModel>));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Riyal Retail Store').last);
+        await tester.pumpAndSettle();
+        final warehouseField = find.byType(DropdownButtonFormField<String>);
+        await tester.ensureVisible(warehouseField);
+        await tester.tap(warehouseField);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Main Warehouse (WH001)').last);
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(find.byTooltip('Add one Rice 10kg'));
+        await tester.tap(find.byTooltip('Add one Rice 10kg'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Preview Sales Order'));
+        await tester.pumpAndSettle();
+        expect(find.text('Sales Order Preview'), findsOneWidget);
+        await tester.tap(find.text('Create Order'));
+        await tester.pumpAndSettle();
+        expect(provider.createdOrder?['customer_id'], 'customer-1');
+        expect(provider.createdOrder?['warehouse_id'], 'main');
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
   testWidgets('products scroll independently of the order form', (
     tester,
   ) async {
