@@ -1,8 +1,12 @@
+import 'dart:convert';
+
 import 'package:crm_saas/models/auth_models.dart';
 import 'package:crm_saas/models/customer_model.dart';
+import 'package:crm_saas/constants/app_colors.dart';
 import 'package:crm_saas/providers/api_provider.dart';
 import 'package:crm_saas/screens/delivery/orders/create_delivery_order_screen.dart';
 import 'package:crm_saas/services/api_service.dart';
+import 'package:crm_saas/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -23,6 +27,9 @@ class _OrderProvider extends ApiProvider {
   ];
   int productRequests = 0;
   int extraProducts = 0;
+  bool includeCustomer = false;
+  Map<String, dynamic>? createdOrder;
+  ApiException? orderError;
 
   @override
   Future<List<CustomerModel>> fetchCustomers({
@@ -30,7 +37,25 @@ class _OrderProvider extends ApiProvider {
     String? category,
     bool? isActive,
     String? assignedSalesOfficerId,
-  }) async => [];
+  }) async => includeCustomer
+      ? [
+          CustomerModel.fromJson({
+            'id': 'customer-1',
+            'name': 'Riyal Retail Store',
+            'address': '12 MG Road, Bengaluru',
+            'outstanding': 2500,
+          }),
+        ]
+      : [];
+
+  @override
+  Future<Map<String, dynamic>> createOrder({
+    required Map<String, dynamic> request,
+  }) async {
+    if (orderError != null) throw orderError!;
+    createdOrder = request;
+    return {'id': 'order-1'};
+  }
 
   @override
   Future<List<Map<String, dynamic>>> fetchProducts({
@@ -270,6 +295,154 @@ void main() {
           .onPressed,
       isNull,
     );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('preview opens as a page and creates the selected order', (
+    tester,
+  ) async {
+    final provider = _OrderProvider()
+      ..warehouseFails = false
+      ..includeCustomer = true;
+    addTearDown(provider.dispose);
+    await tester.pumpWidget(
+      ApiProviderScope(
+        notifier: provider,
+        child: MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: const CreateDeliveryOrderScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final customerField = find.byType(DropdownButtonFormField<CustomerModel>);
+    await tester.tap(customerField);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Riyal Retail Store').last);
+    await tester.pumpAndSettle();
+
+    final warehouseField = find.byType(DropdownButtonFormField<String>);
+    await tester.ensureVisible(warehouseField);
+    await tester.tap(warehouseField);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Main Warehouse (WH001)').last);
+    await tester.pumpAndSettle();
+
+    final addProduct = find.byTooltip('Add one Rice 10kg');
+    await tester.ensureVisible(addProduct);
+    await tester.tap(addProduct);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Preview Sales Order'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Sales Order Preview'), findsOneWidget);
+    expect(find.text('Draft Sales Order'), findsOneWidget);
+    expect(find.text('Riyal Retail Store'), findsOneWidget);
+    expect(find.text('Previous Balance'), findsOneWidget);
+    expect(find.text('Create Order'), findsOneWidget);
+    expect(
+      tester.widget<AppBar>(find.byType(AppBar).last).backgroundColor,
+      AppColors.deliveryDashboardHeaderEnd,
+    );
+    expect(
+      tester
+          .widget<TextField>(find.byType(TextField).last)
+          .decoration
+          ?.fillColor,
+      AppColors.surface,
+    );
+    expect(
+      tester
+          .widget<FilledButton>(
+            find.widgetWithText(FilledButton, 'Create Order'),
+          )
+          .style
+          ?.backgroundColor
+          ?.resolve({}),
+      AppColors.deliveryGreen,
+    );
+    expect(provider.createdOrder, isNull);
+
+    await tester.ensureVisible(find.text('Create Order'));
+    await tester.tap(find.text('Create Order'));
+    await tester.pumpAndSettle();
+    expect(provider.createdOrder?['customer_id'], 'customer-1');
+    expect(provider.createdOrder?['warehouse_id'], 'main');
+    expect((provider.createdOrder?['items'] as List).single['quantity'], 1);
+    expect(find.text('Sales order created successfully.'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('stock shortage shows a clear error and lets the user edit', (
+    tester,
+  ) async {
+    final provider = _OrderProvider()
+      ..warehouseFails = false
+      ..includeCustomer = true
+      ..orderError = ApiException(
+        statusCode: 409,
+        message: jsonEncode({
+          'detail': {
+            'error': 'INSUFFICIENT_STOCK',
+            'shortages': [
+              {
+                'product_id': 'rice',
+                'product_name': 'Rice 10kg',
+                'required_quantity': 1,
+                'available_quantity': 0,
+              },
+            ],
+          },
+        }),
+      );
+    addTearDown(provider.dispose);
+    await tester.pumpWidget(
+      ApiProviderScope(
+        notifier: provider,
+        child: const MaterialApp(home: CreateDeliveryOrderScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Stock checked when order is created'), findsOneWidget);
+    await tester.tap(find.byType(DropdownButtonFormField<CustomerModel>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Riyal Retail Store').last);
+    await tester.pumpAndSettle();
+    final warehouseField = find.byType(DropdownButtonFormField<String>);
+    await tester.ensureVisible(warehouseField);
+    await tester.tap(warehouseField);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Main Warehouse (WH001)').last);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byTooltip('Add one Rice 10kg'));
+    await tester.tap(find.byTooltip('Add one Rice 10kg'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Preview Sales Order'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Create Order'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Not enough stock in Main Warehouse to create this order.'),
+      findsOneWidget,
+    );
+    expect(find.text('Rice 10kg: 0 available, 1 needed.'), findsOneWidget);
+    expect(find.textContaining('INSUFFICIENT_STOCK'), findsNothing);
+    expect(
+      tester
+          .widget<FilledButton>(
+            find.widgetWithText(FilledButton, 'Create Order'),
+          )
+          .onPressed,
+      isNull,
+    );
+    await tester.ensureVisible(find.text('Back to Edit'));
+    await tester.tap(find.text('Back to Edit'));
+    await tester.pumpAndSettle();
+    expect(find.text('Sales Order Preview'), findsNothing);
+    expect(find.text('Create Order'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

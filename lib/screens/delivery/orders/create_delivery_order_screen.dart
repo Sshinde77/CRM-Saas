@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 
@@ -134,7 +135,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
   double get _discountValue =>
       (double.tryParse(_discount.text) ?? 0).clamp(0, _subtotal).toDouble();
   double get _total => _subtotal - _discountValue;
-  String _money(double value) => '₹ ${value.toStringAsFixed(2)}';
+  String _money(double value) => _formatOrderMoney(value);
   String _warehouseLabel(Map<String, dynamic> warehouse) {
     final name = _text(warehouse, ['name', 'warehouse_name']);
     final code = _text(warehouse, ['code']);
@@ -187,15 +188,15 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
     final selectedItems = _selected;
     final selectedWarehouse = _selectedWarehouse();
     if (customer == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Select a customer.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Select a customer.')));
       return;
     }
     if (selectedWarehouse == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Select a warehouse.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Select a warehouse.')));
       return;
     }
     if (selectedItems.isEmpty) {
@@ -204,59 +205,39 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
       );
       return;
     }
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      backgroundColor: AppColors.surface,
-      builder: (context) => SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _heading('Sales Order Preview'),
-              Text(
-                customer.name,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Order: ${_date(_orderDate)}   •   Delivery: ${_date(_deliveryDate)}',
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'Warehouse: ${_warehouseLabel(selectedWarehouse)}',
-              ),
-              const SizedBox(height: 6),
-              Text(
-                '${_homeDelivery ? 'Home Delivery' : 'Takeaway / Self Pickup'} • $_payment',
-              ),
-              const Divider(height: 28),
-              _summary(),
-              const SizedBox(height: 20),
-              const Text(
-                'Review your selections before continuing. This preview has not submitted an order.',
-                style: TextStyle(color: AppColors.textLightMuted),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: FilledButton.styleFrom(backgroundColor: _green),
-                  child: const Text('Back to Edit'),
-                ),
-              ),
-            ],
-          ),
+    final placed = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => _SalesOrderPreviewPage(
+          customer: customer,
+          warehouse: selectedWarehouse,
+          items: [
+            for (final product in selectedItems)
+              _PreviewItem(product, _quantities[product.id]!),
+          ],
+          orderDate: _orderDate,
+          deliveryDate: _deliveryDate,
+          discount: _discountValue,
+          paymentType: _payment,
+          homeDelivery: _homeDelivery,
+          onQuantityChanged: (id, quantity) => setState(() {
+            _quantities[id] = quantity;
+            final enteredDiscount = double.tryParse(_discount.text) ?? 0;
+            if (enteredDiscount > _subtotal) {
+              _discount.text = _subtotal.toStringAsFixed(2);
+            }
+          }),
         ),
       ),
     );
+    if (placed == true && mounted) {
+      setState(() {
+        _quantities.clear();
+        _discount.text = '0';
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Sales order created successfully.')),
+      );
+    }
   }
 
   @override
@@ -915,6 +896,833 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
   );
 }
 
+String _formatOrderMoney(double value) {
+  final parts = value.abs().toStringAsFixed(2).split('.');
+  var whole = parts.first;
+  if (whole.length > 3) {
+    final lastThree = whole.substring(whole.length - 3);
+    whole = whole.substring(0, whole.length - 3);
+    final groups = <String>[];
+    while (whole.length > 2) {
+      groups.insert(0, whole.substring(whole.length - 2));
+      whole = whole.substring(0, whole.length - 2);
+    }
+    if (whole.isNotEmpty) groups.insert(0, whole);
+    whole = '${groups.join(',')},$lastThree';
+  }
+  return '${value < 0 ? '− ' : ''}₹ $whole.${parts.last}';
+}
+
+class _PreviewItem {
+  final _OrderProduct product;
+  int quantity;
+
+  _PreviewItem(this.product, this.quantity);
+}
+
+class _SalesOrderPreviewPage extends StatefulWidget {
+  final CustomerModel customer;
+  final Map<String, dynamic> warehouse;
+  final List<_PreviewItem> items;
+  final DateTime orderDate;
+  final DateTime deliveryDate;
+  final double discount;
+  final String paymentType;
+  final bool homeDelivery;
+  final void Function(String id, int quantity) onQuantityChanged;
+
+  const _SalesOrderPreviewPage({
+    required this.customer,
+    required this.warehouse,
+    required this.items,
+    required this.orderDate,
+    required this.deliveryDate,
+    required this.discount,
+    required this.paymentType,
+    required this.homeDelivery,
+    required this.onQuantityChanged,
+  });
+
+  @override
+  State<_SalesOrderPreviewPage> createState() => _SalesOrderPreviewPageState();
+}
+
+class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
+  static const _green = AppColors.deliveryGreen;
+  static const _header = AppColors.deliveryDashboardHeaderEnd;
+  static const _red = AppColors.deliveryRed;
+  final _paidController = TextEditingController(text: '0');
+  final _previewScrollController = ScrollController();
+  bool _submitting = false;
+  String? _error;
+  List<String> _stockShortages = [];
+
+  List<_PreviewItem> get _items =>
+      widget.items.where((item) => item.quantity > 0).toList();
+  double get _subtotal =>
+      _items.fold(0, (sum, item) => sum + item.product.price * item.quantity);
+  double get _discount => widget.discount.clamp(0, _subtotal).toDouble();
+  double get _total => _subtotal - _discount;
+  double get _previousBalance => (widget.customer.outstanding ?? 0).toDouble();
+  double get _grandTotal => _total + _previousBalance;
+  double? get _paid => double.tryParse(_paidController.text.trim());
+  String _money(double value) => _formatOrderMoney(value);
+  String _date(DateTime date) =>
+      '${date.day.toString().padLeft(2, '0')} ${const ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][date.month - 1]} ${date.year}';
+  String _apiDate(DateTime date) =>
+      '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+
+  @override
+  void dispose() {
+    _paidController.dispose();
+    _previewScrollController.dispose();
+    super.dispose();
+  }
+
+  void _setQuantity(_PreviewItem item, int quantity) {
+    setState(() {
+      item.quantity = quantity;
+      _error = null;
+      _stockShortages = [];
+    });
+    widget.onQuantityChanged(item.product.id, quantity);
+  }
+
+  Future<void> _createOrder() async {
+    if (_items.isEmpty || _submitting) return;
+    final paid = _paid;
+    if (paid == null || !paid.isFinite || paid < 0 || paid > _grandTotal) {
+      setState(
+        () => _error =
+            'Enter a payment between ₹ 0.00 and ${_money(_grandTotal)}.',
+      );
+      return;
+    }
+    setState(() {
+      _submitting = true;
+      _error = null;
+      _stockShortages = [];
+    });
+    try {
+      await ApiProviderScope.of(context).createOrder(
+        request: {
+          'customer_id': widget.customer.id,
+          'warehouse_id': _text(widget.warehouse, ['id', 'warehouse_id']),
+          'order_date': _apiDate(widget.orderDate),
+          'delivery_date': _apiDate(widget.deliveryDate),
+          'fulfilment_method': widget.homeDelivery
+              ? 'home_delivery'
+              : 'self_pickup',
+          'payment_type': widget.paymentType,
+          'items': [
+            for (final item in _items)
+              {
+                'product_id': item.product.id,
+                'quantity': item.quantity,
+                'unit_price': item.product.price,
+              },
+          ],
+          'discount': _discount,
+          'paid_amount': paid,
+        },
+      );
+      if (mounted) Navigator.of(context).pop(true);
+    } catch (error) {
+      if (mounted) {
+        final shortages = error is ApiException
+            ? _parseStockShortages(error.message)
+            : <String>[];
+        setState(() {
+          _stockShortages = shortages;
+          _error = shortages.isNotEmpty
+              ? 'Not enough stock in ${_text(widget.warehouse, ['name', 'warehouse_name'])} to create this order.'
+              : error is ApiException
+              ? _readOrderError(error.message)
+              : 'Could not create the order. Please try again.';
+        });
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && _previewScrollController.hasClients) {
+            _previewScrollController.animateTo(
+              0,
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeOut,
+            );
+          }
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
+
+  dynamic _errorDetail(String message) {
+    try {
+      final decoded = jsonDecode(message);
+      if (decoded is Map<String, dynamic>) return decoded['detail'] ?? decoded;
+      return decoded;
+    } on FormatException {
+      return message;
+    }
+  }
+
+  List<String> _parseStockShortages(String message) {
+    final detail = _errorDetail(message);
+    if (detail is! Map || detail['error'] != 'INSUFFICIENT_STOCK') {
+      return [];
+    }
+    final rows = detail['shortages'];
+    if (rows is! List || rows.isEmpty) {
+      return ['One or more selected products are out of stock.'];
+    }
+    return rows.whereType<Map>().map((row) {
+      final id = row['product_id']?.toString();
+      final product = _items.where((item) => item.product.id == id).firstOrNull;
+      final name = row['product_name']?.toString().trim();
+      final label = name != null && name.isNotEmpty
+          ? name
+          : product?.product.name ?? 'Product';
+      final available = row['available_quantity']?.toString() ?? '0';
+      final required = row['required_quantity']?.toString() ?? '1';
+      return '$label: $available available, $required needed.';
+    }).toList();
+  }
+
+  String _readOrderError(String message) {
+    final detail = _errorDetail(message);
+    if (detail is String && detail.trim().isNotEmpty) {
+      return detail;
+    }
+    if (detail is Map) {
+      for (final key in const ['message', 'error']) {
+        final value = detail[key];
+        if (value is String && value.trim().isNotEmpty) {
+          return value.replaceAll('_', ' ');
+        }
+      }
+    }
+    return 'Could not create the order. Please check the details and try again.';
+  }
+
+  Widget _errorCard() => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: AppColors.deliveryRedSoft,
+      border: Border.all(color: AppColors.statusInactiveBorder),
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Icon(Icons.error_outline, color: _red),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                _error!,
+                style: const TextStyle(
+                  color: _red,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              for (final shortage in _stockShortages)
+                Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: Text(
+                    shortage,
+                    style: const TextStyle(color: AppColors.textPrimary),
+                  ),
+                ),
+              if (_stockShortages.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                const Text(
+                  'Remove the unavailable product or ask your team to add stock.',
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Back to Edit'),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final address =
+        widget.customer.deliveryAddress ??
+        widget.customer.address ??
+        widget.customer.billingAddress;
+    final warehouseName = _text(widget.warehouse, ['name', 'warehouse_name']);
+    return Scaffold(
+      backgroundColor: AppColors.deliveryBackground,
+      appBar: AppBar(
+        title: const Text(
+          'Sales Order Preview',
+          style: TextStyle(fontSize: 19, fontWeight: FontWeight.w700),
+        ),
+        backgroundColor: _header,
+        foregroundColor: AppColors.surface,
+        surfaceTintColor: Colors.transparent,
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+          decoration: const BoxDecoration(
+            color: AppColors.surface,
+            border: Border(top: BorderSide(color: AppColors.border)),
+          ),
+          child: SizedBox(
+            height: 52,
+            child: FilledButton.icon(
+              onPressed:
+                  _items.isEmpty || _submitting || _stockShortages.isNotEmpty
+                  ? null
+                  : _createOrder,
+              icon: _submitting
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(Icons.shopping_bag_outlined, size: 19),
+              label: Text(_submitting ? 'Creating Order...' : 'Create Order'),
+              style: FilledButton.styleFrom(
+                backgroundColor: _green,
+                foregroundColor: AppColors.surface,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 720),
+          child: ListView(
+            controller: _previewScrollController,
+            padding: const EdgeInsets.fromLTRB(16, 18, 16, 24),
+            children: [
+              const Text(
+                'Draft Sales Order',
+                style: TextStyle(
+                  color: _header,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              if (_error != null) ...[
+                const SizedBox(height: 12),
+                _errorCard(),
+              ],
+              const SizedBox(height: 12),
+              _card(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CircleAvatar(
+                      radius: 24,
+                      backgroundColor: AppColors.deliveryGreenSoft,
+                      child: const Icon(
+                        Icons.storefront_outlined,
+                        color: _green,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.customer.name,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          if (address != null && address.isNotEmpty)
+                            Text(
+                              address,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              _card(
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.receipt_long_outlined,
+                          color: _green,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        const Expanded(
+                          child: Text(
+                            'Order Summary',
+                            style: TextStyle(fontWeight: FontWeight.w800),
+                          ),
+                        ),
+                        Text(
+                          '${_items.length} items',
+                          style: const TextStyle(
+                            color: _green,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    _productTable(),
+                    const Divider(height: 24, color: AppColors.border),
+                    _detailRow('Subtotal', _money(_subtotal)),
+                    _detailRow(
+                      'Discount',
+                      '− ${_money(_discount)}',
+                      color: _green,
+                    ),
+                    const Divider(height: 18, color: AppColors.border),
+                    _detailRow('Total', _money(_total), strong: true),
+                    _detailRow(
+                      'Previous Balance',
+                      '+ ${_money(_previousBalance)}',
+                    ),
+                    _detailRow(
+                      'Grand Total',
+                      _money(_grandTotal),
+                      color: _green,
+                      strong: true,
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        const Expanded(
+                          child: Text(
+                            'Paid Amount',
+                            style: TextStyle(
+                              color: AppColors.textPrimary,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 136,
+                          child: TextField(
+                            controller: _paidController,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            textAlign: TextAlign.right,
+                            style: const TextStyle(
+                              color: AppColors.textPrimary,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            decoration: InputDecoration(
+                              prefixText: '₹ ',
+                              prefixStyle: const TextStyle(color: _green),
+                              filled: true,
+                              fillColor: AppColors.surface,
+                              isDense: true,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 9,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(
+                                  color: AppColors.border,
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(
+                                  color: AppColors.border,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(
+                                  color: _green,
+                                  width: 1.5,
+                                ),
+                              ),
+                            ),
+                            onChanged: (_) => setState(() => _error = null),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    _detailRow(
+                      'Balance',
+                      _money(_grandTotal - (_paid ?? 0)),
+                      color: _red,
+                      strong: true,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              _card(
+                child: Column(
+                  children: [
+                    _detailRow('Order Date', _date(widget.orderDate)),
+                    _detailRow('Delivery Date', _date(widget.deliveryDate)),
+                    _detailRow('Warehouse', warehouseName),
+                    _detailRow('Payment Type', widget.paymentType),
+                    _detailRow(
+                      'Delivery Method',
+                      widget.homeDelivery
+                          ? 'Home Delivery'
+                          : 'Takeaway / Self Pickup',
+                    ),
+                    _detailRow(
+                      'Order Delivery By',
+                      widget.homeDelivery ? 'Home Delivery' : 'Self Pickup',
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _card({required Widget child}) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: AppColors.border),
+    ),
+    child: child,
+  );
+
+  Widget _detailRow(
+    String label,
+    String value, {
+    Color? color,
+    bool strong = false,
+  }) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 7),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(
+              color: color ?? AppColors.textPrimary,
+              fontWeight: strong ? FontWeight.w800 : FontWeight.w600,
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Flexible(
+          child: Text(
+            value,
+            textAlign: TextAlign.right,
+            style: TextStyle(
+              color: color ?? AppColors.textPrimary,
+              fontWeight: strong ? FontWeight.w800 : FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+
+  Widget _productTable() => LayoutBuilder(
+    builder: (context, constraints) => constraints.maxWidth < 500
+        ? _compactProducts()
+        : SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: SizedBox(
+              width: constraints.maxWidth < 360 ? 360 : constraints.maxWidth,
+              child: Column(
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 4,
+                          child: Text(
+                            'Product',
+                            style: TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: Text(
+                            'Qty',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: Text(
+                            'Unit Price',
+                            textAlign: TextAlign.right,
+                            style: TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: Text(
+                            'Total',
+                            textAlign: TextAlign.right,
+                            style: TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1, color: AppColors.border),
+                  for (final item in _items) ...[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: 4,
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  width: 34,
+                                  height: 38,
+                                  child: item.product.image.isEmpty
+                                      ? const Icon(
+                                          Icons.inventory_2_outlined,
+                                          color: _green,
+                                        )
+                                      : Image.network(
+                                          item.product.image,
+                                          fit: BoxFit.contain,
+                                          errorBuilder: (_, error, stack) =>
+                                              const Icon(
+                                                Icons.inventory_2_outlined,
+                                                color: _green,
+                                              ),
+                                        ),
+                                ),
+                                const SizedBox(width: 5),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        item.product.name,
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                      if (item.product.sku.isNotEmpty)
+                                        Text(
+                                          'SKU: ${item.product.sku}',
+                                          style: const TextStyle(
+                                            fontSize: 9,
+                                            color: AppColors.textMuted,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                InkWell(
+                                  onTap: () =>
+                                      _setQuantity(item, item.quantity - 1),
+                                  child: const Icon(Icons.remove, size: 16),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 5,
+                                  ),
+                                  child: Text(
+                                    '${item.quantity}',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                                InkWell(
+                                  onTap: () =>
+                                      _setQuantity(item, item.quantity + 1),
+                                  child: const Icon(
+                                    Icons.add,
+                                    size: 16,
+                                    color: _green,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: Text(
+                              _money(item.product.price),
+                              textAlign: TextAlign.right,
+                              style: const TextStyle(fontSize: 10),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: Text(
+                              _money(item.product.price * item.quantity),
+                              textAlign: TextAlign.right,
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Divider(height: 1, color: AppColors.border),
+                  ],
+                  if (_items.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Text(
+                        'No products selected. Go back to add products.',
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+  );
+
+  Widget _compactProducts() => Column(
+    children: [
+      if (_items.isEmpty)
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 12),
+          child: Text('No products selected. Go back to add products.'),
+        ),
+      for (final item in _items) ...[
+        const Divider(height: 16, color: AppColors.border),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: 40,
+              height: 44,
+              child: item.product.image.isEmpty
+                  ? const Icon(Icons.inventory_2_outlined, color: _green)
+                  : Image.network(
+                      item.product.image,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, error, stack) =>
+                          const Icon(Icons.inventory_2_outlined, color: _green),
+                    ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.product.name,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  if (item.product.sku.isNotEmpty)
+                    Text(
+                      'SKU: ${item.product.sku}',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            IconButton.outlined(
+              tooltip: 'Remove one ${item.product.name}',
+              visualDensity: VisualDensity.compact,
+              constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
+              onPressed: () => _setQuantity(item, item.quantity - 1),
+              icon: const Icon(Icons.remove, size: 17),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: Text(
+                '${item.quantity}',
+                style: const TextStyle(fontWeight: FontWeight.w800),
+              ),
+            ),
+            IconButton.outlined(
+              tooltip: 'Add one ${item.product.name}',
+              visualDensity: VisualDensity.compact,
+              constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
+              onPressed: () => _setQuantity(item, item.quantity + 1),
+              icon: const Icon(Icons.add, size: 17, color: _green),
+            ),
+            const Spacer(),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '${_money(item.product.price)} / ${item.product.unit}',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                Text(
+                  _money(item.product.price * item.quantity),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    color: _header,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
+    ],
+  );
+}
+
 class _OrderProduct {
   final String id, name, sku, unit, category, image;
   final double price;
@@ -932,12 +1740,12 @@ class _OrderProduct {
 
   String get availabilityLabel {
     final available = stock;
-    if (available == null) return 'Availability unavailable';
-    if (available <= 0) return 'Out of stock';
+    if (available == null) return 'Stock checked when order is created';
+    if (available <= 0) return 'Catalog stock: 0 $unit';
     final quantity = available == available.truncateToDouble()
         ? available.toStringAsFixed(0)
         : available.toString();
-    return 'Available: $quantity $unit';
+    return 'Catalog stock: $quantity $unit (warehouse may differ)';
   }
 
   factory _OrderProduct.fromJson(Map<String, dynamic> json) {
@@ -963,20 +1771,8 @@ class _OrderProduct {
             ]),
           ) ??
           0,
-      _readStock(data) ?? _mockStock(data),
+      _readStock(data),
     );
-  }
-
-  // Temporary display data until the API provides stock for every product.
-  // Keep values stable when products are searched, filtered, or reloaded.
-  static double _mockStock(Map<String, dynamic> data) {
-    const quantities = [48.0, 120.0, 8.0, 0.0, 65.0, 15.0];
-    final key = _text(data, ['id', '_id', 'product_id', 'sku', 'name']);
-    final index = key.codeUnits.fold<int>(
-      0,
-      (value, character) => (value * 31 + character) % quantities.length,
-    );
-    return quantities[index];
   }
 
   static double? _readStock(Map<String, dynamic> data) {
