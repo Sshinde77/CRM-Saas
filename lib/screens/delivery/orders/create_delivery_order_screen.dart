@@ -130,7 +130,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
   List<_OrderProduct> get _selected =>
       _products.where((p) => (_quantities[p.id] ?? 0) > 0).toList();
   double get _subtotal =>
-      _selected.fold(0, (sum, p) => sum + p.price * _quantities[p.id]!);
+      _selected.fold(0, (sum, p) => sum + p.price * (_quantities[p.id] ?? 0));
   double get _discountValue =>
       (double.tryParse(_discount.text) ?? 0).clamp(0, _subtotal).toDouble();
   double get _total => _subtotal - _discountValue;
@@ -139,6 +139,17 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
     final name = _text(warehouse, ['name', 'warehouse_name']);
     final code = _text(warehouse, ['code']);
     return code.isEmpty ? name : '$name ($code)';
+  }
+
+  Map<String, dynamic>? _selectedWarehouse() {
+    final selectedId = _selectedWarehouseId;
+    if (selectedId == null || selectedId.trim().isEmpty) return null;
+    for (final warehouse in _warehouses) {
+      if (_text(warehouse, ['id', 'warehouse_id']) == selectedId) {
+        return warehouse;
+      }
+    }
+    return null;
   }
 
   String _date(DateTime date) =>
@@ -169,8 +180,25 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
   }
 
   Future<void> _preview() async {
-    if (!_form.currentState!.validate()) return;
-    if (_selected.isEmpty) {
+    final formState = _form.currentState;
+    if (formState == null || !formState.validate()) return;
+
+    final customer = _customer;
+    final selectedItems = _selected;
+    final selectedWarehouse = _selectedWarehouse();
+    if (customer == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Select a customer.')),
+      );
+      return;
+    }
+    if (selectedWarehouse == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Select a warehouse.')),
+      );
+      return;
+    }
+    if (selectedItems.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Add at least one product.')),
       );
@@ -190,7 +218,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
             children: [
               _heading('Sales Order Preview'),
               Text(
-                _customer!.name,
+                customer.name,
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
@@ -202,7 +230,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
               ),
               const SizedBox(height: 6),
               Text(
-                'Warehouse: ${_warehouseLabel(_warehouses.firstWhere((w) => _text(w, ['id', 'warehouse_id']) == _selectedWarehouseId))}',
+                'Warehouse: ${_warehouseLabel(selectedWarehouse)}',
               ),
               const SizedBox(height: 6),
               Text(
@@ -233,6 +261,8 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final selectedCustomer = _customer;
+
     return Scaffold(
       backgroundColor: AppColors.deliveryBackground,
       appBar: AppBar(
@@ -357,7 +387,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                   validator: (value) =>
                       value == null ? 'Select a customer' : null,
                 ),
-                if (_customer != null)
+                if (selectedCustomer != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 8),
                     child: Row(
@@ -371,9 +401,9 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
-                            _customer!.deliveryAddress ??
-                                _customer!.address ??
-                                _customer!.billingAddress ??
+                            selectedCustomer.deliveryAddress ??
+                                selectedCustomer.address ??
+                                selectedCustomer.billingAddress ??
                                 'No address available',
                             style: const TextStyle(
                               fontSize: 12,
@@ -741,7 +771,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
       ..._selected.map(
         (p) => _totalRow(
           '${p.name} × ${_quantities[p.id]}',
-          _money(p.price * _quantities[p.id]!),
+          _money(p.price * (_quantities[p.id] ?? 0)),
         ),
       ),
       const Divider(),

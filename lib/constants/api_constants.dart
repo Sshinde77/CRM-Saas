@@ -1,11 +1,22 @@
 class ApiConstants {
   const ApiConstants._();
 
-  // A same-origin reverse proxy can be selected for web deployments.
-  static const String baseUrl = String.fromEnvironment(
+  static const String _configuredBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://api.asynk.in',
+    defaultValue: '',
   );
+  static const String _productionBaseUrl = 'https://api.asynk.in';
+
+  // Use API_BASE_URL only when a developer intentionally points the app at a
+  // different API, such as the optional local CORS proxy.
+  static String get baseUrl {
+    if (_configuredBaseUrl.trim().isNotEmpty) {
+      return _configuredBaseUrl.trim();
+    }
+
+    return _productionBaseUrl;
+  }
+
   static const Duration requestTimeout = Duration(seconds: 20);
   static const Duration loginRequestTimeout = Duration(seconds: 60);
 
@@ -19,7 +30,7 @@ class ApiConstants {
     acceptHeader: jsonMimeType,
     contentTypeHeader: jsonMimeType,
   };
-
+    
   static Map<String, String> authorizedHeaders(String token) {
     return {...defaultHeaders, authorizationHeader: '$bearerPrefix $token'};
   }

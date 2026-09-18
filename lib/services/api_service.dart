@@ -65,8 +65,18 @@ class ApiService {
   final http.Client _client;
   final String baseUrl;
 
-  ApiService({http.Client? client, this.baseUrl = ApiConstants.baseUrl})
-    : _client = client ?? http.Client();
+  ApiService({http.Client? client, String? baseUrl})
+    : _client = client ?? http.Client(),
+      baseUrl = baseUrl ?? ApiConstants.baseUrl;
+
+  Uri _apiUri(String endpoint, {Map<String, String>? queryParameters}) {
+    return Uri.parse('${baseUrl.replaceFirst(RegExp(r'/$'), '')}$endpoint')
+        .replace(
+          queryParameters: queryParameters == null || queryParameters.isEmpty
+              ? null
+              : queryParameters,
+        );
+  }
 
   void close() {
     _client.close();
@@ -2180,12 +2190,7 @@ class ApiService {
     Duration? timeout,
     bool retryOnTimeout = false,
   }) async {
-    final uri = Uri.parse('${baseUrl.replaceFirst(RegExp(r'/$'), '')}$endpoint')
-        .replace(
-          queryParameters: queryParameters == null || queryParameters.isEmpty
-              ? null
-              : queryParameters,
-        );
+    final uri = _apiUri(endpoint, queryParameters: queryParameters);
     final encodedBody = body == null ? null : jsonEncode(body);
 
     final attempts = retryOnTimeout ? 2 : 1;
@@ -2269,7 +2274,7 @@ class ApiService {
         );
         throw ApiException(
           message: kIsWeb
-              ? 'Could not connect to the API from this browser. Check that the API allows ${Uri.base.origin} in its CORS settings and that the API is reachable.'
+              ? 'The API rejected this browser origin (${Uri.base.origin}). Add this exact origin to the API CORS allowlist, then retry login.'
               : 'Could not connect to the API. Check your network connection and try again.',
         );
       } catch (error) {
@@ -2299,7 +2304,7 @@ class ApiService {
     Duration? timeout,
     bool retryOnTimeout = false,
   }) async {
-    final uri = Uri.parse('$baseUrl$endpoint');
+    final uri = _apiUri(endpoint);
     final attempts = retryOnTimeout ? 2 : 1;
     final effectiveTimeout = timeout ?? ApiConstants.requestTimeout;
     var headers = _buildMultipartHeaders(requiresAuth: requiresAuth);
@@ -2406,7 +2411,7 @@ class ApiService {
       return false;
     }
 
-    final uri = Uri.parse('$baseUrl${ApiEndpoints.authRefresh}');
+    final uri = _apiUri(ApiEndpoints.authRefresh);
     final headers = Map<String, String>.from(ApiConstants.defaultHeaders);
     final body = jsonEncode(<String, dynamic>{'refresh_token': refreshToken});
 
