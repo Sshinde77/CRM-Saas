@@ -5,13 +5,20 @@ import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
 import '../../../models/customer_model.dart';
+import '../../../models/app_user.dart';
+import '../../../models/auth_models.dart';
 import '../../../providers/api_provider.dart';
 import '../../../services/api_service.dart';
 
 class CreateDeliveryOrderScreen extends StatefulWidget {
   final Widget? drawer;
+  final bool assignDeliveryPartner;
 
-  const CreateDeliveryOrderScreen({super.key, this.drawer});
+  const CreateDeliveryOrderScreen({
+    super.key,
+    this.drawer,
+    this.assignDeliveryPartner = false,
+  });
 
   @override
   State<CreateDeliveryOrderScreen> createState() =>
@@ -28,10 +35,14 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
   List<CustomerModel> _customers = [];
   List<_OrderProduct> _products = [];
   List<Map<String, dynamic>> _warehouses = [];
+  List<AppUser> _deliveryPartners = [];
   CustomerModel? _customer;
   String? _selectedWarehouseId;
+  String? _selectedPartnerId;
   String _query = '', _category = 'All', _payment = 'Cash';
   bool _homeDelivery = false, _loading = true, _started = false;
+  bool _partnersLoading = false, _partnersLoaded = false;
+  String? _partnersError;
   final _loadErrors = <String, String>{};
   final _loaded = <String>{};
   DateTime _orderDate = DateUtils.dateOnly(DateTime.now());
@@ -91,6 +102,135 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
       }),
     ]);
     if (mounted) setState(() => _loading = false);
+  }
+
+  Future<void> _loadDeliveryPartners({bool preserveSelectedPartner = false}) async {
+    if (_partnersLoading) return;
+    setState(() {
+      _partnersLoading = true;
+      _partnersError = null;
+    });
+    try {
+      final fetchedPartners = await ApiProviderScope.of(
+        context,
+      ).fetchDeliveryPartners().timeout(const Duration(seconds: 30));
+      if (mounted) {
+        setState(() {
+          final partners = [...fetchedPartners];
+          if (preserveSelectedPartner && _selectedPartnerId != null) {
+            for (final partner in _deliveryPartners) {
+              if (partner.id == _selectedPartnerId &&
+                  !partners.any((option) => option.id == partner.id)) {
+                partners.insert(0, partner);
+                break;
+              }
+            }
+          }
+          _deliveryPartners = partners;
+          _partnersLoaded = true;
+          if (!partners.any((partner) => partner.id == _selectedPartnerId)) {
+            _selectedPartnerId = null;
+          }
+        });
+      }
+    } catch (error) {
+      if (mounted) {
+        setState(
+          () => _partnersError = error is ApiException
+              ? error.message
+              : 'Could not load delivery partners. Please retry.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _partnersLoading = false);
+    }
+  }
+
+  Future<void> _loadDeliveryPartnerChoices({required bool hasDefault}) async {
+    if (!hasDefault) await _loadCurrentDeliveryPartner();
+    if (mounted && _homeDelivery) {
+      await _loadDeliveryPartners(preserveSelectedPartner: true);
+    }
+  }
+
+  Future<void> _loadCurrentDeliveryPartner() async {
+    if (_partnersLoading) return;
+    setState(() {
+      _partnersLoading = true;
+      _partnersError = null;
+    });
+    try {
+      final api = ApiProviderScope.of(context);
+      var profile = api.currentUser ?? api.authMe?.user;
+      if (profile == null) {
+        try {
+          profile = (await api.fetchAuthMe())?.user;
+        } catch (_) {
+          // The profile endpoint remains available when auth/me is unavailable.
+        }
+      }
+      profile ??= await api.fetchCurrentUserProfile();
+      final partner = _partnerFromProfile(profile);
+      if (partner == null) {
+        throw const ApiException(
+          message: 'No delivery partner is associated with this account.',
+        );
+      }
+      if (mounted) {
+        setState(() {
+          _deliveryPartners = [partner];
+          _selectedPartnerId = partner.id;
+          _partnersLoaded = true;
+        });
+      }
+    } catch (error) {
+      if (mounted) {
+        setState(
+          () => _partnersError = error is ApiException
+              ? error.message
+              : 'Could not load your delivery partner. Please retry.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _partnersLoading = false);
+    }
+  }
+
+  AppUser? _partnerFromProfile(CurrentUserProfile? profile) {
+    final partnerId = (profile?.deliveryPartnerId ?? profile?.id)?.trim();
+    if (partnerId == null || partnerId.isEmpty) return null;
+    final partnerName = profile?.deliveryPartnerName ?? profile?.name ?? '';
+    return AppUser(
+      id: partnerId,
+      name: partnerName.trim().isEmpty ? 'My delivery partner' : partnerName,
+      email: profile?.email ?? '',
+      role: 'delivery_partner',
+    );
+  }
+
+  void _setHomeDelivery(bool value) {
+    final api = ApiProviderScope.of(context);
+    final cachedPartner = value && !widget.assignDeliveryPartner
+        ? _partnerFromProfile(api.currentUser ?? api.authMe?.user)
+        : null;
+    setState(() {
+      _homeDelivery = value;
+      if (!value) _selectedPartnerId = null;
+      if (cachedPartner != null) {
+        _deliveryPartners = [cachedPartner];
+        _selectedPartnerId = cachedPartner.id;
+        _partnersLoaded = true;
+      } else if (value && !widget.assignDeliveryPartner && _partnersLoaded) {
+        _selectedPartnerId = _deliveryPartners.firstOrNull?.id;
+      }
+    });
+    if (value) {
+      if (widget.assignDeliveryPartner) {
+        _loadDeliveryPartners();
+      } else {
+        _loadDeliveryPartnerChoices(hasDefault: cachedPartner != null);
+      }
+    }
   }
 
   Future<void> _loadSection(String name, Future<void> Function() fetch) async {
@@ -190,6 +330,9 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
     final customer = _customer;
     final selectedItems = _selected;
     final selectedWarehouse = _selectedWarehouse();
+    final selectedPartner = _deliveryPartners
+        .where((partner) => partner.id == _selectedPartnerId)
+        .firstOrNull;
     if (customer == null) {
       ScaffoldMessenger.of(
         context,
@@ -208,6 +351,12 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
       );
       return;
     }
+    if (_homeDelivery && selectedPartner == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Select a delivery partner.')),
+      );
+      return;
+    }
     final placed = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
         builder: (_) => _SalesOrderPreviewPage(
@@ -222,6 +371,14 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
           discount: _discountValue,
           paymentType: _payment,
           homeDelivery: _homeDelivery,
+          deliveryPartner: _homeDelivery ? selectedPartner : null,
+          onOrderCreated: () {
+            if (!mounted) return;
+            setState(() {
+              _quantities.clear();
+              _discount.text = '0';
+            });
+          },
           onQuantityChanged: (id, quantity) => setState(() {
             _quantities[id] = quantity;
             final enteredDiscount = double.tryParse(_discount.text) ?? 0;
@@ -233,10 +390,6 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
       ),
     );
     if (placed == true && mounted) {
-      setState(() {
-        _quantities.clear();
-        _discount.text = '0';
-      });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Sales order created successfully.')),
       );
@@ -527,7 +680,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                         'Customer will collect the order.',
                         Icons.storefront_outlined,
                         !_homeDelivery,
-                        () => setState(() => _homeDelivery = false),
+                        () => _setHomeDelivery(false),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -537,11 +690,68 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                         'Deliver the order to the customer address.',
                         Icons.local_shipping_outlined,
                         _homeDelivery,
-                        () => setState(() => _homeDelivery = true),
+                        () => _setHomeDelivery(true),
                       ),
                     ),
                   ],
                 ),
+                if (_homeDelivery) ...[
+                  _label('Delivery Partner *'),
+                  DropdownButtonFormField<String>(
+                    key: ValueKey(_selectedPartnerId ?? 'no-partner'),
+                    isExpanded: true,
+                    initialValue: _selectedPartnerId,
+                    decoration: _decoration(
+                      _partnersLoading
+                          ? 'Loading delivery partners...'
+                          : _partnersError != null
+                          ? 'Could not load delivery partners'
+                          : _deliveryPartners.isEmpty
+                          ? 'No delivery partners available'
+                          : 'Select delivery partner',
+                      icon: Icons.delivery_dining_outlined,
+                    ),
+                    items: _deliveryPartners
+                        .map(
+                          (partner) => DropdownMenuItem(
+                            value: partner.id,
+                            child: Text(
+                              partner.name,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        )
+                        .toList(),
+                    onChanged:
+                        _partnersLoading || _deliveryPartners.isEmpty
+                        ? null
+                        : (value) => setState(() => _selectedPartnerId = value),
+                    validator: (value) =>
+                        value == null ? 'Select a delivery partner' : null,
+                  ),
+                  if (_partnersError != null)
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            _partnersError!,
+                            style: const TextStyle(
+                              color: AppColors.deliveryRed,
+                            ),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: _partnersLoading
+                              ? null
+                              : () => _loadDeliveryPartners(
+                                  preserveSelectedPartner:
+                                      !widget.assignDeliveryPartner,
+                                ),
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                ],
                 _heading('Payment Type *'),
                 Wrap(
                   spacing: 8,
@@ -950,6 +1160,8 @@ class _SalesOrderPreviewPage extends StatefulWidget {
   final double discount;
   final String paymentType;
   final bool homeDelivery;
+  final AppUser? deliveryPartner;
+  final VoidCallback onOrderCreated;
   final void Function(String id, int quantity) onQuantityChanged;
 
   const _SalesOrderPreviewPage({
@@ -961,6 +1173,8 @@ class _SalesOrderPreviewPage extends StatefulWidget {
     required this.discount,
     required this.paymentType,
     required this.homeDelivery,
+    required this.deliveryPartner,
+    required this.onOrderCreated,
     required this.onQuantityChanged,
   });
 
@@ -976,6 +1190,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
   final _previewScrollController = ScrollController();
   bool _submitting = false;
   String? _error;
+  String? _createdOrderId;
   List<String> _stockShortages = [];
 
   List<_PreviewItem> get _items =>
@@ -987,6 +1202,16 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
   double get _previousBalance => (widget.customer.outstanding ?? 0).toDouble();
   double get _grandTotal => _total + _previousBalance;
   double? get _paid => double.tryParse(_paidController.text.trim());
+  String get _submitLabel {
+    if (_submitting) {
+      return _createdOrderId == null
+          ? 'Creating Order...'
+          : 'Assigning Partner...';
+    }
+    if (_createdOrderId == null) return 'Create Order';
+    return _createdOrderId!.isEmpty ? 'Order Created' : 'Retry Assignment';
+  }
+
   String _money(double value) => _formatOrderMoney(value);
   String _date(DateTime date) =>
       '${date.day.toString().padLeft(2, '0')} ${const ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][date.month - 1]} ${date.year}';
@@ -1001,6 +1226,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
   }
 
   void _setQuantity(_PreviewItem item, int quantity) {
+    if (_createdOrderId != null) return;
     setState(() {
       item.quantity = quantity;
       _error = null;
@@ -1012,7 +1238,8 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
   Future<void> _createOrder() async {
     if (_items.isEmpty || _submitting) return;
     final paid = _paid;
-    if (paid == null || !paid.isFinite || paid < 0 || paid > _grandTotal) {
+    if (_createdOrderId == null &&
+        (paid == null || !paid.isFinite || paid < 0 || paid > _grandTotal)) {
       setState(
         () => _error =
             'Enter a payment between ₹ 0.00 and ${_money(_grandTotal)}.',
@@ -1025,37 +1252,59 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
       _stockShortages = [];
     });
     try {
-      await ApiProviderScope.of(context).createOrder(
-        request: {
-          'customer_id': widget.customer.id,
-          'warehouse_id': _text(widget.warehouse, ['id', 'warehouse_id']),
-          'order_date': _apiDate(widget.orderDate),
-          'delivery_date': _apiDate(widget.deliveryDate),
-          'fulfilment_method': widget.homeDelivery
-              ? 'home_delivery'
-              : 'self_pickup',
-          'payment_type': widget.paymentType,
-          'items': [
-            for (final item in _items)
-              {
-                'product_id': item.product.id,
-                'quantity': item.quantity,
-                'unit_price': item.product.price,
-              },
-          ],
-          'discount': _discount,
-          'paid_amount': paid,
-        },
-      );
+      final api = ApiProviderScope.of(context);
+      if (_createdOrderId == null) {
+        final response = await api.createOrder(
+          request: {
+            'customer_id': widget.customer.id,
+            'warehouse_id': _text(widget.warehouse, ['id', 'warehouse_id']),
+            'order_date': _apiDate(widget.orderDate),
+            'delivery_date': _apiDate(widget.deliveryDate),
+            'fulfilment_method': widget.homeDelivery
+                ? 'home_delivery'
+                : 'self_pickup',
+            'payment_type': widget.paymentType,
+            'items': [
+              for (final item in _items)
+                {
+                  'product_id': item.product.id,
+                  'quantity': item.quantity,
+                  'unit_price': item.product.price,
+                },
+            ],
+            'discount': _discount,
+            'paid_amount': paid,
+          },
+        );
+        widget.onOrderCreated();
+        if (widget.deliveryPartner != null) {
+          _createdOrderId = _orderId(response);
+          if (_createdOrderId!.isEmpty) {
+            throw const ApiException(
+              message: 'The server did not return an order ID.',
+            );
+          }
+        }
+      }
+      if (widget.deliveryPartner != null) {
+        await api.assignOrderDeliveryPartner(
+          orderId: _createdOrderId!,
+          deliveryPartnerId: widget.deliveryPartner!.id,
+        );
+      }
       if (mounted) Navigator.of(context).pop(true);
     } catch (error) {
       if (mounted) {
-        final shortages = error is ApiException
+        final shortages = _createdOrderId == null && error is ApiException
             ? _parseStockShortages(error.message)
             : <String>[];
         setState(() {
           _stockShortages = shortages;
-          _error = shortages.isNotEmpty
+          _error = _createdOrderId != null
+              ? _createdOrderId!.isEmpty
+                    ? 'Order created, but the server did not return an ID to assign the delivery partner.'
+                    : 'Order created, but the delivery partner could not be assigned. Try the assignment again. ${error is ApiException ? _readOrderError(error.message) : ''}'
+              : shortages.isNotEmpty
               ? 'Not enough stock in ${_text(widget.warehouse, ['name', 'warehouse_name'])} to create this order.'
               : error is ApiException
               ? _readOrderError(error.message)
@@ -1074,6 +1323,21 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
+  }
+
+  String _orderId(Map<String, dynamic> response) {
+    for (final source in [
+      response,
+      response['order'],
+      response['sales_order'],
+      response['data'],
+    ]) {
+      if (source is Map<String, dynamic>) {
+        final id = _text(source, ['id', '_id', 'order_id', 'orderId']);
+        if (id.isNotEmpty) return id;
+      }
+    }
+    return '';
   }
 
   dynamic _errorDetail(String message) {
@@ -1202,7 +1466,10 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
             height: 52,
             child: FilledButton.icon(
               onPressed:
-                  _items.isEmpty || _submitting || _stockShortages.isNotEmpty
+                  _items.isEmpty ||
+                      _submitting ||
+                      _stockShortages.isNotEmpty ||
+                      _createdOrderId == ''
                   ? null
                   : _createOrder,
               icon: _submitting
@@ -1215,7 +1482,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                       ),
                     )
                   : const Icon(Icons.shopping_bag_outlined, size: 19),
-              label: Text(_submitting ? 'Creating Order...' : 'Create Order'),
+              label: Text(_submitLabel),
               style: FilledButton.styleFrom(
                 backgroundColor: _green,
                 foregroundColor: AppColors.surface,
@@ -1346,6 +1613,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                           width: 136,
                           child: TextField(
                             controller: _paidController,
+                            readOnly: _createdOrderId != null,
                             keyboardType: const TextInputType.numberWithOptions(
                               decimal: true,
                             ),
@@ -1415,7 +1683,10 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                     ),
                     _detailRow(
                       'Order Delivery By',
-                      widget.homeDelivery ? 'Home Delivery' : 'Self Pickup',
+                      widget.deliveryPartner?.name ??
+                          (widget.homeDelivery
+                              ? 'Home Delivery'
+                              : 'Self Pickup'),
                     ),
                   ],
                 ),
@@ -1579,8 +1850,12 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 InkWell(
-                                  onTap: () =>
-                                      _setQuantity(item, item.quantity - 1),
+                                  onTap: _createdOrderId == null
+                                      ? () => _setQuantity(
+                                          item,
+                                          item.quantity - 1,
+                                        )
+                                      : null,
                                   child: const Icon(Icons.remove, size: 16),
                                 ),
                                 Padding(
@@ -1596,8 +1871,12 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                                   ),
                                 ),
                                 InkWell(
-                                  onTap: () =>
-                                      _setQuantity(item, item.quantity + 1),
+                                  onTap: _createdOrderId == null
+                                      ? () => _setQuantity(
+                                          item,
+                                          item.quantity + 1,
+                                        )
+                                      : null,
                                   child: const Icon(
                                     Icons.add,
                                     size: 16,
@@ -1697,7 +1976,9 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
               tooltip: 'Remove one ${item.product.name}',
               visualDensity: VisualDensity.compact,
               constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
-              onPressed: () => _setQuantity(item, item.quantity - 1),
+              onPressed: _createdOrderId == null
+                  ? () => _setQuantity(item, item.quantity - 1)
+                  : null,
               icon: const Icon(Icons.remove, size: 17),
             ),
             Padding(
@@ -1711,7 +1992,9 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
               tooltip: 'Add one ${item.product.name}',
               visualDensity: VisualDensity.compact,
               constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
-              onPressed: () => _setQuantity(item, item.quantity + 1),
+              onPressed: _createdOrderId == null
+                  ? () => _setQuantity(item, item.quantity + 1)
+                  : null,
               icon: const Icon(Icons.add, size: 17, color: _green),
             ),
             const Spacer(),

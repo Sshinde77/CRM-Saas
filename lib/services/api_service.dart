@@ -70,12 +70,13 @@ class ApiService {
       baseUrl = baseUrl ?? ApiConstants.baseUrl;
 
   Uri _apiUri(String endpoint, {Map<String, String>? queryParameters}) {
-    return Uri.parse('${baseUrl.replaceFirst(RegExp(r'/$'), '')}$endpoint')
-        .replace(
-          queryParameters: queryParameters == null || queryParameters.isEmpty
-              ? null
-              : queryParameters,
-        );
+    return Uri.parse(
+      '${baseUrl.replaceFirst(RegExp(r'/$'), '')}$endpoint',
+    ).replace(
+      queryParameters: queryParameters == null || queryParameters.isEmpty
+          ? null
+          : queryParameters,
+    );
   }
 
   void close() {
@@ -1638,6 +1639,114 @@ class ApiService {
           (user) => user.name.trim().isNotEmpty || user.email.trim().isNotEmpty,
         )
         .toList();
+  }
+
+  Future<List<AppUser>> fetchDeliveryPartners() async {
+    List<AppUser>? assignableUsers;
+    try {
+      final rawUsers = await fetchRawList(
+        endpoint: ApiEndpoints.usersAssignable,
+        candidateKeys: const ['users', 'staff', 'data', 'items', 'results'],
+        fallbackMessage: 'Invalid assignable users response.',
+      );
+      assignableUsers = rawUsers.map(AppUser.fromJson).toList();
+    } on ApiException {
+      // Older API deployments may only expose the full users list.
+    }
+
+    String normalized(String? value) =>
+        (value ?? '').toLowerCase().replaceAll(RegExp(r'[\s_-]+'), '');
+
+    List<AppUser> deliveryPartners(List<AppUser> users) => users.where((user) {
+      if (user.id.trim().isEmpty ||
+          user.name.trim().isEmpty ||
+          user.isActive == false ||
+          normalized(user.status) == 'inactive' ||
+          normalized(user.employeeStatus) == 'inactive') {
+        return false;
+      }
+      final roles = [
+        user.role,
+        user.systemRole,
+        user.roleDetail?.name,
+      ].map(normalized);
+      return roles.any(
+        (role) => role == 'deliverypartner' || role == 'delivery',
+      );
+    }).toList();
+
+    final assignablePartners = deliveryPartners(assignableUsers ?? []);
+    if (assignablePartners.isNotEmpty) return assignablePartners;
+
+    try {
+      return deliveryPartners(await fetchUsers());
+    } on ApiException {
+      if (assignableUsers != null) return assignablePartners;
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> pickDelivery({
+    required String deliveryId,
+    required List<Map<String, dynamic>> items,
+  }) async {
+    final id = deliveryId.trim();
+    if (id.isEmpty || items.isEmpty) {
+      throw const ApiException(message: 'Missing delivery id or picked items.');
+    }
+    final response = await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.deliveriesPick(id),
+      requiresAuth: true,
+      body: {'items': items},
+    );
+    return _extractDeliveryPayload(
+      response.body.trim(),
+      fallbackMessage: 'Invalid pick delivery response.',
+    );
+  }
+
+  Future<Map<String, dynamic>> markDeliveryReady(String deliveryId) async {
+    final id = deliveryId.trim();
+    if (id.isEmpty) throw const ApiException(message: 'Missing delivery id.');
+    final response = await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.deliveriesReady(id),
+      requiresAuth: true,
+    );
+    return _extractDeliveryPayload(
+      response.body.trim(),
+      fallbackMessage: 'Invalid ready delivery response.',
+    );
+  }
+
+  Future<Map<String, dynamic>> loadDelivery(String deliveryId) async {
+    final id = deliveryId.trim();
+    if (id.isEmpty) throw const ApiException(message: 'Missing delivery id.');
+    final response = await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.deliveriesLoad(id),
+      requiresAuth: true,
+    );
+    return _extractDeliveryPayload(
+      response.body.trim(),
+      fallbackMessage: 'Invalid load delivery response.',
+    );
+  }
+
+  Future<Map<String, dynamic>> dispatchDelivery(String deliveryId) async {
+    final id = deliveryId.trim();
+    if (id.isEmpty) throw const ApiException(message: 'Missing delivery id.');
+    final response = await _send(
+      method: 'PATCH',
+      endpoint: ApiEndpoints.deliveriesDetail(id),
+      requiresAuth: true,
+      body: const {'status': 'in_transit'},
+    );
+    return _extractDeliveryPayload(
+      response.body.trim(),
+      fallbackMessage: 'Invalid dispatch delivery response.',
+    );
   }
 
   Future<AppUser> fetchUserById(String userId) async {

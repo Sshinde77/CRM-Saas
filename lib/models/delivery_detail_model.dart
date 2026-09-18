@@ -1,3 +1,5 @@
+import 'delivery_schedule.dart';
+
 class DeliveryDetail {
   final String id;
   final String deliveryNumber;
@@ -160,9 +162,7 @@ class DeliveryDetail {
         const ['delivery_address', 'deliveryAddress', 'address'],
         fallback: _text(order, const ['delivery_address', 'shipping_address']),
       ),
-      scheduledDate: _date(
-        _text(data, const ['scheduled_date', 'scheduledDate', 'scheduled_at']),
-      ),
+      scheduledDate: deliveryScheduledDate(data),
       dispatchedAt: _date(_text(data, const ['dispatched_at', 'dispatchedAt'])),
       confirmedAt: _date(
         _text(data, const ['confirmed_at', 'confirmedAt', 'delivered_at']),

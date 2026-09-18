@@ -1,14 +1,17 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
 
-import '../../../widgets/delivery/delivery_bottom_navigation.dart';
+import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../constants/app_colors.dart';
 import '../../../core/theme/app_sizes.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../models/delivery_schedule.dart';
 import '../../../providers/api_provider.dart';
 import '../../../routes/app_router.dart';
+import '../../../services/api_service.dart';
+import '../../../widgets/delivery/delivery_bottom_navigation.dart';
 import '../../../widgets/delivery/delivery_partner_sidebar.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
 
@@ -119,9 +122,9 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
     }
   }
 
-  Future<void> _updateDeliveryStatus({
+  Future<void> _runDeliveryAction({
     required _AssignedDelivery delivery,
-    required String status,
+    required Future<bool> Function(ApiProvider provider) perform,
     required String successTitle,
     required String successMessage,
   }) async {
@@ -130,17 +133,10 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
 
     try {
       final provider = ApiProviderScope.of(context);
-      final updated = await provider.confirmDelivery(
-        deliveryId: delivery.id,
-        payload: {'status': status},
-      );
-      final nextDelivery = _AssignedDelivery.fromJson(updated);
+      final changed = await perform(provider);
+      if (!changed || !mounted) return;
+      await _loadDeliveries();
       if (!mounted) return;
-      setState(() {
-        _deliveries = _deliveries
-            .map((item) => item.id == delivery.id ? nextDelivery : item)
-            .toList();
-      });
       _showSnack(title: successTitle, message: successMessage, isError: false);
     } catch (error) {
       if (!mounted) return;
@@ -156,23 +152,98 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
     }
   }
 
-  Future<void> _startDelivery(_AssignedDelivery delivery) {
-    return _updateDeliveryStatus(
+  Future<bool> _confirmAction(String title, String message) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Continue'),
+          ),
+        ],
+      ),
+    );
+    return result == true;
+  }
+
+  Future<void> _prepareDelivery(_AssignedDelivery delivery) {
+    return _runDeliveryAction(
       delivery: delivery,
-      status: 'in_transit',
+      perform: (provider) async {
+        final detail = await provider.fetchDeliveryById(delivery.id);
+        if (!mounted) return false;
+        final remaining = detail.items
+            .where((item) => item.planned > item.picked)
+            .toList();
+        if (remaining.any((item) => item.id.isEmpty)) {
+          throw const _DeliveryListException(
+            'Delivery items are missing IDs. Please refresh and retry.',
+          );
+        }
+        final confirmed = await _confirmAction(
+          'Prepare Delivery',
+          remaining.isEmpty
+              ? 'All items are picked. Mark this delivery ready for loading?'
+              : 'Confirm that the remaining planned items have been picked. This will record their quantities and mark the delivery ready for loading.',
+        );
+        if (!confirmed) return false;
+        if (remaining.isNotEmpty) {
+          await provider.pickDelivery(
+            deliveryId: delivery.id,
+            items: [
+              for (final item in remaining)
+                {
+                  'delivery_item_id': item.id,
+                  'picked_quantity': item.planned - item.picked,
+                },
+            ],
+          );
+        }
+        await provider.markDeliveryReady(delivery.id);
+        return true;
+      },
+      successTitle: 'Delivery ready',
+      successMessage: '${delivery.orderNumber} is ready to load.',
+    );
+  }
+
+  Future<void> _loadVehicle(_AssignedDelivery delivery) {
+    return _runDeliveryAction(
+      delivery: delivery,
+      perform: (provider) async {
+        final confirmed = await _confirmAction(
+          'Load Vehicle',
+          'Confirm that the planned goods are on the vehicle. Loading moves their stock out of the warehouse.',
+        );
+        if (!confirmed) return false;
+        await provider.loadDelivery(delivery.id);
+        return true;
+      },
+      successTitle: 'Vehicle loaded',
+      successMessage: '${delivery.orderNumber} is ready to start.',
+    );
+  }
+
+  Future<void> _startDelivery(_AssignedDelivery delivery) {
+    return _runDeliveryAction(
+      delivery: delivery,
+      perform: (provider) async {
+        await provider.dispatchDelivery(delivery.id);
+        return true;
+      },
       successTitle: 'Delivery started',
       successMessage: '${delivery.orderNumber} is now in transit.',
     );
   }
 
-  Future<void> _markDelivered(_AssignedDelivery delivery) {
-    return _updateDeliveryStatus(
-      delivery: delivery,
-      status: 'delivered',
-      successTitle: 'Delivery completed',
-      successMessage: '${delivery.orderNumber} was marked as delivered.',
-    );
-  }
+  void _markDelivered(_AssignedDelivery delivery) => _viewDetails(delivery);
 
   Future<void> _callCustomer(_AssignedDelivery delivery) async {
     final phone = delivery.customerPhone.trim();
@@ -249,6 +320,7 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
       );
       return;
     }
+    if (!mounted) return;
 
     setState(() => _busyDeliveryIds.add(delivery.id));
     try {
@@ -442,6 +514,12 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
                             onReject: delivery.canRespond
                                 ? () => _reject(delivery)
                                 : null,
+                            onPrepareDelivery: delivery.canPrepareDelivery
+                                ? () => _prepareDelivery(delivery)
+                                : null,
+                            onLoadDelivery: delivery.canLoadDelivery
+                                ? () => _loadVehicle(delivery)
+                                : null,
                             onStartDelivery: delivery.canStartDelivery
                                 ? () => _startDelivery(delivery)
                                 : null,
@@ -620,7 +698,7 @@ class _SummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final compact = MediaQuery.sizeOf(context).width < 360;
+    final compact = MediaQuery.sizeOf(context).width < 420;
 
     return Container(
       padding: EdgeInsets.all(compact ? 10 : 12),
@@ -708,6 +786,8 @@ class _DeliveryCard extends StatelessWidget {
   final bool showActions;
   final VoidCallback? onAccept;
   final VoidCallback? onReject;
+  final VoidCallback? onPrepareDelivery;
+  final VoidCallback? onLoadDelivery;
   final VoidCallback? onStartDelivery;
   final VoidCallback? onMarkDelivered;
   final VoidCallback? onCallCustomer;
@@ -720,6 +800,8 @@ class _DeliveryCard extends StatelessWidget {
     this.showActions = true,
     required this.onAccept,
     required this.onReject,
+    required this.onPrepareDelivery,
+    required this.onLoadDelivery,
     required this.onStartDelivery,
     required this.onMarkDelivered,
     required this.onCallCustomer,
@@ -735,6 +817,8 @@ class _DeliveryCard extends StatelessWidget {
         ? _DeliveryCardAction.forDelivery(
             delivery,
             onAccept: onAccept,
+            onPrepareDelivery: onPrepareDelivery,
+            onLoadDelivery: onLoadDelivery,
             onStartDelivery: onStartDelivery,
             onMarkDelivered: onMarkDelivered,
           )
@@ -1070,6 +1154,8 @@ class _DeliveryCardAction {
   static _DeliveryCardAction? forDelivery(
     _AssignedDelivery delivery, {
     required VoidCallback? onAccept,
+    required VoidCallback? onPrepareDelivery,
+    required VoidCallback? onLoadDelivery,
     required VoidCallback? onStartDelivery,
     required VoidCallback? onMarkDelivered,
   }) {
@@ -1085,6 +1171,22 @@ class _DeliveryCardAction {
       return _DeliveryCardAction(
         label: 'Start Delivery',
         onPressed: onStartDelivery,
+        background: AppColors.deliveryBlue,
+        foreground: AppColors.surface,
+      );
+    }
+    if (delivery.canPrepareDelivery && onPrepareDelivery != null) {
+      return _DeliveryCardAction(
+        label: 'Prepare Delivery',
+        onPressed: onPrepareDelivery,
+        background: AppColors.deliveryBlue,
+        foreground: AppColors.surface,
+      );
+    }
+    if (delivery.canLoadDelivery && onLoadDelivery != null) {
+      return _DeliveryCardAction(
+        label: 'Load Vehicle',
+        onPressed: onLoadDelivery,
         background: AppColors.deliveryBlue,
         foreground: AppColors.surface,
       );
@@ -1284,6 +1386,8 @@ class _DeliveryDetailsPreviewScreen extends StatelessWidget {
           showActions: false,
           onAccept: null,
           onReject: null,
+          onPrepareDelivery: null,
+          onLoadDelivery: null,
           onStartDelivery: null,
           onMarkDelivered: null,
           onCallCustomer: null,
@@ -1478,6 +1582,7 @@ class _AssignedDelivery {
   final String orderNumber;
   final String customerName;
   final String status;
+  final String internalStatus;
   final DateTime? scheduledDate;
   final double amountDue;
   final int items;
@@ -1496,6 +1601,7 @@ class _AssignedDelivery {
     required this.orderNumber,
     required this.customerName,
     required this.status,
+    required this.internalStatus,
     required this.scheduledDate,
     required this.amountDue,
     required this.items,
@@ -1539,14 +1645,12 @@ class _AssignedDelivery {
       status: _normalizeStatus(
         _readString(json, const ['status', 'delivery_status']) ?? 'planned',
       ),
-      scheduledDate: _parseDateTime(
-        _readString(json, const [
-          'scheduledDate',
-          'scheduled_date',
-          'scheduled_at',
-          'date',
-        ]),
+      internalStatus: _normalizeStatus(
+        _readString(json, const ['internal_status', 'internalStatus']) ??
+            _readString(json, const ['status', 'delivery_status']) ??
+            'planned',
       ),
+      scheduledDate: deliveryScheduledDate(json),
       amountDue: _readDouble(json, const [
         'amountDue',
         'amount_due',
@@ -1710,7 +1814,14 @@ class _AssignedDelivery {
 
   bool get canRespond => status == 'planned' || status == 'pending';
 
-  bool get canStartDelivery => status == 'accepted';
+  bool get canPrepareDelivery => status == 'accepted' &&
+      internalStatus == 'accepted';
+
+  bool get canLoadDelivery => status == 'accepted' &&
+      internalStatus == 'ready';
+
+  bool get canStartDelivery => status == 'accepted' &&
+      internalStatus == 'loaded';
 
   bool get canMarkDelivered => status == 'in_transit';
 
@@ -1933,7 +2044,29 @@ String statusLabelFor(String value) {
 }
 
 String _cleanError(Object error) {
-  return error.toString().replaceFirst('ApiException: ', '').trim();
+  if (error is ApiException) {
+    try {
+      final decoded = jsonDecode(error.message);
+      if (decoded is Map<String, dynamic>) {
+        final detail = decoded['detail'];
+        if (detail is String && detail.trim().isNotEmpty) {
+          return detail.trim();
+        }
+        if (detail is List) {
+          final messages = detail
+              .whereType<Map<String, dynamic>>()
+              .map((item) => item['msg']?.toString().trim() ?? '')
+              .where((message) => message.isNotEmpty)
+              .toList();
+          if (messages.isNotEmpty) return messages.join('\n');
+        }
+      }
+    } catch (_) {
+      // Plain API messages need no decoding.
+    }
+    return error.message;
+  }
+  return error.toString().trim();
 }
 
 String? _readString(Map<String, dynamic> json, List<String> keys) {
@@ -2023,11 +2156,6 @@ int? _readListLength(Map<String, dynamic> json, List<String> keys) {
     if (value is List) return value.length;
   }
   return null;
-}
-
-DateTime? _parseDateTime(String? value) {
-  if (value == null || value.trim().isEmpty) return null;
-  return DateTime.tryParse(value.trim())?.toLocal();
 }
 
 String _normalizeStatus(String value) {

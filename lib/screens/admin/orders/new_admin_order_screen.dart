@@ -48,6 +48,7 @@ class NewAdminOrderScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => CreateDeliveryOrderScreen(
+    assignDeliveryPartner: true,
     drawer: useSalesManagerShell
         ? SalesManagerSidebarDrawer(
             currentPage: 'Create Order',

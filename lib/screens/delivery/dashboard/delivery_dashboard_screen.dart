@@ -6,6 +6,7 @@ import '../../../constants/app_colors.dart';
 import '../../../core/theme/app_sizes.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../models/delivery_schedule.dart';
 import '../../../providers/api_provider.dart';
 import '../../../routes/app_router.dart';
 import '../../../widgets/delivery/delivery_partner_sidebar.dart';
@@ -2157,9 +2158,7 @@ class _DeliveryItem {
           _readString(json, const ['customerName', 'customer_name']) ??
           _readNestedString(json, 'customer', const ['name']) ??
           'Customer',
-      scheduledDate: _parseDate(
-        _readString(json, const ['scheduledDate', 'scheduled_date', 'date']),
-      ),
+      scheduledDate: deliveryScheduledDate(json),
       status: _normalizeStatus(
         _readString(json, const ['status', 'delivery_status']) ?? 'planned',
       ),

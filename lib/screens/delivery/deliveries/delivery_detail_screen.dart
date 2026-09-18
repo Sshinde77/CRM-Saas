@@ -56,6 +56,15 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
   Future<void> _confirmDelivery() async {
     final delivery = _delivery;
     if (delivery == null || _isActionBusy) return;
+    if (delivery.items.isEmpty ||
+        delivery.items.any((item) => item.id.isEmpty) ||
+        !delivery.items.any((item) => item.loaded > 0)) {
+      _showSnack(
+        'This delivery has no loaded items to confirm.',
+        isError: true,
+      );
+      return;
+    }
     final ok = await _confirmDialog(
       title: 'Confirm Delivery',
       message: 'Confirm this delivery and update delivered item quantities?',
@@ -65,15 +74,11 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
     await _submitDeliveryAction(
       delivery,
       payload: {
-        'status': 'delivered',
-        'delivery_items': [
+        'items': [
           for (final item in delivery.items)
             {
-              if (item.id.isNotEmpty) 'id': item.id,
-              if (item.productId.isNotEmpty) 'product_id': item.productId,
-              'delivered_quantity': item.loaded > 0
-                  ? item.loaded
-                  : item.planned,
+              'delivery_item_id': item.id,
+              'delivered_quantity': item.loaded,
             },
         ],
       },
@@ -90,7 +95,7 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
     await _submitDeliveryAction(
       delivery,
       payload: {
-        'status': 'failed',
+        'failed': true,
         'failure_reason': reason.trim(),
         'notes': reason.trim(),
       },

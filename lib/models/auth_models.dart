@@ -552,6 +552,8 @@ class CurrentUserProfile {
   final String role;
   final String? email;
   final String? profilePhoto;
+  final String? deliveryPartnerId;
+  final String? deliveryPartnerName;
 
   const CurrentUserProfile({
     this.id,
@@ -559,6 +561,8 @@ class CurrentUserProfile {
     required this.role,
     this.email,
     this.profilePhoto,
+    this.deliveryPartnerId,
+    this.deliveryPartnerName,
   });
 
   factory CurrentUserProfile.fromJson(Map<String, dynamic> json) {
@@ -568,6 +572,19 @@ class CurrentUserProfile {
     final rawRole = (json['role'] ?? json['user_role'])?.toString();
     final rawEmail = json['email']?.toString();
     final rawProfilePhoto = json['profile_photo']?.toString();
+    final partner =
+        json['assigned_delivery_partner'] ?? json['delivery_partner'];
+    final partnerData = partner is Map<String, dynamic> ? partner : null;
+    final rawPartnerId =
+        json['assigned_delivery_partner_id'] ??
+        json['delivery_partner_id'] ??
+        partnerData?['id'] ??
+        partnerData?['user_id'] ??
+        (partner is String ? partner : null);
+    final rawPartnerName =
+        json['delivery_partner_name'] ??
+        partnerData?['name'] ??
+        partnerData?['full_name'];
 
     return CurrentUserProfile(
       id: rawId?.trim().isEmpty == true ? null : rawId?.trim(),
@@ -579,6 +596,12 @@ class CurrentUserProfile {
       profilePhoto: rawProfilePhoto?.trim().isEmpty == true
           ? null
           : rawProfilePhoto?.trim(),
+      deliveryPartnerId: rawPartnerId?.toString().trim().isEmpty == true
+          ? null
+          : rawPartnerId?.toString().trim(),
+      deliveryPartnerName: rawPartnerName?.toString().trim().isEmpty == true
+          ? null
+          : rawPartnerName?.toString().trim(),
     );
   }
 

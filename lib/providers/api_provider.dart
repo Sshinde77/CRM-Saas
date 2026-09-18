@@ -169,6 +169,9 @@ class ApiProvider extends ChangeNotifier {
     }
   }
 
+  Future<List<AppUser>> fetchDeliveryPartners() =>
+      _apiService.fetchDeliveryPartners();
+
   Future<List<CustomerModel>> fetchCustomers({
     String? search,
     String? category,
@@ -219,6 +222,20 @@ class ApiProvider extends ChangeNotifier {
   Future<Map<String, dynamic>> acceptDelivery(String deliveryId) {
     return _apiService.acceptDelivery(deliveryId);
   }
+
+  Future<Map<String, dynamic>> pickDelivery({
+    required String deliveryId,
+    required List<Map<String, dynamic>> items,
+  }) => _apiService.pickDelivery(deliveryId: deliveryId, items: items);
+
+  Future<Map<String, dynamic>> markDeliveryReady(String deliveryId) =>
+      _apiService.markDeliveryReady(deliveryId);
+
+  Future<Map<String, dynamic>> loadDelivery(String deliveryId) =>
+      _apiService.loadDelivery(deliveryId);
+
+  Future<Map<String, dynamic>> dispatchDelivery(String deliveryId) =>
+      _apiService.dispatchDelivery(deliveryId);
 
   Future<Map<String, dynamic>> rejectDelivery({
     required String deliveryId,

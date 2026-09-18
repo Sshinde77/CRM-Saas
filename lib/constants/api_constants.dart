@@ -91,6 +91,9 @@ class ApiEndpoints {
       '/deliveries/{delivery_id}/challan/pdf';
   static const String deliveriesAcceptTemplate =
       '/deliveries/{delivery_id}/accept';
+  static const String deliveriesPickTemplate = '/deliveries/{delivery_id}/pick';
+  static const String deliveriesReadyTemplate = '/deliveries/{delivery_id}/ready';
+  static const String deliveriesLoadTemplate = '/deliveries/{delivery_id}/load';
   static const String deliveriesRejectTemplate =
       '/deliveries/{delivery_id}/reject';
   static const String deliveriesConfirmTemplate =
@@ -186,6 +189,15 @@ class ApiEndpoints {
 
   static String deliveriesAccept(String deliveryId) =>
       deliveriesAcceptTemplate.replaceFirst('{delivery_id}', deliveryId);
+
+  static String deliveriesPick(String deliveryId) =>
+      deliveriesPickTemplate.replaceFirst('{delivery_id}', deliveryId);
+
+  static String deliveriesReady(String deliveryId) =>
+      deliveriesReadyTemplate.replaceFirst('{delivery_id}', deliveryId);
+
+  static String deliveriesLoad(String deliveryId) =>
+      deliveriesLoadTemplate.replaceFirst('{delivery_id}', deliveryId);
 
   static String deliveriesReject(String deliveryId) =>
       deliveriesRejectTemplate.replaceFirst('{delivery_id}', deliveryId);

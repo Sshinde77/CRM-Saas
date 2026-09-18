@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:crm_saas/models/auth_models.dart';
 import 'package:crm_saas/models/customer_model.dart';
+import 'package:crm_saas/models/app_user.dart';
 import 'package:crm_saas/constants/app_colors.dart';
 import 'package:crm_saas/providers/api_provider.dart';
 import 'package:crm_saas/screens/admin/orders/new_admin_order_screen.dart';
@@ -31,6 +32,52 @@ class _OrderProvider extends ApiProvider {
   bool includeCustomer = false;
   Map<String, dynamic>? createdOrder;
   ApiException? orderError;
+  int partnerRequests = 0;
+  int createRequests = 0;
+  int assignmentRequests = 0;
+  bool assignmentFails = false;
+  String? assignedPartnerId;
+  CurrentUserProfile? deliveryProfile;
+
+  @override
+  Future<AuthMeResponse?> fetchAuthMe({bool force = false}) async => null;
+
+  @override
+  Future<CurrentUserProfile?> fetchCurrentUserProfile({
+    bool force = false,
+  }) async => deliveryProfile;
+
+  @override
+  Future<List<AppUser>> fetchDeliveryPartners() async {
+    partnerRequests++;
+    return const [
+      AppUser(
+        id: 'driver-1',
+        name: 'Delivery Partner One',
+        email: '',
+        role: 'delivery_partner',
+      ),
+      AppUser(
+        id: 'driver-2',
+        name: 'Delivery Partner Two',
+        email: '',
+        role: 'delivery_partner',
+      ),
+    ];
+  }
+
+  @override
+  Future<Map<String, dynamic>> assignOrderDeliveryPartner({
+    required String orderId,
+    required String deliveryPartnerId,
+  }) async {
+    assignmentRequests++;
+    if (assignmentFails) {
+      throw const ApiException(message: 'Assignment failed');
+    }
+    assignedPartnerId = deliveryPartnerId;
+    return {'id': orderId};
+  }
 
   @override
   Future<List<CustomerModel>> fetchCustomers({
@@ -53,6 +100,7 @@ class _OrderProvider extends ApiProvider {
   Future<Map<String, dynamic>> createOrder({
     required Map<String, dynamic> request,
   }) async {
+    createRequests++;
     if (orderError != null) throw orderError!;
     createdOrder = request;
     return {'id': 'order-1'};
@@ -89,6 +137,253 @@ class _OrderProvider extends ApiProvider {
 }
 
 void main() {
+  test('current user profile reads an associated delivery partner', () {
+    final profile = CurrentUserProfile.fromJson({
+      'id': 'user-1',
+      'name': 'Delivery User',
+      'role': 'delivery_partner',
+      'assigned_delivery_partner': {
+        'id': 'partner-1',
+        'name': 'Associated Partner',
+      },
+    });
+    expect(profile.deliveryPartnerId, 'partner-1');
+    expect(profile.deliveryPartnerName, 'Associated Partner');
+  });
+
+  testWidgets('Delivery home order pre-selects its associated partner', (
+    tester,
+  ) async {
+    final provider = _OrderProvider()
+      ..warehouseFails = false
+      ..includeCustomer = true
+      ..deliveryProfile = const CurrentUserProfile(
+        id: 'user-1',
+        name: 'Delivery User',
+        role: 'Delivery Partner',
+        deliveryPartnerId: 'partner-1',
+        deliveryPartnerName: 'Associated Partner',
+      );
+    addTearDown(provider.dispose);
+    await tester.pumpWidget(
+      ApiProviderScope(
+        notifier: provider,
+        child: const MaterialApp(home: CreateDeliveryOrderScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(DropdownButtonFormField<CustomerModel>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Riyal Retail Store').last);
+    await tester.pumpAndSettle();
+    final warehouseField = find.byType(DropdownButtonFormField<String>);
+    await tester.ensureVisible(warehouseField);
+    await tester.tap(warehouseField);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Main Warehouse (WH001)').last);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byTooltip('Add one Rice 10kg'));
+    await tester.tap(find.byTooltip('Add one Rice 10kg'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Home Delivery'),
+      150,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.text('Home Delivery'));
+    await tester.pumpAndSettle();
+
+    final partnerField = find.byType(DropdownButtonFormField<String>).last;
+    expect(find.text('Delivery Partner *'), findsOneWidget);
+    expect(
+      tester.state<FormFieldState<String>>(partnerField).value,
+      'partner-1',
+    );
+    expect(
+      tester.widget<DropdownButtonFormField<String>>(partnerField).onChanged,
+      isNotNull,
+    );
+    expect(provider.partnerRequests, 1);
+    await tester.tap(partnerField);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Delivery Partner Two').last);
+    await tester.pumpAndSettle();
+    expect(
+      tester.state<FormFieldState<String>>(partnerField).value,
+      'driver-2',
+    );
+    await tester.tap(find.text('Preview Sales Order'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Create Order'));
+    await tester.pumpAndSettle();
+    expect(provider.assignedPartnerId, 'driver-2');
+    expect(
+      provider.createdOrder?['delivery_date'],
+      matches(RegExp(r'^\d{4}-\d{2}-\d{2}$')),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'Delivery defaults to the signed-in user when no separate partner is linked',
+    (tester) async {
+      final provider = _OrderProvider()
+        ..warehouseFails = false
+        ..deliveryProfile = const CurrentUserProfile(
+          id: 'delivery-user-1',
+          name: 'Current Driver',
+          role: 'Delivery Partner',
+        );
+      addTearDown(provider.dispose);
+      await tester.pumpWidget(
+        ApiProviderScope(
+          notifier: provider,
+          child: const MaterialApp(home: CreateDeliveryOrderScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.text('Home Delivery'),
+        150,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.drag(find.byType(ListView).first, const Offset(0, -160));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Home Delivery'));
+      await tester.pumpAndSettle();
+
+      final partnerField = find.byType(DropdownButtonFormField<String>).last;
+      expect(
+        tester.state<FormFieldState<String>>(partnerField).value,
+        'delivery-user-1',
+      );
+      expect(find.text('Current Driver'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  for (final salesManager in [false, true]) {
+    testWidgets(
+      '${salesManager ? 'Sales Manager' : 'Admin'} home delivery loads and assigns a partner',
+      (tester) async {
+        final provider = _OrderProvider()
+          ..warehouseFails = false
+          ..includeCustomer = true;
+        addTearDown(provider.dispose);
+        await tester.pumpWidget(
+          ApiProviderScope(
+            notifier: provider,
+            child: MaterialApp(
+              home: NewAdminOrderScreen(useSalesManagerShell: salesManager),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('Delivery Partner *'), findsNothing);
+        await tester.tap(find.byType(DropdownButtonFormField<CustomerModel>));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Riyal Retail Store').last);
+        await tester.pumpAndSettle();
+        final warehouseField = find.byType(DropdownButtonFormField<String>);
+        await tester.ensureVisible(warehouseField);
+        await tester.tap(warehouseField);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Main Warehouse (WH001)').last);
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(find.byTooltip('Add one Rice 10kg'));
+        await tester.tap(find.byTooltip('Add one Rice 10kg'));
+        await tester.pumpAndSettle();
+
+        await tester.ensureVisible(find.text('Home Delivery'));
+        await tester.tap(find.text('Home Delivery'));
+        await tester.pumpAndSettle();
+        expect(provider.partnerRequests, 1);
+        expect(find.text('Delivery Partner *'), findsOneWidget);
+        await tester.tap(find.text('Preview Sales Order'));
+        await tester.pumpAndSettle();
+        expect(find.text('Sales Order Preview'), findsNothing);
+        expect(find.text('Select a delivery partner'), findsOneWidget);
+        final partnerField = find.byType(DropdownButtonFormField<String>).last;
+        await tester.ensureVisible(partnerField);
+        await tester.tap(partnerField);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Delivery Partner One').last);
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Preview Sales Order'));
+        await tester.pumpAndSettle();
+        await tester.scrollUntilVisible(
+          find.text('Delivery Partner One'),
+          150,
+          scrollable: find.byType(Scrollable).first,
+        );
+        expect(find.text('Delivery Partner One'), findsOneWidget);
+        await tester.tap(find.text('Create Order'));
+        await tester.pumpAndSettle();
+        expect(provider.createRequests, 1);
+        expect(provider.assignmentRequests, 1);
+        expect(provider.assignedPartnerId, 'driver-1');
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
+  testWidgets(
+    'failed partner assignment retries without creating a duplicate order',
+    (tester) async {
+      final provider = _OrderProvider()
+        ..warehouseFails = false
+        ..includeCustomer = true
+        ..assignmentFails = true;
+      addTearDown(provider.dispose);
+      await tester.pumpWidget(
+        ApiProviderScope(
+          notifier: provider,
+          child: const MaterialApp(home: NewAdminOrderScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(DropdownButtonFormField<CustomerModel>));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Riyal Retail Store').last);
+      await tester.pumpAndSettle();
+      final warehouseField = find.byType(DropdownButtonFormField<String>);
+      await tester.ensureVisible(warehouseField);
+      await tester.tap(warehouseField);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Main Warehouse (WH001)').last);
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byTooltip('Add one Rice 10kg'));
+      await tester.tap(find.byTooltip('Add one Rice 10kg'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Home Delivery'));
+      await tester.tap(find.text('Home Delivery'));
+      await tester.pumpAndSettle();
+      final partnerField = find.byType(DropdownButtonFormField<String>).last;
+      await tester.ensureVisible(partnerField);
+      await tester.tap(partnerField);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Delivery Partner One').last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Preview Sales Order'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Create Order'));
+      await tester.pumpAndSettle();
+
+      expect(provider.createRequests, 1);
+      expect(provider.assignmentRequests, 1);
+      expect(find.text('Retry Assignment'), findsOneWidget);
+      provider.assignmentFails = false;
+      await tester.tap(find.text('Retry Assignment'));
+      await tester.pumpAndSettle();
+      expect(provider.createRequests, 1);
+      expect(provider.assignmentRequests, 2);
+      expect(provider.assignedPartnerId, 'driver-1');
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   for (final salesManager in [false, true]) {
     testWidgets(
       '${salesManager ? 'Sales Manager' : 'Admin'} Create Order opens the shared live form',
@@ -192,6 +487,103 @@ void main() {
     addTearDown(service.close);
     final warehouses = await service.fetchWarehouses(isActive: true);
     expect(warehouses.single['name'], 'Main Warehouse');
+  });
+
+  test(
+    'delivery partners come from active delivery users in the API',
+    () async {
+      ApiService.setAccessToken('test-session-token');
+      addTearDown(() => ApiService.setAccessToken(null));
+      final service = ApiService(
+        client: MockClient((request) async {
+          expect(request.method, 'GET');
+          if (request.url.path == '/users/assignable') {
+            return http.Response('{"detail":"Not found"}', 404);
+          }
+          expect(request.url.path, '/users');
+          expect(request.headers['Authorization'], 'Bearer test-session-token');
+          return http.Response(
+            jsonEncode([
+              {
+                'id': 'driver-1',
+                'name': 'Driver One',
+                'role': 'delivery_partner',
+                'is_active': true,
+              },
+              {
+                'id': 'driver-2',
+                'name': 'Driver Two',
+                'role_detail': {
+                  'id': 'role-2',
+                  'name': 'Delivery Partner',
+                  'is_default': false,
+                },
+                'is_active': true,
+              },
+              {
+                'id': 'driver-3',
+                'name': 'Inactive Driver',
+                'role': 'delivery_partner',
+                'is_active': false,
+              },
+              {
+                'id': 'driver-4',
+                'name': 'Former Driver',
+                'role': 'delivery_partner',
+                'status': 'inactive',
+              },
+              {
+                'id': 'sales-1',
+                'name': 'Sales Person',
+                'role': 'sales_officer',
+                'is_active': true,
+              },
+            ]),
+            200,
+          );
+        }),
+      );
+      addTearDown(service.close);
+
+      final partners = await service.fetchDeliveryPartners();
+      expect(partners.map((partner) => partner.id), ['driver-1', 'driver-2']);
+    },
+  );
+
+  test('sales officer loads delivery partners without users-list access', () async {
+    ApiService.setAccessToken('sales-session-token');
+    addTearDown(() => ApiService.setAccessToken(null));
+    final requestedPaths = <String>[];
+    final service = ApiService(
+      client: MockClient((request) async {
+        requestedPaths.add(request.url.path);
+        expect(request.headers['Authorization'], 'Bearer sales-session-token');
+        if (request.url.path == '/users/assignable') {
+          return http.Response(
+            jsonEncode({
+              'users': [
+                {
+                  'id': 'driver-1',
+                  'name': 'Driver One',
+                  'role': 'delivery_partner',
+                  'is_active': true,
+                },
+              ],
+            }),
+            200,
+          );
+        }
+        return http.Response(
+          '{"detail":"You do not have permission to perform this action"}',
+          403,
+        );
+      }),
+    );
+    addTearDown(service.close);
+
+    final partners = await service.fetchDeliveryPartners();
+    expect(partners.map((partner) => partner.id), ['driver-1']);
+    expect(requestedPaths, ['/users/assignable']);
   });
 
   test('API diagnostics include status without logging credentials', () async {
