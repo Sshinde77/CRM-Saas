@@ -164,7 +164,7 @@ class _PlansScreenState extends State<PlansScreen> {
                             child: const Text(
                               'Upgrade Plan',
                               style: TextStyle(
-                                fontSize: 15,
+                                fontSize: 14,
                                 fontWeight: FontWeight.w800,
                               ),
                             ),
@@ -300,7 +300,7 @@ class _PlansScreenState extends State<PlansScreen> {
             textAlign: TextAlign.center,
             style: const TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 21,
+              fontSize: 16,
               fontWeight: FontWeight.w800,
               height: 1.1,
             ),
@@ -311,7 +311,7 @@ class _PlansScreenState extends State<PlansScreen> {
             textAlign: TextAlign.center,
             style: const TextStyle(
               color: AppColors.statusActiveText,
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -400,7 +400,7 @@ class _PlansScreenState extends State<PlansScreen> {
                             statusLabel,
                             style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 10,
+                              fontSize: 14,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -414,7 +414,7 @@ class _PlansScreenState extends State<PlansScreen> {
                   text: TextSpan(
                     style: const TextStyle(
                       color: AppColors.textSecondary,
-                      fontSize: 12,
+                      fontSize: 14,
                     ),
                     children: [
                       TextSpan(
@@ -523,7 +523,7 @@ class _PlansScreenState extends State<PlansScreen> {
           label,
           style: TextStyle(
             color: isActive ? Colors.white : AppColors.textSecondary,
-            fontSize: 12,
+            fontSize: 14,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -577,7 +577,7 @@ class _PlansScreenState extends State<PlansScreen> {
                     : (isTopPlan ? 'Upgrade Your Plan' : plan.name),
                 style: const TextStyle(
                   color: AppColors.statusActiveText,
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -588,7 +588,7 @@ class _PlansScreenState extends State<PlansScreen> {
             plan.name,
             style: const TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 19,
+              fontSize: 16,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -597,7 +597,7 @@ class _PlansScreenState extends State<PlansScreen> {
             _planSubtitle(plan),
             style: const TextStyle(
               color: AppColors.textSecondary,
-              fontSize: 12,
+              fontSize: 14,
               height: 1.3,
             ),
           ),
@@ -618,7 +618,7 @@ class _PlansScreenState extends State<PlansScreen> {
                 _formatPrice(price),
                 style: const TextStyle(
                   color: AppColors.statusActiveText,
-                  fontSize: 20,
+                  fontSize: 16,
                   fontWeight: FontWeight.w900,
                 ),
               ),
@@ -626,7 +626,7 @@ class _PlansScreenState extends State<PlansScreen> {
                 _isMonthly ? '/month' : '/year',
                 style: const TextStyle(
                   color: AppColors.textSecondary,
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -635,7 +635,7 @@ class _PlansScreenState extends State<PlansScreen> {
                   _formatPrice(originalPrice),
                   style: const TextStyle(
                     color: AppColors.textLightMuted,
-                    fontSize: 12,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                     decoration: TextDecoration.lineThrough,
                   ),
@@ -667,7 +667,7 @@ class _PlansScreenState extends State<PlansScreen> {
                       'Save $savings%',
                       style: const TextStyle(
                         color: AppColors.statusActiveText,
-                        fontSize: 12,
+                        fontSize: 14,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -684,7 +684,7 @@ class _PlansScreenState extends State<PlansScreen> {
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: AppColors.textSecondary,
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -746,7 +746,7 @@ class _PlansScreenState extends State<PlansScreen> {
               text,
               style: const TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 12,
+                fontSize: 14,
                 height: 1.3,
               ),
             ),
@@ -792,7 +792,7 @@ class _PlansScreenState extends State<PlansScreen> {
               'Could not load plans',
               style: TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 18,
+                fontSize: 16,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -821,7 +821,7 @@ class _PlansScreenState extends State<PlansScreen> {
     return const Center(
       child: Text(
         'No plans available right now.',
-        style: TextStyle(color: AppColors.textSecondary, fontSize: 15),
+        style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
       ),
     );
   }

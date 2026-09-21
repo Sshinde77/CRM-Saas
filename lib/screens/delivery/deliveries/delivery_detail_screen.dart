@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../constants/app_colors.dart';
 import '../../../models/delivery_detail_model.dart';
 import '../../../providers/api_provider.dart';
+import '../../../widgets/delivery/delivery_top_bar.dart';
 
 class DeliveryDetailScreen extends StatefulWidget {
   final String deliveryId;
@@ -142,44 +143,20 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
             final delivery = snapshot.data ?? _delivery;
             return Column(
               children: [
-                Container(
-                  color: AppColors.primary,
-                  height: 52,
-                  child: Row(
-                    children: [
-                      IconButton(
-                        tooltip: 'Back',
-                        onPressed: () => Navigator.of(context).maybePop(),
-                        icon: const Icon(
-                          Icons.arrow_back_rounded,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const Expanded(
-                        child: Text(
-                          'Delivery Details',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 17,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        tooltip: 'Download delivery challan',
-                        onPressed: delivery == null || _isActionBusy
-                            ? null
-                            : _downloadChallan,
-                        icon: Icon(
-                          Icons.download_outlined,
-                          color: delivery == null || _isActionBusy
-                              ? Colors.white38
-                              : Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
+                DeliveryTopBar(
+                  title: 'Delivery Details',
+                  subtitle: delivery?.orderNumber ?? 'View delivery status',
+                  leadingIcon: Icons.arrow_back_rounded,
+                  onLeadingTap: () => Navigator.of(context).maybePop(),
+                  actions: [
+                    DeliveryTopBarAction(
+                      icon: Icons.download_outlined,
+                      tooltip: 'Download delivery challan',
+                      onTap: delivery == null || _isActionBusy
+                          ? null
+                          : _downloadChallan,
+                    ),
+                  ],
                 ),
                 Expanded(
                   child:
@@ -319,7 +296,7 @@ class _Body extends StatelessWidget {
             child: DefaultTextStyle(
               style: const TextStyle(
                 color: AppColors.deliveryInk,
-                fontSize: 13,
+                fontSize: 14,
                 height: 1.35,
               ),
               child: Column(
@@ -360,14 +337,14 @@ class _Body extends StatelessWidget {
                               const SizedBox(height: 3),
                               Text(
                                 delivery.deliveryAddress,
-                                style: const TextStyle(fontSize: 12),
+                                style: const TextStyle(fontSize: 14),
                               ),
                             ],
                             if (delivery.customerPhone.isNotEmpty)
                               Text(
                                 delivery.customerPhone,
                                 style: const TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 14,
                                   color: AppColors.textMuted,
                                 ),
                               ),
@@ -402,7 +379,7 @@ class _Body extends StatelessWidget {
                           '${delivery.items.length} ${delivery.items.length == 1 ? 'item' : 'items'}',
                           style: const TextStyle(
                             color: AppColors.primary,
-                            fontSize: 12,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -497,7 +474,7 @@ class _Body extends StatelessWidget {
                       'More delivery details',
                       style: TextStyle(
                         color: AppColors.primary,
-                        fontSize: 13,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -569,7 +546,7 @@ class _Body extends StatelessWidget {
                       const Text(
                         'Signature',
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 14,
                           color: AppColors.textMuted,
                         ),
                       ),
@@ -697,7 +674,7 @@ class _ItemRow extends StatelessWidget {
                           item.variant,
                           style: const TextStyle(
                             color: AppColors.textMuted,
-                            fontSize: 10,
+                            fontSize: 14,
                             fontWeight: FontWeight.w400,
                           ),
                         ),
@@ -728,7 +705,7 @@ class _ItemRow extends StatelessWidget {
                 if (item.expiry.isNotEmpty)
                   'Expiry: ${_formatLooseDate(item.expiry)}',
               ].join('  \u00b7  '),
-              style: const TextStyle(color: AppColors.textMuted, fontSize: 10),
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 14),
             ),
           ),
         ],

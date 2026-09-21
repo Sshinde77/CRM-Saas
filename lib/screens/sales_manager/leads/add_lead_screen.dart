@@ -482,7 +482,7 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
             _isEditMode ? 'Edit Lead Information' : 'Lead Information',
             style: const TextStyle(
               color: Color(0xFF0F172A),
-              fontSize: 20,
+              fontSize: 16,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -491,7 +491,7 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
             _isEditMode
                 ? 'Review and update the fields below.'
                 : 'Fill in the details below to create a new lead.',
-            style: const TextStyle(color: Color(0xFF64748B), fontSize: 13),
+            style: const TextStyle(color: Color(0xFF64748B), fontSize: 14),
           ),
           if (_formError != null) ...[
             const SizedBox(height: 14),
@@ -723,7 +723,7 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
                   : _notesController.text.trim(),
               style: const TextStyle(
                 color: Color(0xFF475569),
-                fontSize: 13,
+                fontSize: 14,
                 height: 1.45,
               ),
             ),
@@ -757,7 +757,7 @@ class _Header extends StatelessWidget {
                 'Home > Leads',
                 style: TextStyle(
                   color: Color(0xFF08783D),
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -766,14 +766,14 @@ class _Header extends StatelessWidget {
                 title,
                 style: const TextStyle(
                   color: Color(0xFF0F172A),
-                  fontSize: 24,
+                  fontSize: 16,
                   fontWeight: FontWeight.w900,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 subtitle,
-                style: const TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                style: const TextStyle(color: Color(0xFF64748B), fontSize: 14),
               ),
             ],
           ),
@@ -1041,7 +1041,7 @@ class _ProductPickerState extends State<_ProductPicker> {
                     label: Text(product),
                     labelStyle: const TextStyle(
                       color: Color(0xFF0F172A),
-                      fontSize: 12,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
                     backgroundColor: const Color(0xFFEFF8F2),
@@ -1114,7 +1114,7 @@ class _InfoCard extends StatelessWidget {
                   title,
                   style: const TextStyle(
                     color: Color(0xFF0F172A),
-                    fontSize: 15,
+                    fontSize: 14,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -1145,7 +1145,7 @@ class _TipLine extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: const TextStyle(color: Color(0xFF475569), fontSize: 13),
+              style: const TextStyle(color: Color(0xFF475569), fontSize: 14),
             ),
           ),
         ],
@@ -1171,7 +1171,7 @@ class _PreviewRow extends StatelessWidget {
             width: 96,
             child: Text(
               label,
-              style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
+              style: const TextStyle(color: Color(0xFF64748B), fontSize: 14),
             ),
           ),
           Expanded(
@@ -1180,7 +1180,7 @@ class _PreviewRow extends StatelessWidget {
               textAlign: TextAlign.right,
               style: const TextStyle(
                 color: Color(0xFF0F172A),
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -1215,7 +1215,7 @@ class _Alert extends StatelessWidget {
               message,
               style: const TextStyle(
                 color: Color(0xFF991B1B),
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -1246,7 +1246,7 @@ class _LabeledField extends StatelessWidget {
           label,
           style: const TextStyle(
             color: Color(0xFF0F172A),
-            fontSize: 13,
+            fontSize: 14,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -1258,7 +1258,7 @@ class _LabeledField extends StatelessWidget {
             errorText!,
             style: const TextStyle(
               color: Color(0xFFDC2626),
-              fontSize: 12,
+              fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -1299,7 +1299,7 @@ class _CenteredState extends StatelessWidget {
               title,
               style: const TextStyle(
                 color: Color(0xFF0F172A),
-                fontSize: 18,
+                fontSize: 16,
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -1307,7 +1307,7 @@ class _CenteredState extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Color(0xFF64748B), fontSize: 13),
+              style: const TextStyle(color: Color(0xFF64748B), fontSize: 14),
             ),
             if (actionLabel != null && onAction != null) ...[
               const SizedBox(height: 14),
@@ -1359,7 +1359,7 @@ InputDecoration _inputDecoration(
 }) {
   return InputDecoration(
     hintText: hintText,
-    hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+    hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
     errorText: null,
     filled: true,
     fillColor: Colors.white,

@@ -94,7 +94,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                                 'Operational Settings',
                                 style: TextStyle(
                                   color: textPrimary,
-                                  fontSize: 24,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.w800,
                                 ),
                               ),
@@ -103,7 +103,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                                 'Configure invoicing, payments, products, and alerts',
                                 style: TextStyle(
                                   color: textSecondary,
-                                  fontSize: 13,
+                                  fontSize: 14,
                                 ),
                               ),
                             ],

@@ -214,7 +214,7 @@ class _SalesManagerAttendanceScreenState
             "Today's Checkpoints",
             style: TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 15,
+              fontSize: 14,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -286,7 +286,7 @@ class _SalesManagerAttendanceScreenState
             'Attendance History',
             style: TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 15,
+              fontSize: 14,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -337,7 +337,7 @@ class _CheckpointCard extends StatelessWidget {
                   data.title,
                   style: const TextStyle(
                     color: AppColors.textPrimary,
-                    fontSize: 13,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -349,7 +349,7 @@ class _CheckpointCard extends StatelessWidget {
             data.time,
             style: const TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 17,
+              fontSize: 16,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -369,7 +369,7 @@ class _CheckpointCard extends StatelessWidget {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: AppColors.textLightMuted,
-                        fontSize: 12,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -387,7 +387,7 @@ class _CheckpointCard extends StatelessWidget {
                     child: const Text(
                       'Mark Present',
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 14,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -406,7 +406,7 @@ class _AttendanceHeaderRow extends StatelessWidget {
   Widget build(BuildContext context) {
     const labelStyle = TextStyle(
       color: Color(0xFF64748B),
-      fontSize: 11,
+      fontSize: 14,
       fontWeight: FontWeight.w800,
       letterSpacing: 0.9,
     );
@@ -442,7 +442,7 @@ class _AttendanceRow extends StatelessWidget {
               record.date,
               style: const TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 13.5,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -457,7 +457,7 @@ class _AttendanceRow extends StatelessWidget {
               record.checkIn,
               style: const TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 13.5,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -468,7 +468,7 @@ class _AttendanceRow extends StatelessWidget {
               record.checkOut,
               style: const TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 13.5,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -506,7 +506,7 @@ class _StatusPill extends StatelessWidget {
             label,
             style: TextStyle(
               color: color,
-              fontSize: 11,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
           ),

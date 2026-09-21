@@ -258,7 +258,7 @@ class _CheckpointTile extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: AppColors.deliveryInk,
-                    fontSize: 13,
+                    fontSize: 14,
                     height: 1.2,
                     fontWeight: FontWeight.w900,
                   ),
@@ -284,7 +284,7 @@ class _CheckpointTile extends StatelessWidget {
                     color: recorded
                         ? const Color(0xFF065F1B)
                         : AppColors.textMuted,
-                    fontSize: 13,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -327,7 +327,7 @@ class _CheckpointTile extends StatelessWidget {
                     ? const Color(0xFFF0FAF2)
                     : checkpoint.softColor.withValues(alpha: 0.45),
                 textStyle: const TextStyle(
-                  fontSize: 12.5,
+                  fontSize: 14,
                   fontWeight: FontWeight.w900,
                 ),
                 shape: RoundedRectangleBorder(
@@ -461,7 +461,7 @@ class _HistoryRow extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 12.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w800,
                     color: AppColors.deliveryInk,
                   ),
@@ -470,7 +470,7 @@ class _HistoryRow extends StatelessWidget {
                 Text(
                   _weekday(record.date),
                   style: const TextStyle(
-                    fontSize: 11.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textMuted,
                   ),
@@ -533,7 +533,7 @@ class _CardTitle extends StatelessWidget {
               Text(
                 subtitle,
                 style: const TextStyle(
-                  fontSize: 12.5,
+                  fontSize: 14,
                   height: 1.25,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textMuted,
@@ -575,7 +575,7 @@ class _InlineError extends StatelessWidget {
               message,
               style: const TextStyle(
                 color: Color(0xFFB00000),
-                fontSize: 12.5,
+                fontSize: 14,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -635,7 +635,7 @@ class _HistoryMessage extends StatelessWidget {
               textAlign: TextAlign.center,
               maxLines: 4,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+              style: const TextStyle(fontSize: 14, color: AppColors.textMuted),
             ),
             if (action != null && onAction != null) ...[
               const SizedBox(height: 10),
@@ -703,7 +703,7 @@ class _StatusBadge extends StatelessWidget {
               label,
               style: TextStyle(
                 color: color,
-                fontSize: 12,
+                fontSize: 14,
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -727,7 +727,7 @@ class _HeaderText extends StatelessWidget {
       overflow: TextOverflow.ellipsis,
       style: const TextStyle(
         color: AppColors.textMuted,
-        fontSize: 12,
+        fontSize: 14,
         fontWeight: FontWeight.w800,
       ),
     );
@@ -747,7 +747,7 @@ class _TimeText extends StatelessWidget {
       overflow: TextOverflow.ellipsis,
       style: TextStyle(
         color: text == '--:-- --' ? AppColors.textMuted : AppColors.deliveryInk,
-        fontSize: 12.5,
+        fontSize: 14,
         fontWeight: FontWeight.w700,
       ),
     );

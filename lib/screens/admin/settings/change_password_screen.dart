@@ -116,7 +116,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       'Change Password',
                       style: TextStyle(
                         color: _titleColor,
-                        fontSize: 21,
+                        fontSize: 16,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -274,12 +274,12 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     return TextField(
       controller: controller,
       obscureText: obscureText,
-      style: const TextStyle(fontSize: 15, color: _titleColor),
+      style: const TextStyle(fontSize: 14, color: _titleColor),
       decoration: InputDecoration(
         filled: true,
         fillColor: _fieldBg,
         hintText: hintText,
-        hintStyle: const TextStyle(color: Color(0xFF98A2B3), fontSize: 15),
+        hintStyle: const TextStyle(color: Color(0xFF98A2B3), fontSize: 14),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 14,

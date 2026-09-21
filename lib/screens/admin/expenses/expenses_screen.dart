@@ -200,14 +200,14 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                       'Expenses',
                       style: TextStyle(
                         color: textPrimary,
-                        fontSize: 24,
+                        fontSize: 16,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
                     const SizedBox(height: 4),
                     const Text(
                       'Track submitted expenses and approval status',
-                      style: TextStyle(color: textSecondary, fontSize: 13),
+                      style: TextStyle(color: textSecondary, fontSize: 14),
                     ),
                     const SizedBox(height: 20),
                     LayoutBuilder(
@@ -282,7 +282,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                             'All Expenses',
                             style: TextStyle(
                               color: textPrimary,
-                              fontSize: 18,
+                              fontSize: 16,
                               fontWeight: FontWeight.w800,
                             ),
                           ),
@@ -291,7 +291,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                             'Search by expense ID, category, description, submitted by, date, amount, or status.',
                             style: TextStyle(
                               color: textSecondary,
-                              fontSize: 12.5,
+                              fontSize: 14,
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -344,7 +344,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                                   'No expenses match your search.',
                                   style: TextStyle(
                                     color: textSecondary,
-                                    fontSize: 13,
+                                    fontSize: 14,
                                   ),
                                 ),
                               ),
@@ -409,7 +409,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                   value,
                   style: const TextStyle(
                     color: textPrimary,
-                    fontSize: 22,
+                    fontSize: 16,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -418,7 +418,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                   label,
                   style: const TextStyle(
                     color: textSecondary,
-                    fontSize: 12.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -474,7 +474,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                       expense.expenseId,
                       style: const TextStyle(
                         color: textPrimary,
-                        fontSize: 15.5,
+                        fontSize: 14,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -483,7 +483,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                       expense.category,
                       style: const TextStyle(
                         color: textSecondary,
-                        fontSize: 12,
+                        fontSize: 14,
                       ),
                     ),
                   ],
@@ -505,7 +505,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                   expense.status,
                   style: TextStyle(
                     color: statusColor,
-                    fontSize: 11.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -537,7 +537,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
           label,
           style: const TextStyle(
             color: textSecondary,
-            fontSize: 11.5,
+            fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -546,7 +546,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
           value,
           style: const TextStyle(
             color: textPrimary,
-            fontSize: 13.5,
+            fontSize: 14,
             fontWeight: FontWeight.w700,
           ),
         ),

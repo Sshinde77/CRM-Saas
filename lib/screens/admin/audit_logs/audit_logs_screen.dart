@@ -103,7 +103,7 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
                             'No audit logs found for this filter.',
                             style: TextStyle(
                               color: textSecondary,
-                              fontSize: 13,
+                              fontSize: 14,
                             ),
                           ),
                         ),
@@ -139,14 +139,14 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
                 'Audit Logs',
                 style: TextStyle(
                   color: textPrimary,
-                  fontSize: 24,
+                  fontSize: 16,
                   fontWeight: FontWeight.w800,
                 ),
               ),
               SizedBox(height: 4),
               Text(
                 'Track creation, updates, and alerts across the system',
-                style: TextStyle(color: textSecondary, fontSize: 13),
+                style: TextStyle(color: textSecondary, fontSize: 14),
               ),
             ],
           ),
@@ -164,7 +164,7 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
             'Live trail',
             style: TextStyle(
               color: AppColors.primary,
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -236,7 +236,7 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
                 value,
                 style: TextStyle(
                   color: accent,
-                  fontSize: 18,
+                  fontSize: 16,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -247,7 +247,7 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
             label,
             style: const TextStyle(
               color: textSecondary,
-              fontSize: 12,
+              fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -347,7 +347,7 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
                         entry.type,
                         style: TextStyle(
                           color: entry.accent,
-                          fontSize: 12,
+                          fontSize: 14,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
@@ -358,7 +358,7 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
                         entry.module,
                         style: const TextStyle(
                           color: textSecondary,
-                          fontSize: 12.5,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
                         overflow: TextOverflow.ellipsis,
@@ -369,7 +369,7 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
                       entry.time,
                       style: const TextStyle(
                         color: textSecondary,
-                        fontSize: 11.5,
+                        fontSize: 14,
                       ),
                     ),
                   ],
@@ -388,7 +388,7 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
                   entry.detail,
                   style: const TextStyle(
                     color: textSecondary,
-                    fontSize: 13,
+                    fontSize: 14,
                     height: 1.35,
                   ),
                 ),
@@ -405,7 +405,7 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
                       'By ${entry.actor}',
                       style: TextStyle(
                         color: entry.accent,
-                        fontSize: 12.5,
+                        fontSize: 14,
                         fontWeight: FontWeight.w700,
                       ),
                     ),

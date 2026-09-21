@@ -104,7 +104,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
                               'Add a new supplier',
                               style: TextStyle(
                                 color: Color(0xFF111827),
-                                fontSize: 18,
+                                fontSize: 16,
                                 fontWeight: FontWeight.w800,
                               ),
                             ),
@@ -113,7 +113,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
                               'Track contact details, category and GST information for every vendor.',
                               style: TextStyle(
                                 color: Color(0xFF64748B),
-                                fontSize: 13.5,
+                                fontSize: 14,
                               ),
                             ),
                           ],
@@ -284,7 +284,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
             step,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -316,7 +316,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
           label,
           style: const TextStyle(
             color: Color(0xFF111827),
-            fontSize: 13.5,
+            fontSize: 14,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -364,7 +364,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
           label,
           style: const TextStyle(
             color: Color(0xFF111827),
-            fontSize: 13.5,
+            fontSize: 14,
             fontWeight: FontWeight.w500,
           ),
         ),

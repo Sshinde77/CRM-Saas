@@ -143,7 +143,7 @@ class _DeliveryTopBarState extends State<DeliveryTopBar> {
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFF042D0A), Color(0xFF075E19)],
+          colors: [AppColors.primary900, AppColors.primary],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -182,7 +182,7 @@ class _DeliveryTopBarState extends State<DeliveryTopBar> {
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: Color(0xFFE7F7EA),
-                          fontSize: 11.5,
+                          fontSize: 14,
                           height: 1.25,
                           fontWeight: FontWeight.w600,
                         ),
@@ -348,7 +348,6 @@ class _DeliveryAvatar extends StatelessWidget {
             profileRole: profileRole,
           ),
         ),
-        const PopupMenuDivider(height: 1),
         const PopupMenuItem<_ProfileMenuAction>(
           value: _ProfileMenuAction.signOut,
           child: Row(
@@ -389,7 +388,7 @@ class _DeliveryAvatar extends StatelessWidget {
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w800,
-                      fontSize: 11,
+                      fontSize: 14,
                     ),
                   );
                 },
@@ -399,7 +398,7 @@ class _DeliveryAvatar extends StatelessWidget {
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w800,
-                  fontSize: 11,
+                  fontSize: 14,
                 ),
               ),
       ),
@@ -430,7 +429,7 @@ class _ProfileMenuHeader extends StatelessWidget {
             profileName,
             style: const TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 15,
+              fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -440,7 +439,7 @@ class _ProfileMenuHeader extends StatelessWidget {
               profileRole,
               style: const TextStyle(
                 color: AppColors.textSecondary,
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
             ),

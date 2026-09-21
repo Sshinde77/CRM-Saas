@@ -293,7 +293,7 @@ class _SalesManagerPerformanceScreenState
                   "This month's overall progress",
                   style: TextStyle(
                     color: AppColors.textSecondary,
-                    fontSize: 13,
+                    fontSize: 14,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -319,14 +319,14 @@ class _SalesManagerPerformanceScreenState
                 '88%',
                 style: TextStyle(
                   color: AppColors.textPrimary,
-                  fontSize: 30,
+                  fontSize: 16,
                   fontWeight: FontWeight.w800,
                 ),
               ),
               SizedBox(height: 2),
               Text(
                 'Overall Score',
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
               ),
             ],
           ),
@@ -371,7 +371,7 @@ class _MetricCard extends StatelessWidget {
                       data.title,
                       style: const TextStyle(
                         color: AppColors.textPrimary,
-                        fontSize: 15,
+                        fontSize: 14,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -380,7 +380,7 @@ class _MetricCard extends StatelessWidget {
                       data.target,
                       style: const TextStyle(
                         color: AppColors.textSecondary,
-                        fontSize: 11.5,
+                        fontSize: 14,
                       ),
                     ),
                   ],
@@ -409,7 +409,7 @@ class _MetricCard extends StatelessWidget {
                       data.achieved,
                       style: const TextStyle(
                         color: AppColors.textPrimary,
-                        fontSize: 26,
+                        fontSize: 16,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -418,7 +418,7 @@ class _MetricCard extends StatelessWidget {
                       data.achievedLabel,
                       style: const TextStyle(
                         color: AppColors.textSecondary,
-                        fontSize: 11.5,
+                        fontSize: 14,
                       ),
                     ),
                   ],
@@ -440,7 +440,7 @@ class _MetricCard extends StatelessWidget {
                     'of target',
                     style: TextStyle(
                       color: AppColors.textLightMuted,
-                      fontSize: 11,
+                      fontSize: 14,
                     ),
                   ),
                 ],

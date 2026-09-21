@@ -377,7 +377,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   'No items found.',
                   style: TextStyle(
                     color: AppColors.textSecondary,
-                    fontSize: 12,
+                    fontSize: 14,
                   ),
                 )
               : Column(
@@ -433,7 +433,7 @@ class _HeaderCard extends StatelessWidget {
                   number,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -446,7 +446,7 @@ class _HeaderCard extends StatelessWidget {
             customer,
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.86),
-              fontSize: 12,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -514,7 +514,7 @@ class _SectionCard extends StatelessWidget {
                 title,
                 style: const TextStyle(
                   color: AppColors.textPrimary,
-                  fontSize: 13.5,
+                  fontSize: 14,
                   fontWeight: FontWeight.w900,
                 ),
               ),
@@ -547,7 +547,7 @@ class _DetailRow extends StatelessWidget {
               label,
               style: const TextStyle(
                 color: AppColors.textSecondary,
-                fontSize: 11,
+                fontSize: 14,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -557,7 +557,7 @@ class _DetailRow extends StatelessWidget {
               value.trim().isEmpty ? '-' : value,
               style: const TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 12,
+                fontSize: 14,
                 fontWeight: FontWeight.w700,
                 height: 1.25,
               ),
@@ -602,7 +602,7 @@ class _ItemTile extends StatelessWidget {
             ], fallback: 'Product'),
             style: const TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 12.5,
+              fontSize: 14,
               fontWeight: FontWeight.w900,
             ),
           ),
@@ -634,7 +634,7 @@ class _HeaderAction extends StatelessWidget {
         foregroundColor: AppColors.primary,
         elevation: 0,
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        textStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
+        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
       ),
     );
   }
@@ -657,7 +657,7 @@ class _TinyChip extends StatelessWidget {
         label,
         style: const TextStyle(
           color: AppColors.textPrimary,
-          fontSize: 10.5,
+          fontSize: 14,
           fontWeight: FontWeight.w900,
         ),
       ),
@@ -697,7 +697,7 @@ class _StateCard extends StatelessWidget {
             title,
             style: const TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: FontWeight.w900,
             ),
           ),
@@ -708,7 +708,7 @@ class _StateCard extends StatelessWidget {
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: AppColors.textSecondary,
-                fontSize: 12,
+                fontSize: 14,
               ),
             ),
           ],

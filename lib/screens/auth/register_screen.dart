@@ -139,7 +139,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       'Register your organization',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 26,
+                        fontSize: 16,
                         fontWeight: FontWeight.w900,
                         color: headingText,
                       ),
@@ -148,7 +148,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     const Text(
                       'Set up your SAAS CRM workspace',
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 13, color: bodyText),
+                      style: TextStyle(fontSize: 14, color: bodyText),
                     ),
                     const SizedBox(height: 22),
                     _buildForm(),
@@ -235,7 +235,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             children: [
               const Text(
                 'Already have an account? ',
-                style: TextStyle(color: mutedText, fontSize: 12),
+                style: TextStyle(color: mutedText, fontSize: 14),
               ),
               GestureDetector(
                 onTap: () {
@@ -249,7 +249,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   style: TextStyle(
                     color: primary,
                     fontWeight: FontWeight.w700,
-                    fontSize: 12,
+                    fontSize: 14,
                   ),
                 ),
               ),
@@ -290,7 +290,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           style: const TextStyle(
             color: headingText,
             fontWeight: FontWeight.w700,
-            fontSize: 12,
+            fontSize: 14,
           ),
         ),
         const SizedBox(height: 8),
@@ -363,7 +363,7 @@ class _StepHeader extends StatelessWidget {
           style: const TextStyle(
             color: _RegisterScreenState.headingText,
             fontWeight: FontWeight.w800,
-            fontSize: 17,
+            fontSize: 16,
           ),
         ),
       ],
@@ -410,7 +410,7 @@ class _PrimaryButton extends StatelessWidget {
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
-                  fontSize: 15,
+                  fontSize: 14,
                 ),
               ),
       ),

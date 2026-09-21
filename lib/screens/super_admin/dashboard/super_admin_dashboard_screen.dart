@@ -27,9 +27,6 @@ class _SuperAdminDashboardScreenState extends State<SuperAdminDashboardScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _contentScrollController = ScrollController();
 
-  static const Color textPrimary = AppColors.textPrimary;
-  static const Color textSecondary = AppColors.textSecondary;
-
   late String _query;
   late String _currentPage;
   late int _pageIndex;
@@ -349,9 +346,6 @@ class _MainArea extends StatelessWidget {
     this.onOpenMenu,
   });
 
-  static const Color textPrimary = AppColors.textPrimary;
-  static const Color textSecondary = AppColors.textSecondary;
-
   @override
   Widget build(BuildContext context) {
     final isOrganizationsPage = currentPage == 'Organizations';
@@ -505,7 +499,7 @@ class _TopBar extends StatelessWidget {
                     'Search deliveries, customers, orders...',
                     style: TextStyle(
                       color: AppColors.textLightMuted,
-                      fontSize: 13.5,
+                      fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
                     overflow: TextOverflow.ellipsis,
@@ -542,7 +536,7 @@ class _TopBar extends StatelessWidget {
                   'RM',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 10.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -555,7 +549,7 @@ class _TopBar extends StatelessWidget {
                     'Ravi Malhotra',
                     style: TextStyle(
                       color: AppColors.textPrimary,
-                      fontSize: 13.5,
+                      fontSize: 14,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -564,7 +558,7 @@ class _TopBar extends StatelessWidget {
                     'Super Admin',
                     style: TextStyle(
                       color: AppColors.primary,
-                      fontSize: 11.5,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -631,7 +625,7 @@ class _SearchRow extends StatelessWidget {
         onChanged: onChanged,
         style: const TextStyle(
           color: AppColors.textPrimary,
-          fontSize: 13.5,
+          fontSize: 14,
           fontWeight: FontWeight.w500,
         ),
         cursorColor: AppColors.primary,
@@ -644,7 +638,7 @@ class _SearchRow extends StatelessWidget {
             color: AppColors.textLightMuted,
           ),
           hintText: 'Search organizations...',
-          hintStyle: TextStyle(color: AppColors.textLightMuted, fontSize: 12.5),
+          hintStyle: TextStyle(color: AppColors.textLightMuted, fontSize: 14),
           border: InputBorder.none,
           contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         ),
@@ -716,7 +710,7 @@ class _MetricCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: AppColors.textSecondary,
-                    fontSize: 11.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -724,7 +718,7 @@ class _MetricCard extends StatelessWidget {
                   item.value,
                   style: const TextStyle(
                     color: AppColors.textPrimary,
-                    fontSize: 22,
+                    fontSize: 16,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -781,7 +775,7 @@ class _ChartCard extends StatelessWidget {
             title,
             style: const TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 15,
+              fontSize: 14,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -790,7 +784,7 @@ class _ChartCard extends StatelessWidget {
             subtitle,
             style: const TextStyle(
               color: AppColors.textSecondary,
-              fontSize: 12,
+              fontSize: 14,
             ),
           ),
           const SizedBox(height: 14),
@@ -851,7 +845,7 @@ class _PlanChart extends StatelessWidget {
                     '$total',
                     style: const TextStyle(
                       color: AppColors.textPrimary,
-                      fontSize: 28,
+                      fontSize: 16,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -860,7 +854,7 @@ class _PlanChart extends StatelessWidget {
                     'Total',
                     style: TextStyle(
                       color: AppColors.textSecondary,
-                      fontSize: 12.5,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -892,7 +886,7 @@ class _PlanChart extends StatelessWidget {
                       '${slice.label} ${slice.shareLabel}',
                       style: const TextStyle(
                         color: AppColors.textPrimary,
-                        fontSize: 11.5,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -945,14 +939,14 @@ class _OrganizationsCard extends StatelessWidget {
             'Organizations',
             style: TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 15,
+              fontSize: 14,
               fontWeight: FontWeight.w800,
             ),
           ),
           const SizedBox(height: 4),
           const Text(
             'All organizations on the SAAS CRM platform',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
           ),
           const SizedBox(height: 12),
           Row(
@@ -970,7 +964,7 @@ class _OrganizationsCard extends StatelessWidget {
                     onChanged: onQueryChanged,
                     style: const TextStyle(
                       color: AppColors.textPrimary,
-                      fontSize: 13.5,
+                      fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
                     cursorColor: AppColors.primary,
@@ -985,7 +979,7 @@ class _OrganizationsCard extends StatelessWidget {
                       hintText: 'Search organizations...',
                       hintStyle: TextStyle(
                         color: AppColors.textLightMuted,
-                        fontSize: 12.5,
+                        fontSize: 14,
                       ),
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.symmetric(
@@ -1001,7 +995,7 @@ class _OrganizationsCard extends StatelessWidget {
                 '${organizations.length} results',
                 style: const TextStyle(
                   color: AppColors.textLightMuted,
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1038,7 +1032,7 @@ class _OrganizationsCard extends StatelessWidget {
                 'Page ${pageIndex + 1} of 5',
                 style: const TextStyle(
                   color: AppColors.textSecondary,
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1148,7 +1142,7 @@ class _OrganizationsListPageState extends State<_OrganizationsListPage> {
                 'Organizations List',
                 style: TextStyle(
                   color: AppColors.textPrimary,
-                  fontSize: 15,
+                  fontSize: 14,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -1192,7 +1186,7 @@ class _OrganizationsListPageState extends State<_OrganizationsListPage> {
                     '${organizations.length} results',
                     style: const TextStyle(
                       color: AppColors.textLightMuted,
-                      fontSize: 12,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -1215,7 +1209,7 @@ class _OrganizationsListPageState extends State<_OrganizationsListPage> {
                     'Page ${widget.pageIndex + 1} of 5',
                     style: const TextStyle(
                       color: AppColors.textSecondary,
-                      fontSize: 12,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -1382,7 +1376,7 @@ class _UpgradeRequestsPageState extends State<_UpgradeRequestsPage> {
                                 'Nothing to review in this view right now.',
                                 style: TextStyle(
                                   color: AppColors.textLightMuted,
-                                  fontSize: 12.5,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -1471,7 +1465,7 @@ class _UpgradeTabChip extends StatelessWidget {
             label,
             style: TextStyle(
               color: selected ? AppColors.primary : AppColors.textSecondary,
-              fontSize: 12,
+              fontSize: 14,
               fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
             ),
           ),
@@ -1555,7 +1549,7 @@ class _UpgradeRequestCard extends StatelessWidget {
                   item.adminContact,
                   style: const TextStyle(
                     color: AppColors.textSecondary,
-                    fontSize: 12.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -1590,7 +1584,7 @@ class _UpgradeRequestCard extends StatelessWidget {
                   item.status,
                   style: TextStyle(
                     color: statusColor,
-                    fontSize: 11,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -1799,7 +1793,7 @@ class _TogglePill extends StatelessWidget {
             label,
             style: TextStyle(
               color: selected ? AppColors.primary : AppColors.textSecondary,
-              fontSize: 12,
+              fontSize: 14,
               fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
             ),
           ),
@@ -1895,7 +1889,7 @@ class _PlanCard extends StatelessWidget {
                 price,
                 style: const TextStyle(
                   color: AppColors.textPrimary,
-                  fontSize: 26,
+                  fontSize: 16,
                   fontWeight: FontWeight.w900,
                 ),
               ),
@@ -1904,7 +1898,7 @@ class _PlanCard extends StatelessWidget {
                 monthly ? data.yearlyPrice : data.monthlyPrice,
                 style: const TextStyle(
                   color: AppColors.textLightMuted,
-                  fontSize: 13,
+                  fontSize: 14,
                   decoration: TextDecoration.lineThrough,
                   fontWeight: FontWeight.w600,
                 ),
@@ -1918,7 +1912,7 @@ class _PlanCard extends StatelessWidget {
                 : data.subtitle.replaceFirst('per month', 'per year'),
             style: const TextStyle(
               color: AppColors.textSecondary,
-              fontSize: 12.5,
+              fontSize: 14,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -1940,7 +1934,7 @@ class _PlanCard extends StatelessWidget {
                       feature,
                       style: const TextStyle(
                         color: AppColors.textSecondary,
-                        fontSize: 12.5,
+                        fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -2035,7 +2029,7 @@ class _CreatePlanDialogState extends State<_CreatePlanDialog> {
                       'Create Plan',
                       style: TextStyle(
                         color: AppColors.textPrimary,
-                        fontSize: 15.5,
+                        fontSize: 14,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -2165,7 +2159,7 @@ class _CreatePlanDialogState extends State<_CreatePlanDialog> {
                           'Set as default plan',
                           style: TextStyle(
                             color: AppColors.textPrimary,
-                            fontSize: 12.5,
+                            fontSize: 14,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -2173,7 +2167,7 @@ class _CreatePlanDialogState extends State<_CreatePlanDialog> {
                           'Shown as the recommended plan for new organizations.',
                           style: TextStyle(
                             color: AppColors.textSecondary,
-                            fontSize: 11.5,
+                            fontSize: 14,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -2261,7 +2255,7 @@ class _DialogField extends StatelessWidget {
           label,
           style: const TextStyle(
             color: AppColors.textPrimary,
-            fontSize: 12.5,
+            fontSize: 14,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -2275,7 +2269,7 @@ class _DialogField extends StatelessWidget {
             fillColor: Colors.white,
             hintStyle: const TextStyle(
               color: AppColors.textLightMuted,
-              fontSize: 12.5,
+              fontSize: 14,
               fontWeight: FontWeight.w500,
             ),
             border: OutlineInputBorder(
@@ -2326,7 +2320,7 @@ class _StatusDropdown extends StatelessWidget {
           label,
           style: const TextStyle(
             color: AppColors.textPrimary,
-            fontSize: 12,
+            fontSize: 14,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -2351,7 +2345,7 @@ class _StatusDropdown extends StatelessWidget {
               borderRadius: BorderRadius.circular(14),
               style: const TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 12.5,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
               onChanged: onChanged,
@@ -2373,7 +2367,7 @@ class _StatusDropdown extends StatelessWidget {
                       option,
                       style: TextStyle(
                         color: AppColors.textPrimary,
-                        fontSize: 12.5,
+                        fontSize: 14,
                         fontWeight: selected
                             ? FontWeight.w700
                             : FontWeight.w500,
@@ -2435,7 +2429,7 @@ class _OrganizationMobileCard extends StatelessWidget {
             row.phone == '—' ? 'Admin contact unavailable' : row.phone,
             style: const TextStyle(
               color: AppColors.textSecondary,
-              fontSize: 12.5,
+              fontSize: 14,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -2455,7 +2449,7 @@ class _OrganizationMobileCard extends StatelessWidget {
             'Created: ${row.created}',
             style: const TextStyle(
               color: AppColors.textLightMuted,
-              fontSize: 11.5,
+              fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -2483,7 +2477,7 @@ class _InfoChip extends StatelessWidget {
       child: RichText(
         text: TextSpan(
           style: const TextStyle(
-            fontSize: 11.5,
+            fontSize: 14,
             color: AppColors.textSecondary,
           ),
           children: [
@@ -2531,7 +2525,7 @@ class _PlatformAnalyticsPage extends StatelessWidget {
       label: 'Estimated MRR (Active Plans)',
       value: '₹599',
       icon: Icons.currency_rupee_rounded,
-      color: const Color(0xFFF59E0B),
+      color: Color(0xFFF59E0B),
     ),
   ];
 
@@ -2678,14 +2672,14 @@ class _PlatformAnalyticsPage extends StatelessWidget {
                 'Recently Signed Up',
                 style: TextStyle(
                   color: AppColors.textPrimary,
-                  fontSize: 15,
+                  fontSize: 14,
                   fontWeight: FontWeight.w800,
                 ),
               ),
               const SizedBox(height: 4),
               const Text(
                 'Newest organizations on the platform',
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
               ),
               const SizedBox(height: 14),
               SingleChildScrollView(
@@ -2751,7 +2745,7 @@ class _AnalyticsStatCard extends StatelessWidget {
                   stat.label,
                   style: const TextStyle(
                     color: AppColors.textSecondary,
-                    fontSize: 12,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -2760,7 +2754,7 @@ class _AnalyticsStatCard extends StatelessWidget {
                   stat.value,
                   style: const TextStyle(
                     color: AppColors.textPrimary,
-                    fontSize: 24,
+                    fontSize: 16,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -2819,7 +2813,7 @@ class _AnalyticsBreakdownCard extends StatelessWidget {
             title,
             style: const TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 15,
+              fontSize: 14,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -2874,7 +2868,7 @@ class _BreakdownRow extends StatelessWidget {
                     label,
                     style: TextStyle(
                       color: color,
-                      fontSize: 11.5,
+                      fontSize: 14,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -2886,7 +2880,7 @@ class _BreakdownRow extends StatelessWidget {
               label,
               style: const TextStyle(
                 color: AppColors.textSecondary,
-                fontSize: 12.5,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -2895,7 +2889,7 @@ class _BreakdownRow extends StatelessWidget {
             value,
             style: const TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 12.5,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -2912,7 +2906,7 @@ class _AnalyticsTableHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     const style = TextStyle(
       color: AppColors.textLightMuted,
-      fontSize: 11,
+      fontSize: 14,
       fontWeight: FontWeight.w800,
       letterSpacing: 0.9,
     );
@@ -2951,7 +2945,7 @@ class _AnalyticsTableRow extends StatelessWidget {
                 row.organization,
                 style: const TextStyle(
                   color: AppColors.textPrimary,
-                  fontSize: 12.5,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
                 overflow: TextOverflow.ellipsis,
@@ -2963,7 +2957,7 @@ class _AnalyticsTableRow extends StatelessWidget {
                 row.plan,
                 style: const TextStyle(
                   color: AppColors.textSecondary,
-                  fontSize: 12.5,
+                  fontSize: 14,
                 ),
               ),
             ),
@@ -2977,7 +2971,7 @@ class _AnalyticsTableRow extends StatelessWidget {
                 row.signedUp,
                 style: const TextStyle(
                   color: AppColors.textSecondary,
-                  fontSize: 12.5,
+                  fontSize: 14,
                 ),
               ),
             ),
@@ -3021,7 +3015,7 @@ class _TableHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     const style = TextStyle(
       color: AppColors.textLightMuted,
-      fontSize: 11,
+      fontSize: 14,
       fontWeight: FontWeight.w800,
       letterSpacing: 0.9,
     );
@@ -3065,7 +3059,7 @@ class _OrganizationRowItem extends StatelessWidget {
                 row.name,
                 style: const TextStyle(
                   color: AppColors.textPrimary,
-                  fontSize: 12.5,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
                 overflow: TextOverflow.ellipsis,
@@ -3090,7 +3084,7 @@ class _OrganizationRowItem extends StatelessWidget {
                 row.upgradeRequest,
                 style: const TextStyle(
                   color: AppColors.textSecondary,
-                  fontSize: 12.5,
+                  fontSize: 14,
                 ),
               ),
             ),
@@ -3100,7 +3094,7 @@ class _OrganizationRowItem extends StatelessWidget {
                 row.businessType,
                 style: const TextStyle(
                   color: AppColors.textSecondary,
-                  fontSize: 12.5,
+                  fontSize: 14,
                 ),
               ),
             ),
@@ -3110,7 +3104,7 @@ class _OrganizationRowItem extends StatelessWidget {
                 row.phone,
                 style: const TextStyle(
                   color: AppColors.textSecondary,
-                  fontSize: 12.5,
+                  fontSize: 14,
                 ),
               ),
             ),
@@ -3120,7 +3114,7 @@ class _OrganizationRowItem extends StatelessWidget {
                 row.created,
                 style: const TextStyle(
                   color: AppColors.textSecondary,
-                  fontSize: 12.5,
+                  fontSize: 14,
                 ),
               ),
             ),
@@ -3174,7 +3168,7 @@ class _OrganizationActionsMenu extends StatelessWidget {
             'View details',
             style: TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -3203,7 +3197,7 @@ class _DetailLine extends StatelessWidget {
               label,
               style: const TextStyle(
                 color: AppColors.textSecondary,
-                fontSize: 12,
+                fontSize: 14,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -3213,7 +3207,7 @@ class _DetailLine extends StatelessWidget {
               value,
               style: const TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 12.5,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -3320,7 +3314,7 @@ class _OrganizationDetailsPageState extends State<_OrganizationDetailsPage> {
                                 widget.row.name,
                                 style: const TextStyle(
                                   color: AppColors.textPrimary,
-                                  fontSize: 18,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.w800,
                                 ),
                               ),
@@ -3335,7 +3329,7 @@ class _OrganizationDetailsPageState extends State<_OrganizationDetailsPage> {
                             'Organization Details',
                             style: TextStyle(
                               color: AppColors.textSecondary,
-                              fontSize: 12.5,
+                              fontSize: 14,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -3511,7 +3505,7 @@ class _OrganizationDetailsPageState extends State<_OrganizationDetailsPage> {
                               'This organization has no active plan.',
                               style: TextStyle(
                                 color: AppColors.textSecondary,
-                                fontSize: 12.5,
+                                fontSize: 14,
                                 fontWeight: FontWeight.w500,
                               ),
                             );
@@ -3650,7 +3644,7 @@ class _OrganizationDetailsViewState extends State<_OrganizationDetailsView> {
                           widget.row.name,
                           style: const TextStyle(
                             color: AppColors.textPrimary,
-                            fontSize: 18,
+                            fontSize: 16,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
@@ -3662,7 +3656,7 @@ class _OrganizationDetailsViewState extends State<_OrganizationDetailsView> {
                       'Organization Details',
                       style: TextStyle(
                         color: AppColors.textSecondary,
-                        fontSize: 12.5,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -3820,7 +3814,7 @@ class _OrganizationDetailsViewState extends State<_OrganizationDetailsView> {
                 'This organization has no active plan.',
                 style: TextStyle(
                   color: AppColors.textSecondary,
-                  fontSize: 12.5,
+                  fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
               );
@@ -3893,7 +3887,7 @@ class _SummaryStatCard extends StatelessWidget {
                   label,
                   style: const TextStyle(
                     color: AppColors.textSecondary,
-                    fontSize: 12,
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -3902,7 +3896,7 @@ class _SummaryStatCard extends StatelessWidget {
                   value,
                   style: const TextStyle(
                     color: AppColors.textPrimary,
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -3962,7 +3956,7 @@ class _DetailSection extends StatelessWidget {
               subtitle!,
               style: const TextStyle(
                 color: AppColors.textSecondary,
-                fontSize: 12,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -4001,7 +3995,7 @@ class _Pill extends StatelessWidget {
           label,
           style: TextStyle(
             color: textColor,
-            fontSize: 11,
+            fontSize: 14,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -4058,7 +4052,7 @@ class _GrowthChartPainter extends CustomPainter {
           text: value.toString(),
           style: TextStyle(
             color: textColor,
-            fontSize: 10,
+            fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
         ),

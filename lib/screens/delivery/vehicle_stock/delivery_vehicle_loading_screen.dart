@@ -463,7 +463,7 @@ class _Metric extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: accent,
-                  fontSize: 22,
+                  fontSize: 16,
                   height: 1,
                   fontWeight: FontWeight.w900,
                 ),
@@ -475,7 +475,7 @@ class _Metric extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   color: Color(0xFFD8F5DF),
-                  fontSize: 11,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -604,7 +604,7 @@ class _ProductsCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<_LoadingProduct>(
-            value: selected,
+            initialValue: selected,
             isExpanded: true,
             icon: const Icon(Icons.keyboard_arrow_down_rounded),
             decoration: _inputDecoration(hint: 'Select a product'),
@@ -671,7 +671,7 @@ class _ProductsCard extends StatelessWidget {
                   'Products to Load (${items.length})',
                   style: const TextStyle(
                     color: AppColors.deliveryInk,
-                    fontSize: 17,
+                    fontSize: 16,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -763,7 +763,7 @@ class _LoadingItemRow extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: AppColors.textMuted,
-                    fontSize: 12,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -816,7 +816,7 @@ class _LoadingItemRow extends StatelessWidget {
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: AppColors.textMuted,
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -969,7 +969,7 @@ class _SummaryStat extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               color: AppColors.textMuted,
-              fontSize: 12,
+              fontSize: 14,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -984,7 +984,7 @@ class _SummaryStat extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Color(0xFF08733A),
-                    fontSize: 28,
+                    fontSize: 16,
                     height: 0.95,
                     fontWeight: FontWeight.w900,
                   ),
@@ -998,7 +998,7 @@ class _SummaryStat extends StatelessWidget {
                     suffix!,
                     style: const TextStyle(
                       color: AppColors.textMuted,
-                      fontSize: 12,
+                      fontSize: 14,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -1054,7 +1054,7 @@ class _FieldLabel extends StatelessWidget {
       overflow: TextOverflow.ellipsis,
       style: const TextStyle(
         color: Color(0xFF4B5668),
-        fontSize: 15,
+        fontSize: 14,
         fontWeight: FontWeight.w700,
       ),
     );
@@ -1100,7 +1100,7 @@ class _SelectField extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Color(0xFF4B5668),
-                    fontSize: 15,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -1142,7 +1142,7 @@ class _SectionHeader extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               color: AppColors.deliveryInk,
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.w900,
             ),
           ),
@@ -1204,7 +1204,7 @@ class _EmptyItems extends StatelessWidget {
         textAlign: TextAlign.center,
         style: TextStyle(
           color: AppColors.textMuted,
-          fontSize: 13,
+          fontSize: 14,
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -1278,7 +1278,7 @@ class _ErrorPanel extends StatelessWidget {
               'Vehicle loading could not load',
               style: TextStyle(
                 color: AppColors.deliveryInk,
-                fontSize: 15,
+                fontSize: 14,
                 fontWeight: FontWeight.w900,
               ),
             ),
@@ -1286,7 +1286,7 @@ class _ErrorPanel extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 14),
             ),
             const SizedBox(height: 14),
             OutlinedButton.icon(
@@ -1320,7 +1320,7 @@ class _InlineError extends StatelessWidget {
         message,
         style: const TextStyle(
           color: AppColors.deliveryRed,
-          fontSize: 12,
+          fontSize: 14,
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -1464,8 +1464,9 @@ class _LoadingProduct {
   IconData get fallbackIcon {
     final text = name.toLowerCase();
     if (text.contains('oil')) return Icons.opacity_rounded;
-    if (text.contains('rice') || text.contains('dal'))
+    if (text.contains('rice') || text.contains('dal')) {
       return Icons.grass_rounded;
+    }
     if (text.contains('sugar')) return Icons.inventory_2_outlined;
     return Icons.inventory_2_outlined;
   }

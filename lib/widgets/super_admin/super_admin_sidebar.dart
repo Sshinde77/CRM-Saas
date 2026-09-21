@@ -79,7 +79,7 @@ class SuperAdminSidebar extends StatelessWidget {
                           'SAAS CRM',
                           style: TextStyle(
                             color: AppColors.textPrimary,
-                            fontSize: 15,
+                            fontSize: 14,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
@@ -88,7 +88,7 @@ class SuperAdminSidebar extends StatelessWidget {
                           'Super Admin',
                           style: TextStyle(
                             color: AppColors.primary,
-                            fontSize: 12,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -105,7 +105,7 @@ class SuperAdminSidebar extends StatelessWidget {
                 'MAIN MENU',
                 style: TextStyle(
                   color: AppColors.textSecondary.withValues(alpha: 0.72),
-                  fontSize: 11,
+                  fontSize: 14,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 1.2,
                 ),
@@ -179,7 +179,7 @@ class SuperAdminSidebar extends StatelessWidget {
                                     color: selected
                                         ? AppColors.textPrimary
                                         : AppColors.textSecondary,
-                                    fontSize: 13.5,
+                                    fontSize: 14,
                                     fontWeight: selected
                                         ? FontWeight.w800
                                         : FontWeight.w600,

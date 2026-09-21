@@ -256,7 +256,7 @@ class _AdditionalInformationScreenState
       enabled: _isEditing,
       maxLines: maxLines,
       minLines: maxLines > 1 ? maxLines : 1,
-      style: const TextStyle(fontSize: 15, color: kAdditionalTitleColor),
+      style: const TextStyle(fontSize: 14, color: kAdditionalTitleColor),
       decoration: _fieldDecoration(),
     );
   }

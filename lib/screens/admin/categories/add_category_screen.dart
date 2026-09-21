@@ -156,7 +156,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
                                     'Create Category',
                                     style: TextStyle(
                                       color: Color(0xFF0F172A),
-                                      fontSize: 18,
+                                      fontSize: 16,
                                       fontWeight: FontWeight.w800,
                                     ),
                                   ),
@@ -165,7 +165,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
                                     'Add a new category and organize products with optional subcategories.',
                                     style: TextStyle(
                                       color: Color(0xFF64748B),
-                                      fontSize: 13.5,
+                                      fontSize: 14,
                                     ),
                                   ),
                                 ],
@@ -242,7 +242,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
           'Catalog / Categories / Create Category',
           style: TextStyle(
             color: Color(0xFF94A3B8),
-            fontSize: 13.5,
+            fontSize: 14,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -361,7 +361,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
             const SizedBox(height: 6),
             const Text(
               'Press Enter or click Add to include a subcategory.',
-              style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12.5),
+              style: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
             ),
             const SizedBox(height: 10),
             compact
@@ -533,7 +533,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Color(0xFF94A3B8),
-                            fontSize: 12.5,
+                            fontSize: 14,
                           ),
                         ),
                       ],
@@ -549,7 +549,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
               _selectedImageName!,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: Color(0xFF64748B), fontSize: 12.5),
+              style: const TextStyle(color: Color(0xFF64748B), fontSize: 14),
             ),
           ),
         ],
@@ -600,7 +600,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
             borderRadius: BorderRadius.circular(999),
           ),
           textStyle: const TextStyle(
-            fontSize: 12.5,
+            fontSize: 14,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -668,7 +668,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
         children: [
           Text(
             label,
-            style: const TextStyle(color: Color(0xFF334155), fontSize: 13.5),
+            style: const TextStyle(color: Color(0xFF334155), fontSize: 14),
           ),
           const Spacer(),
           if (label == 'Status')
@@ -682,7 +682,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
                 value,
                 style: const TextStyle(
                   color: Color(0xFFB45309),
-                  fontSize: 12.5,
+                  fontSize: 14,
                 ),
               ),
             )
@@ -691,7 +691,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
               value,
               style: const TextStyle(
                 color: Color(0xFF0F172A),
-                fontSize: 13.5,
+                fontSize: 14,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -717,7 +717,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
             label,
             style: const TextStyle(
               color: Color(0xFF111827),
-              fontSize: 13.5,
+              fontSize: 14,
               fontWeight: FontWeight.w500,
             ),
           ),

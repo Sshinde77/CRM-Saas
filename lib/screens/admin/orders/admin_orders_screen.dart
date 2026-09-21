@@ -758,7 +758,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
             'Orders',
             style: TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 20,
+              fontSize: 16,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -782,7 +782,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                   'S',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 10,
+                    fontSize: 14,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -795,7 +795,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                     'Sushil',
                     style: TextStyle(
                       color: AppColors.textPrimary,
-                      fontSize: 12.5,
+                      fontSize: 14,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -804,7 +804,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                     'Admin',
                     style: TextStyle(
                       color: Color(0xFF0B4A06),
-                      fontSize: 10.5,
+                      fontSize: 14,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -840,7 +840,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
             borderRadius: BorderRadius.circular(999),
           ),
           textStyle: const TextStyle(
-            fontSize: 11.5,
+            fontSize: 14,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -889,7 +889,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                     borderRadius: BorderRadius.circular(999),
                   ),
                   textStyle: const TextStyle(
-                    fontSize: 11.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -930,7 +930,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 textStyle: const TextStyle(
-                  fontSize: 11.5,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -1122,7 +1122,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
             'Showing $start-$end of $_totalItems',
             style: const TextStyle(
               color: AppColors.textSecondary,
-              fontSize: 11.5,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -1138,7 +1138,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
             'Page $_currentPage / $totalPages',
             style: const TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 11.5,
+              fontSize: 14,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -1176,7 +1176,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
               '$_pageSize / page',
               style: const TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 11,
+                fontSize: 14,
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -1245,7 +1245,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                       color: selected
                           ? const Color(0xFF0B4A06)
                           : AppColors.textSecondary,
-                      fontSize: 12,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -1350,7 +1350,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
           setState(() => _currentPage = 1);
           _loadOrders();
         },
-        style: const TextStyle(color: AppColors.textPrimary, fontSize: 12),
+        style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
         cursorColor: const Color(0xFF0B4A06),
         decoration: InputDecoration(
           filled: true,
@@ -1361,7 +1361,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
             size: 18,
           ),
           hintText: 'Search order # or customer',
-          hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
+          hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
@@ -1399,7 +1399,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
               hint,
               style: const TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 12,
+                fontSize: 14,
               ),
             ),
           ),
@@ -1521,7 +1521,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                 _selectedPayment,
                 style: const TextStyle(
                   color: AppColors.textPrimary,
-                  fontSize: 12,
+                  fontSize: 14,
                 ),
               ),
             ),
@@ -1557,7 +1557,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                 color: selectedDate == null
                     ? AppColors.textLightMuted
                     : AppColors.textPrimary,
-                fontSize: 12,
+                fontSize: 14,
               ),
             ),
           ),
@@ -1582,7 +1582,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
       label,
       style: const TextStyle(
         color: Color(0xFF94A3B8),
-        fontSize: 11,
+        fontSize: 14,
         fontWeight: FontWeight.w800,
         letterSpacing: 0.8,
       ),
@@ -1660,7 +1660,7 @@ class _DesktopOrderRow extends StatelessWidget {
                 record.number,
                 style: const TextStyle(
                   color: AppColors.textPrimary,
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -1671,7 +1671,7 @@ class _DesktopOrderRow extends StatelessWidget {
                 record.customer,
                 style: const TextStyle(
                   color: AppColors.textPrimary,
-                  fontSize: 12,
+                  fontSize: 14,
                 ),
               ),
             ),
@@ -1681,7 +1681,7 @@ class _DesktopOrderRow extends StatelessWidget {
                 record.date,
                 style: const TextStyle(
                   color: AppColors.textPrimary,
-                  fontSize: 12,
+                  fontSize: 14,
                 ),
               ),
             ),
@@ -1691,7 +1691,7 @@ class _DesktopOrderRow extends StatelessWidget {
                 record.items,
                 style: const TextStyle(
                   color: AppColors.textPrimary,
-                  fontSize: 12,
+                  fontSize: 14,
                 ),
               ),
             ),
@@ -1701,7 +1701,7 @@ class _DesktopOrderRow extends StatelessWidget {
                 record.total,
                 style: const TextStyle(
                   color: AppColors.textPrimary,
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -1728,7 +1728,7 @@ class _DesktopOrderRow extends StatelessWidget {
                 record.sourceLabel,
                 style: const TextStyle(
                   color: AppColors.textPrimary,
-                  fontSize: 12,
+                  fontSize: 14,
                 ),
               ),
             ),
@@ -1738,7 +1738,7 @@ class _DesktopOrderRow extends StatelessWidget {
                 record.deliveryPartner,
                 style: const TextStyle(
                   color: AppColors.textPrimary,
-                  fontSize: 12,
+                  fontSize: 14,
                 ),
               ),
             ),
@@ -1794,7 +1794,7 @@ class _OrderMobileCard extends StatelessWidget {
                     record.number,
                     style: const TextStyle(
                       color: AppColors.textPrimary,
-                      fontSize: 12.5,
+                      fontSize: 14,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -1812,7 +1812,7 @@ class _OrderMobileCard extends StatelessWidget {
               record.customer,
               style: const TextStyle(
                 color: AppColors.textSecondary,
-                fontSize: 11.5,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -1839,7 +1839,7 @@ class _OrderMobileCard extends StatelessWidget {
                     textAlign: TextAlign.right,
                     style: const TextStyle(
                       color: AppColors.textPrimary,
-                      fontSize: 11.5,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -1860,7 +1860,7 @@ class _OrderMobileCard extends StatelessWidget {
           label,
           style: const TextStyle(
             color: Color(0xFF94A3B8),
-            fontSize: 10,
+            fontSize: 14,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -1869,7 +1869,7 @@ class _OrderMobileCard extends StatelessWidget {
           value,
           style: const TextStyle(
             color: AppColors.textPrimary,
-            fontSize: 11.5,
+            fontSize: 14,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -1901,7 +1901,7 @@ class _StatusChip extends StatelessWidget {
         label,
         style: TextStyle(
           color: foreground,
-          fontSize: 10.5,
+          fontSize: 14,
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -1942,7 +1942,7 @@ class _OrdersStatePanel extends StatelessWidget {
             title,
             style: const TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 12.5,
+              fontSize: 14,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -1953,7 +1953,7 @@ class _OrdersStatePanel extends StatelessWidget {
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: AppColors.textSecondary,
-                fontSize: 11.5,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
             ),

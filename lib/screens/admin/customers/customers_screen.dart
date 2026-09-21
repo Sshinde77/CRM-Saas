@@ -286,7 +286,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
                             'Customer Filters',
                             style: TextStyle(
                               color: textPrimary,
-                              fontSize: 18,
+                              fontSize: 16,
                               fontWeight: FontWeight.w800,
                             ),
                           ),
@@ -482,7 +482,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
                         ),
                         style: const TextStyle(
                           color: textPrimary,
-                          fontSize: 13,
+                          fontSize: 14,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -505,7 +505,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
             'Customers',
             style: TextStyle(
               color: textPrimary,
-              fontSize: 19,
+              fontSize: 16,
               height: 1,
               fontWeight: FontWeight.w800,
               letterSpacing: 0,
@@ -527,7 +527,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
               borderRadius: BorderRadius.circular(8),
             ),
             textStyle: const TextStyle(
-              fontSize: 12,
+              fontSize: 14,
               fontWeight: FontWeight.w800,
               letterSpacing: 0,
             ),
@@ -548,14 +548,14 @@ class _CustomersScreenState extends State<CustomersScreen> {
               onChanged: _scheduleSearchReload,
               style: const TextStyle(
                 color: textPrimary,
-                fontSize: 12,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
               decoration: InputDecoration(
                 hintText: 'Search name, business, phone, email...',
                 hintStyle: const TextStyle(
                   color: textSecondary,
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
                 prefixIcon: const Padding(
@@ -662,7 +662,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
         label,
         style: const TextStyle(
           color: AppColors.textPrimary,
-          fontSize: 12,
+          fontSize: 14,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -713,7 +713,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               color: textPrimary,
-                              fontSize: 12.5,
+                              fontSize: 14,
                               fontWeight: FontWeight.w800,
                               letterSpacing: 0,
                             ),
@@ -849,7 +849,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               color: textPrimary,
-              fontSize: 10.8,
+              fontSize: 14,
               fontWeight: FontWeight.w500,
               letterSpacing: 0,
             ),
@@ -865,7 +865,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
     return Tooltip(
       message: hasPhone ? 'Call customer' : 'Phone number unavailable',
       child: InkWell(
-        onTap: hasPhone ? () => _callCustomer(phone!) : null,
+        onTap: hasPhone ? () => _callCustomer(phone) : null,
         borderRadius: BorderRadius.circular(8),
         child: Container(
           padding: const EdgeInsets.all(4),
@@ -1057,7 +1057,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
               color: active
                   ? AppColors.statusActiveText
                   : AppColors.statusInactiveText,
-              fontSize: 10.8,
+              fontSize: 14,
               fontWeight: FontWeight.w800,
               letterSpacing: 0,
             ),
@@ -1119,7 +1119,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
               'Could not load customers',
               style: TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 18,
+                fontSize: 16,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -1146,7 +1146,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
       child: Center(
         child: Text(
           'No customers match your search.',
-          style: TextStyle(color: textSecondary, fontSize: 15),
+          style: TextStyle(color: textSecondary, fontSize: 14),
         ),
       ),
     );
@@ -1164,7 +1164,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
           label,
           style: const TextStyle(
             color: textPrimary,
-            fontSize: 13,
+            fontSize: 14,
             fontWeight: FontWeight.w700,
           ),
         ),

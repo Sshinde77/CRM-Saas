@@ -517,7 +517,7 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
                           'No stock items match the current filters.',
                           style: TextStyle(
                             color: AppColors.textSecondary,
-                            fontSize: 13,
+                            fontSize: 14,
                           ),
                         ),
                       ),
@@ -557,7 +557,7 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
               cursorColor: AppColors.primary,
               style: const TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
               decoration: const InputDecoration(
@@ -566,7 +566,7 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
                 hintText: 'Search products, brands, SKU',
                 hintStyle: TextStyle(
                   color: AppColors.textLightMuted,
-                  fontSize: 12.5,
+                  fontSize: 14,
                 ),
                 filled: true,
                 fillColor: Colors.white,
@@ -604,7 +604,7 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: AppColors.textPrimary,
-                      fontSize: 12.5,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -654,7 +654,7 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: AppColors.textPrimary,
-                      fontSize: 12.5,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -673,7 +673,7 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
   Widget _buildHeaderRow() {
     const labelStyle = TextStyle(
       color: Color(0xFF8F9AB0),
-      fontSize: 11,
+      fontSize: 14,
       fontWeight: FontWeight.w800,
       letterSpacing: 1.1,
     );
@@ -733,7 +733,7 @@ class _SummaryCard extends StatelessWidget {
                   title,
                   style: const TextStyle(
                     color: AppColors.textSecondary,
-                    fontSize: 13,
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -754,7 +754,7 @@ class _SummaryCard extends StatelessWidget {
             value,
             style: const TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 24,
+              fontSize: 16,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -814,7 +814,7 @@ class _StockTableRow extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: AppColors.textPrimary,
-                          fontSize: 13.5,
+                          fontSize: 14,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -826,7 +826,7 @@ class _StockTableRow extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             color: AppColors.textSecondary,
-                            fontSize: 11,
+                            fontSize: 14,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -845,7 +845,7 @@ class _StockTableRow extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 color: AppColors.primary,
-                fontSize: 12,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -856,7 +856,7 @@ class _StockTableRow extends StatelessWidget {
               '${item.totalInventory}',
               style: const TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -867,7 +867,7 @@ class _StockTableRow extends StatelessWidget {
               '${item.variants}',
               style: const TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -878,7 +878,7 @@ class _StockTableRow extends StatelessWidget {
               '${item.stock}',
               style: TextStyle(
                 color: item.stock <= 0 ? AppColors.red : AppColors.textPrimary,
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -934,7 +934,7 @@ class _StatusPill extends StatelessWidget {
         label,
         style: TextStyle(
           color: color,
-          fontSize: 11,
+          fontSize: 14,
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -975,7 +975,7 @@ class _StockStatePanel extends StatelessWidget {
             title,
             style: const TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -986,7 +986,7 @@ class _StockStatePanel extends StatelessWidget {
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: AppColors.textSecondary,
-                fontSize: 12,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
             ),

@@ -68,7 +68,7 @@ class EndOfDayErrorBanner extends StatelessWidget {
               message,
               style: const TextStyle(
                 color: Color(0xFFB00000),
-                fontSize: 12,
+                fontSize: 14,
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -158,7 +158,7 @@ class VarianceBadge extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
           color: color,
-          fontSize: 10.5,
+          fontSize: 14,
           fontWeight: FontWeight.w900,
         ),
       ),

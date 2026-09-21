@@ -478,7 +478,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                 onChanged: (_) => setState(() {}),
                 style: const TextStyle(
                   color: AppColors.textPrimary,
-                  fontSize: 11.5,
+                  fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
                 decoration: InputDecoration(
@@ -498,7 +498,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                   hintText: 'Search leads by name, mobile or source...',
                   hintStyle: const TextStyle(
                     color: AppColors.textLightMuted,
-                    fontSize: 11,
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -555,7 +555,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                         '${_activeFilterCount()}',
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 8,
+                          fontSize: 14,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
@@ -690,7 +690,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: AppColors.textMuted,
-                fontSize: 10,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -762,7 +762,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   color: AppColors.textPrimary,
-                  fontSize: 13,
+                  fontSize: 14,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.4,
                 ),
@@ -774,7 +774,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   color: AppColors.textMuted,
-                  fontSize: 10,
+                  fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -813,7 +813,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 color: AppColors.textMuted,
-                fontSize: 9,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -830,7 +830,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 color: AppColors.textMuted,
-                fontSize: 9,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -875,7 +875,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
           initials,
           style: const TextStyle(
             color: AppColors.textPrimary,
-            fontSize: 13,
+            fontSize: 14,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -916,7 +916,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
         label,
         style: TextStyle(
           color: foreground,
-          fontSize: 9,
+          fontSize: 14,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -990,7 +990,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
               label,
               style: TextStyle(
                 color: foreground,
-                fontSize: 12,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -1069,7 +1069,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                   color: data.selected
                       ? AppColors.primary
                       : AppColors.textSecondary,
-                  fontSize: 10,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1285,7 +1285,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                       'Lead Filters',
                       style: TextStyle(
                         color: AppColors.textPrimary,
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -1294,7 +1294,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                       'Refine the lead list with team, source and status.',
                       style: TextStyle(
                         color: AppColors.textMuted,
-                        fontSize: 12,
+                        fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
                     ),

@@ -183,7 +183,7 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                                 'Purchase Invoices',
                                 style: TextStyle(
                                   color: textPrimary,
-                                  fontSize: 24,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.w800,
                                 ),
                               ),
@@ -192,7 +192,7 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                                 'Manage all your purchase invoices',
                                 style: TextStyle(
                                   color: textSecondary,
-                                  fontSize: 13,
+                                  fontSize: 14,
                                 ),
                               ),
                             ],
@@ -227,7 +227,7 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                             'No purchase invoices yet.',
                             style: TextStyle(
                               color: textSecondary,
-                              fontSize: 13,
+                              fontSize: 14,
                             ),
                           ),
                         ),
@@ -296,7 +296,7 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                       invoice.poNumber,
                       style: const TextStyle(
                         color: textPrimary,
-                        fontSize: 15.5,
+                        fontSize: 14,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -305,7 +305,7 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                       _formatDate(invoice.date),
                       style: const TextStyle(
                         color: textSecondary,
-                        fontSize: 12.5,
+                        fontSize: 14,
                       ),
                     ),
                   ],
@@ -333,7 +333,7 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                   invoice.supplier,
                   style: const TextStyle(
                     color: textPrimary,
-                    fontSize: 13,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -360,7 +360,7 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                         'Total Amount',
                         style: TextStyle(
                           color: textSecondary,
-                          fontSize: 11.5,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -395,7 +395,7 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                         'Items',
                         style: TextStyle(
                           color: textSecondary,
-                          fontSize: 11.5,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -645,7 +645,7 @@ class _PurchaseInvoiceFormDialogState
                           : 'Add Purchase Invoice',
                       style: const TextStyle(
                         color: textPrimary,
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -769,7 +769,7 @@ class _PurchaseInvoiceFormDialogState
                             'Items',
                             style: TextStyle(
                               color: textPrimary,
-                              fontSize: 14.5,
+                              fontSize: 14,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -798,7 +798,7 @@ class _PurchaseInvoiceFormDialogState
                           _itemsError!,
                           style: const TextStyle(
                             color: AppColors.red,
-                            fontSize: 12,
+                            fontSize: 14,
                           ),
                         ),
                       ),
@@ -823,7 +823,7 @@ class _PurchaseInvoiceFormDialogState
                             'Total Amount',
                             style: TextStyle(
                               color: textPrimary,
-                              fontSize: 13.5,
+                              fontSize: 14,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -908,7 +908,7 @@ class _PurchaseInvoiceFormDialogState
                     controller: row.nameController,
                     onChanged: (_) => setState(() {}),
                     decoration: _decoration(hint: 'Item name'),
-                    style: const TextStyle(fontSize: 13.5),
+                    style: const TextStyle(fontSize: 14),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -935,7 +935,7 @@ class _PurchaseInvoiceFormDialogState
                     keyboardType: TextInputType.number,
                     onChanged: (_) => setState(() {}),
                     decoration: _decoration(hint: 'Qty'),
-                    style: const TextStyle(fontSize: 13.5),
+                    style: const TextStyle(fontSize: 14),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -947,7 +947,7 @@ class _PurchaseInvoiceFormDialogState
                     ),
                     onChanged: (_) => setState(() {}),
                     decoration: _decoration(hint: 'Unit Price'),
-                    style: const TextStyle(fontSize: 13.5),
+                    style: const TextStyle(fontSize: 14),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -958,7 +958,7 @@ class _PurchaseInvoiceFormDialogState
                     textAlign: TextAlign.right,
                     style: const TextStyle(
                       color: textPrimary,
-                      fontSize: 13,
+                      fontSize: 14,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -978,7 +978,7 @@ class _PurchaseInvoiceFormDialogState
         label,
         style: const TextStyle(
           color: textPrimary,
-          fontSize: 13.5,
+          fontSize: 14,
           fontWeight: FontWeight.w600,
         ),
       ),

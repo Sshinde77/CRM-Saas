@@ -380,7 +380,7 @@ class _BusinessSettingsScreenState extends State<BusinessSettingsScreen> {
       enabled: _isEditing,
       maxLines: maxLines,
       minLines: maxLines > 1 ? maxLines : 1,
-      style: const TextStyle(fontSize: 15, color: kBusinessTitleColor),
+      style: const TextStyle(fontSize: 14, color: kBusinessTitleColor),
       decoration: _fieldDecoration(hintText: hintText),
     );
   }
@@ -400,7 +400,7 @@ class _BusinessSettingsScreenState extends State<BusinessSettingsScreen> {
       hint: hintText == null
           ? null
           : Text(hintText, style: const TextStyle(color: Color(0xFFB5BCC6))),
-      style: const TextStyle(fontSize: 15, color: kBusinessTitleColor),
+      style: const TextStyle(fontSize: 14, color: kBusinessTitleColor),
       decoration: _fieldDecoration(),
       dropdownColor: Colors.white,
       borderRadius: BorderRadius.circular(16),
@@ -411,7 +411,7 @@ class _BusinessSettingsScreenState extends State<BusinessSettingsScreen> {
               child: Text(
                 '$item',
                 style: const TextStyle(
-                  fontSize: 15,
+                  fontSize: 14,
                   color: kBusinessTitleColor,
                   fontWeight: FontWeight.w500,
                 ),
@@ -427,7 +427,7 @@ class _BusinessSettingsScreenState extends State<BusinessSettingsScreen> {
       filled: true,
       fillColor: kBusinessFieldBg,
       hintText: hintText,
-      hintStyle: const TextStyle(color: Color(0xFFB5BCC6), fontSize: 15),
+      hintStyle: const TextStyle(color: Color(0xFFB5BCC6), fontSize: 14),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(18),

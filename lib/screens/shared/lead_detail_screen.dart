@@ -269,7 +269,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
                     'Update Lead Status',
                     style: TextStyle(
                       color: AppColors.textPrimary,
-                      fontSize: 18,
+                      fontSize: 16,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -1015,7 +1015,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
                 lead.displayName,
                 style: const TextStyle(
                   color: AppColors.textPrimary,
-                  fontSize: 20,
+                  fontSize: 16,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.4,
                 ),
@@ -1025,7 +1025,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
                 lead.companyName,
                 style: const TextStyle(
                   color: AppColors.textMuted,
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1067,7 +1067,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
             'Quick Actions',
             style: TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 12,
+              fontSize: 14,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -1121,7 +1121,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
             'Created ${_formatDate(lead.createdAt)}',
             style: const TextStyle(
               color: AppColors.textMuted,
-              fontSize: 11,
+              fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -1130,7 +1130,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
             'Status stays visible and actions remain reachable on small screens.',
             style: const TextStyle(
               color: AppColors.textLightMuted,
-              fontSize: 10.5,
+              fontSize: 14,
               fontWeight: FontWeight.w500,
               height: 1.35,
             ),
@@ -1253,7 +1253,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
                 'This lead was marked Lost.',
                 style: TextStyle(
                   color: Color(0xFFB91C1C),
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -1320,7 +1320,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
           'Interested Products',
           style: TextStyle(
             color: AppColors.textMuted,
-            fontSize: 10,
+            fontSize: 14,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -1330,7 +1330,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
                 '-',
                 style: TextStyle(
                   color: AppColors.textSecondary,
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                 ),
               )
@@ -1343,7 +1343,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
                       label: Text(product),
                       labelStyle: const TextStyle(
                         color: AppColors.primary900,
-                        fontSize: 11,
+                        fontSize: 14,
                         fontWeight: FontWeight.w800,
                       ),
                       backgroundColor: AppColors.activeMenuBg,
@@ -1484,12 +1484,12 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
                   title,
                   style: const TextStyle(
                     color: AppColors.textPrimary,
-                    fontSize: 13,
+                    fontSize: 14,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
               ),
-              if (trailing != null) trailing,
+              ?trailing,
             ],
           ),
           const SizedBox(height: 3),
@@ -1497,7 +1497,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
             subtitle,
             style: const TextStyle(
               color: AppColors.textMuted,
-              fontSize: 10.5,
+              fontSize: 14,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -1543,7 +1543,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
                   label,
                   style: const TextStyle(
                     color: AppColors.textMuted,
-                    fontSize: 10,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -1552,7 +1552,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
                   value.trim().isEmpty ? '-' : value,
                   style: const TextStyle(
                     color: AppColors.textPrimary,
-                    fontSize: 12,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                     height: 1.3,
                   ),
@@ -1605,7 +1605,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
                   label,
                   style: const TextStyle(
                     color: AppColors.textMuted,
-                    fontSize: 9.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -1616,7 +1616,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: AppColors.textPrimary,
-                    fontSize: 11.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -1662,7 +1662,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
                   color: onTap == null
                       ? AppColors.textLightMuted
                       : AppColors.textPrimary,
-                  fontSize: 11,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -1690,7 +1690,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
             value,
             style: const TextStyle(
               color: AppColors.textSecondary,
-              fontSize: 10.5,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -1735,7 +1735,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
         status.trim().isEmpty ? 'New' : status,
         style: TextStyle(
           color: foreground,
-          fontSize: 11,
+          fontSize: 14,
           fontWeight: FontWeight.w800,
         ),
       ),
@@ -1760,7 +1760,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
           lead.initials,
           style: const TextStyle(
             color: AppColors.textPrimary,
-            fontSize: 18,
+            fontSize: 16,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -1816,7 +1816,7 @@ class _LeadDetailErrorState extends StatelessWidget {
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: AppColors.textSecondary,
-                fontSize: 12.5,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
                 height: 1.45,
               ),
@@ -1916,7 +1916,7 @@ class _JourneyStep extends StatelessWidget {
       label,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w700),
+      style: TextStyle(color: color, fontSize: 14, fontWeight: FontWeight.w700),
     );
   }
 }
@@ -1971,7 +1971,7 @@ class _BottomActionButton extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: foreground,
-                    fontSize: 11.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -2678,7 +2678,7 @@ class _SheetShell extends StatelessWidget {
                           title,
                           style: const TextStyle(
                             color: AppColors.textPrimary,
-                            fontSize: 18,
+                            fontSize: 16,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
@@ -2802,7 +2802,7 @@ class _SheetFieldLabel extends StatelessWidget {
           label,
           style: const TextStyle(
             color: AppColors.textPrimary,
-            fontSize: 12,
+            fontSize: 14,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -2814,7 +2814,7 @@ class _SheetFieldLabel extends StatelessWidget {
             errorText!,
             style: const TextStyle(
               color: Color(0xFFDC2626),
-              fontSize: 11,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -2863,7 +2863,7 @@ class _DatePickerTile extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: AppColors.textPrimary,
-                    fontSize: 12,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -2920,7 +2920,7 @@ class _ActivityGroupTitle extends StatelessWidget {
       text,
       style: const TextStyle(
         color: AppColors.textPrimary,
-        fontSize: 12,
+        fontSize: 14,
         fontWeight: FontWeight.w800,
       ),
     );
@@ -3009,7 +3009,7 @@ class _ActivityRecordCard extends StatelessWidget {
                         title,
                         style: const TextStyle(
                           color: AppColors.textPrimary,
-                          fontSize: 12,
+                          fontSize: 14,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
@@ -3025,7 +3025,7 @@ class _ActivityRecordCard extends StatelessWidget {
                       line,
                       style: const TextStyle(
                         color: AppColors.textMuted,
-                        fontSize: 11,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -3056,7 +3056,7 @@ class _MiniBadge extends StatelessWidget {
         text,
         style: const TextStyle(
           color: AppColors.primary900,
-          fontSize: 10,
+          fontSize: 14,
           fontWeight: FontWeight.w800,
         ),
       ),
@@ -3097,7 +3097,7 @@ class _NoteCard extends StatelessWidget {
                     note.timestamp,
                     style: const TextStyle(
                       color: AppColors.textMuted,
-                      fontSize: 10,
+                      fontSize: 14,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -3107,7 +3107,7 @@ class _NoteCard extends StatelessWidget {
                   note.text,
                   style: const TextStyle(
                     color: AppColors.textSecondary,
-                    fontSize: 12,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                     height: 1.45,
                   ),
@@ -3163,7 +3163,7 @@ class _TimelineTile extends StatelessWidget {
                         event.title,
                         style: const TextStyle(
                           color: AppColors.textPrimary,
-                          fontSize: 12,
+                          fontSize: 14,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
@@ -3173,7 +3173,7 @@ class _TimelineTile extends StatelessWidget {
                           event.subtitle,
                           style: const TextStyle(
                             color: AppColors.textMuted,
-                            fontSize: 11,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -3186,7 +3186,7 @@ class _TimelineTile extends StatelessWidget {
                   event.time,
                   style: const TextStyle(
                     color: AppColors.textLightMuted,
-                    fontSize: 10.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -3257,7 +3257,7 @@ class _EmptyInlineState extends StatelessWidget {
               text,
               style: const TextStyle(
                 color: AppColors.textMuted,
-                fontSize: 12,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -3484,7 +3484,7 @@ List<_ParsedNote> _parseNotes(String value) {
 InputDecoration _sheetInputDecoration(String hint, {String? errorText}) {
   return InputDecoration(
     hintText: hint,
-    hintStyle: const TextStyle(color: AppColors.textLightMuted, fontSize: 12),
+    hintStyle: const TextStyle(color: AppColors.textLightMuted, fontSize: 14),
     errorText: null,
     filled: true,
     fillColor: AppColors.surfaceSoft,

@@ -245,7 +245,7 @@ class _OnlinePresenceScreenState extends State<OnlinePresenceScreen> {
       controller: controller,
       keyboardType: keyboardType,
       enabled: _isEditing,
-      style: const TextStyle(fontSize: 15, color: kOnlinePresenceTitleColor),
+      style: const TextStyle(fontSize: 14, color: kOnlinePresenceTitleColor),
       decoration: _fieldDecoration(),
     );
   }

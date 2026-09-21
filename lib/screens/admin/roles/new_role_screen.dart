@@ -203,7 +203,7 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
                                                   'Create a new role',
                                                   style: TextStyle(
                                                     color: Color(0xFF111827),
-                                                    fontSize: 18,
+                                                    fontSize: 16,
                                                     fontWeight: FontWeight.w800,
                                                   ),
                                                 ),
@@ -212,7 +212,7 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
                                                   'Configure module-level permissions for staff assigned to this role.',
                                                   style: TextStyle(
                                                     color: Color(0xFF64748B),
-                                                    fontSize: 13.5,
+                                                    fontSize: 14,
                                                   ),
                                                 ),
                                               ],
@@ -252,7 +252,7 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
                                               'Create a new role',
                                               style: TextStyle(
                                                 color: Color(0xFF111827),
-                                                fontSize: 18,
+                                                fontSize: 16,
                                                 fontWeight: FontWeight.w800,
                                               ),
                                             ),
@@ -261,7 +261,7 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
                                               'Configure module-level permissions for staff assigned to this role.',
                                               style: TextStyle(
                                                 color: Color(0xFF64748B),
-                                                fontSize: 13.5,
+                                                fontSize: 14,
                                               ),
                                             ),
                                           ],
@@ -302,7 +302,7 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
                                   'Permissions',
                                   style: TextStyle(
                                     color: Color(0xFF111827),
-                                    fontSize: 15,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.w800,
                                   ),
                                 ),
@@ -485,7 +485,7 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
           label,
           style: const TextStyle(
             color: Color(0xFF111827),
-            fontSize: 13,
+            fontSize: 14,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -497,7 +497,7 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
             hintText: hintText,
             hintStyle: const TextStyle(
               color: Color(0xFF94A3B8),
-              fontSize: 13.5,
+              fontSize: 14,
             ),
             filled: true,
             fillColor: const Color(0xFFF8FAFC),
@@ -535,7 +535,7 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
           label,
           style: const TextStyle(
             color: Color(0xFF111827),
-            fontSize: 13,
+            fontSize: 14,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -609,7 +609,7 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
               'MODULES',
               style: TextStyle(
                 color: Color(0xFF94A3B8),
-                fontSize: 11,
+                fontSize: 14,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 0.9,
               ),
@@ -622,7 +622,7 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
                 'ALL',
                 style: TextStyle(
                   color: Color(0xFF94A3B8),
-                  fontSize: 11,
+                  fontSize: 14,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 0.9,
                 ),
@@ -640,7 +640,7 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Color(0xFF94A3B8),
-                      fontSize: 10.5,
+                      fontSize: 14,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 0.8,
                     ),
@@ -672,7 +672,7 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
               module,
               style: const TextStyle(
                 color: Color(0xFF111827),
-                fontSize: 12.5,
+                fontSize: 14,
                 fontWeight: FontWeight.w700,
               ),
             ),

@@ -411,7 +411,7 @@ class _BillingScreenState extends State<BillingScreen> {
     return TextField(
       controller: controller,
       enabled: _isEditing,
-      style: const TextStyle(fontSize: 15, color: _titleColor),
+      style: const TextStyle(fontSize: 14, color: _titleColor),
       decoration: _fieldDecoration(),
     );
   }
@@ -431,7 +431,7 @@ class _BillingScreenState extends State<BillingScreen> {
       hint: hintText == null
           ? null
           : Text(hintText, style: const TextStyle(color: Color(0xFFB5BCC6))),
-      style: const TextStyle(fontSize: 15, color: _titleColor),
+      style: const TextStyle(fontSize: 14, color: _titleColor),
       decoration: _fieldDecoration(),
       dropdownColor: Colors.white,
       borderRadius: BorderRadius.circular(16),
@@ -442,7 +442,7 @@ class _BillingScreenState extends State<BillingScreen> {
               child: Text(
                 '$item',
                 style: const TextStyle(
-                  fontSize: 15,
+                  fontSize: 14,
                   color: _titleColor,
                   fontWeight: FontWeight.w500,
                 ),
@@ -494,7 +494,7 @@ class _SectionShell extends StatelessWidget {
           title,
           style: const TextStyle(
             color: _BillingScreenState._titleColor,
-            fontSize: 17,
+            fontSize: 16,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -503,7 +503,7 @@ class _SectionShell extends StatelessWidget {
           subtitle,
           style: const TextStyle(
             color: _BillingScreenState._mutedColor,
-            fontSize: 13,
+            fontSize: 14,
           ),
         ),
         const SizedBox(height: 14),
@@ -557,7 +557,7 @@ class _QrUploadCard extends StatelessWidget {
                     style: TextStyle(
                       color: Color(0xFF98A2B3),
                       fontWeight: FontWeight.w700,
-                      fontSize: 15,
+                      fontSize: 14,
                     ),
                   )
                 : Image.memory(qrBytes!, fit: BoxFit.cover),
@@ -572,7 +572,7 @@ class _QrUploadCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: _BillingScreenState._titleColor,
-                  fontSize: 15,
+                  fontSize: 14,
                   height: 1.28,
                   fontWeight: FontWeight.w800,
                 ),
@@ -582,7 +582,7 @@ class _QrUploadCard extends StatelessWidget {
                 'image/png,image/jpeg',
                 style: TextStyle(
                   color: _BillingScreenState._mutedColor,
-                  fontSize: 12.5,
+                  fontSize: 14,
                 ),
               ),
               const SizedBox(height: 14),
@@ -606,7 +606,7 @@ class _QrUploadCard extends StatelessWidget {
                         vertical: 12,
                       ),
                       textStyle: const TextStyle(
-                        fontSize: 13.5,
+                        fontSize: 14,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -628,7 +628,7 @@ class _QrUploadCard extends StatelessWidget {
                         vertical: 12,
                       ),
                       textStyle: const TextStyle(
-                        fontSize: 13.5,
+                        fontSize: 14,
                         fontWeight: FontWeight.w700,
                       ),
                     ),

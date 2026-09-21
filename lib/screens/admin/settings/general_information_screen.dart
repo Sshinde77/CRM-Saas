@@ -254,7 +254,7 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
                   name ?? 'Selected file',
                   style: const TextStyle(
                     color: kGeneralInfoMutedColor,
-                    fontSize: 12.5,
+                    fontSize: 14,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -918,7 +918,7 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
                                             'Billing address same as registered address',
                                             style: TextStyle(
                                               color: kGeneralInfoTitleColor,
-                                              fontSize: 13,
+                                              fontSize: 14,
                                               fontWeight: FontWeight.w600,
                                             ),
                                           ),
@@ -956,7 +956,7 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
                                             'Shipping/Warehouse address same as billing address',
                                             style: TextStyle(
                                               color: kGeneralInfoTitleColor,
-                                              fontSize: 13,
+                                              fontSize: 14,
                                               fontWeight: FontWeight.w600,
                                             ),
                                           ),
@@ -1149,7 +1149,7 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
       keyboardType: keyboardType,
       maxLines: maxLines,
       minLines: maxLines > 1 ? maxLines : 1,
-      style: const TextStyle(fontSize: 15, color: kGeneralInfoTitleColor),
+      style: const TextStyle(fontSize: 14, color: kGeneralInfoTitleColor),
       decoration: _fieldDecoration(hintText: hintText),
     );
   }
@@ -1169,7 +1169,7 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
       hint: hintText == null
           ? null
           : Text(hintText, style: const TextStyle(color: Color(0xFFB5BCC6))),
-      style: const TextStyle(fontSize: 15, color: kGeneralInfoTitleColor),
+      style: const TextStyle(fontSize: 14, color: kGeneralInfoTitleColor),
       decoration: _fieldDecoration(),
       dropdownColor: Colors.white,
       borderRadius: BorderRadius.circular(16),
@@ -1180,7 +1180,7 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
               child: Text(
                 '$item',
                 style: const TextStyle(
-                  fontSize: 15,
+                  fontSize: 14,
                   color: kGeneralInfoTitleColor,
                   fontWeight: FontWeight.w500,
                 ),
@@ -1196,7 +1196,7 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
       filled: true,
       fillColor: _fieldBg,
       hintText: hintText,
-      hintStyle: const TextStyle(color: Color(0xFFB5BCC6), fontSize: 15),
+      hintStyle: const TextStyle(color: Color(0xFFB5BCC6), fontSize: 14),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(18),
@@ -1283,7 +1283,7 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
                         subtitle,
                         style: const TextStyle(
                           color: kGeneralInfoMutedColor,
-                          fontSize: 12.5,
+                          fontSize: 14,
                         ),
                       ),
                     ],
@@ -1341,7 +1341,7 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        textStyle: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
+        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
       ),
     );
   }
@@ -1403,7 +1403,7 @@ class _GeneralInfoSectionCard extends StatelessWidget {
                       number,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 13,
+                        fontSize: 14,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -1426,7 +1426,7 @@ class _GeneralInfoSectionCard extends StatelessWidget {
                           subtitle,
                           style: const TextStyle(
                             color: kGeneralInfoMutedColor,
-                            fontSize: 13,
+                            fontSize: 14,
                             height: 1.2,
                           ),
                         ),

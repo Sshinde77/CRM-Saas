@@ -10,6 +10,7 @@ import '../../../models/delivery_schedule.dart';
 import '../../../providers/api_provider.dart';
 import '../../../routes/app_router.dart';
 import '../../../widgets/delivery/delivery_partner_sidebar.dart';
+import '../../../widgets/delivery/delivery_top_bar.dart';
 
 class DeliveryDashboardScreen extends StatefulWidget {
   const DeliveryDashboardScreen({super.key});
@@ -158,12 +159,23 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
                 ),
                 slivers: [
                   SliverToBoxAdapter(
-                    child: _DashboardHeader(
-                      data: data,
-                      onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
-                      onBellTap: () => _showComingSoon('Notifications'),
+                    child: DeliveryTopBar(
+                      title: 'Dashboard',
+                      subtitle: 'View delivery performance and assigned work',
+                      leadingIcon: Icons.menu_rounded,
+                      onLeadingTap: () =>
+                          _scaffoldKey.currentState?.openDrawer(),
+                      onNotificationTap: () =>
+                          _showComingSoon('Notifications'),
                     ),
                   ),
+                  SliverToBoxAdapter(
+                    child: _DashboardHeroSection(data: data),
+                  ),
+                  if (data == null)
+                    const SliverToBoxAdapter(
+                      child: SizedBox(height: AppSpacing.md),
+                    ),
                   SliverToBoxAdapter(
                     child: LayoutBuilder(
                       builder: (context, constraints) {
@@ -247,27 +259,19 @@ class _DashboardContent extends StatelessWidget {
   }
 }
 
-class _DashboardHeader extends StatelessWidget {
+class _DashboardHeroSection extends StatelessWidget {
   final _DashboardData? data;
-  final VoidCallback onMenuTap;
-  final VoidCallback onBellTap;
 
-  const _DashboardHeader({
-    required this.data,
-    required this.onMenuTap,
-    required this.onBellTap,
-  });
+  const _DashboardHeroSection({required this.data});
+
+  static const double _statsOverlap = 44;
 
   @override
   Widget build(BuildContext context) {
-    final name = data?.userName.trim();
-    final displayName = name == null || name.isEmpty ? 'Partner' : name;
-
-    const statsHeight =
-        _OverlappingStatsGrid._tileHeight * 3 +
-        _OverlappingStatsGrid._spacing * 2;
-    const statsOverlap = _OverlappingStatsGrid._overlap;
-    final hasStats = data != null;
+    final dashboardData = data;
+    if (dashboardData == null) {
+      return _DashboardIdentityHeader(data: data);
+    }
 
     return Stack(
       clipBehavior: Clip.none,
@@ -275,162 +279,120 @@ class _DashboardHeader extends StatelessWidget {
         Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(16, 14, 16, 66),
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(0),
-                  bottom: Radius.circular(4),
-                ),
-                gradient: const LinearGradient(
-                  colors: [
-                    AppColors.deliveryDashboardHeaderStart,
-                    AppColors.deliveryDashboardHeaderMid,
-                    AppColors.deliveryDashboardHeaderEnd,
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.deliveryHeroShadow.withValues(alpha: 0.22),
-                    blurRadius: 16,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
+            _DashboardIdentityHeader(
+              data: dashboardData,
+              bottomPadding: AppSpacing.xxl + _statsOverlap,
+            ),
+            SizedBox(height: _StatsGrid.gridHeight - _statsOverlap),
+          ],
+        ),
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 820),
+                child: _StatsGrid(data: dashboardData),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DashboardIdentityHeader extends StatelessWidget {
+  final _DashboardData? data;
+  final double bottomPadding;
+
+  const _DashboardIdentityHeader({
+    required this.data,
+    this.bottomPadding = 18,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final name = data?.userName.trim();
+    final displayName = name == null || name.isEmpty ? 'Partner' : name;
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.fromLTRB(16, 8, 16, bottomPadding),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            AppColors.deliveryDashboardHeaderStart,
+            AppColors.deliveryDashboardHeaderMid,
+            AppColors.deliveryDashboardHeaderEnd,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.deliveryHeroShadow.withValues(alpha: 0.18),
+            blurRadius: 14,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 820),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final compact = constraints.maxWidth < 360;
+
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Row(
-                    children: [
-                      _HeaderIconButton(
-                        icon: Icons.menu_rounded,
-                        onTap: onMenuTap,
-                      ),
-                      const Expanded(
-                        child: Text(
-                          'Dashboard',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
+                  _ProfileAvatar(
+                    imageUrl: data?.profilePhoto,
+                    size: compact ? 68 : 76,
+                  ),
+                  SizedBox(width: compact ? 10 : 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Hello, $displayName',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
                             color: AppColors.surface,
-                            fontSize: 20,
-                            height: 1,
+                            fontSize: 16,
+                            height: 1.15,
                             fontWeight: FontWeight.w900,
                           ),
                         ),
-                      ),
-                      Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          _HeaderIconButton(
-                            icon: Icons.notifications_none_rounded,
-                            onTap: onBellTap,
+                        const SizedBox(height: AppSpacing.xs),
+                        const Text(
+                          'Delivery Person',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: AppColors.surface,
+                            fontSize: 14,
+                            height: 1.2,
+                            fontWeight: FontWeight.w600,
                           ),
-                          Positioned(
-                            right: 3,
-                            top: 1,
-                            child: Container(
-                              width: 9,
-                              height: 9,
-                              decoration: const BoxDecoration(
-                                color: AppColors.deliveryDashboardOnlineDot,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 22),
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      final compact = constraints.maxWidth < 360;
-
-                      return Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Expanded(
-                            child: Row(
-                              children: [
-                                _ProfileAvatar(
-                                  imageUrl: data?.profilePhoto,
-                                  size: compact ? 68 : 76,
-                                ),
-                                SizedBox(width: compact ? 8 : 10),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Hello, $displayName',
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          color: AppColors.surface,
-                                          fontSize: compact ? 16 : 19,
-                                          height: 1.08,
-                                          fontWeight: FontWeight.w900,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10),
-                                      Text(
-                                        'Delivery Person',
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          color: AppColors.surface,
-                                          fontSize: compact ? 12 : 15,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          SizedBox(width: compact ? 8 : 12),
-                          _DatePill(compact: compact),
-                        ],
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-            if (hasStats) const SizedBox(height: statsHeight - statsOverlap),
-          ],
-        ),
-        if (hasStats)
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final horizontalPadding = constraints.maxWidth >= 600
-                    ? AppSpacing.screen
-                    : AppSpacing.screenSmall;
-
-                return Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 820),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: horizontalPadding,
-                      ),
-                      child: _StatsGrid(data: data!),
+                        ),
+                      ],
                     ),
                   ),
-                );
-              },
-            ),
+                  const SizedBox(width: AppSpacing.sm),
+                  _DatePill(compact: compact),
+                ],
+              );
+            },
           ),
-      ],
+        ),
+      ),
     );
   }
 }
@@ -478,26 +440,6 @@ class _ProfileAvatar extends StatelessWidget {
   }
 }
 
-class _HeaderIconButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onTap;
-
-  const _HeaderIconButton({required this.icon, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return InkResponse(
-      onTap: onTap,
-      radius: 28,
-      child: SizedBox(
-        width: 36,
-        height: 36,
-        child: Icon(icon, color: AppColors.surface, size: 28),
-      ),
-    );
-  }
-}
-
 class _DatePill extends StatelessWidget {
   final bool compact;
 
@@ -512,7 +454,7 @@ class _DatePill extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(AppSizes.controlRadius),
         boxShadow: [
           BoxShadow(
             color: AppColors.secondary.withValues(alpha: 0.10),
@@ -526,17 +468,17 @@ class _DatePill extends StatelessWidget {
         children: [
           Text(
             'Today ${_formatDateLong(DateTime.now())}',
-            style: TextStyle(
+            style: const TextStyle(
               color: AppColors.deliveryDashboardHeaderEnd,
-              fontSize: compact ? 10.5 : 13,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
           ),
-          SizedBox(width: compact ? 3 : 5),
-          Icon(
+          const SizedBox(width: AppSpacing.xs),
+          const Icon(
             Icons.keyboard_arrow_down_rounded,
             color: AppColors.deliveryDashboardHeaderEnd,
-            size: compact ? 16 : 19,
+            size: AppSizes.iconSmall,
           ),
         ],
       ),
@@ -570,12 +512,13 @@ class _FloatingCheckInButton extends StatelessWidget {
           : const Icon(Icons.login_rounded, size: 20),
       label: Text(
         busy ? 'Checking in' : 'Check In',
-        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
       ),
     );
   }
 }
 
+// ignore: unused_element
 class _HeroSummaryCard extends StatelessWidget {
   final _DashboardData data;
   final VoidCallback onShareLocation;
@@ -725,7 +668,7 @@ class _HeroSummaryCard extends StatelessWidget {
                                             color: AppColors.surface.withValues(
                                               alpha: 0.78,
                                             ),
-                                            fontSize: 11,
+                                            fontSize: 14,
                                             height: 1.2,
                                             fontWeight: FontWeight.w600,
                                           ),
@@ -853,7 +796,7 @@ class _HeroMetric extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: AppColors.surface.withValues(alpha: 0.78),
-                  fontSize: 11,
+                  fontSize: 14,
                   height: 1.2,
                   fontWeight: FontWeight.w600,
                 ),
@@ -919,7 +862,7 @@ class _HeroAction extends StatelessWidget {
                 textAlign: TextAlign.left,
                 style: const TextStyle(
                   color: AppColors.deliveryInk,
-                  fontSize: 10,
+                  fontSize: 14,
                   height: 1.1,
                   fontWeight: FontWeight.w800,
                 ),
@@ -945,41 +888,15 @@ class _HeroActionDivider extends StatelessWidget {
   }
 }
 
-class _OverlappingStatsGrid extends StatelessWidget {
-  final _DashboardData data;
-
-  const _OverlappingStatsGrid({required this.data});
-
-  static const double _overlap = 44;
-  static const double _tileHeight = 78;
-  static const double _spacing = 8;
-  static const double _crossSpacing = 6;
-
-  @override
-  Widget build(BuildContext context) {
-    const gridHeight = _tileHeight * 3 + _spacing * 2;
-
-    return SizedBox(
-      height: gridHeight - _overlap,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Positioned(
-            left: 0,
-            right: 0,
-            top: -_overlap,
-            child: _StatsGrid(data: data),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _StatsGrid extends StatelessWidget {
   final _DashboardData data;
 
   const _StatsGrid({required this.data});
+
+  static const double _tileHeight = 78;
+  static const double _spacing = 8;
+  static const double _crossSpacing = 6;
+  static const double gridHeight = _tileHeight * 3 + _spacing * 2;
 
   @override
   Widget build(BuildContext context) {
@@ -1034,9 +951,9 @@ class _StatsGrid extends StatelessWidget {
       itemCount: stats.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        mainAxisExtent: _OverlappingStatsGrid._tileHeight,
-        crossAxisSpacing: _OverlappingStatsGrid._crossSpacing,
-        mainAxisSpacing: _OverlappingStatsGrid._spacing,
+        mainAxisExtent: _tileHeight,
+        crossAxisSpacing: _crossSpacing,
+        mainAxisSpacing: _spacing,
       ),
       itemBuilder: (context, index) {
         final card = _StatCard(info: stats[index]);
@@ -1097,7 +1014,7 @@ class _StatCard extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 11,
+                    fontSize: 14,
                     height: 1.14,
                     fontWeight: FontWeight.w600,
                     color: AppColors.deliveryDashboardText,
@@ -1110,7 +1027,7 @@ class _StatCard extends StatelessWidget {
                     '0',
                   ),
                   style: const TextStyle(
-                    fontSize: 21,
+                    fontSize: 16,
                     height: 1,
                     fontWeight: FontWeight.w900,
                     color: AppColors.deliveryDashboardText,
@@ -1200,7 +1117,7 @@ class _CollectionsCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 14,
                           fontWeight: FontWeight.w700,
                           color: AppColors.textMuted,
                         ),
@@ -1211,7 +1128,7 @@ class _CollectionsCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          fontSize: 22,
+                          fontSize: 16,
                           height: 1.1,
                           fontWeight: FontWeight.w900,
                           color: AppColors.deliveryInk,
@@ -1276,7 +1193,7 @@ class _CollectionMetricTile extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 10,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textMuted,
                   ),
@@ -1302,6 +1219,7 @@ class _CollectionMetricTile extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _PrioritiesCard extends StatelessWidget {
   final _DashboardData data;
 
@@ -1383,7 +1301,7 @@ class _PriorityRow extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: FontWeight.w700,
                 color: AppColors.deliveryInk,
               ),
@@ -1400,7 +1318,7 @@ class _PriorityRow extends StatelessWidget {
               info.count.toString(),
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 14,
                 fontWeight: FontWeight.w800,
                 color: info.color,
               ),
@@ -1418,6 +1336,7 @@ class _PriorityRow extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _VehicleLoadCard extends StatelessWidget {
   final _VehicleStockSession? session;
   final VoidCallback onViewAll;
@@ -1445,7 +1364,7 @@ class _VehicleLoadCard extends StatelessWidget {
                 child: Text(
                   'No active loading session',
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textMuted,
                   ),
@@ -1482,7 +1401,7 @@ class _StockLineRow extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 13,
+                    fontSize: 14,
                     fontWeight: FontWeight.w800,
                     color: AppColors.deliveryInk,
                   ),
@@ -1493,7 +1412,7 @@ class _StockLineRow extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 11,
+                    fontSize: 14,
                     color: AppColors.textMuted,
                   ),
                 ),
@@ -1503,7 +1422,7 @@ class _StockLineRow extends StatelessWidget {
           Text(
             '${item.loadedQuantityText} Pcs',
             style: const TextStyle(
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: FontWeight.w800,
               color: AppColors.deliveryInk,
             ),
@@ -1514,6 +1433,7 @@ class _StockLineRow extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _DeliveryStatusCard extends StatelessWidget {
   final _DashboardData data;
 
@@ -1581,7 +1501,7 @@ class _StatusTile extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              fontSize: 11,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
               color: AppColors.textMuted,
             ),
@@ -1590,7 +1510,7 @@ class _StatusTile extends StatelessWidget {
           Text(
             info.count.toString(),
             style: TextStyle(
-              fontSize: 19,
+              fontSize: 16,
               height: 1,
               fontWeight: FontWeight.w900,
               color: info.color,
@@ -1626,7 +1546,7 @@ class _DeliveriesPreviewCard extends StatelessWidget {
                 child: Text(
                   'No deliveries assigned today',
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textMuted,
                   ),
@@ -1670,7 +1590,7 @@ class _DeliveryPreviewTile extends StatelessWidget {
               Text(
                 delivery.orderNumber,
                 style: const TextStyle(
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w800,
                   color: AppColors.deliveryInk,
                 ),
@@ -1701,7 +1621,7 @@ class _DeliveryPreviewTile extends StatelessWidget {
               Text(
                 delivery.formattedAmount,
                 style: const TextStyle(
-                  fontSize: 13,
+                  fontSize: 14,
                   fontWeight: FontWeight.w800,
                   color: AppColors.deliveryInk,
                 ),
@@ -1713,7 +1633,7 @@ class _DeliveryPreviewTile extends StatelessWidget {
               Text(
                 delivery.formattedDate,
                 style: const TextStyle(
-                  fontSize: 11,
+                  fontSize: 14,
                   color: AppColors.textMuted,
                   fontWeight: FontWeight.w600,
                 ),
@@ -1728,7 +1648,7 @@ class _DeliveryPreviewTile extends StatelessWidget {
                 child: Text(
                   delivery.statusLabel,
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 14,
                     fontWeight: FontWeight.w800,
                     color: color,
                   ),
@@ -1771,7 +1691,7 @@ class _SectionHeader extends StatelessWidget {
         Text(
           title,
           style: const TextStyle(
-            fontSize: 15,
+            fontSize: 14,
             fontWeight: FontWeight.w800,
             color: AppColors.deliveryInk,
           ),
@@ -1785,7 +1705,7 @@ class _SectionHeader extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.right,
               style: const TextStyle(
-                fontSize: 11,
+                fontSize: 14,
                 fontWeight: FontWeight.w700,
                 color: AppColors.textMuted,
               ),
@@ -1799,7 +1719,7 @@ class _SectionHeader extends StatelessWidget {
           const Text(
             'View All',
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 14,
               fontWeight: FontWeight.w800,
               color: AppColors.deliveryBlue,
             ),
@@ -1828,7 +1748,7 @@ class _FooterLink extends StatelessWidget {
             Text(
               label,
               style: const TextStyle(
-                fontSize: 12,
+                fontSize: 14,
                 fontWeight: FontWeight.w800,
                 color: AppColors.deliveryBlue,
               ),

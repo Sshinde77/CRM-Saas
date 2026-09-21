@@ -390,14 +390,14 @@ class _SectionShell extends StatelessWidget {
           title,
           style: const TextStyle(
             color: kBrandingTitleColor,
-            fontSize: 17,
+            fontSize: 16,
             fontWeight: FontWeight.w800,
           ),
         ),
         const SizedBox(height: 4),
         Text(
           subtitle,
-          style: const TextStyle(color: kBrandingMutedColor, fontSize: 13),
+          style: const TextStyle(color: kBrandingMutedColor, fontSize: 14),
         ),
         const SizedBox(height: 14),
         child,
@@ -496,7 +496,7 @@ class _BrandUploadCard extends StatelessWidget {
                   asset.title + (asset.required ? ' *' : ''),
                   style: const TextStyle(
                     color: kBrandingTitleColor,
-                    fontSize: 15,
+                    fontSize: 14,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -505,7 +505,7 @@ class _BrandUploadCard extends StatelessWidget {
                   asset.mimeHint,
                   style: const TextStyle(
                     color: kBrandingMutedColor,
-                    fontSize: 12.5,
+                    fontSize: 14,
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -529,7 +529,7 @@ class _BrandUploadCard extends StatelessWidget {
                           vertical: 12,
                         ),
                         textStyle: const TextStyle(
-                          fontSize: 13.5,
+                          fontSize: 14,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -551,7 +551,7 @@ class _BrandUploadCard extends StatelessWidget {
                           vertical: 12,
                         ),
                         textStyle: const TextStyle(
-                          fontSize: 13.5,
+                          fontSize: 14,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -566,7 +566,7 @@ class _BrandUploadCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: kBrandingTitleColor,
-                      fontSize: 12,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
                   ),

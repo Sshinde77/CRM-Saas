@@ -418,7 +418,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
                     borderRadius: BorderRadius.circular(999),
                   ),
                   textStyle: const TextStyle(
-                    fontSize: 13.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -440,7 +440,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
                 '${quotations.length} of ${_quotations.length}',
                 style: const TextStyle(
                   color: Color(0xFF94A3B8),
-                  fontSize: 13.5,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -449,7 +449,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
                 'Quotations',
                 style: TextStyle(
                   color: Color(0xFF94A3B8),
-                  fontSize: 13.5,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -518,7 +518,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
                         borderRadius: BorderRadius.circular(999),
                       ),
                       textStyle: const TextStyle(
-                        fontSize: 13,
+                        fontSize: 14,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -569,7 +569,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
                 '${quotations.length} of ${_quotations.length}',
                 style: const TextStyle(
                   color: Color(0xFF94A3B8),
-                  fontSize: 13.5,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -578,7 +578,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
                 'Quotations',
                 style: TextStyle(
                   color: Color(0xFF94A3B8),
-                  fontSize: 13.5,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -595,7 +595,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
       onChanged: (_) => setState(() {}),
       decoration: InputDecoration(
         hintText: 'Search quotations',
-        hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13.5),
+        hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
         prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF94A3B8)),
         filled: true,
         fillColor: Colors.white,
@@ -667,7 +667,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   color: Color(0xFF0F172A),
-                  fontSize: 13.5,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -953,7 +953,7 @@ class _QuotationCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: AppColors.textSecondary,
-                        fontSize: 12,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -1032,7 +1032,7 @@ class _QuotationCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 12,
+              fontSize: 14,
               fontWeight: FontWeight.w500,
               letterSpacing: 0,
             ),
@@ -1148,7 +1148,7 @@ class _StatusChip extends StatelessWidget {
             label,
             style: TextStyle(
               color: foreground,
-              fontSize: 12,
+              fontSize: 14,
               fontWeight: FontWeight.w800,
               letterSpacing: 0,
             ),

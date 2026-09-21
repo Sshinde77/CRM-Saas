@@ -127,7 +127,7 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
                                 'New Sales Return',
                                 style: TextStyle(
                                   color: textPrimary,
-                                  fontSize: 24,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.w800,
                                 ),
                               ),
@@ -136,7 +136,7 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
                                 'Raise a return request against an existing invoice.',
                                 style: TextStyle(
                                   color: textSecondary,
-                                  fontSize: 13,
+                                  fontSize: 14,
                                 ),
                               ),
                             ],
@@ -155,7 +155,7 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
                             'Invoice Number or ID',
                             style: TextStyle(
                               color: textPrimary,
-                              fontSize: 13.5,
+                              fontSize: 14,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -354,7 +354,7 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
                               borderRadius: BorderRadius.circular(18),
                             ),
                             textStyle: const TextStyle(
-                              fontSize: 13.5,
+                              fontSize: 14,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -402,7 +402,7 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
                     'RS',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 11,
+                      fontSize: 14,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -415,7 +415,7 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
                       'Rahul Sharma',
                       style: TextStyle(
                         color: textPrimary,
-                        fontSize: 13.5,
+                        fontSize: 14,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -424,7 +424,7 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
                       'Admin',
                       style: TextStyle(
                         color: Color(0xFF0B4A06),
-                        fontSize: 11.5,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -452,7 +452,7 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
         backgroundColor: const Color(0xFFF3F4F6),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-        textStyle: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700),
+        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
       ),
     );
   }
@@ -484,7 +484,7 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
             title,
             style: const TextStyle(
               color: textPrimary,
-              fontSize: 17,
+              fontSize: 16,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -492,26 +492,12 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
             const SizedBox(height: 4),
             Text(
               subtitle,
-              style: const TextStyle(color: textSecondary, fontSize: 12.5),
+              style: const TextStyle(color: textSecondary, fontSize: 14),
             ),
           ],
           const SizedBox(height: 18),
           child,
         ],
-      ),
-    );
-  }
-
-  Widget _inputLabel(String label, {bool required = false}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        required ? '$label *' : label,
-        style: const TextStyle(
-          color: textPrimary,
-          fontSize: 13.5,
-          fontWeight: FontWeight.w600,
-        ),
       ),
     );
   }
@@ -527,7 +513,7 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
             textAlign: TextAlign.left,
             style: const TextStyle(
               color: textPrimary,
-              fontSize: 13.5,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -609,7 +595,7 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
                 item,
                 style: const TextStyle(
                   color: textPrimary,
-                  fontSize: 13.5,
+                  fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -635,7 +621,7 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
         backgroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-        textStyle: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600),
+        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
       ),
     );
   }
@@ -645,7 +631,7 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
       hintText: hintText,
       hintStyle: const TextStyle(
         color: Color(0xFF94A3B8),
-        fontSize: 13.5,
+        fontSize: 14,
         fontWeight: FontWeight.w400,
       ),
       filled: true,

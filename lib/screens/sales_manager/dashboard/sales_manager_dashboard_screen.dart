@@ -378,7 +378,7 @@ class _GreetingPanel extends StatelessWidget {
                   '${_greeting()},',
                   style: const TextStyle(
                     color: AppColors.textPrimary,
-                    fontSize: 12.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -389,7 +389,7 @@ class _GreetingPanel extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: AppColors.primary,
-                    fontSize: 19,
+                    fontSize: 16,
                     height: 1.05,
                     fontWeight: FontWeight.w900,
                   ),
@@ -401,7 +401,7 @@ class _GreetingPanel extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: AppColors.textSecondary,
-                    fontSize: 11.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -433,7 +433,7 @@ class _GreetingPanel extends StatelessWidget {
                             'Checked In - ${_formatTime(data.attendance!.checkIn!)}',
                             style: const TextStyle(
                               color: AppColors.primary,
-                              fontSize: 11,
+                              fontSize: 14,
                               fontWeight: FontWeight.w800,
                             ),
                           ),
@@ -611,7 +611,7 @@ class _SalesTargetCard extends StatelessWidget {
                     _currency(_SalesManagerDashboardScreenState._monthlyTarget),
                     style: const TextStyle(
                       color: AppColors.textPrimary,
-                      fontSize: 14.5,
+                      fontSize: 14,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
@@ -619,7 +619,7 @@ class _SalesTargetCard extends StatelessWidget {
                     'Target',
                     style: TextStyle(
                       color: AppColors.textMuted,
-                      fontSize: 10.5,
+                      fontSize: 14,
                     ),
                   ),
                 ],
@@ -631,7 +631,7 @@ class _SalesTargetCard extends StatelessWidget {
             _currency(data.monthlySales),
             style: const TextStyle(
               color: AppColors.primary,
-              fontSize: 22,
+              fontSize: 16,
               height: 1,
               fontWeight: FontWeight.w900,
             ),
@@ -641,7 +641,7 @@ class _SalesTargetCard extends StatelessWidget {
             'Current Sales',
             style: TextStyle(
               color: AppColors.textMuted,
-              fontSize: 11,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -666,7 +666,7 @@ class _SalesTargetCard extends StatelessWidget {
                 '$percent%',
                 style: const TextStyle(
                   color: AppColors.primary,
-                  fontSize: 15,
+                  fontSize: 14,
                   fontWeight: FontWeight.w900,
                 ),
               ),
@@ -895,7 +895,7 @@ class _QuickActionTile extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   color: AppColors.textPrimary,
-                  fontSize: 10.5,
+                  fontSize: 14,
                   height: 1.15,
                   fontWeight: FontWeight.w900,
                 ),
@@ -940,7 +940,7 @@ class _StatCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: AppColors.textPrimary,
-                    fontSize: 19,
+                    fontSize: 16,
                     height: 1,
                     fontWeight: FontWeight.w900,
                   ),
@@ -952,7 +952,7 @@ class _StatCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: AppColors.textPrimary,
-                    fontSize: 11.5,
+                    fontSize: 14,
                     height: 1.1,
                     fontWeight: FontWeight.w900,
                   ),
@@ -964,7 +964,7 @@ class _StatCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: AppColors.textMuted,
-                    fontSize: 10.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -1009,7 +1009,7 @@ class _PriorityRow extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: AppColors.textPrimary,
-                        fontSize: 12.5,
+                        fontSize: 14,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
@@ -1020,7 +1020,7 @@ class _PriorityRow extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: AppColors.textMuted,
-                        fontSize: 11,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -1031,7 +1031,7 @@ class _PriorityRow extends StatelessWidget {
                 row.count.toString(),
                 style: TextStyle(
                   color: row.color,
-                  fontSize: 17,
+                  fontSize: 16,
                   fontWeight: FontWeight.w900,
                 ),
               ),
@@ -1076,7 +1076,7 @@ class _StatusTile extends StatelessWidget {
                   data.count.toString(),
                   style: const TextStyle(
                     color: AppColors.textPrimary,
-                    fontSize: 15,
+                    fontSize: 14,
                     height: 1,
                     fontWeight: FontWeight.w900,
                   ),
@@ -1088,7 +1088,7 @@ class _StatusTile extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: AppColors.textMuted,
-                    fontSize: 10.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -1177,7 +1177,7 @@ class _ListRow extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: AppColors.textPrimary,
-                    fontSize: 12.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -1188,7 +1188,7 @@ class _ListRow extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: AppColors.textMuted,
-                    fontSize: 11,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -1205,7 +1205,7 @@ class _ListRow extends StatelessWidget {
               textAlign: TextAlign.right,
               style: const TextStyle(
                 color: AppColors.textSecondary,
-                fontSize: 11,
+                fontSize: 14,
                 height: 1.3,
                 fontWeight: FontWeight.w700,
               ),
@@ -1256,7 +1256,7 @@ class _SectionTitle extends StatelessWidget {
             minimumSize: Size.zero,
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             textStyle: const TextStyle(
-              fontSize: 11,
+              fontSize: 14,
               fontWeight: FontWeight.w900,
             ),
           ),
@@ -1313,7 +1313,7 @@ class _InitialsAvatar extends StatelessWidget {
         initials.isEmpty ? 'SM' : initials,
         style: const TextStyle(
           color: Color(0xFF2563EB),
-          fontSize: 11.5,
+          fontSize: 14,
           fontWeight: FontWeight.w900,
         ),
       ),
@@ -1341,7 +1341,7 @@ class _Pill extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
           color: color,
-          fontSize: 10.5,
+          fontSize: 14,
           fontWeight: FontWeight.w900,
         ),
       ),
@@ -1391,7 +1391,7 @@ class _EmptyInline extends StatelessWidget {
         textAlign: TextAlign.center,
         style: const TextStyle(
           color: AppColors.textMuted,
-          fontSize: 12.5,
+          fontSize: 14,
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -1410,7 +1410,7 @@ class _FooterNote extends StatelessWidget {
       text,
       style: const TextStyle(
         color: AppColors.textMuted,
-        fontSize: 12,
+        fontSize: 14,
         fontWeight: FontWeight.w700,
       ),
     );

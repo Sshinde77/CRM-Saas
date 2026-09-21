@@ -46,7 +46,7 @@ class EndOfDayEmptyState extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: AppColors.textMuted,
-                  fontSize: 13,
+                  fontSize: 14,
                   height: 1.35,
                   fontWeight: FontWeight.w600,
                 ),

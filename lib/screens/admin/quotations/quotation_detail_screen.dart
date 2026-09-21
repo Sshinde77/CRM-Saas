@@ -510,7 +510,7 @@ class _HeroPanel extends StatelessWidget {
                           quotation.number,
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 19,
+                            fontSize: 16,
                             fontWeight: FontWeight.w900,
                           ),
                         ),
@@ -526,7 +526,7 @@ class _HeroPanel extends StatelessWidget {
                       quotation.customerName,
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.86),
-                        fontSize: 12.5,
+                        fontSize: 14,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -671,7 +671,7 @@ class _ItemsTable extends StatelessWidget {
                         item.productName,
                         style: const TextStyle(
                           color: AppColors.textPrimary,
-                          fontSize: 12,
+                          fontSize: 14,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
@@ -919,7 +919,7 @@ class _SectionCard extends StatelessWidget {
                 title,
                 style: const TextStyle(
                   color: AppColors.textPrimary,
-                  fontSize: 13.5,
+                  fontSize: 14,
                   fontWeight: FontWeight.w900,
                 ),
               ),
@@ -967,7 +967,7 @@ class _StatCard extends StatelessWidget {
                   stat.label,
                   style: const TextStyle(
                     color: AppColors.textSecondary,
-                    fontSize: 10.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -978,7 +978,7 @@ class _StatCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: AppColors.textPrimary,
-                    fontSize: 14.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -1019,7 +1019,7 @@ class _ActionPill extends StatelessWidget {
         disabledForegroundColor: color.withValues(alpha: 0.45),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-        textStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
+        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
       ),
     );
   }
@@ -1060,7 +1060,7 @@ class _StatusChip extends StatelessWidget {
             label,
             style: TextStyle(
               color: foreground,
-              fontSize: 10.5,
+              fontSize: 14,
               fontWeight: FontWeight.w900,
             ),
           ),
@@ -1089,7 +1089,7 @@ class _DetailRow extends StatelessWidget {
               label,
               style: const TextStyle(
                 color: AppColors.textSecondary,
-                fontSize: 11,
+                fontSize: 14,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -1099,7 +1099,7 @@ class _DetailRow extends StatelessWidget {
               value.isEmpty ? '-' : value,
               style: const TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 12,
+                fontSize: 14,
                 fontWeight: FontWeight.w700,
                 height: 1.25,
               ),
@@ -1122,7 +1122,7 @@ class _LongText extends StatelessWidget {
       value,
       style: const TextStyle(
         color: AppColors.textPrimary,
-        fontSize: 12,
+        fontSize: 14,
         fontWeight: FontWeight.w600,
         height: 1.35,
       ),
@@ -1179,7 +1179,7 @@ class _TableHeader extends StatelessWidget {
       label.toUpperCase(),
       style: const TextStyle(
         color: AppColors.textSecondary,
-        fontSize: 10,
+        fontSize: 14,
         fontWeight: FontWeight.w900,
       ),
     );
@@ -1199,7 +1199,7 @@ class _TableValue extends StatelessWidget {
       overflow: TextOverflow.ellipsis,
       style: const TextStyle(
         color: AppColors.textPrimary,
-        fontSize: 11.5,
+        fontSize: 14,
         fontWeight: FontWeight.w700,
       ),
     );

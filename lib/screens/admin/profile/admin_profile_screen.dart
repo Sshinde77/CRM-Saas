@@ -67,14 +67,14 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                       'My Profile',
                       style: TextStyle(
                         color: textPrimary,
-                        fontSize: 24,
+                        fontSize: 16,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
                     const SizedBox(height: 4),
                     const Text(
                       'Your account details',
-                      style: TextStyle(color: textSecondary, fontSize: 13),
+                      style: TextStyle(color: textSecondary, fontSize: 14),
                     ),
                     const SizedBox(height: 20),
                     _buildProfileCard(),
@@ -107,7 +107,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
               'AS',
               style: TextStyle(
                 color: AppColors.purple,
-                fontSize: 28,
+                fontSize: 16,
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -117,7 +117,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
             _nameController.text,
             style: const TextStyle(
               color: textPrimary,
-              fontSize: 20,
+              fontSize: 16,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -197,7 +197,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                   : const Text(
                       'Save Changes',
                       style: TextStyle(
-                        fontSize: 15,
+                        fontSize: 14,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -215,7 +215,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
         label,
         style: const TextStyle(
           color: textPrimary,
-          fontSize: 13,
+          fontSize: 14,
           fontWeight: FontWeight.w600,
         ),
       ),

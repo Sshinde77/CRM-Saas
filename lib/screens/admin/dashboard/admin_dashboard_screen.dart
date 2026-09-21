@@ -409,7 +409,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 "Today's Sales",
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 15,
+                  fontSize: 14,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -418,7 +418,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 _money(summary.todaySales),
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 32,
+                  fontSize: 16,
                   fontWeight: FontWeight.w900,
                 ),
               ),
@@ -452,7 +452,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       'Monthly Target ${_money(summary.monthlyTarget)}',
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 12.5,
+                        fontSize: 14,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -461,7 +461,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     '${(progress * 100).round()}%',
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 12.5,
+                      fontSize: 14,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
@@ -516,7 +516,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             label,
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.82),
-              fontSize: 12,
+              fontSize: 14,
             ),
           ),
           const SizedBox(height: 4),
@@ -524,7 +524,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             _money(value),
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 17,
+              fontSize: 16,
               fontWeight: FontWeight.w900,
             ),
           ),
@@ -540,7 +540,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           value,
           style: const TextStyle(
             color: Colors.white,
-            fontSize: 18,
+            fontSize: 16,
             fontWeight: FontWeight.w900,
           ),
         ),
@@ -549,7 +549,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           label,
           style: const TextStyle(
             color: Colors.white,
-            fontSize: 12,
+            fontSize: 14,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -655,7 +655,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 13,
+                    fontSize: 14,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -665,7 +665,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           const Spacer(),
           Text(
             spec.value,
-            style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w900),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
           ),
           const SizedBox(height: 8),
           Row(
@@ -682,7 +682,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 spec.delta,
                 style: TextStyle(
                   color: positive ? _green : _red,
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w900,
                 ),
               ),
@@ -693,7 +693,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: AppColors.textSecondary,
-                    fontSize: 11.5,
+                    fontSize: 14,
                   ),
                 ),
               ),
@@ -751,7 +751,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: actions.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 10),
+            separatorBuilder: (_, _) => const SizedBox(width: 10),
             itemBuilder: (context, index) {
               final action = actions[index];
               return SizedBox(
@@ -781,7 +781,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                              fontSize: 12,
+                              fontSize: 14,
                               fontWeight: FontWeight.w800,
                               height: 1.12,
                             ),
@@ -821,12 +821,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         children: [
           Text(
             _money(data.summary.netProfit),
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
           ),
           const SizedBox(height: 2),
           const Text(
             'Net Profit (This Month)',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 12.5),
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
           ),
           const SizedBox(height: 14),
           for (final signal in signals) ...[
@@ -842,7 +842,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   child: Text(
                     signal.label,
                     style: const TextStyle(
-                      fontSize: 12.5,
+                      fontSize: 14,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -913,7 +913,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
-                                  fontSize: 12.5,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.w900,
                                 ),
                               ),
@@ -921,7 +921,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                               Text(
                                 item.status,
                                 style: TextStyle(
-                                  fontSize: 11,
+                                  fontSize: 14,
                                   color: item.stockPercentage <= 0
                                       ? _red
                                       : AppColors.textSecondary,
@@ -949,7 +949,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         Text(
                           '${item.stockPercentage.round()}%',
                           style: const TextStyle(
-                            fontSize: 12,
+                            fontSize: 14,
                             fontWeight: FontWeight.w900,
                           ),
                         ),
@@ -1012,7 +1012,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     Text(
                       _money(rp.receivables - rp.payables),
                       style: const TextStyle(
-                        fontSize: 12,
+                        fontSize: 14,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
@@ -1020,14 +1020,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       'Net',
                       style: TextStyle(
                         color: AppColors.textSecondary,
-                        fontSize: 11,
+                        fontSize: 14,
                       ),
                     ),
                     const Text(
                       'Outstanding',
                       style: TextStyle(
                         color: AppColors.textSecondary,
-                        fontSize: 11,
+                        fontSize: 14,
                       ),
                     ),
                   ],
@@ -1048,7 +1048,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             'Overdue: Rec. ${_money(rp.overdueReceivables)} | Pay. ${_money(rp.overduePayables)}',
             style: const TextStyle(
               color: _red,
-              fontSize: 11.5,
+              fontSize: 14,
               fontWeight: FontWeight.w900,
             ),
           ),
@@ -1087,7 +1087,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           Text(
                             _money(total),
                             style: const TextStyle(
-                              fontSize: 12,
+                              fontSize: 14,
                               fontWeight: FontWeight.w900,
                             ),
                           ),
@@ -1095,7 +1095,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                             'Total Expenses',
                             style: TextStyle(
                               color: AppColors.textSecondary,
-                              fontSize: 11,
+                              fontSize: 14,
                             ),
                           ),
                         ],
@@ -1244,7 +1244,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                               '${orders[i].orderNumber}   ${_displayDate(orders[i].date)}',
                               style: const TextStyle(
                                 color: AppColors.textSecondary,
-                                fontSize: 12,
+                                fontSize: 14,
                               ),
                             ),
                           ],
@@ -1460,7 +1460,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            fontSize: 12.5,
+                            fontSize: 14,
                             fontWeight: FontWeight.w900,
                           ),
                         ),
@@ -1523,7 +1523,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   ),
                 ),
               ),
-              if (trailing != null) trailing,
+              ?trailing,
             ],
           ),
           const SizedBox(height: 14),
@@ -1571,7 +1571,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         const SizedBox(width: 6),
         Text(
           label,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
         ),
       ],
     );
@@ -1585,7 +1585,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         const SizedBox(height: 7),
         Text(
           _money(value),
-          style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w900),
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900),
         ),
       ],
     );
@@ -1608,14 +1608,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                fontSize: 12.5,
+                fontSize: 14,
                 fontWeight: FontWeight.w700,
               ),
             ),
           ),
           Text(
             _money(item.amount),
-            style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w900),
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900),
           ),
         ],
       ),
@@ -1634,7 +1634,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           width: 18,
           child: Text(
             '$rank',
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900),
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900),
           ),
         ),
         const SizedBox(width: 6),
@@ -1650,7 +1650,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        fontSize: 12.5,
+                        fontSize: 14,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -1659,7 +1659,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   Text(
                     value,
                     style: const TextStyle(
-                      fontSize: 12,
+                      fontSize: 14,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
@@ -1697,7 +1697,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           label,
           style: TextStyle(
             color: active ? Colors.white : AppColors.textPrimary,
-            fontSize: 12,
+            fontSize: 14,
             fontWeight: FontWeight.w900,
           ),
         ),
@@ -1726,7 +1726,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         label,
         style: TextStyle(
           color: color,
-          fontSize: 11.5,
+          fontSize: 14,
           fontWeight: FontWeight.w900,
         ),
       ),
@@ -1744,7 +1744,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       ),
       child: const Text(
         'View all',
-        style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w900),
+        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900),
       ),
     );
   }
@@ -1757,7 +1757,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           message,
           style: const TextStyle(
             color: AppColors.textSecondary,
-            fontSize: 13,
+            fontSize: 14,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -1781,7 +1781,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             child: Text(
               'Refresh failed. Showing previous data. $message',
               style: const TextStyle(
-                fontSize: 12.5,
+                fontSize: 14,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -1807,7 +1807,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             crossAxisSpacing: 12,
             mainAxisExtent: 112,
           ),
-          itemBuilder: (_, __) => _skeleton(height: 112),
+          itemBuilder: (_, _) => _skeleton(height: 112),
         ),
       ],
     );
@@ -1835,7 +1835,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               const SizedBox(height: 12),
               const Text(
                 'Dashboard data could not load',
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
               ),
               const SizedBox(height: 8),
               Text(
@@ -1843,7 +1843,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: AppColors.textSecondary,
-                  fontSize: 13,
+                  fontSize: 14,
                 ),
               ),
               const SizedBox(height: 16),
@@ -1919,8 +1919,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         .where((p) => p.isNotEmpty)
         .toList();
     if (parts.isEmpty) return 'NA';
-    if (parts.length == 1)
+    if (parts.length == 1) {
       return parts.first.characters.take(2).toString().toUpperCase();
+    }
     return '${parts.first.characters.first}${parts.last.characters.first}'
         .toUpperCase();
   }
@@ -1981,12 +1982,12 @@ class _DonutSlice {
 class _TableText {
   static const TextStyle header = TextStyle(
     color: AppColors.textSecondary,
-    fontSize: 11.5,
+    fontSize: 14,
     fontWeight: FontWeight.w900,
   );
   static const TextStyle cell = TextStyle(
     color: AppColors.textPrimary,
-    fontSize: 11.5,
+    fontSize: 14,
     fontWeight: FontWeight.w700,
   );
 }
@@ -2047,7 +2048,7 @@ class _BarChartPainter extends CustomPainter {
           text: _dayLabel(point.date),
           style: const TextStyle(
             color: AppColors.textPrimary,
-            fontSize: 10,
+            fontSize: 14,
             fontWeight: FontWeight.w700,
           ),
         );

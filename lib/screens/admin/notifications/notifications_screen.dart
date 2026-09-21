@@ -87,7 +87,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             'No notifications available.',
                             style: TextStyle(
                               color: textSecondary,
-                              fontSize: 13,
+                              fontSize: 14,
                             ),
                           ),
                         ),
@@ -153,7 +153,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         item.title,
                         style: TextStyle(
                           color: textPrimary,
-                          fontSize: 15.5,
+                          fontSize: 14,
                           fontWeight: item.isRead
                               ? FontWeight.w600
                               : FontWeight.w800,
@@ -176,7 +176,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   item.message,
                   style: const TextStyle(
                     color: textSecondary,
-                    fontSize: 12.8,
+                    fontSize: 14,
                     height: 1.35,
                   ),
                 ),
@@ -185,7 +185,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   item.time,
                   style: const TextStyle(
                     color: textSecondary,
-                    fontSize: 11.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
                 ),

@@ -236,7 +236,7 @@ class _AdminListFilter extends StatelessWidget {
               'Filter by delivery partner',
               style: TextStyle(
                 color: AppColors.deliveryInk,
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: FontWeight.w900,
               ),
             ),
@@ -284,7 +284,7 @@ class _PartnerFilter extends StatelessWidget {
           icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
           style: const TextStyle(
             color: AppColors.deliveryInk,
-            fontSize: 12.5,
+            fontSize: 14,
             fontWeight: FontWeight.w700,
           ),
           items: partners
@@ -359,7 +359,7 @@ class _VehicleListCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.w900,
                         color: AppColors.deliveryInk,
                       ),
@@ -370,7 +370,7 @@ class _VehicleListCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        fontSize: 13,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: AppColors.textMuted,
                       ),
@@ -567,7 +567,7 @@ class _InfoField extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: AppColors.textMuted,
-                    fontSize: 12,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -578,7 +578,7 @@ class _InfoField extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: AppColors.deliveryInk,
-                    fontSize: 13.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -699,7 +699,7 @@ class _StockTableRow extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: AppColors.deliveryInk,
-                          fontSize: 12.5,
+                          fontSize: 14,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
@@ -710,7 +710,7 @@ class _StockTableRow extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: AppColors.textMuted,
-                          fontSize: 11,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -749,7 +749,7 @@ class _TableHeaderText extends StatelessWidget {
       overflow: TextOverflow.ellipsis,
       style: const TextStyle(
         color: AppColors.deliveryInk,
-        fontSize: 11.5,
+        fontSize: 14,
         fontWeight: FontWeight.w900,
       ),
     );
@@ -809,7 +809,7 @@ class _QuantityText extends StatelessWidget {
       overflow: TextOverflow.ellipsis,
       style: TextStyle(
         color: color ?? AppColors.deliveryInk,
-        fontSize: 12.5,
+        fontSize: 14,
         fontWeight: FontWeight.w800,
       ),
     );
@@ -855,7 +855,7 @@ class _RemainingSummary extends StatelessWidget {
                   'Total remaining units across all products',
                   style: TextStyle(
                     color: AppColors.textMuted,
-                    fontSize: 12,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -870,7 +870,7 @@ class _RemainingSummary extends StatelessWidget {
                 _qty(total),
                 style: const TextStyle(
                   color: Color(0xFF065F1B),
-                  fontSize: 24,
+                  fontSize: 16,
                   height: 1,
                   fontWeight: FontWeight.w900,
                 ),
@@ -879,7 +879,7 @@ class _RemainingSummary extends StatelessWidget {
                 'Units',
                 style: TextStyle(
                   color: Color(0xFF065F1B),
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -920,7 +920,7 @@ class _StatusPill extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
           color: color,
-          fontSize: 11,
+          fontSize: 14,
           fontWeight: FontWeight.w800,
         ),
       ),
@@ -1004,7 +1004,7 @@ class _ErrorState extends StatelessWidget {
               textAlign: TextAlign.center,
               maxLines: 4,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+              style: const TextStyle(fontSize: 14, color: AppColors.textMuted),
             ),
             const SizedBox(height: 12),
             OutlinedButton.icon(
@@ -1052,7 +1052,7 @@ class _EmptyState extends StatelessWidget {
             const Text(
               'Loaded stock details will appear here.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+              style: TextStyle(fontSize: 14, color: AppColors.textMuted),
             ),
           ],
         ),
@@ -1081,7 +1081,7 @@ class _InlineEmpty extends StatelessWidget {
         textAlign: TextAlign.center,
         style: const TextStyle(
           color: AppColors.textMuted,
-          fontSize: 12,
+          fontSize: 14,
           fontWeight: FontWeight.w700,
         ),
       ),

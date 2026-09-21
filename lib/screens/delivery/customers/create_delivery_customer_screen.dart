@@ -7,6 +7,7 @@ import '../../../constants/app_colors.dart';
 import '../../../models/customer_model.dart';
 import '../../../providers/api_provider.dart';
 import '../../../services/api_service.dart';
+import '../../../widgets/delivery/delivery_top_bar.dart';
 import 'customer_location_picker_screen.dart';
 
 class CreateDeliveryCustomerScreen extends StatefulWidget {
@@ -196,30 +197,31 @@ class _CreateDeliveryCustomerScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.deliveryBackground,
-      appBar: AppBar(
-        title: const Text(
-          'Create Customer',
-          style: TextStyle(fontSize: 19, fontWeight: FontWeight.w700),
-        ),
-        backgroundColor: AppColors.deliveryDashboardHeaderEnd,
-        foregroundColor: AppColors.surface,
-      ),
       body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 620),
-            child: Form(
-              key: _formKey,
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
-                keyboardDismissBehavior:
-                    ScrollViewKeyboardDismissBehavior.onDrag,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Center(
+        child: Column(
+          children: [
+            DeliveryTopBar(
+              title: 'Create Customer',
+              subtitle: 'Add a new delivery customer',
+              leadingIcon: Icons.arrow_back_rounded,
+              onLeadingTap: () => Navigator.of(context).maybePop(),
+            ),
+            Expanded(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 620),
+                  child: Form(
+                    key: _formKey,
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
+                      keyboardDismissBehavior:
+                          ScrollViewKeyboardDismissBehavior.onDrag,
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
+                          Center(
+                            child: Column(
+                              children: [
                           const Text(
                             'Profile Image (Optional)',
                             style: TextStyle(
@@ -481,11 +483,14 @@ class _CreateDeliveryCustomerScreenState
                               ),
                             ),
                     ),
-                  ],
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -509,7 +514,7 @@ class _CreateDeliveryCustomerScreenState
         ],
       ),
       style: const TextStyle(
-        fontSize: 13,
+        fontSize: 14,
         fontWeight: FontWeight.w700,
         color: AppColors.deliveryDashboardHeaderEnd,
       ),
@@ -550,7 +555,7 @@ class _CreateDeliveryCustomerScreenState
 
   InputDecoration _decoration(String? hint) => InputDecoration(
     hintText: hint,
-    hintStyle: const TextStyle(color: AppColors.textLightMuted, fontSize: 13),
+    hintStyle: const TextStyle(color: AppColors.textLightMuted, fontSize: 14),
     filled: true,
     fillColor: AppColors.surface,
     contentPadding: const EdgeInsets.symmetric(horizontal: 13, vertical: 14),

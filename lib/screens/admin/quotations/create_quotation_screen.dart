@@ -543,7 +543,7 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
                                     color: _step >= i
                                         ? Colors.white
                                         : AppColors.textMuted,
-                                    fontSize: 11,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.w800,
                                   ),
                                 ),
@@ -568,7 +568,7 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
                       color: _step == i
                           ? const Color(0xFF1234D8)
                           : AppColors.textMuted,
-                      fontSize: 10.5,
+                      fontSize: 14,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -1047,14 +1047,14 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
                               label(item),
                               style: const TextStyle(
                                 fontWeight: FontWeight.w800,
-                                fontSize: 13,
+                                fontSize: 14,
                               ),
                             ),
                             subtitle: sub.isEmpty
                                 ? null
                                 : Text(
                                     sub,
-                                    style: const TextStyle(fontSize: 11),
+                                    style: const TextStyle(fontSize: 14),
                                   ),
                             onTap: () => Navigator.of(context).pop(item),
                           );
@@ -1158,7 +1158,7 @@ class _QuickAddCustomerDialogState extends State<_QuickAddCustomerDialog> {
                     'Add Customer',
                     style: TextStyle(
                       color: AppColors.textPrimary,
-                      fontSize: 18,
+                      fontSize: 16,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
@@ -1262,7 +1262,7 @@ class _SectionTitle extends StatelessWidget {
       text,
       style: const TextStyle(
         color: AppColors.textPrimary,
-        fontSize: 15,
+        fontSize: 14,
         fontWeight: FontWeight.w900,
       ),
     );
@@ -1343,7 +1343,7 @@ class _SegmentButton extends StatelessWidget {
           textAlign: TextAlign.center,
           style: TextStyle(
             color: selected ? Colors.white : AppColors.textSecondary,
-            fontSize: 12,
+            fontSize: 14,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -1400,7 +1400,7 @@ class _SelectTile extends StatelessWidget {
                       color: hasValue
                           ? AppColors.textSecondary
                           : AppColors.textLightMuted,
-                      fontSize: 13,
+                      fontSize: 14,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -1469,7 +1469,7 @@ class _AppTextField extends StatelessWidget {
           minLines: minLines,
           maxLines: maxLines,
           keyboardType: keyboardType,
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
           decoration: _inputDecoration('Enter $label'),
         ),
       ],
@@ -1488,7 +1488,7 @@ class _FieldLabel extends StatelessWidget {
       label,
       style: const TextStyle(
         color: AppColors.textPrimary,
-        fontSize: 12,
+        fontSize: 14,
         fontWeight: FontWeight.w800,
       ),
     );
@@ -1524,7 +1524,7 @@ class _ProductPickerRow extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: AppColors.textPrimary,
-                    fontSize: 13,
+                    fontSize: 14,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -1533,7 +1533,7 @@ class _ProductPickerRow extends StatelessWidget {
                   '${product.sku}  |  ${_money(product.unitPrice)}',
                   style: const TextStyle(
                     color: AppColors.textMuted,
-                    fontSize: 11,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -1590,7 +1590,7 @@ class _QuoteItemRow extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: AppColors.textPrimary,
-                    fontSize: 13,
+                    fontSize: 14,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -1599,7 +1599,7 @@ class _QuoteItemRow extends StatelessWidget {
                   '${_money(item.product.unitPrice)} x ${_qty(item.quantity)} ${item.product.uom}',
                   style: const TextStyle(
                     color: AppColors.textMuted,
-                    fontSize: 11,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -1611,14 +1611,14 @@ class _QuoteItemRow extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Text(
               _qty(item.quantity),
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900),
             ),
           ),
           _QtyButton(icon: Icons.add_rounded, onTap: onIncrease),
           const SizedBox(width: 8),
           Text(
             _money(item.lineTotal),
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900),
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900),
           ),
           IconButton(
             onPressed: onRemove,
@@ -1675,7 +1675,7 @@ class _ReviewRow extends StatelessWidget {
               label,
               style: const TextStyle(
                 color: AppColors.textMuted,
-                fontSize: 12,
+                fontSize: 14,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -1687,7 +1687,7 @@ class _ReviewRow extends StatelessWidget {
               textAlign: TextAlign.right,
               style: const TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 12,
+                fontSize: 14,
                 fontWeight: FontWeight.w900,
               ),
             ),
@@ -1717,7 +1717,7 @@ class _ReviewItemRow extends StatelessWidget {
                 item.product.name,
                 style: const TextStyle(
                   color: AppColors.textPrimary,
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w900,
                 ),
               ),
@@ -1725,7 +1725,7 @@ class _ReviewItemRow extends StatelessWidget {
                 '${_qty(item.quantity)} x ${_money(item.product.unitPrice)}',
                 style: const TextStyle(
                   color: AppColors.textMuted,
-                  fontSize: 11,
+                  fontSize: 14,
                 ),
               ),
             ],
@@ -1733,7 +1733,7 @@ class _ReviewItemRow extends StatelessWidget {
         ),
         Text(
           _money(item.lineTotal),
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900),
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900),
         ),
       ],
     );
@@ -1861,7 +1861,7 @@ class _EmptyInline extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+        style: const TextStyle(color: AppColors.textMuted, fontSize: 14),
       ),
     );
   }
@@ -1897,7 +1897,7 @@ class _CenteredState extends StatelessWidget {
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 18,
+                fontSize: 16,
                 fontWeight: FontWeight.w900,
               ),
             ),
@@ -1905,7 +1905,7 @@ class _CenteredState extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 14),
             ),
             if (actionLabel != null && onAction != null) ...[
               const SizedBox(height: 14),
@@ -2065,7 +2065,7 @@ class _QuoteItem {
 InputDecoration _inputDecoration(String hint, {IconData? prefixIcon}) {
   return InputDecoration(
     hintText: hint,
-    hintStyle: const TextStyle(color: AppColors.textLightMuted, fontSize: 12),
+    hintStyle: const TextStyle(color: AppColors.textLightMuted, fontSize: 14),
     prefixIcon: prefixIcon == null ? null : Icon(prefixIcon, size: 18),
     filled: true,
     fillColor: const Color(0xFFF8FAFC),

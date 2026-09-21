@@ -258,7 +258,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                                   '${suppliers.length} to ${suppliers.isEmpty ? 0 : suppliers.length}',
                                   style: const TextStyle(
                                     color: Color(0xFF94A3B8),
-                                    fontSize: 13.5,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -267,7 +267,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                                   'Suppliers',
                                   style: TextStyle(
                                     color: Color(0xFF94A3B8),
-                                    fontSize: 13.5,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -297,7 +297,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
           hintText: 'Search suppliers, contact, phone',
           hintStyle: const TextStyle(
             color: Color(0xFF94A3B8),
-            fontSize: 13.5,
+            fontSize: 14,
             fontWeight: FontWeight.w500,
           ),
           prefixIcon: const Icon(Icons.search_rounded, size: 20),
@@ -539,7 +539,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                         supplier.category,
                         style: const TextStyle(
                           color: Color(0xFF94A3B8),
-                          fontSize: 12.5,
+                          fontSize: 14,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -555,7 +555,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
               supplier.contact,
               style: const TextStyle(
                 color: Color(0xFF111827),
-                fontSize: 13.5,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -566,7 +566,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
               supplier.city,
               style: const TextStyle(
                 color: Color(0xFF111827),
-                fontSize: 13.5,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -577,7 +577,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
               supplier.totalPurchases,
               style: const TextStyle(
                 color: Color(0xFF111827),
-                fontSize: 13.5,
+                fontSize: 14,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -588,7 +588,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
               supplier.outstandingPayable,
               style: const TextStyle(
                 color: Color(0xFF111827),
-                fontSize: 13.5,
+                fontSize: 14,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -610,7 +610,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                   supplier.status,
                   style: TextStyle(
                     color: supplier.statusColor,
-                    fontSize: 12,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -679,7 +679,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: Color(0xFF111827),
-                        fontSize: 15,
+                        fontSize: 14,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -688,7 +688,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                       supplier.category,
                       style: const TextStyle(
                         color: Color(0xFF94A3B8),
-                        fontSize: 12.5,
+                        fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -743,7 +743,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                 supplier.status,
                 style: TextStyle(
                   color: supplier.statusColor,
-                  fontSize: 12.5,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -762,7 +762,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
           label.toUpperCase(),
           style: const TextStyle(
             color: Color(0xFF94A3B8),
-            fontSize: 10.5,
+            fontSize: 14,
             fontWeight: FontWeight.w800,
             letterSpacing: 0.8,
           ),
@@ -774,7 +774,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(
             color: Color(0xFF111827),
-            fontSize: 13.8,
+            fontSize: 14,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -810,7 +810,7 @@ class _TabChip extends StatelessWidget {
                 color: selected
                     ? const Color(0xFF0B4A06)
                     : const Color(0xFF64748B),
-                fontSize: 14.5,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -842,7 +842,7 @@ class _TableHead extends StatelessWidget {
       label,
       style: const TextStyle(
         color: Color(0xFF94A3B8),
-        fontSize: 11.5,
+        fontSize: 14,
         fontWeight: FontWeight.w800,
         letterSpacing: 1.2,
       ),

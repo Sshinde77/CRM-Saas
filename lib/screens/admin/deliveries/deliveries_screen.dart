@@ -191,14 +191,14 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                       'Deliveries',
                       style: TextStyle(
                         color: textPrimary,
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
                     const SizedBox(height: 4),
                     const Text(
                       'Track order delivery status and outstanding balances',
-                      style: TextStyle(color: textSecondary, fontSize: 12.5),
+                      style: TextStyle(color: textSecondary, fontSize: 14),
                     ),
                     const SizedBox(height: 16),
                     LayoutBuilder(
@@ -282,7 +282,7 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                             'Search by order, customer, delivery partner, status, scheduled date, or amount due.',
                             style: TextStyle(
                               color: textSecondary,
-                              fontSize: 12,
+                              fontSize: 14,
                             ),
                           ),
                           const SizedBox(height: 12),
@@ -335,7 +335,7 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                                   'No deliveries match your search.',
                                   style: TextStyle(
                                     color: textSecondary,
-                                    fontSize: 13,
+                                    fontSize: 14,
                                   ),
                                 ),
                               ),
@@ -411,7 +411,7 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                   label,
                   style: const TextStyle(
                     color: textSecondary,
-                    fontSize: 12,
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -467,7 +467,7 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                       delivery.orderNo,
                       style: const TextStyle(
                         color: textPrimary,
-                        fontSize: 13,
+                        fontSize: 14,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -476,7 +476,7 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                       delivery.scheduledDate.toIso8601String().split('T').first,
                       style: const TextStyle(
                         color: textSecondary,
-                        fontSize: 11.5,
+                        fontSize: 14,
                       ),
                     ),
                   ],
@@ -495,7 +495,7 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                   delivery.status,
                   style: TextStyle(
                     color: statusColor,
-                    fontSize: 11.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -534,7 +534,7 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
           label,
           style: const TextStyle(
             color: textSecondary,
-            fontSize: 11.5,
+            fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -543,7 +543,7 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
           value,
           style: const TextStyle(
             color: textPrimary,
-            fontSize: 12.5,
+            fontSize: 14,
             fontWeight: FontWeight.w700,
           ),
         ),

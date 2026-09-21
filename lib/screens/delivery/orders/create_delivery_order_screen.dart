@@ -9,6 +9,7 @@ import '../../../models/app_user.dart';
 import '../../../models/auth_models.dart';
 import '../../../providers/api_provider.dart';
 import '../../../services/api_service.dart';
+import '../../../widgets/delivery/delivery_top_bar.dart';
 
 class CreateDeliveryOrderScreen extends StatefulWidget {
   final Widget? drawer;
@@ -404,27 +405,6 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
       key: _scaffoldKey,
       drawer: widget.drawer,
       backgroundColor: AppColors.deliveryBackground,
-      appBar: AppBar(
-        title: const Text('Create Order'),
-        backgroundColor: AppColors.deliveryDashboardHeaderEnd,
-        foregroundColor: AppColors.surface,
-        leading: widget.drawer == null
-            ? null
-            : IconButton(
-                tooltip: 'Open menu',
-                icon: const Icon(Icons.menu),
-                onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-              ),
-        actions: widget.drawer == null
-            ? null
-            : [
-                IconButton(
-                  tooltip: 'Back',
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: () => Navigator.of(context).maybePop(),
-                ),
-              ],
-      ),
       bottomNavigationBar: SafeArea(
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -443,7 +423,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                   children: [
                     Text(
                       '${_selected.length} items',
-                      style: const TextStyle(fontSize: 12),
+                      style: const TextStyle(fontSize: 14),
                     ),
                     Text(
                       _money(_total),
@@ -482,14 +462,38 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
           ),
         ),
       ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 720),
-          child: Form(
-            key: _form,
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            DeliveryTopBar(
+              title: 'Create Order',
+              subtitle: 'Build a delivery sales order',
+              leadingIcon: widget.drawer == null
+                  ? Icons.arrow_back_rounded
+                  : Icons.menu_rounded,
+              onLeadingTap: widget.drawer == null
+                  ? () => Navigator.of(context).maybePop()
+                  : () => _scaffoldKey.currentState?.openDrawer(),
+              actions: widget.drawer == null
+                  ? const []
+                  : [
+                      DeliveryTopBarAction(
+                        icon: Icons.arrow_back_rounded,
+                        tooltip: 'Back',
+                        onTap: () => Navigator.of(context).maybePop(),
+                      ),
+                    ],
+            ),
+            Expanded(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 720),
+                  child: Form(
+                    key: _form,
+                    child: ListView(
+                      padding: const EdgeInsets.all(16),
+                      children: [
                 if (_loading)
                   const Padding(
                     padding: EdgeInsets.only(bottom: 16),
@@ -561,7 +565,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                                 selectedCustomer.billingAddress ??
                                 'No address available',
                             style: const TextStyle(
-                              fontSize: 12,
+                              fontSize: 14,
                               color: AppColors.textLightMuted,
                             ),
                           ),
@@ -814,9 +818,13 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-              ],
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -877,14 +885,14 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                     p.name,
                     style: const TextStyle(
                       fontWeight: FontWeight.w700,
-                      fontSize: 13,
+                      fontSize: 14,
                     ),
                   ),
                   if (p.sku.isNotEmpty)
                     Text(
                       'SKU: ${p.sku}',
                       style: const TextStyle(
-                        fontSize: 10,
+                        fontSize: 14,
                         color: AppColors.textLightMuted,
                       ),
                     ),
@@ -892,7 +900,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                   Text(
                     p.availabilityLabel,
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: p.stock == null
                           ? AppColors.textLightMuted
@@ -906,7 +914,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                   Text(
                     '${_money(p.price)} / ${p.unit}',
                     style: const TextStyle(
-                      fontSize: 11,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -1001,7 +1009,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
           child: Text(
             title,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 14,
               fontWeight: bold ? FontWeight.w800 : FontWeight.w500,
             ),
           ),
@@ -1010,7 +1018,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
         Text(
           value,
           style: TextStyle(
-            fontSize: 13,
+            fontSize: 14,
             color: bold ? _green : null,
             fontWeight: bold ? FontWeight.w800 : FontWeight.w600,
           ),
@@ -1023,7 +1031,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
     child: Text(
       text,
       style: const TextStyle(
-        fontSize: 15,
+        fontSize: 14,
         fontWeight: FontWeight.w800,
         color: AppColors.deliveryDashboardHeaderEnd,
       ),
@@ -1033,7 +1041,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
     padding: const EdgeInsets.only(bottom: 6),
     child: Text(
       text,
-      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
     ),
   );
   Widget _dateField(String title, DateTime date, bool delivery) => Column(
@@ -1047,7 +1055,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
           decoration: _decoration('').copyWith(
             suffixIcon: const Icon(Icons.calendar_month_outlined, size: 18),
           ),
-          child: Text(_date(date), style: const TextStyle(fontSize: 12)),
+          child: Text(_date(date), style: const TextStyle(fontSize: 14)),
         ),
       ),
     ],
@@ -1089,13 +1097,13 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
             const SizedBox(height: 6),
             Text(
               title,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 4),
             Text(
               subtitle,
               style: const TextStyle(
-                fontSize: 10,
+                fontSize: 14,
                 color: AppColors.textLightMuted,
               ),
             ),
@@ -1106,7 +1114,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
   );
   InputDecoration _decoration(String hint, {IconData? icon}) => InputDecoration(
     hintText: hint,
-    hintStyle: const TextStyle(fontSize: 12),
+    hintStyle: const TextStyle(fontSize: 14),
     prefixIcon: icon == null ? null : Icon(icon, color: _green, size: 20),
     filled: true,
     fillColor: AppColors.surface,
@@ -1446,15 +1454,6 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
     final warehouseName = _text(widget.warehouse, ['name', 'warehouse_name']);
     return Scaffold(
       backgroundColor: AppColors.deliveryBackground,
-      appBar: AppBar(
-        title: const Text(
-          'Sales Order Preview',
-          style: TextStyle(fontSize: 19, fontWeight: FontWeight.w700),
-        ),
-        backgroundColor: _header,
-        foregroundColor: AppColors.surface,
-        surfaceTintColor: Colors.transparent,
-      ),
       bottomNavigationBar: SafeArea(
         child: Container(
           padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
@@ -1494,13 +1493,24 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
           ),
         ),
       ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 720),
-          child: ListView(
-            controller: _previewScrollController,
-            padding: const EdgeInsets.fromLTRB(16, 18, 16, 24),
-            children: [
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            DeliveryTopBar(
+              title: 'Sales Order Preview',
+              subtitle: 'Review order details before creating',
+              leadingIcon: Icons.arrow_back_rounded,
+              onLeadingTap: () => Navigator.of(context).maybePop(),
+            ),
+            Expanded(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 720),
+                  child: ListView(
+                    controller: _previewScrollController,
+                    padding: const EdgeInsets.fromLTRB(16, 18, 16, 24),
+                    children: [
               const Text(
                 'Draft Sales Order',
                 style: TextStyle(
@@ -1539,7 +1549,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                             Text(
                               address,
                               style: const TextStyle(
-                                fontSize: 12,
+                                fontSize: 14,
                                 color: AppColors.textSecondary,
                               ),
                             ),
@@ -1691,8 +1701,12 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                   ],
                 ),
               ),
-            ],
-          ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -1826,7 +1840,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                                       Text(
                                         item.product.name,
                                         style: const TextStyle(
-                                          fontSize: 11,
+                                          fontSize: 14,
                                           fontWeight: FontWeight.w700,
                                         ),
                                       ),
@@ -1834,7 +1848,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                                         Text(
                                           'SKU: ${item.product.sku}',
                                           style: const TextStyle(
-                                            fontSize: 9,
+                                            fontSize: 14,
                                             color: AppColors.textMuted,
                                           ),
                                         ),
@@ -1865,7 +1879,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                                   child: Text(
                                     '${item.quantity}',
                                     style: const TextStyle(
-                                      fontSize: 11,
+                                      fontSize: 14,
                                       fontWeight: FontWeight.w700,
                                     ),
                                   ),
@@ -1891,7 +1905,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                             child: Text(
                               _money(item.product.price),
                               textAlign: TextAlign.right,
-                              style: const TextStyle(fontSize: 10),
+                              style: const TextStyle(fontSize: 14),
                             ),
                           ),
                           Expanded(
@@ -1900,7 +1914,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                               _money(item.product.price * item.quantity),
                               textAlign: TextAlign.right,
                               style: const TextStyle(
-                                fontSize: 10,
+                                fontSize: 14,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -1960,7 +1974,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                     Text(
                       'SKU: ${item.product.sku}',
                       style: const TextStyle(
-                        fontSize: 11,
+                        fontSize: 14,
                         color: AppColors.textMuted,
                       ),
                     ),
@@ -2004,7 +2018,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                 Text(
                   '${_money(item.product.price)} / ${item.product.unit}',
                   style: const TextStyle(
-                    fontSize: 11,
+                    fontSize: 14,
                     color: AppColors.textSecondary,
                   ),
                 ),

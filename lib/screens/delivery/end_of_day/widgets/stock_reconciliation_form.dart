@@ -112,7 +112,7 @@ class _StockReconciliationFormState extends State<StockReconciliationForm> {
               ),
               const Divider(height: 1, color: Color(0xFFE9EDF5)),
               const _ReconcileHeader(),
-              ...widget.session.items.map(_ReconcileRow),
+              ...widget.session.items.map(_reconcileRow),
             ],
           ),
         ),
@@ -125,7 +125,7 @@ class _StockReconciliationFormState extends State<StockReconciliationForm> {
                 'Notes (Optional)',
                 style: TextStyle(
                   color: AppColors.deliveryInk,
-                  fontSize: 13,
+                  fontSize: 14,
                   fontWeight: FontWeight.w900,
                 ),
               ),
@@ -139,7 +139,7 @@ class _StockReconciliationFormState extends State<StockReconciliationForm> {
                   hintText: 'e.g. 2 units missing/damaged',
                   hintStyle: const TextStyle(
                     color: AppColors.textMuted,
-                    fontSize: 12,
+                    fontSize: 14,
                   ),
                   filled: true,
                   fillColor: Colors.white,
@@ -190,7 +190,7 @@ class _StockReconciliationFormState extends State<StockReconciliationForm> {
     );
   }
 
-  Widget _ReconcileRow(EndOfDayStockItem item) {
+  Widget _reconcileRow(EndOfDayStockItem item) {
     final physical = _valueFor(item);
     final variance = physical - item.expectedClosingQuantity;
 
@@ -214,7 +214,7 @@ class _StockReconciliationFormState extends State<StockReconciliationForm> {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: AppColors.deliveryInk,
-                    fontSize: 12,
+                    fontSize: 14,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -225,7 +225,7 @@ class _StockReconciliationFormState extends State<StockReconciliationForm> {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: AppColors.textMuted,
-                    fontSize: 10.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -239,7 +239,7 @@ class _StockReconciliationFormState extends State<StockReconciliationForm> {
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: AppColors.deliveryInk,
-                fontSize: 12,
+                fontSize: 14,
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -271,7 +271,7 @@ class _StockReconciliationFormState extends State<StockReconciliationForm> {
                   '0 - ${qty(item.expectedClosingQuantity)}',
                   style: const TextStyle(
                     color: AppColors.textMuted,
-                    fontSize: 10.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -317,7 +317,7 @@ class _HeaderText extends StatelessWidget {
       overflow: TextOverflow.ellipsis,
       style: const TextStyle(
         color: AppColors.deliveryInk,
-        fontSize: 10.5,
+        fontSize: 14,
         fontWeight: FontWeight.w900,
       ),
     );

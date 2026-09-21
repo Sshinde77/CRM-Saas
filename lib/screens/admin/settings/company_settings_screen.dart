@@ -124,7 +124,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
                       'BUSINESS SETTINGS',
                       style: TextStyle(
                         color: AppColors.textMuted,
-                        fontSize: 11,
+                        fontSize: 14,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 0.8,
                       ),
@@ -264,7 +264,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 18,
+                fontSize: 16,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -349,7 +349,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
                   '80% completed',
                   style: TextStyle(
                     color: AppColors.textSecondary,
-                    fontSize: 12,
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -442,7 +442,7 @@ class _SettingsTile extends StatelessWidget {
                       section.subtitle,
                       style: const TextStyle(
                         color: AppColors.textSecondary,
-                        fontSize: 12,
+                        fontSize: 14,
                         height: 1.2,
                       ),
                     ),

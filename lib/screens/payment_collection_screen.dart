@@ -7,6 +7,7 @@ import '../constants/api_constants.dart';
 import '../constants/app_colors.dart';
 import '../models/customer_model.dart';
 import '../providers/api_provider.dart';
+import '../widgets/delivery/delivery_top_bar.dart';
 
 class PaymentCollectionScreen extends StatefulWidget {
   const PaymentCollectionScreen({
@@ -161,8 +162,7 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
     return {
       ApiConstants.acceptHeader: ApiConstants.jsonMimeType,
       if (token != null && token.isNotEmpty)
-        ApiConstants.authorizationHeader:
-            ApiConstants.bearerPrefix + ' ' + token,
+        ApiConstants.authorizationHeader: '${ApiConstants.bearerPrefix} $token',
     };
   }
 
@@ -175,35 +175,42 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
       data: MediaQuery.of(context).copyWith(textScaler: textScaler),
       child: Scaffold(
         backgroundColor: AppColors.deliveryBackground,
-        appBar: AppBar(
-          title: const Text('Create Collection'),
-          backgroundColor: AppColors.deliveryDashboardHeaderEnd,
-          foregroundColor: AppColors.surface,
-        ),
         body: SafeArea(
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 720),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(20),
-                        child: _body(),
+          child: Column(
+            children: [
+              DeliveryTopBar(
+                title: 'Create Collection',
+                subtitle: 'Record a customer payment',
+                leadingIcon: Icons.arrow_back_rounded,
+                onLeadingTap: () => Navigator.of(context).maybePop(),
+              ),
+              Expanded(
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 720),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: SingleChildScrollView(
+                              padding: const EdgeInsets.all(20),
+                              child: _body(),
+                            ),
+                          ),
+                          const Divider(height: 1, color: Color(0xFFE5E7EB)),
+                          _Footer(
+                            busy: _submitting,
+                            onCancel: () => Navigator.of(context).maybePop(),
+                            onSubmit: _recordCollection,
+                          ),
+                        ],
                       ),
                     ),
-                    const Divider(height: 1, color: Color(0xFFE5E7EB)),
-                    _Footer(
-                      busy: _submitting,
-                      onCancel: () => Navigator.of(context).maybePop(),
-                      onSubmit: _recordCollection,
-                    ),
-                  ],
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
         ),
       ),
@@ -217,15 +224,16 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
         child: Center(child: CircularProgressIndicator(strokeWidth: 2.6)),
       );
     }
-    if (_error != null)
+    if (_error != null) {
       return _ErrorState(message: _error!, onRetry: _loadCustomers);
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const _Label('Customer'),
         const SizedBox(height: 8),
         DropdownButtonFormField<_PaymentCustomer>(
-          value: _selectedCustomer,
+          initialValue: _selectedCustomer,
           isExpanded: true,
           decoration: _decoration(),
           hint: const Text('Select customer'),
@@ -250,7 +258,7 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
         const _Label('Payment Mode'),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
-          value: _paymentMode,
+          initialValue: _paymentMode,
           isExpanded: true,
           decoration: _decoration(),
           items: const [
@@ -277,8 +285,9 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
             final amount = double.tryParse((value ?? '').trim());
             if (_selectedCustomer == null) return 'Please select customer';
             if (amount == null || amount <= 0) return 'Enter amount';
-            if (amount > _amountDue)
+            if (amount > _amountDue) {
               return 'Amount cannot be more than pending amount';
+            }
             return null;
           },
         ),
@@ -302,10 +311,10 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
         Align(
           alignment: Alignment.centerRight,
           child: Text(
-            'Remaining: ' + _formatMoney(_remainingAmount),
+            'Remaining: ${_formatMoney(_remainingAmount)}',
             style: const TextStyle(
               color: Color(0xFF667085),
-              fontSize: 12,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
           ),

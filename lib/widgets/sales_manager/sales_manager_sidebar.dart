@@ -68,7 +68,7 @@ class SalesManagerSidebar extends StatelessWidget {
                 'MAIN MENU',
                 style: TextStyle(
                   color: AppColors.textSecondary.withValues(alpha: 0.72),
-                  fontSize: 11,
+                  fontSize: 14,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 1.2,
                 ),
@@ -138,7 +138,7 @@ class SalesManagerSidebar extends StatelessWidget {
                                     color: selected
                                         ? AppColors.textPrimary
                                         : AppColors.textSecondary,
-                                    fontSize: 13.5,
+                                    fontSize: 14,
                                     fontWeight: selected
                                         ? FontWeight.w800
                                         : FontWeight.w600,

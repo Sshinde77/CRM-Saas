@@ -209,7 +209,7 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
                                   itemCount: returns.length,
                                   shrinkWrap: true,
                                   physics: const NeverScrollableScrollPhysics(),
-                                  separatorBuilder: (_, __) => const Divider(
+                                  separatorBuilder: (_, _) => const Divider(
                                     height: 20,
                                     color: Color(0xFFE5E7EB),
                                   ),
@@ -233,7 +233,7 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
                             '${returns.length} to ${returns.isEmpty ? 0 : returns.length}',
                             style: const TextStyle(
                               color: Color(0xFF94A3B8),
-                              fontSize: 13.5,
+                              fontSize: 14,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -242,7 +242,7 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
                             'Sales Returns',
                             style: TextStyle(
                               color: Color(0xFF94A3B8),
-                              fontSize: 13.5,
+                              fontSize: 14,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -290,7 +290,7 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
                     'RS',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 11,
+                      fontSize: 14,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -303,7 +303,7 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
                       'Rahul Sharma',
                       style: TextStyle(
                         color: textPrimary,
-                        fontSize: 13.5,
+                        fontSize: 14,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -312,7 +312,7 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
                       'Admin',
                       style: TextStyle(
                         color: Color(0xFF0B4A06),
-                        fontSize: 11.5,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -362,7 +362,7 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
           hintText: 'Search sales returns',
           hintStyle: const TextStyle(
             color: Color(0xFF94A3B8),
-            fontSize: 13.5,
+            fontSize: 14,
             fontWeight: FontWeight.w500,
           ),
           filled: true,
@@ -409,7 +409,7 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
           borderRadius: BorderRadius.circular(14),
           style: const TextStyle(
             color: textPrimary,
-            fontSize: 13.5,
+            fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
           selectedItemBuilder: (context) {
@@ -421,7 +421,7 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
                       status,
                       style: const TextStyle(
                         color: textPrimary,
-                        fontSize: 13.5,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -490,7 +490,7 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
               'No sales returns found',
               style: TextStyle(
                 color: textPrimary,
-                fontSize: 15,
+                fontSize: 14,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -498,7 +498,7 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
             const Text(
               'Raise a return request against an existing invoice.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: textSecondary, fontSize: 13),
+              style: TextStyle(color: textSecondary, fontSize: 14),
             ),
             const SizedBox(height: 18),
             _newReturnButton(compact: true),
@@ -537,7 +537,7 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
                   item.returnNo,
                   style: const TextStyle(
                     color: textPrimary,
-                    fontSize: 15,
+                    fontSize: 14,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -548,7 +548,7 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: textSecondary,
-                    fontSize: 12.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -566,7 +566,7 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
               item.status,
               style: TextStyle(
                 color: statusColor,
-                fontSize: 11.5,
+                fontSize: 14,
                 fontWeight: FontWeight.w700,
               ),
             ),

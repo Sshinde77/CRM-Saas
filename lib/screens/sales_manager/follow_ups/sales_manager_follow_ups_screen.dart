@@ -195,7 +195,7 @@ class _SalesManagerFollowUpsScreenState
                                     'Follow-Ups',
                                     style: TextStyle(
                                       color: AppColors.textPrimary,
-                                      fontSize: 22,
+                                      fontSize: 16,
                                       fontWeight: FontWeight.w800,
                                     ),
                                   ),
@@ -204,7 +204,7 @@ class _SalesManagerFollowUpsScreenState
                                     'Track customer reminders and schedule new follow-ups.',
                                     style: TextStyle(
                                       color: AppColors.textSecondary,
-                                      fontSize: 13,
+                                      fontSize: 14,
                                     ),
                                   ),
                                 ],
@@ -296,7 +296,7 @@ class _FollowUpCard extends StatelessWidget {
                         item.customerName,
                         style: const TextStyle(
                           color: AppColors.textPrimary,
-                          fontSize: 15,
+                          fontSize: 14,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
@@ -324,7 +324,7 @@ class _FollowUpCard extends StatelessWidget {
                   item.note,
                   style: const TextStyle(
                     color: AppColors.textSecondary,
-                    fontSize: 13,
+                    fontSize: 14,
                   ),
                 ),
               ],
@@ -359,7 +359,7 @@ class _MetaChip extends StatelessWidget {
             label,
             style: const TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 11.5,
+              fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -387,7 +387,7 @@ class _StatusPill extends StatelessWidget {
         label,
         style: TextStyle(
           color: color,
-          fontSize: 11,
+          fontSize: 14,
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -498,7 +498,7 @@ class _AddFollowUpSheetState extends State<_AddFollowUpSheet> {
                 'Add Follow Up',
                 style: TextStyle(
                   color: AppColors.textPrimary,
-                  fontSize: 18,
+                  fontSize: 16,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -589,7 +589,7 @@ class _FieldLabel extends StatelessWidget {
       label,
       style: const TextStyle(
         color: AppColors.textPrimary,
-        fontSize: 13,
+        fontSize: 14,
         fontWeight: FontWeight.w700,
       ),
     );
@@ -615,7 +615,7 @@ class _InputBox extends StatelessWidget {
       cursorColor: AppColors.primary,
       style: const TextStyle(
         color: AppColors.textPrimary,
-        fontSize: 13.5,
+        fontSize: 14,
         fontWeight: FontWeight.w600,
       ),
       decoration: InputDecoration(
@@ -624,7 +624,7 @@ class _InputBox extends StatelessWidget {
         hintText: hintText,
         hintStyle: const TextStyle(
           color: AppColors.textLightMuted,
-          fontSize: 12.5,
+          fontSize: 14,
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 14,

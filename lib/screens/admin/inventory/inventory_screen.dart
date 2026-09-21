@@ -283,14 +283,14 @@ class _InventoryScreenState extends State<InventoryScreen> {
                       'Inventory',
                       style: TextStyle(
                         color: textPrimary,
-                        fontSize: 24,
+                        fontSize: 16,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
                     const SizedBox(height: 4),
                     const Text(
                       'Track stock levels, reorder points, and stock value across your catalog',
-                      style: TextStyle(color: textSecondary, fontSize: 13),
+                      style: TextStyle(color: textSecondary, fontSize: 14),
                     ),
                     const SizedBox(height: 20),
 
@@ -308,7 +308,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                     const SizedBox(height: 4),
                     const Text(
                       'Browse stock by category',
-                      style: TextStyle(color: textSecondary, fontSize: 12.5),
+                      style: TextStyle(color: textSecondary, fontSize: 14),
                     ),
                     const SizedBox(height: 12),
                     _buildCategoryCatalog(),
@@ -325,7 +325,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                             'No inventory items match your filters.',
                             style: TextStyle(
                               color: textSecondary,
-                              fontSize: 13,
+                              fontSize: 14,
                             ),
                           ),
                         ),
@@ -422,7 +422,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                   stat.label,
                   style: const TextStyle(
                     color: textSecondary,
-                    fontSize: 12.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
                   maxLines: 2,
@@ -444,7 +444,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
           Text(
             stat.value,
             style: const TextStyle(
-              fontSize: 19,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
               color: textPrimary,
             ),
@@ -493,7 +493,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                     style: TextStyle(
                       color: selected ? Colors.white : textPrimary,
                       fontWeight: FontWeight.w700,
-                      fontSize: 13,
+                      fontSize: 14,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -503,7 +503,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                       color: selected
                           ? Colors.white.withValues(alpha: 0.85)
                           : textSecondary,
-                      fontSize: 11.5,
+                      fontSize: 14,
                     ),
                   ),
                 ],
@@ -575,7 +575,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
             alignment: Alignment.centerRight,
             child: Text(
               '$resultCount results',
-              style: const TextStyle(color: textSecondary, fontSize: 12.5),
+              style: const TextStyle(color: textSecondary, fontSize: 14),
             ),
           ),
         ],
@@ -619,7 +619,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                   item.name,
                   style: const TextStyle(
                     color: AppColors.purple,
-                    fontSize: 15,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -641,7 +641,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                   status,
                   style: TextStyle(
                     color: statusColor,
-                    fontSize: 11.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -694,7 +694,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
           label,
           style: const TextStyle(
             color: textSecondary,
-            fontSize: 11.5,
+            fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -703,7 +703,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
           value,
           style: const TextStyle(
             color: textPrimary,
-            fontSize: 13.5,
+            fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
           overflow: TextOverflow.ellipsis,

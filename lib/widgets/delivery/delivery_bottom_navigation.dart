@@ -214,7 +214,7 @@ class DeliveryBottomNavigation extends StatelessWidget {
                   onPressed: () => _navigate(context, 2),
                   tooltip: 'Create actions',
                   style: IconButton.styleFrom(
-                    backgroundColor: AppColors.deliveryDashboardNavActive,
+                    backgroundColor: AppColors.primary,
                     foregroundColor: AppColors.surface,
                     shape: const CircleBorder(),
                   ),
@@ -302,14 +302,18 @@ class _BottomNavItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 7),
         decoration: BoxDecoration(
           color: selected
-              ? AppColors.deliveryDashboardNavActive.withValues(alpha: 0.78)
+              ? AppColors.deliveryDashboardNavActive
               : Colors.transparent,
           borderRadius: BorderRadius.circular(14),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(info.icon, color: AppColors.surface, size: selected ? 25 : 23),
+            Icon(
+              info.icon,
+              color: selected ? AppColors.primary : AppColors.surface,
+              size: selected ? 25 : 23,
+            ),
             const SizedBox(height: 4),
             FittedBox(
               fit: BoxFit.scaleDown,
@@ -317,10 +321,10 @@ class _BottomNavItem extends StatelessWidget {
                 info.label,
                 maxLines: 1,
                 style: TextStyle(
-                  color: AppColors.surface.withValues(
-                    alpha: selected ? 1 : 0.88,
-                  ),
-                  fontSize: selected ? 11 : 10,
+                  color: selected
+                      ? AppColors.primary
+                      : AppColors.surface.withValues(alpha: 0.88),
+                  fontSize: 14,
                   fontWeight: selected ? FontWeight.w900 : FontWeight.w600,
                 ),
               ),

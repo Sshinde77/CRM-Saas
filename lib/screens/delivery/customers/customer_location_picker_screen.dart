@@ -4,6 +4,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../widgets/delivery/delivery_top_bar.dart';
 
 class CustomerLocationPickerScreen extends StatefulWidget {
   const CustomerLocationPickerScreen({super.key, this.initialLocation});
@@ -36,13 +37,17 @@ class _CustomerLocationPickerScreenState
   Widget build(BuildContext context) {
     final selected = _selected;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Pin customer location'),
-        backgroundColor: AppColors.deliveryDashboardHeaderEnd,
-        foregroundColor: AppColors.surface,
-      ),
       body: Column(
         children: [
+          SafeArea(
+            bottom: false,
+            child: DeliveryTopBar(
+              title: 'Pin customer location',
+              subtitle: 'Tap the map to place the delivery pin',
+              leadingIcon: Icons.arrow_back_rounded,
+              onLeadingTap: () => Navigator.of(context).maybePop(),
+            ),
+          ),
           const Padding(
             padding: EdgeInsets.all(16),
             child: Text('Move and zoom the map, then tap to place your pin.'),

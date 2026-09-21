@@ -287,7 +287,7 @@ class _CheckInCardState extends State<_CheckInCard> {
             'Customer Name *',
             style: TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -300,7 +300,7 @@ class _CheckInCardState extends State<_CheckInCard> {
               cursorColor: AppColors.primary,
               style: const TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 13.5,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
               decoration: const InputDecoration(
@@ -320,7 +320,7 @@ class _CheckInCardState extends State<_CheckInCard> {
             'Notes (optional)',
             style: TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -334,7 +334,7 @@ class _CheckInCardState extends State<_CheckInCard> {
               cursorColor: AppColors.primary,
               style: const TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 13.5,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
               decoration: const InputDecoration(
@@ -471,7 +471,7 @@ class _VisitHistoryCard extends StatelessWidget {
                   record.customer,
                   style: const TextStyle(
                     color: AppColors.textPrimary,
-                    fontSize: 15,
+                    fontSize: 14,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -492,7 +492,7 @@ class _VisitHistoryCard extends StatelessWidget {
                 'In: ${record.inTime}',
                 style: const TextStyle(
                   color: AppColors.textSecondary,
-                  fontSize: 12,
+                  fontSize: 14,
                 ),
               ),
               const SizedBox(width: 12),
@@ -506,7 +506,7 @@ class _VisitHistoryCard extends StatelessWidget {
                 'Out: ${record.outTime}',
                 style: const TextStyle(
                   color: AppColors.textSecondary,
-                  fontSize: 12,
+                  fontSize: 14,
                 ),
               ),
             ],
@@ -516,7 +516,7 @@ class _VisitHistoryCard extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             record.notes,
-            style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
+            style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
           ),
         ],
       ),
@@ -542,7 +542,7 @@ class _StatusPill extends StatelessWidget {
         label,
         style: TextStyle(
           color: color,
-          fontSize: 11,
+          fontSize: 14,
           fontWeight: FontWeight.w700,
         ),
       ),

@@ -150,7 +150,7 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
                                         'Roles & Permissions',
                                         style: TextStyle(
                                           color: Color(0xFF111827),
-                                          fontSize: 18,
+                                          fontSize: 16,
                                           fontWeight: FontWeight.w800,
                                         ),
                                       ),
@@ -159,7 +159,7 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
                                         'Create custom roles and configure module-level access for staff.',
                                         style: TextStyle(
                                           color: Color(0xFF64748B),
-                                          fontSize: 13.5,
+                                          fontSize: 14,
                                         ),
                                       ),
                                       const SizedBox(height: 12),
@@ -186,7 +186,7 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
                                               'Roles & Permissions',
                                               style: TextStyle(
                                                 color: Color(0xFF111827),
-                                                fontSize: 18,
+                                                fontSize: 16,
                                                 fontWeight: FontWeight.w800,
                                               ),
                                             ),
@@ -195,7 +195,7 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
                                               'Create custom roles and configure module-level access for staff.',
                                               style: TextStyle(
                                                 color: Color(0xFF64748B),
-                                                fontSize: 13.5,
+                                                fontSize: 14,
                                               ),
                                             ),
                                           ],
@@ -244,7 +244,7 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
                                       : '1 to ${roles.length} of ${roles.length}',
                                   style: const TextStyle(
                                     color: Color(0xFF94A3B8),
-                                    fontSize: 13.5,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -253,7 +253,7 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
                                   'Roles',
                                   style: TextStyle(
                                     color: Color(0xFF94A3B8),
-                                    fontSize: 13.5,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -310,7 +310,7 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
           hintText: 'Search roles',
           hintStyle: const TextStyle(
             color: Color(0xFF94A3B8),
-            fontSize: 13.5,
+            fontSize: 14,
             fontWeight: FontWeight.w500,
           ),
           prefixIcon: const Icon(Icons.search_rounded, size: 20),
@@ -418,7 +418,7 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
                                     role.name,
                                     style: const TextStyle(
                                       color: Color(0xFF111827),
-                                      fontSize: 15,
+                                      fontSize: 14,
                                       fontWeight: FontWeight.w800,
                                     ),
                                   ),
@@ -431,7 +431,7 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
                               role.accessSummary,
                               style: const TextStyle(
                                 color: Color(0xFF64748B),
-                                fontSize: 13.5,
+                                fontSize: 14,
                               ),
                             ),
                           ],
@@ -515,7 +515,7 @@ class _RoleRow extends StatelessWidget {
                     role.name,
                     style: const TextStyle(
                       color: Color(0xFF111827),
-                      fontSize: 14.5,
+                      fontSize: 14,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -572,7 +572,7 @@ class _DefaultPill extends StatelessWidget {
         'Default',
         style: TextStyle(
           color: Color(0xFF0B4A06),
-          fontSize: 11.5,
+          fontSize: 14,
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -591,7 +591,7 @@ class _HeaderLabel extends StatelessWidget {
       label,
       style: const TextStyle(
         color: Color(0xFF94A3B8),
-        fontSize: 12,
+        fontSize: 14,
         fontWeight: FontWeight.w800,
         letterSpacing: 0.9,
       ),

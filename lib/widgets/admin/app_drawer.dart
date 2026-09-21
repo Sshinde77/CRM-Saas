@@ -430,7 +430,7 @@ class _AppDrawerState extends State<AppDrawer> {
               section.title.toUpperCase(),
               style: const TextStyle(
                 color: Color(0xFF9AA0B1),
-                fontSize: 12,
+                fontSize: 14,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 1.1,
               ),
@@ -497,7 +497,7 @@ class _AppDrawerState extends State<AppDrawer> {
             'Higher productivity with better organization',
             style: TextStyle(
               color: Colors.white,
-              fontSize: 12,
+              fontSize: 14,
               height: 1.35,
               fontWeight: FontWeight.w500,
             ),
@@ -523,7 +523,7 @@ class _AppDrawerState extends State<AppDrawer> {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 textStyle: const TextStyle(
-                  fontSize: 13,
+                  fontSize: 14,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -567,7 +567,7 @@ class _AppDrawerState extends State<AppDrawer> {
                   style: const TextStyle(
                     color: AppColors.primary,
                     fontWeight: FontWeight.w800,
-                    fontSize: 13,
+                    fontSize: 14,
                   ),
                 ),
               ),
@@ -589,7 +589,7 @@ class _AppDrawerState extends State<AppDrawer> {
                       email,
                       style: const TextStyle(
                         color: AppColors.textSecondary,
-                        fontSize: 12,
+                        fontSize: 14,
                       ),
                     ),
                     if (planLabel.isNotEmpty) ...[
@@ -598,7 +598,7 @@ class _AppDrawerState extends State<AppDrawer> {
                         planLabel,
                         style: const TextStyle(
                           color: AppColors.primary,
-                          fontSize: 11,
+                          fontSize: 14,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -667,7 +667,7 @@ class _AppDrawerState extends State<AppDrawer> {
                           'Admin',
                           style: TextStyle(
                             color: accent,
-                            fontSize: 12,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
                         ),

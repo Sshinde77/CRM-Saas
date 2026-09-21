@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../constants/app_colors.dart';
+import '../../core/theme/app_sizes.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_text_styles.dart';
 
 class RoleWorkspaceScreen extends StatelessWidget {
   final String title;
@@ -19,14 +22,14 @@ class RoleWorkspaceScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(title),
+        title: Text(title, style: AppTextStyles.appBarTitle),
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.screen),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -36,17 +39,19 @@ class RoleWorkspaceScreen extends StatelessWidget {
                   color: AppColors.textSecondary,
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.xxl),
               Expanded(
                 child: ListView.separated(
                   itemCount: focusAreas.length,
                   separatorBuilder: (_, _) => const SizedBox(height: 12),
                   itemBuilder: (context, index) {
                     return Container(
-                      padding: const EdgeInsets.all(18),
+                      padding: const EdgeInsets.all(AppSpacing.lg),
                       decoration: BoxDecoration(
                         color: AppColors.background,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(
+                          AppSizes.cardRadius,
+                        ),
                         border: Border.all(
                           color: AppColors.accentGrey.withValues(alpha: 0.8),
                         ),

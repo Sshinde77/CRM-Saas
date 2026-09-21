@@ -910,7 +910,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                       'Staff Setup',
                       style: TextStyle(
                         color: AppColors.textPrimary,
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -919,7 +919,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                       'Complete the staff profile in 8 steps.',
                       style: TextStyle(
                         color: AppColors.textSecondary,
-                        fontSize: 13,
+                        fontSize: 14,
                         height: 1.35,
                       ),
                     ),
@@ -990,7 +990,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                               color: isActive
                                   ? AppColors.primary
                                   : AppColors.textSecondary,
-                              fontSize: 13,
+                              fontSize: 14,
                               fontWeight: isActive
                                   ? FontWeight.w700
                                   : FontWeight.w500,
@@ -1071,7 +1071,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                   _editLoadError!,
                   style: const TextStyle(
                     color: AppColors.statusInactiveText,
-                    fontSize: 12,
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -1161,7 +1161,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             '${_currentStep + 1}',
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -1171,7 +1171,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
           step.title,
           style: const TextStyle(
             color: AppColors.textPrimary,
-            fontSize: 17,
+            fontSize: 16,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -1253,7 +1253,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             'Basic Information',
             style: TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -1262,7 +1262,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             'Employee identity and personal profile details.',
             style: TextStyle(
               color: AppColors.textSecondary,
-              fontSize: 13,
+              fontSize: 14,
               height: 1.35,
             ),
           ),
@@ -1355,7 +1355,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             'Contact Information',
             style: TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -1364,7 +1364,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             'Primary, secondary, and emergency contact details.',
             style: TextStyle(
               color: AppColors.textSecondary,
-              fontSize: 13,
+              fontSize: 14,
               height: 1.35,
             ),
           ),
@@ -1487,7 +1487,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             'Address Information',
             style: TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -1496,7 +1496,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             'Residential and regional address details.',
             style: TextStyle(
               color: AppColors.textSecondary,
-              fontSize: 13,
+              fontSize: 14,
               height: 1.35,
             ),
           ),
@@ -1626,7 +1626,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                     'Employment Information',
                     style: TextStyle(
                       color: AppColors.textPrimary,
-                      fontSize: 18,
+                      fontSize: 16,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -1635,7 +1635,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                     'Role, reporting, joining, location, and employee status.',
                     style: TextStyle(
                       color: AppColors.textSecondary,
-                      fontSize: 13,
+                      fontSize: 14,
                       height: 1.35,
                     ),
                   ),
@@ -1766,7 +1766,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             'Payroll Information',
             style: TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -1775,7 +1775,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             'Salary bank and payment details.',
             style: TextStyle(
               color: AppColors.textSecondary,
-              fontSize: 13,
+              fontSize: 14,
               height: 1.35,
             ),
           ),
@@ -1849,7 +1849,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             'Login & Security',
             style: TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -1858,7 +1858,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             'Authentication credentials and invitation settings.',
             style: TextStyle(
               color: AppColors.textSecondary,
-              fontSize: 13,
+              fontSize: 14,
               height: 1.35,
             ),
           ),
@@ -1916,7 +1916,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
           'Send a notification to the user for this new role.',
           style: TextStyle(
             color: AppColors.textPrimary,
-            fontSize: 13.5,
+            fontSize: 14,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -1945,7 +1945,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             'Profile Photo',
             style: TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 15,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -1971,7 +1971,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 textStyle: const TextStyle(
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -1996,7 +1996,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 textStyle: const TextStyle(
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -2014,7 +2014,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
               'Preview',
               style: TextStyle(
                 color: AppColors.textLightMuted,
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -2061,7 +2061,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             'Uploads',
             style: TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -2070,7 +2070,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             'Compliance, onboarding, and qualification documents.',
             style: TextStyle(
               color: AppColors.textSecondary,
-              fontSize: 13,
+              fontSize: 14,
               height: 1.35,
             ),
           ),
@@ -2169,7 +2169,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             'System Preferences',
             style: TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -2178,7 +2178,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             'Application language, timezone, and account status.',
             style: TextStyle(
               color: AppColors.textSecondary,
-              fontSize: 13,
+              fontSize: 14,
               height: 1.35,
             ),
           ),
@@ -2288,7 +2288,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                     vertical: 12,
                   ),
                   textStyle: const TextStyle(
-                    fontSize: 13.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -2308,7 +2308,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                     vertical: 12,
                   ),
                   textStyle: const TextStyle(
-                    fontSize: 13.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -2325,7 +2325,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   color: AppColors.textPrimary,
-                  fontSize: 15,
+                  fontSize: 14,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -2338,7 +2338,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                   mimeHint,
                   style: const TextStyle(
                     color: AppColors.textSecondary,
-                    fontSize: 12.5,
+                    fontSize: 14,
                   ),
                 ),
               ],
@@ -2375,7 +2375,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             text: TextSpan(
               style: const TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 13.5,
+                fontSize: 14,
                 fontWeight: FontWeight.w700,
               ),
               children: [
@@ -2391,7 +2391,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             label,
             style: const TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 13.5,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
           );

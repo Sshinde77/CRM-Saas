@@ -319,7 +319,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                       product.name,
                       style: const TextStyle(
                         color: textPrimary,
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -352,7 +352,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
             width: 120,
             child: Text(
               label,
-              style: const TextStyle(color: textSecondary, fontSize: 13),
+              style: const TextStyle(color: textSecondary, fontSize: 14),
             ),
           ),
           Expanded(
@@ -442,7 +442,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
         const Expanded(
           child: Text(
             'Manage products, pricing, and stock from one catalog.',
-            style: TextStyle(color: textSecondary, fontSize: 13),
+            style: TextStyle(color: textSecondary, fontSize: 14),
           ),
         ),
         const SizedBox(width: 12),
@@ -459,7 +459,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
               borderRadius: BorderRadius.circular(8),
             ),
             textStyle: const TextStyle(
-              fontSize: 13.5,
+              fontSize: 14,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -520,7 +520,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                 'Total Products',
                 style: TextStyle(
                   color: textSecondary,
-                  fontSize: 13,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -529,7 +529,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                 '$count',
                 style: const TextStyle(
                   color: AppColors.primary,
-                  fontSize: 32,
+                  fontSize: 16,
                   height: 1,
                   fontWeight: FontWeight.w900,
                 ),
@@ -559,7 +559,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
           const SizedBox(width: 8),
           const Text(
             'Sort by:',
-            style: TextStyle(color: textSecondary, fontSize: 13),
+            style: TextStyle(color: textSecondary, fontSize: 14),
           ),
           const SizedBox(width: 5),
           DropdownButtonHideUnderline(
@@ -573,7 +573,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
               borderRadius: BorderRadius.circular(8),
               style: const TextStyle(
                 color: textPrimary,
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: FontWeight.w800,
               ),
               items: _sortOptions
@@ -649,7 +649,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                         'Rs. ${_formatPrice(product.price)}',
                         style: const TextStyle(
                           color: AppColors.primary,
-                          fontSize: 18,
+                          fontSize: 16,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
@@ -660,7 +660,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: textSecondary,
-                          fontSize: 12.5,
+                          fontSize: 14,
                         ),
                       ),
                       const SizedBox(height: 7),
@@ -675,7 +675,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                                   'Stock',
                                   style: TextStyle(
                                     color: textSecondary,
-                                    fontSize: 12.5,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -683,7 +683,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                                   '${product.stock}',
                                   style: TextStyle(
                                     color: statusColor,
-                                    fontSize: 18,
+                                    fontSize: 16,
                                     fontWeight: FontWeight.w900,
                                   ),
                                 ),
@@ -844,7 +844,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
         label,
         style: TextStyle(
           color: color,
-          fontSize: 11.5,
+          fontSize: 14,
           fontWeight: FontWeight.w800,
         ),
       ),
@@ -896,7 +896,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
             'No products match your filters.',
             style: TextStyle(
               color: textSecondary,
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -1006,7 +1006,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                     'Filter Products',
                     style: TextStyle(
                       color: textPrimary,
-                      fontSize: 18,
+                      fontSize: 16,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
@@ -1065,7 +1065,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: textSecondary, fontSize: 13)),
+        Text(label, style: const TextStyle(color: textSecondary, fontSize: 14)),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -1572,7 +1572,7 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
                       _isEditing ? 'Edit Product' : 'Add Product',
                       style: const TextStyle(
                         color: textPrimary,
-                        fontSize: 19,
+                        fontSize: 16,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -1718,7 +1718,7 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
         label,
         style: const TextStyle(
           color: textPrimary,
-          fontSize: 13.5,
+          fontSize: 14,
           fontWeight: FontWeight.w600,
         ),
       ),

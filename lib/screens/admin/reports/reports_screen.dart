@@ -124,7 +124,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                 'Reports',
                                 style: TextStyle(
                                   color: textPrimary,
-                                  fontSize: 24,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.w800,
                                 ),
                               ),
@@ -133,7 +133,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                 'Generate and download business reports in one place',
                                 style: TextStyle(
                                   color: textSecondary,
-                                  fontSize: 13,
+                                  fontSize: 14,
                                 ),
                               ),
                             ],
@@ -254,7 +254,7 @@ class _FilterChipField extends StatelessWidget {
             label,
             style: const TextStyle(
               color: AppColors.textSecondary,
-              fontSize: 11.5,
+              fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -272,7 +272,7 @@ class _FilterChipField extends StatelessWidget {
                 dropdownColor: AppColors.primary,
                 style: const TextStyle(
                   color: AppColors.textPrimary,
-                  fontSize: 13.5,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
                 items: items
@@ -358,7 +358,7 @@ class _ReportCard extends StatelessWidget {
                       data.description,
                       style: const TextStyle(
                         color: AppColors.textSecondary,
-                        fontSize: 12.5,
+                        fontSize: 14,
                         height: 1.3,
                       ),
                     ),
@@ -390,7 +390,7 @@ class _ReportCard extends StatelessWidget {
                           item.label,
                           style: const TextStyle(
                             color: AppColors.textSecondary,
-                            fontSize: 11.5,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -399,7 +399,7 @@ class _ReportCard extends StatelessWidget {
                           item.value,
                           style: TextStyle(
                             color: data.accent,
-                            fontSize: 14.5,
+                            fontSize: 14,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
@@ -426,7 +426,7 @@ class _ReportCard extends StatelessWidget {
                     '$selectedPeriod - $selectedFormat',
                     style: TextStyle(
                       color: data.accent,
-                      fontSize: 12.5,
+                      fontSize: 14,
                       fontWeight: FontWeight.w700,
                     ),
                     overflow: TextOverflow.ellipsis,

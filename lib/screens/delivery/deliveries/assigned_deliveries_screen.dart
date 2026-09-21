@@ -499,7 +499,7 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
                   padding: const EdgeInsets.fromLTRB(12, 0, 12, 96),
                   sliver: SliverList.separated(
                     itemCount: visibleDeliveries.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 10),
+                    separatorBuilder: (_, _) => const SizedBox(height: 10),
                     itemBuilder: (context, index) {
                       final delivery = visibleDeliveries[index];
                       return Center(
@@ -573,7 +573,7 @@ class _SearchAndFilterBar extends StatelessWidget {
               hintText: 'Search by order, customer or status...',
               hintStyle: const TextStyle(
                 color: AppColors.textMuted,
-                fontSize: 12.5,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
               prefixIcon: const Icon(
@@ -616,7 +616,7 @@ class _SearchAndFilterBar extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
             itemCount: _statusFilterTabs.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            separatorBuilder: (_, _) => const SizedBox(width: 8),
             itemBuilder: (context, index) {
               final tab = _statusFilterTabs[index];
               final selected = tab.value == statusFilter;
@@ -676,7 +676,7 @@ class _FilterTab extends StatelessWidget {
           tab.label,
           style: TextStyle(
             color: selected ? AppColors.surface : AppColors.textSecondary,
-            fontSize: 12,
+            fontSize: 14,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -1042,7 +1042,6 @@ class _DeliveryIconActionButton extends StatelessWidget {
   final bool compact;
   final Color background;
   final Color foreground;
-  final bool busy;
 
   const _DeliveryIconActionButton({
     required this.icon,
@@ -1051,7 +1050,6 @@ class _DeliveryIconActionButton extends StatelessWidget {
     required this.compact,
     required this.background,
     required this.foreground,
-    this.busy = false,
   });
 
   @override
@@ -1065,19 +1063,10 @@ class _DeliveryIconActionButton extends StatelessWidget {
           color: background,
           borderRadius: BorderRadius.circular(10),
           child: InkWell(
-            onTap: busy ? null : onPressed,
+            onTap: onPressed,
             borderRadius: BorderRadius.circular(10),
             child: Center(
-              child: busy
-                  ? SizedBox(
-                      width: compact ? 14 : 15,
-                      height: compact ? 14 : 15,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: foreground,
-                      ),
-                    )
-                  : Icon(icon, color: foreground, size: compact ? 17 : 18),
+              child: Icon(icon, color: foreground, size: compact ? 17 : 18),
             ),
           ),
         ),
@@ -1363,6 +1352,7 @@ class _RejectDeliverySheet extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _DeliveryDetailsPreviewScreen extends StatelessWidget {
   final _AssignedDelivery delivery;
 
@@ -1372,27 +1362,36 @@ class _DeliveryDetailsPreviewScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F9FC),
-      appBar: AppBar(
-        title: Text(delivery.orderNumber),
-        backgroundColor: Colors.white,
-        foregroundColor: AppColors.deliveryInk,
-        elevation: 0,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(AppSpacing.screen),
-        child: _DeliveryCard(
-          delivery: delivery,
-          isBusy: false,
-          showActions: false,
-          onAccept: null,
-          onReject: null,
-          onPrepareDelivery: null,
-          onLoadDelivery: null,
-          onStartDelivery: null,
-          onMarkDelivered: null,
-          onCallCustomer: null,
-          onNavigateCustomer: null,
-          onViewDetails: () {},
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            DeliveryTopBar(
+              title: delivery.orderNumber,
+              subtitle: 'Delivery preview',
+              leadingIcon: Icons.arrow_back_rounded,
+              onLeadingTap: () => Navigator.of(context).maybePop(),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.screen),
+                child: _DeliveryCard(
+                  delivery: delivery,
+                  isBusy: false,
+                  showActions: false,
+                  onAccept: null,
+                  onReject: null,
+                  onPrepareDelivery: null,
+                  onLoadDelivery: null,
+                  onStartDelivery: null,
+                  onMarkDelivered: null,
+                  onCallCustomer: null,
+                  onNavigateCustomer: null,
+                  onViewDetails: () {},
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -1557,7 +1556,7 @@ class _EmptyState extends StatelessWidget {
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: Color(0xFF586176),
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
             ),

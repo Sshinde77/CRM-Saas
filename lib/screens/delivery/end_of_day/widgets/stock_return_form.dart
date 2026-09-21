@@ -117,7 +117,7 @@ class _StockReturnFormState extends State<StockReturnForm> {
               ),
               const Divider(height: 1, color: Color(0xFFE9EDF5)),
               const _ReturnHeader(),
-              ...widget.session.items.map(_ReturnRow),
+              ...widget.session.items.map(_returnRow),
               Padding(
                 padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
                 child: SizedBox(
@@ -157,7 +157,7 @@ class _StockReturnFormState extends State<StockReturnForm> {
     );
   }
 
-  Widget _ReturnRow(EndOfDayStockItem item) {
+  Widget _returnRow(EndOfDayStockItem item) {
     final value = _valueFor(item);
     final invalid = value > item.loadedQuantity || value < 0;
 
@@ -186,7 +186,7 @@ class _StockReturnFormState extends State<StockReturnForm> {
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: AppColors.deliveryInk,
-                          fontSize: 12,
+                          fontSize: 14,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
@@ -197,7 +197,7 @@ class _StockReturnFormState extends State<StockReturnForm> {
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: AppColors.textMuted,
-                          fontSize: 10.5,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -236,7 +236,7 @@ class _StockReturnFormState extends State<StockReturnForm> {
                   '0 - ${qty(item.loadedQuantity)}',
                   style: const TextStyle(
                     color: AppColors.textMuted,
-                    fontSize: 10.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -256,7 +256,7 @@ class _StockReturnFormState extends State<StockReturnForm> {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: AppColors.deliveryRed,
-                        fontSize: 9.5,
+                        fontSize: 14,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
@@ -303,7 +303,7 @@ class _HeaderText extends StatelessWidget {
       overflow: TextOverflow.ellipsis,
       style: const TextStyle(
         color: AppColors.deliveryInk,
-        fontSize: 10.5,
+        fontSize: 14,
         fontWeight: FontWeight.w900,
       ),
     );
@@ -324,7 +324,7 @@ class _NumberText extends StatelessWidget {
       overflow: TextOverflow.ellipsis,
       style: const TextStyle(
         color: AppColors.deliveryInk,
-        fontSize: 12,
+        fontSize: 14,
         fontWeight: FontWeight.w800,
       ),
     );

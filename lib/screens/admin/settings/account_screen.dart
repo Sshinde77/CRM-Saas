@@ -291,7 +291,7 @@ class _AccountScreenState extends State<AccountScreen> {
               'Account',
               style: TextStyle(
                 color: _titleColor,
-                fontSize: 24,
+                fontSize: 16,
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -357,7 +357,7 @@ class _AccountScreenState extends State<AccountScreen> {
                             company,
                             style: const TextStyle(
                               color: _titleColor,
-                              fontSize: 18,
+                              fontSize: 16,
                               fontWeight: FontWeight.w800,
                             ),
                           ),
@@ -370,7 +370,7 @@ class _AccountScreenState extends State<AccountScreen> {
                       'Company profile and organization information.',
                       style: TextStyle(
                         color: _mutedColor,
-                        fontSize: 13.5,
+                        fontSize: 14,
                         height: 1.45,
                       ),
                     ),
@@ -405,7 +405,7 @@ class _AccountScreenState extends State<AccountScreen> {
         initial,
         style: const TextStyle(
           color: _accent,
-          fontSize: 24,
+          fontSize: 16,
           fontWeight: FontWeight.w800,
         ),
       );
@@ -423,7 +423,7 @@ class _AccountScreenState extends State<AccountScreen> {
               initial,
               style: const TextStyle(
                 color: _accent,
-                fontSize: 24,
+                fontSize: 16,
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -553,7 +553,7 @@ class _AccountScreenState extends State<AccountScreen> {
                       metric.label,
                       style: const TextStyle(
                         color: _mutedColor,
-                        fontSize: 11.5,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -562,7 +562,7 @@ class _AccountScreenState extends State<AccountScreen> {
                       metric.value,
                       style: const TextStyle(
                         color: _titleColor,
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -571,7 +571,7 @@ class _AccountScreenState extends State<AccountScreen> {
                       metric.subtitle,
                       style: const TextStyle(
                         color: _mutedColor,
-                        fontSize: 10.5,
+                        fontSize: 14,
                       ),
                     ),
                   ],
@@ -610,7 +610,7 @@ class _AccountScreenState extends State<AccountScreen> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: _titleColor,
-                      fontSize: 18,
+                      fontSize: 16,
                       fontWeight: FontWeight.w800,
                       height: 1,
                     ),
@@ -628,7 +628,7 @@ class _AccountScreenState extends State<AccountScreen> {
                   'Profile Needs Attention',
                   style: TextStyle(
                     color: _titleColor,
-                    fontSize: 15,
+                    fontSize: 14,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -637,7 +637,7 @@ class _AccountScreenState extends State<AccountScreen> {
                   'Complete the missing items to improve company readiness.',
                   style: TextStyle(
                     color: _mutedColor,
-                    fontSize: 12.5,
+                    fontSize: 14,
                     height: 1.35,
                   ),
                 ),
@@ -646,18 +646,18 @@ class _AccountScreenState extends State<AccountScreen> {
                   'Missing Information',
                   style: TextStyle(
                     color: _titleColor,
-                    fontSize: 12.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 SizedBox(height: 4),
                 Text(
                   '- GST Certificate',
-                  style: TextStyle(color: _mutedColor, fontSize: 11.5),
+                  style: TextStyle(color: _mutedColor, fontSize: 14),
                 ),
                 Text(
                   '- PAN Card',
-                  style: TextStyle(color: _mutedColor, fontSize: 11.5),
+                  style: TextStyle(color: _mutedColor, fontSize: 14),
                 ),
                 SizedBox(height: 8),
                 _profileCompletionAction(),
@@ -709,7 +709,7 @@ class _AccountScreenState extends State<AccountScreen> {
                       _savedDesignation,
                       style: const TextStyle(
                         color: _mutedColor,
-                        fontSize: 12.5,
+                        fontSize: 14,
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -717,7 +717,7 @@ class _AccountScreenState extends State<AccountScreen> {
                       _savedEmail,
                       style: const TextStyle(
                         color: _mutedColor,
-                        fontSize: 12.5,
+                        fontSize: 14,
                       ),
                     ),
                     const SizedBox(height: 3),
@@ -725,7 +725,7 @@ class _AccountScreenState extends State<AccountScreen> {
                       _savedMobileNumber,
                       style: const TextStyle(
                         color: _mutedColor,
-                        fontSize: 12.5,
+                        fontSize: 14,
                       ),
                     ),
                   ],
@@ -795,7 +795,7 @@ class _AccountScreenState extends State<AccountScreen> {
                       doc.$1,
                       style: const TextStyle(
                         color: _titleColor,
-                        fontSize: 13,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -819,7 +819,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 'View All Documents',
                 style: TextStyle(
                   color: _accent,
-                  fontSize: 12.5,
+                  fontSize: 14,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -849,7 +849,7 @@ class _AccountScreenState extends State<AccountScreen> {
                   'Registered Office',
                   style: TextStyle(
                     color: _titleColor,
-                    fontSize: 13,
+                    fontSize: 14,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -858,28 +858,28 @@ class _AccountScreenState extends State<AccountScreen> {
                   _savedLegalName,
                   style: const TextStyle(
                     color: _accent,
-                    fontSize: 12.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 4),
                 const Text(
                   'Mumbai, Maharashtra, India',
-                  style: TextStyle(color: _mutedColor, fontSize: 12.5),
+                  style: TextStyle(color: _mutedColor, fontSize: 14),
                 ),
                 const SizedBox(height: 12),
                 const Text(
                   'Branch/Warehouse Address',
                   style: TextStyle(
                     color: _accent,
-                    fontSize: 12.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   _savedLegalName,
-                  style: const TextStyle(color: _mutedColor, fontSize: 12.5),
+                  style: const TextStyle(color: _mutedColor, fontSize: 14),
                 ),
               ],
             ),
@@ -925,7 +925,7 @@ class _AccountScreenState extends State<AccountScreen> {
             'View All',
             style: TextStyle(
               color: _accent,
-              fontSize: 12,
+              fontSize: 14,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -961,7 +961,7 @@ class _AccountScreenState extends State<AccountScreen> {
                           item.$1,
                           style: const TextStyle(
                             color: _titleColor,
-                            fontSize: 13,
+                            fontSize: 14,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -970,7 +970,7 @@ class _AccountScreenState extends State<AccountScreen> {
                           item.$2,
                           style: const TextStyle(
                             color: _mutedColor,
-                            fontSize: 11.5,
+                            fontSize: 14,
                           ),
                         ),
                       ],
@@ -1065,7 +1065,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: _titleColor,
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -1110,7 +1110,7 @@ class _AccountScreenState extends State<AccountScreen> {
             label,
             style: const TextStyle(
               color: _mutedColor,
-              fontSize: 12,
+              fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -1119,7 +1119,7 @@ class _AccountScreenState extends State<AccountScreen> {
           value,
           style: const TextStyle(
             color: _titleColor,
-            fontSize: 12.5,
+            fontSize: 14,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -1176,7 +1176,7 @@ class _AccountScreenState extends State<AccountScreen> {
             label,
             style: TextStyle(
               color: foreground,
-              fontSize: 12.5,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -1195,7 +1195,7 @@ class _AccountScreenState extends State<AccountScreen> {
           'Complete Now',
           style: TextStyle(
             color: _accent,
-            fontSize: 12.5,
+            fontSize: 14,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -1233,7 +1233,7 @@ class _AccountScreenState extends State<AccountScreen> {
                   title,
                   style: const TextStyle(
                     color: _titleColor,
-                    fontSize: 15,
+                    fontSize: 14,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -1534,7 +1534,7 @@ class _AccountScreenState extends State<AccountScreen> {
       controller: controller,
       keyboardType: keyboardType,
       enabled: enabled,
-      style: const TextStyle(fontSize: 15, color: _titleColor),
+      style: const TextStyle(fontSize: 14, color: _titleColor),
       decoration: _fieldDecoration(),
     );
   }
@@ -1555,7 +1555,7 @@ class _AccountScreenState extends State<AccountScreen> {
       hint: hintText == null
           ? null
           : Text(hintText, style: const TextStyle(color: Color(0xFF98A2B3))),
-      style: const TextStyle(fontSize: 15, color: _titleColor),
+      style: const TextStyle(fontSize: 14, color: _titleColor),
       decoration: _fieldDecoration(),
       dropdownColor: Colors.white,
       borderRadius: BorderRadius.circular(16),
@@ -1566,7 +1566,7 @@ class _AccountScreenState extends State<AccountScreen> {
               child: Text(
                 '$item',
                 style: const TextStyle(
-                  fontSize: 15,
+                  fontSize: 14,
                   color: _titleColor,
                   fontWeight: FontWeight.w500,
                 ),
@@ -1654,7 +1654,7 @@ class _SectionCard extends StatelessWidget {
                       '$number',
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 13,
+                        fontSize: 14,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -1677,7 +1677,7 @@ class _SectionCard extends StatelessWidget {
                           subtitle,
                           style: const TextStyle(
                             color: _AccountScreenState._mutedColor,
-                            fontSize: 13,
+                            fontSize: 14,
                           ),
                         ),
                       ],

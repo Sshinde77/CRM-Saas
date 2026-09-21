@@ -155,7 +155,7 @@ class _SummaryRow extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: AppColors.deliveryInk,
-                    fontSize: 12,
+                    fontSize: 14,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -164,7 +164,7 @@ class _SummaryRow extends StatelessWidget {
                   line.item.variantId.isEmpty ? '-' : line.item.variantId,
                   style: const TextStyle(
                     color: AppColors.textMuted,
-                    fontSize: 10.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -206,7 +206,7 @@ class _SummaryMetric extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(
             color: AppColors.textMuted,
-            fontSize: 10.5,
+            fontSize: 14,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -216,7 +216,7 @@ class _SummaryMetric extends StatelessWidget {
           textAlign: TextAlign.center,
           style: const TextStyle(
             color: AppColors.deliveryInk,
-            fontSize: 15,
+            fontSize: 14,
             fontWeight: FontWeight.w900,
           ),
         ),
@@ -226,7 +226,7 @@ class _SummaryMetric extends StatelessWidget {
             textAlign: TextAlign.center,
             style: const TextStyle(
               color: Color(0xFF2563EB),
-              fontSize: 11,
+              fontSize: 14,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -248,7 +248,7 @@ class _HeaderText extends StatelessWidget {
       overflow: TextOverflow.ellipsis,
       style: const TextStyle(
         color: AppColors.deliveryInk,
-        fontSize: 10.5,
+        fontSize: 14,
         fontWeight: FontWeight.w900,
       ),
     );
@@ -269,7 +269,7 @@ class _NumberText extends StatelessWidget {
       overflow: TextOverflow.ellipsis,
       style: const TextStyle(
         color: AppColors.deliveryInk,
-        fontSize: 12,
+        fontSize: 14,
         fontWeight: FontWeight.w800,
       ),
     );

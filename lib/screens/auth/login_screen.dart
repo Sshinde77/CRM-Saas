@@ -168,7 +168,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           'Welcome back',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            fontSize: 28,
+                            fontSize: 16,
                             fontWeight: FontWeight.w900,
                             color: headingText,
                           ),
@@ -177,7 +177,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         const Text(
                           'Sign in to your workspace to continue',
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 13, color: bodyText),
+                          style: TextStyle(fontSize: 14, color: bodyText),
                         ),
                         const SizedBox(height: 22),
                         _buildTabSwitcher(),
@@ -247,7 +247,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   'Forgot Password?',
                                   style: TextStyle(
                                     color: primary,
-                                    fontSize: 11,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
@@ -294,7 +294,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                         style: const TextStyle(
                                           color: headingText,
                                           fontWeight: FontWeight.w700,
-                                          fontSize: 12,
+                                          fontSize: 14,
                                         ),
                                       ),
                                       const SizedBox(width: 4),
@@ -302,7 +302,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                         _selectedCountry.dialCode,
                                         style: const TextStyle(
                                           color: headingText,
-                                          fontSize: 13,
+                                          fontSize: 14,
                                         ),
                                       ),
                                       Icon(
@@ -361,7 +361,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 'or',
                                 style: TextStyle(
                                   color: lightMutedText,
-                                  fontSize: 11,
+                                  fontSize: 14,
                                 ),
                               ),
                             ),
@@ -374,7 +374,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         const Text(
                           'Or sign in with social platforms',
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 10, color: mutedText),
+                          style: TextStyle(fontSize: 14, color: mutedText),
                         ),
                         const SizedBox(height: 10),
                         Row(
@@ -394,7 +394,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           children: [
                             const Text(
                               'New organization? ',
-                              style: TextStyle(color: mutedText, fontSize: 12),
+                              style: TextStyle(color: mutedText, fontSize: 14),
                             ),
                             GestureDetector(
                               onTap: () {
@@ -410,7 +410,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 style: TextStyle(
                                   color: primary,
                                   fontWeight: FontWeight.w700,
-                                  fontSize: 12,
+                                  fontSize: 14,
                                 ),
                               ),
                             ),
@@ -462,7 +462,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   child: Text(
                     '${code.iso}  ${code.dialCode}',
-                    style: const TextStyle(color: headingText, fontSize: 13),
+                    style: const TextStyle(color: headingText, fontSize: 14),
                   ),
                 ),
               );
@@ -511,7 +511,7 @@ class _LoginScreenState extends State<LoginScreen> {
           style: TextStyle(
             color: isActive ? primaryDark : mutedText,
             fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-            fontSize: 13,
+            fontSize: 14,
           ),
         ),
       ),
@@ -562,7 +562,7 @@ class _FieldLabel extends StatelessWidget {
       style: const TextStyle(
         color: _LoginScreenState.headingText,
         fontWeight: FontWeight.w700,
-        fontSize: 12,
+        fontSize: 14,
       ),
     );
   }
@@ -607,7 +607,7 @@ class _PrimaryButton extends StatelessWidget {
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
-                  fontSize: 15,
+                  fontSize: 14,
                 ),
               ),
       ),

@@ -429,7 +429,7 @@ class _DocumentUploadCard extends StatelessWidget {
                   asset.title,
                   style: const TextStyle(
                     color: kDocumentsTitleColor,
-                    fontSize: 15,
+                    fontSize: 14,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -438,7 +438,7 @@ class _DocumentUploadCard extends StatelessWidget {
                   asset.mimeHint,
                   style: const TextStyle(
                     color: kDocumentsMutedColor,
-                    fontSize: 12.5,
+                    fontSize: 14,
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -462,7 +462,7 @@ class _DocumentUploadCard extends StatelessWidget {
                           vertical: 12,
                         ),
                         textStyle: const TextStyle(
-                          fontSize: 13.5,
+                          fontSize: 14,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -484,7 +484,7 @@ class _DocumentUploadCard extends StatelessWidget {
                           vertical: 12,
                         ),
                         textStyle: const TextStyle(
-                          fontSize: 13.5,
+                          fontSize: 14,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -499,7 +499,7 @@ class _DocumentUploadCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: kDocumentsTitleColor,
-                      fontSize: 12,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
                   ),

@@ -9,6 +9,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../providers/api_provider.dart';
 import '../../../routes/app_router.dart';
 import '../../../widgets/delivery/delivery_partner_sidebar.dart';
+import '../../../widgets/delivery/delivery_top_bar.dart';
 import '../../payment_collection_screen.dart';
 
 class DeliveryCollectionListScreen extends StatefulWidget {
@@ -91,31 +92,6 @@ class _DeliveryCollectionListScreenState
         drawer: const DeliveryPartnerSidebar(
           currentRoute: AppRoutes.deliveryCollections,
         ),
-        appBar: AppBar(
-          toolbarHeight: kToolbarHeight,
-          elevation: 0,
-          backgroundColor: AppColors.surface,
-          surfaceTintColor: Colors.transparent,
-          foregroundColor: AppColors.deliveryInk,
-          leading: IconButton(
-            icon: const Icon(Icons.menu_rounded, size: 24),
-            onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-          ),
-          title: const Text(
-            'Collections',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-              color: AppColors.deliveryInk,
-            ),
-          ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.refresh_rounded, size: 24),
-              onPressed: _refresh,
-            ),
-          ],
-        ),
         bottomNavigationBar: DeliveryBottomNavigation(
           currentIndex: 4,
           onCollectionCreated: _refresh,
@@ -133,55 +109,75 @@ class _DeliveryCollectionListScreenState
         ),
         body: SafeArea(
           bottom: false,
-          child: FutureBuilder<_CollectionDashboardData>(
-            future: _collectionFuture,
-            builder: (context, snapshot) {
-              final isLoading =
-                  snapshot.connectionState == ConnectionState.waiting &&
-                  !snapshot.hasData;
-              final data = snapshot.data;
+          child: Column(
+            children: [
+              DeliveryTopBar(
+                title: 'Collections',
+                subtitle: 'Track and record customer payments',
+                leadingIcon: Icons.menu_rounded,
+                onLeadingTap: () => _scaffoldKey.currentState?.openDrawer(),
+                actions: [
+                  DeliveryTopBarAction(
+                    icon: Icons.refresh_rounded,
+                    tooltip: 'Refresh collections',
+                    onTap: _refresh,
+                  ),
+                ],
+              ),
+              Expanded(
+                child: FutureBuilder<_CollectionDashboardData>(
+                  future: _collectionFuture,
+                  builder: (context, snapshot) {
+                    final isLoading =
+                        snapshot.connectionState == ConnectionState.waiting &&
+                        !snapshot.hasData;
+                    final data = snapshot.data;
 
-              return RefreshIndicator(
-                color: AppColors.deliveryGreen,
-                onRefresh: _refresh,
-                child: ListView(
-                  physics: const AlwaysScrollableScrollPhysics(
-                    parent: BouncingScrollPhysics(),
-                  ),
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.screenSmall,
-                    AppSpacing.md,
-                    AppSpacing.screenSmall,
-                    AppSpacing.xl + 92,
-                  ),
-                  children: [
-                    Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 820),
-                        child: isLoading
-                            ? const _LoadingPanel()
-                            : snapshot.hasError
-                            ? _ErrorPanel(
-                                message: snapshot.error.toString(),
-                                onRetry: () {
-                                  setState(() {
-                                    _collectionFuture = _loadCollections();
-                                  });
-                                },
-                              )
-                            : _CollectionContent(
-                                data:
-                                    data ??
-                                    const _CollectionDashboardData(
-                                      deliveries: [],
+                    return RefreshIndicator(
+                      color: AppColors.deliveryGreen,
+                      onRefresh: _refresh,
+                      child: ListView(
+                        physics: const AlwaysScrollableScrollPhysics(
+                          parent: BouncingScrollPhysics(),
+                        ),
+                        padding: const EdgeInsets.fromLTRB(
+                          AppSpacing.screenSmall,
+                          AppSpacing.md,
+                          AppSpacing.screenSmall,
+                          AppSpacing.xl + 92,
+                        ),
+                        children: [
+                          Center(
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 820),
+                              child: isLoading
+                                  ? const _LoadingPanel()
+                                  : snapshot.hasError
+                                  ? _ErrorPanel(
+                                      message: snapshot.error.toString(),
+                                      onRetry: () {
+                                        setState(() {
+                                          _collectionFuture =
+                                              _loadCollections();
+                                        });
+                                      },
+                                    )
+                                  : _CollectionContent(
+                                      data:
+                                          data ??
+                                          const _CollectionDashboardData(
+                                            deliveries: [],
+                                          ),
                                     ),
-                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
+                    );
+                  },
                 ),
-              );
-            },
+              ),
+            ],
           ),
         ),
       ),
@@ -297,7 +293,7 @@ class _CollectionsCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 14,
                           fontWeight: FontWeight.w700,
                           color: AppColors.textMuted,
                         ),
@@ -308,7 +304,7 @@ class _CollectionsCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          fontSize: 22,
+                          fontSize: 16,
                           height: 1.1,
                           fontWeight: FontWeight.w900,
                           color: AppColors.deliveryInk,
@@ -373,7 +369,7 @@ class _CollectionMetricTile extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 10,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textMuted,
                   ),
@@ -435,7 +431,7 @@ class _CollectionListTile extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          fontSize: 15,
+                          fontSize: 14,
                           fontWeight: FontWeight.w800,
                           color: AppColors.deliveryInk,
                         ),
@@ -447,7 +443,7 @@ class _CollectionListTile extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: 14,
                         fontWeight: FontWeight.w900,
                         color: delivery.amountDue > 0
                             ? AppColors.deliveryRed
@@ -462,7 +458,7 @@ class _CollectionListTile extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 12,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textMuted,
                   ),
@@ -527,7 +523,7 @@ class _SmallAmountPill extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              fontSize: 10,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
               color: AppColors.textMuted,
             ),
@@ -538,7 +534,7 @@ class _SmallAmountPill extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 14,
               fontWeight: FontWeight.w900,
               color: color,
             ),
@@ -576,7 +572,7 @@ class _EmptyCollectionList extends StatelessWidget {
             'Collected and pending customer payments will appear here.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: FontWeight.w500,
               color: AppColors.textMuted,
             ),
@@ -600,7 +596,7 @@ class _SectionHeader extends StatelessWidget {
         Text(
           title,
           style: const TextStyle(
-            fontSize: 15,
+            fontSize: 14,
             fontWeight: FontWeight.w800,
             color: AppColors.deliveryInk,
           ),
@@ -715,7 +711,7 @@ class _ErrorPanel extends StatelessWidget {
             message,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              fontSize: 13,
+              fontSize: 14,
               color: AppColors.textMuted,
               fontWeight: FontWeight.w500,
             ),

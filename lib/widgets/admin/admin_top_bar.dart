@@ -156,7 +156,7 @@ class _AdminTopBarState extends State<AdminTopBar> {
               widget.title,
               style: const TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 24,
+                fontSize: 16,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -268,7 +268,6 @@ class _DefaultAvatar extends StatelessWidget {
             profileRole: profileRole,
           ),
         ),
-        const PopupMenuDivider(height: 1),
         const PopupMenuItem<_ProfileMenuAction>(
           value: _ProfileMenuAction.signOut,
           child: Row(
@@ -309,7 +308,7 @@ class _DefaultAvatar extends StatelessWidget {
                     style: const TextStyle(
                       color: AppColors.primary,
                       fontWeight: FontWeight.w700,
-                      fontSize: 12,
+                      fontSize: 14,
                     ),
                   );
                 },
@@ -319,7 +318,7 @@ class _DefaultAvatar extends StatelessWidget {
                 style: const TextStyle(
                   color: AppColors.primary,
                   fontWeight: FontWeight.w700,
-                  fontSize: 12,
+                  fontSize: 14,
                 ),
               ),
       ),
@@ -350,7 +349,7 @@ class _ProfileMenuHeader extends StatelessWidget {
             profileName,
             style: const TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 15,
+              fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -360,7 +359,7 @@ class _ProfileMenuHeader extends StatelessWidget {
               profileRole,
               style: const TextStyle(
                 color: AppColors.textSecondary,
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
             ),

@@ -470,7 +470,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             color: AppColors.textPrimary,
-                            fontSize: 17,
+                            fontSize: 16,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
@@ -896,7 +896,7 @@ class _TopBar extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 18,
+                fontSize: 16,
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -934,7 +934,7 @@ class _HeaderCard extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                fontSize: 18,
+                fontSize: 16,
                 fontWeight: FontWeight.w800,
                 color: AppColors.textPrimary,
                 height: 1.15,
@@ -944,7 +944,7 @@ class _HeaderCard extends StatelessWidget {
             Text(
               'Customer ID: ${customer.customerId ?? customer.id}',
               style: const TextStyle(
-                fontSize: 13.5,
+                fontSize: 14,
                 color: AppColors.textSecondary,
                 fontWeight: FontWeight.w500,
               ),
@@ -1080,7 +1080,7 @@ class _CustomerAvatar extends StatelessWidget {
       child: Text(
         initials,
         style: const TextStyle(
-          fontSize: 26,
+          fontSize: 16,
           fontWeight: FontWeight.w800,
           color: AppColors.primary,
           letterSpacing: 0.4,
@@ -1149,7 +1149,7 @@ class _Badge extends StatelessWidget {
         style: TextStyle(
           color: textColor,
           fontWeight: FontWeight.w700,
-          fontSize: 13,
+          fontSize: 14,
         ),
       ),
     );
@@ -1344,7 +1344,7 @@ class _MetricCard extends StatelessWidget {
                     maxLines: 1,
                     style: const TextStyle(
                       color: AppColors.textPrimary,
-                      fontSize: 22,
+                      fontSize: 16,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -1359,7 +1359,7 @@ class _MetricCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               color: AppColors.textSecondary,
-              fontSize: 12,
+              fontSize: 14,
               fontWeight: FontWeight.w600,
               height: 1.2,
             ),
@@ -1371,7 +1371,7 @@ class _MetricCard extends StatelessWidget {
               color: data.actionLabel == null
                   ? Colors.transparent
                   : AppColors.primary,
-              fontSize: 0,
+              fontSize: 14,
               fontWeight: FontWeight.w600,
               height: 0,
             ),
@@ -1448,7 +1448,7 @@ class _AccordionSection extends StatelessWidget {
             title,
             style: const TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 14.5,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -1550,7 +1550,7 @@ class _FieldTile extends StatelessWidget {
                   item.label,
                   style: const TextStyle(
                     color: AppColors.textSecondary,
-                    fontSize: 12.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -1559,7 +1559,7 @@ class _FieldTile extends StatelessWidget {
                   item.value,
                   style: const TextStyle(
                     color: AppColors.textPrimary,
-                    fontSize: 15,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                     height: 1.35,
                   ),
@@ -1674,7 +1674,7 @@ class _SummaryBox extends StatelessWidget {
             label,
             style: const TextStyle(
               color: AppColors.textSecondary,
-              fontSize: 12.5,
+              fontSize: 14,
             ),
           ),
           const SizedBox(height: 8),
@@ -1682,7 +1682,7 @@ class _SummaryBox extends StatelessWidget {
             value,
             style: const TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -1883,7 +1883,7 @@ class _DocumentListRow extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 color: AppColors.primary,
-                fontSize: 12.5,
+                fontSize: 14,
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -2019,7 +2019,7 @@ class _DocumentPreviewMessage extends StatelessWidget {
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: AppColors.textSecondary,
-                fontSize: 13,
+                fontSize: 14,
                 height: 1.35,
               ),
             ),
@@ -2076,7 +2076,7 @@ class _AccountStatementCard extends StatelessWidget {
               'Unable to load account statement.',
               style: TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 15,
+                fontSize: 14,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -2085,7 +2085,7 @@ class _AccountStatementCard extends StatelessWidget {
               errorMessage!,
               style: const TextStyle(
                 color: AppColors.textSecondary,
-                fontSize: 13,
+                fontSize: 14,
                 height: 1.4,
               ),
             ),
@@ -2125,7 +2125,7 @@ class _AccountStatementCard extends StatelessWidget {
             'Statement Overview',
             style: TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 15,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -2156,7 +2156,7 @@ class _AccountStatementCard extends StatelessWidget {
             'AGEING ANALYSIS',
             style: TextStyle(
               color: AppColors.textSecondary,
-              fontSize: 12.5,
+              fontSize: 14,
               fontWeight: FontWeight.w800,
               letterSpacing: 1.2,
             ),
@@ -2187,7 +2187,7 @@ class _AccountStatementCard extends StatelessWidget {
             'TRANSACTION HISTORY',
             style: TextStyle(
               color: AppColors.textSecondary,
-              fontSize: 12.5,
+              fontSize: 14,
               fontWeight: FontWeight.w800,
               letterSpacing: 1.2,
             ),
@@ -2267,7 +2267,7 @@ class _StatementMetricCard extends StatelessWidget {
             data.label,
             style: const TextStyle(
               color: AppColors.textSecondary,
-              fontSize: 12.5,
+              fontSize: 14,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -2276,7 +2276,7 @@ class _StatementMetricCard extends StatelessWidget {
             data.value,
             style: TextStyle(
               color: data.accentColor ?? AppColors.textPrimary,
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -2360,7 +2360,7 @@ class _StatementTransactionCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: AppColors.textPrimary,
-                    fontSize: 14.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                     height: 1.25,
                   ),
@@ -2370,7 +2370,7 @@ class _StatementTransactionCard extends StatelessWidget {
                   _formatIsoDate(transaction.date),
                   style: const TextStyle(
                     color: AppColors.textSecondary,
-                    fontSize: 12,
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -2388,7 +2388,7 @@ class _StatementTransactionCard extends StatelessWidget {
                     '$amountPrefix${_formatMoneyValue(amount)}',
                     style: TextStyle(
                       color: amountColor,
-                      fontSize: 18,
+                      fontSize: 16,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -2407,7 +2407,7 @@ class _StatementTransactionCard extends StatelessWidget {
                 'Balance: ${_formatMoneyValue(transaction.balance)}',
                 style: const TextStyle(
                   color: AppColors.textSecondary,
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -2420,7 +2420,7 @@ class _StatementTransactionCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: AppColors.textSecondary,
-                    fontSize: 11.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -2505,7 +2505,7 @@ class _PaymentHistoryCard extends StatelessWidget {
                   _formatMoneyValue(payment.amount),
                   style: const TextStyle(
                     color: AppColors.textPrimary,
-                    fontSize: 20,
+                    fontSize: 16,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -2524,7 +2524,7 @@ class _PaymentHistoryCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               color: AppColors.textSecondary,
-              fontSize: 12.5,
+              fontSize: 14,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -2635,7 +2635,7 @@ class _OrderHistoryCard extends StatelessWidget {
                       order.orderNumber,
                       style: const TextStyle(
                         color: AppColors.textPrimary,
-                        fontSize: 15.5,
+                        fontSize: 14,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -2644,7 +2644,7 @@ class _OrderHistoryCard extends StatelessWidget {
                       _formatIsoDate(order.date),
                       style: const TextStyle(
                         color: AppColors.textSecondary,
-                        fontSize: 12,
+                        fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -2656,7 +2656,7 @@ class _OrderHistoryCard extends StatelessWidget {
                 _formatMoneyValue(order.total),
                 style: const TextStyle(
                   color: AppColors.textPrimary,
-                  fontSize: 19,
+                  fontSize: 16,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -2743,7 +2743,7 @@ class _InfoPill extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
           color: foreground,
-          fontSize: 12.5,
+          fontSize: 14,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -2823,7 +2823,7 @@ class _SectionError extends StatelessWidget {
             'Unable to load this section.',
             style: TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 15,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -2832,7 +2832,7 @@ class _SectionError extends StatelessWidget {
             message,
             style: const TextStyle(
               color: AppColors.textSecondary,
-              fontSize: 13,
+              fontSize: 14,
               height: 1.4,
             ),
           ),
@@ -2867,7 +2867,7 @@ class _TypeChip extends StatelessWidget {
         label,
         style: const TextStyle(
           color: AppColors.textPrimary,
-          fontSize: 12.5,
+          fontSize: 14,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -2897,7 +2897,7 @@ class _EmptySectionState extends StatelessWidget {
             title,
             style: const TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 14.5,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -2906,7 +2906,7 @@ class _EmptySectionState extends StatelessWidget {
             subtitle,
             style: const TextStyle(
               color: AppColors.textSecondary,
-              fontSize: 13,
+              fontSize: 14,
               height: 1.45,
             ),
           ),
@@ -2980,7 +2980,7 @@ class _ErrorState extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: AppColors.textSecondary,
-                  fontSize: 13.5,
+                  fontSize: 14,
                   height: 1.45,
                 ),
               ),

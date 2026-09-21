@@ -223,7 +223,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
               'Current status',
               style: TextStyle(
                 color: textSecondary,
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -268,7 +268,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             color: textPrimary,
-                            fontSize: 15,
+                            fontSize: 14,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -279,7 +279,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             color: textSecondary,
-                            fontSize: 13,
+                            fontSize: 14,
                           ),
                         ),
                       ],
@@ -308,7 +308,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
                         color: isCurrentlyActive
                             ? const Color(0xFF107C41)
                             : AppColors.red,
-                        fontSize: 12,
+                        fontSize: 14,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -717,7 +717,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
               '${start + 1} to $end of $totalCount',
               style: const TextStyle(
                 color: textSecondary,
-                fontSize: 12,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -792,7 +792,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
           Text(
             message,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: textSecondary, fontSize: 12),
+            style: const TextStyle(color: textSecondary, fontSize: 14),
           ),
           const SizedBox(height: 14),
           SoftActionButton(
@@ -811,7 +811,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
       child: Center(
         child: Text(
           message,
-          style: const TextStyle(color: textSecondary, fontSize: 15),
+          style: const TextStyle(color: textSecondary, fontSize: 14),
         ),
       ),
     );
@@ -821,9 +821,10 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
     final displayName = user.name.trim().isEmpty ? 'Unnamed user' : user.name;
     final displayEmail = user.email.trim().isEmpty ? 'No email' : user.email;
     final roleLabel = _formatRole(user.role);
-    final displayPhone = user.phone?.trim().isEmpty ?? true
+    final phone = user.phone?.trim();
+    final displayPhone = phone == null || phone.isEmpty
         ? 'No contact number'
-        : user.phone!.trim();
+        : phone;
     final avatarUrl = _profilePhotoUrl(user.profilePhoto);
     final isActive = user.isActive == true;
 
@@ -906,7 +907,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               color: textPrimary,
-                              fontSize: 15,
+                              fontSize: 14,
                               fontWeight: FontWeight.w800,
                             ),
                           ),
@@ -917,7 +918,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               color: textSecondary,
-                              fontSize: 11,
+                              fontSize: 14,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -931,7 +932,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
                           : _formatShortDate(user.createdAt!),
                       style: const TextStyle(
                         color: AppColors.textLightMuted,
-                        fontSize: 11,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -1018,7 +1019,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
         style: const TextStyle(
           color: AppColors.primary,
           fontWeight: FontWeight.w800,
-          fontSize: 17,
+          fontSize: 16,
         ),
       ),
     );
@@ -1036,7 +1037,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               color: textPrimary,
-              fontSize: 12.5,
+              fontSize: 14,
               fontWeight: FontWeight.w500,
               letterSpacing: 0,
             ),
@@ -1150,7 +1151,7 @@ class _ResetPasswordDialogState extends State<_ResetPasswordDialog> {
                         'Reset Password',
                         style: TextStyle(
                           color: AppColors.textPrimary,
-                          fontSize: 18,
+                          fontSize: 16,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
@@ -1180,7 +1181,7 @@ class _ResetPasswordDialogState extends State<_ResetPasswordDialog> {
                         'Resetting password for',
                         style: TextStyle(
                           color: AppColors.textSecondary,
-                          fontSize: 13,
+                          fontSize: 14,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -1228,7 +1229,7 @@ class _ResetPasswordDialogState extends State<_ResetPasswordDialog> {
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
                                       color: AppColors.textPrimary,
-                                      fontSize: 15,
+                                      fontSize: 14,
                                       fontWeight: FontWeight.w700,
                                     ),
                                   ),
@@ -1239,7 +1240,7 @@ class _ResetPasswordDialogState extends State<_ResetPasswordDialog> {
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
                                       color: AppColors.textSecondary,
-                                      fontSize: 13,
+                                      fontSize: 14,
                                     ),
                                   ),
                                 ],
@@ -1387,7 +1388,7 @@ class _ResetPasswordDialogState extends State<_ResetPasswordDialog> {
       label,
       style: const TextStyle(
         color: AppColors.textPrimary,
-        fontSize: 13.5,
+        fontSize: 14,
         fontWeight: FontWeight.w700,
       ),
     );

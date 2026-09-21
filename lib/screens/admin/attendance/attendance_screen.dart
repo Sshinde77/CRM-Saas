@@ -265,7 +265,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                       'Showing 1 to ${records.isEmpty ? 0 : records.length} of ${records.length} entries',
                                       style: const TextStyle(
                                         color: Color(0xFF94A3B8),
-                                        fontSize: 13.5,
+                                        fontSize: 14,
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
@@ -504,7 +504,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           hintText: 'Search by name or ID...',
           hintStyle: const TextStyle(
             color: Color(0xFF94A3B8),
-            fontSize: 13.5,
+            fontSize: 14,
             fontWeight: FontWeight.w500,
           ),
           prefixIcon: const Icon(Icons.search_rounded, size: 20),
@@ -705,7 +705,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     style: const TextStyle(
                       color: Color(0xFF0B4A06),
                       fontWeight: FontWeight.w800,
-                      fontSize: 12,
+                      fontSize: 14,
                     ),
                   ),
                 ),
@@ -718,7 +718,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                         record.name,
                         style: const TextStyle(
                           color: Color(0xFF111827),
-                          fontSize: 13.5,
+                          fontSize: 14,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
@@ -727,7 +727,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                         record.userId,
                         style: const TextStyle(
                           color: Color(0xFF94A3B8),
-                          fontSize: 12,
+                          fontSize: 14,
                         ),
                       ),
                     ],
@@ -742,7 +742,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               record.role,
               style: const TextStyle(
                 color: Color(0xFF334155),
-                fontSize: 13.5,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -756,7 +756,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   record.dateLabel,
                   style: const TextStyle(
                     color: Color(0xFF111827),
-                    fontSize: 13.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -765,7 +765,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   record.dayLabel,
                   style: const TextStyle(
                     color: Color(0xFF94A3B8),
-                    fontSize: 12,
+                    fontSize: 14,
                   ),
                 ),
               ],
@@ -780,7 +780,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   record.checkIn,
                   style: const TextStyle(
                     color: Color(0xFF334155),
-                    fontSize: 13.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -798,7 +798,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               record.checkOut,
               style: const TextStyle(
                 color: Color(0xFF334155),
-                fontSize: 13.5,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -809,7 +809,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               record.workHours,
               style: const TextStyle(
                 color: Color(0xFF0B4A06),
-                fontSize: 13.5,
+                fontSize: 14,
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -871,7 +871,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                         style: const TextStyle(
                           color: Color(0xFF0B4A06),
                           fontWeight: FontWeight.w800,
-                          fontSize: 12,
+                          fontSize: 14,
                         ),
                       ),
                     ),
@@ -892,7 +892,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                             record.userId,
                             style: const TextStyle(
                               color: Color(0xFF94A3B8),
-                              fontSize: 12,
+                              fontSize: 14,
                             ),
                           ),
                         ],
@@ -1022,7 +1022,7 @@ class _StatCard extends StatelessWidget {
                   card.title,
                   style: const TextStyle(
                     color: Color(0xFF64748B),
-                    fontSize: 12.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -1031,7 +1031,7 @@ class _StatCard extends StatelessWidget {
                   card.value,
                   style: const TextStyle(
                     color: Color(0xFF111827),
-                    fontSize: 22,
+                    fontSize: 16,
                     height: 1.05,
                     fontWeight: FontWeight.w800,
                   ),
@@ -1041,7 +1041,7 @@ class _StatCard extends StatelessWidget {
                   card.subtitle,
                   style: const TextStyle(
                     color: Color(0xFF94A3B8),
-                    fontSize: 12,
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -1065,7 +1065,7 @@ class _AttendanceHeaderLabel extends StatelessWidget {
       label,
       style: const TextStyle(
         color: Color(0xFF94A3B8),
-        fontSize: 11.5,
+        fontSize: 14,
         fontWeight: FontWeight.w800,
         letterSpacing: 0.9,
       ),
@@ -1101,7 +1101,7 @@ class _StatusPill extends StatelessWidget {
             label,
             style: TextStyle(
               color: fg,
-              fontSize: 11.5,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -1129,7 +1129,7 @@ class _MiniTag extends StatelessWidget {
         label,
         style: TextStyle(
           color: isGood ? const Color(0xFF0B4A06) : const Color(0xFFB45309),
-          fontSize: 10.5,
+          fontSize: 14,
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -1160,7 +1160,7 @@ class _MiniInfo extends StatelessWidget {
             label,
             style: const TextStyle(
               color: Color(0xFF94A3B8),
-              fontSize: 11.5,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -1169,7 +1169,7 @@ class _MiniInfo extends StatelessWidget {
             value,
             style: const TextStyle(
               color: Color(0xFF111827),
-              fontSize: 13.5,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
           ),

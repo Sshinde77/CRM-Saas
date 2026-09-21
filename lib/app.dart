@@ -40,6 +40,15 @@ class _CrmSaasAppState extends State<CrmSaasApp> {
         debugShowCheckedModeBanner: false,
         title: 'CRM SaaS',
         theme: AppTheme.lightTheme,
+        builder: (context, child) {
+          final textScaler = MediaQuery.textScalerOf(
+            context,
+          ).clamp(minScaleFactor: 0.9, maxScaleFactor: 1.2);
+          return MediaQuery(
+            data: MediaQuery.of(context).copyWith(textScaler: textScaler),
+            child: child ?? const SizedBox.shrink(),
+          );
+        },
         home: hasSession
             ? RoleHomeScreen.forRole(savedRole)
             : const LoginScreen(),

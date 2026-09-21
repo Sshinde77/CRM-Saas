@@ -968,7 +968,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
               widget.isEditMode ? 'Update customer' : 'Customer setup',
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 12,
+                fontSize: 14,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -978,7 +978,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             widget.isEditMode ? 'Edit Customer' : 'Add Customer',
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 28,
+              fontSize: 16,
               height: 1.1,
               fontWeight: FontWeight.w900,
             ),
@@ -986,7 +986,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           const SizedBox(height: 10),
           const Text(
             'Capture customer identity, billing details, delivery address, ownership, and credit in one clean flow.',
-            style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.45),
+            style: TextStyle(color: Colors.white70, fontSize: 14, height: 1.45),
           ),
           const SizedBox(height: 20),
           _introBullet('Basic identity and contact details'),
@@ -1069,7 +1069,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
               text,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
                 height: 1.3,
               ),
@@ -1095,7 +1095,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             label,
             style: const TextStyle(
               color: Colors.white70,
-              fontSize: 11,
+              fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -1146,7 +1146,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                 'Customer Setup',
                 style: TextStyle(
                   color: AppColors.textPrimary,
-                  fontSize: 18,
+                  fontSize: 16,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -1155,7 +1155,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                 'Complete the customer profile in 9 steps.',
                 style: TextStyle(
                   color: AppColors.textSecondary,
-                  fontSize: 13,
+                  fontSize: 14,
                   height: 1.35,
                 ),
               ),
@@ -1225,7 +1225,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                               color: isActive
                                   ? AppColors.primary
                                   : AppColors.textSecondary,
-                              fontSize: 13,
+                              fontSize: 14,
                               fontWeight: isActive
                                   ? FontWeight.w700
                                   : FontWeight.w500,
@@ -1280,7 +1280,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                 'Could not refresh customer details. The form still has the last loaded values.',
                 style: TextStyle(
                   color: AppColors.statusInactiveText,
-                  fontSize: 12,
+                  fontSize: 14,
                 ),
               ),
               const SizedBox(height: 12),
@@ -1376,7 +1376,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             '${_currentStep + 1}',
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -1386,7 +1386,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           step.title,
           style: const TextStyle(
             color: AppColors.textPrimary,
-            fontSize: 17,
+            fontSize: 16,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -1507,7 +1507,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             title,
             style: const TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -1516,7 +1516,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             subtitle,
             style: const TextStyle(
               color: AppColors.textSecondary,
-              fontSize: 13,
+              fontSize: 14,
               height: 1.35,
             ),
           ),
@@ -1722,7 +1722,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                     'Shipping address same as billing address',
                     style: TextStyle(
                       color: AppColors.textPrimary,
-                      fontSize: 13,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -1735,7 +1735,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             'Country / State / City',
             style: const TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -1901,7 +1901,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                     'Tax Exempt',
                     style: TextStyle(
                       color: AppColors.textPrimary,
-                      fontSize: 13,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -2271,7 +2271,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                   title,
                   style: const TextStyle(
                     color: AppColors.textPrimary,
-                    fontSize: 15,
+                    fontSize: 14,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -2280,7 +2280,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                   mimeHint,
                   style: const TextStyle(
                     color: AppColors.textSecondary,
-                    fontSize: 12.5,
+                    fontSize: 14,
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -2313,7 +2313,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                           vertical: 12,
                         ),
                         textStyle: const TextStyle(
-                          fontSize: 13.5,
+                          fontSize: 14,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -2333,7 +2333,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                           vertical: 12,
                         ),
                         textStyle: const TextStyle(
-                          fontSize: 13.5,
+                          fontSize: 14,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -2348,7 +2348,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: AppColors.textPrimary,
-                      fontSize: 12,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -2359,7 +2359,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                     'Uploaded and ready to attach on save',
                     style: TextStyle(
                       color: AppColors.primary,
-                      fontSize: 12,
+                      fontSize: 14,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -2398,7 +2398,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                 'Add Customer',
                 style: TextStyle(
                   color: AppColors.textPrimary,
-                  fontSize: 20,
+                  fontSize: 16,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -2407,7 +2407,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                 'Keep the customer profile, addresses, and account settings in one place.',
                 style: TextStyle(
                   color: AppColors.textSecondary,
-                  fontSize: 13,
+                  fontSize: 14,
                   height: 1.4,
                 ),
               ),
@@ -2419,7 +2419,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
               'Could not refresh customer details. The form still has the last loaded values.',
               style: TextStyle(
                 color: AppColors.statusInactiveText,
-                fontSize: 12,
+                fontSize: 14,
               ),
             ),
           ],
@@ -2548,7 +2548,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                     'Delivery address same as billing',
                     style: TextStyle(
                       color: AppColors.textPrimary,
-                      fontSize: 13,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -2629,7 +2629,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                       'Customer is active',
                       style: TextStyle(
                         color: AppColors.textPrimary,
-                        fontSize: 13.5,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -2726,7 +2726,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             step,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -2763,7 +2763,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             label,
             style: const TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -2797,7 +2797,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             'Assigned Sales Officer',
             style: TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -2840,7 +2840,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             'Type',
             style: TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -2963,7 +2963,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             label,
             style: const TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
           ),

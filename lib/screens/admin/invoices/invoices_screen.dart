@@ -207,14 +207,14 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
                       'Invoices',
                       style: TextStyle(
                         color: textPrimary,
-                        fontSize: 24,
+                        fontSize: 16,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
                     const SizedBox(height: 4),
                     const Text(
                       'Switch between sales and purchase invoices',
-                      style: TextStyle(color: textSecondary, fontSize: 13),
+                      style: TextStyle(color: textSecondary, fontSize: 14),
                     ),
                     const SizedBox(height: 20),
                     Container(
@@ -273,7 +273,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
                             isSales ? 'Sales Invoices' : 'Purchase Invoices',
                             style: const TextStyle(
                               color: textPrimary,
-                              fontSize: 18,
+                              fontSize: 16,
                               fontWeight: FontWeight.w800,
                             ),
                           ),
@@ -284,7 +284,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
                                 : 'Search by invoice, supplier, date, status, or total.',
                             style: const TextStyle(
                               color: textSecondary,
-                              fontSize: 12.5,
+                              fontSize: 14,
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -380,7 +380,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
         child: Center(
           child: Text(
             'No sales invoices match your search.',
-            style: TextStyle(color: textSecondary, fontSize: 13),
+            style: TextStyle(color: textSecondary, fontSize: 14),
           ),
         ),
       );
@@ -412,7 +412,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
         child: Center(
           child: Text(
             'No purchase invoices match your search.',
-            style: TextStyle(color: textSecondary, fontSize: 13),
+            style: TextStyle(color: textSecondary, fontSize: 14),
           ),
         ),
       );
@@ -488,7 +488,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
                       invoiceNo,
                       style: const TextStyle(
                         color: textPrimary,
-                        fontSize: 15.5,
+                        fontSize: 14,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -497,7 +497,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
                       primaryLabel,
                       style: const TextStyle(
                         color: textSecondary,
-                        fontSize: 12,
+                        fontSize: 14,
                       ),
                     ),
                   ],
@@ -519,7 +519,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
                   status,
                   style: TextStyle(
                     color: statusColor,
-                    fontSize: 11.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -549,7 +549,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
           label,
           style: const TextStyle(
             color: textSecondary,
-            fontSize: 11.5,
+            fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -558,7 +558,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
           value,
           style: const TextStyle(
             color: textPrimary,
-            fontSize: 13.5,
+            fontSize: 14,
             fontWeight: FontWeight.w700,
           ),
         ),
