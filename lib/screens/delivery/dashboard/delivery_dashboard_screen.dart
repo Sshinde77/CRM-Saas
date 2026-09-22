@@ -168,7 +168,12 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
                       onNotificationTap: () => _showComingSoon('Notifications'),
                     ),
                   ),
-                  SliverToBoxAdapter(child: _DashboardHeroSection(data: data)),
+                  SliverToBoxAdapter(
+                    child: Transform.translate(
+                      offset: const Offset(0, -1),
+                      child: _DashboardHeroSection(data: data),
+                    ),
+                  ),
                   if (data == null)
                     const SliverToBoxAdapter(
                       child: SizedBox(height: AppSpacing.md),
