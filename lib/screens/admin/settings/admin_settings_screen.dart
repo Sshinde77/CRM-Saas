@@ -126,7 +126,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                                   height: 16,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2.2,
-                                    color: AppColors.primary,
+                                    color: Colors.white,
                                   ),
                                 )
                               : const Text('Save Settings'),

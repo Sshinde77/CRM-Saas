@@ -19,8 +19,8 @@ class AppTheme {
         secondary: AppColors.secondary,
         surface: AppColors.surface,
         outline: AppColors.secondary,
-        onPrimary: AppColors.textPrimary,
-        onSecondary: AppColors.textPrimary,
+        onPrimary: Colors.white,
+        onSecondary: Colors.white,
         onSurface: AppColors.textPrimary,
       ),
       scaffoldBackgroundColor: AppColors.background,
@@ -28,11 +28,17 @@ class AppTheme {
       appBarTheme: const AppBarTheme(
         centerTitle: false,
         backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.textPrimary,
+        foregroundColor: Colors.white,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         toolbarHeight: kToolbarHeight,
-        titleTextStyle: AppTextStyles.appBarTitle,
+        titleTextStyle: TextStyle(
+          fontFamily: AppTextStyles.fontFamily,
+          fontSize: 16,
+          height: 1.2,
+          fontWeight: FontWeight.w700,
+          color: Colors.white,
+        ),
       ),
       cardTheme: CardThemeData(
         color: AppColors.surface,
@@ -70,6 +76,8 @@ class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
           textStyle: AppTextStyles.bodyStrong,
           minimumSize: const Size(0, AppSizes.buttonHeight),
           shape: RoundedRectangleBorder(
@@ -82,6 +90,8 @@ class AppTheme {
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
           textStyle: AppTextStyles.bodyStrong,
           minimumSize: const Size(0, AppSizes.buttonHeight),
           shape: RoundedRectangleBorder(
@@ -100,7 +110,7 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.primary,
+        fillColor: AppColors.surface,
         labelStyle: AppTextStyles.body,
         floatingLabelStyle: AppTextStyles.bodyStrong,
         hintStyle: AppTextStyles.secondary,
