@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../constants/app_colors.dart';
 import '../../../models/customer_model.dart';
 import '../../../providers/api_provider.dart';
 import '../../../services/api_service.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
-import 'customer_location_picker_screen.dart';
 
 class CreateDeliveryCustomerScreen extends StatefulWidget {
   const CreateDeliveryCustomerScreen({super.key});
@@ -118,23 +117,28 @@ class _CreateDeliveryCustomerScreenState
 
   Future<void> _pickLocation() async {
     FocusScope.of(context).unfocus();
-    LatLng? initialLocation;
+    String query;
     if (_validateLocation(_location.text) == null) {
       final parts = _location.text.split(',');
-      initialLocation = LatLng(
-        double.parse(parts[0].trim()),
-        double.parse(parts[1].trim()),
-      );
+      query = '${parts[0].trim()},${parts[1].trim()}';
+    } else {
+      query = [
+        _address.text.trim(),
+        _city.text.trim(),
+        _pincode.text.trim(),
+      ].where((part) => part.isNotEmpty).join(', ');
     }
-    final selected = await Navigator.of(context).push<LatLng>(
-      MaterialPageRoute(
-        builder: (_) =>
-            CustomerLocationPickerScreen(initialLocation: initialLocation),
-      ),
+
+    final uri = Uri.https('www.google.com', '/maps/search/', {
+      'api': '1',
+      if (query.isNotEmpty) 'query': query,
+    });
+
+    final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!mounted || opened) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Could not open Google Maps.')),
     );
-    if (!mounted || selected == null) return;
-    _location.text =
-        '${selected.latitude.toStringAsFixed(6)}, ${selected.longitude.toStringAsFixed(6)}';
   }
 
   Future<void> _save() async {
@@ -448,12 +452,12 @@ class _CreateDeliveryCustomerScreenState
                             textInputAction: TextInputAction.done,
                             decoration: _decoration('12.9352, 77.6245').copyWith(
                               helperText:
-                                  'Pin on the map or enter latitude, longitude',
+                                  'Open Google Maps or enter latitude, longitude',
                               suffixIcon: IconButton(
-                                tooltip: 'Pin location on map',
+                                tooltip: 'Open Google Maps',
                                 onPressed: _saving ? null : _pickLocation,
                                 icon: const Icon(
-                                  Icons.my_location_rounded,
+                                  Icons.map_outlined,
                                   color: _green,
                                   size: 21,
                                 ),
