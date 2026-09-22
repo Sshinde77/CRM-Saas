@@ -7,6 +7,8 @@ import '../../../constants/app_colors.dart';
 import '../../../models/customer_activity_models.dart';
 import '../../../models/customer_model.dart';
 import '../../../providers/api_provider.dart';
+import '../../../widgets/admin/admin_top_bar.dart';
+import '../../../widgets/delivery/delivery_top_bar.dart';
 import 'add_customer_screen.dart';
 
 double _safeMoneyNumber(Object? value) {
@@ -881,33 +883,17 @@ class _TopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 6, 8, 8),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: onBack,
-            icon: const Icon(Icons.arrow_back_rounded),
-            color: AppColors.textPrimary,
-          ),
-          const Expanded(
-            child: Text(
-              'Customer Details',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ),
-          IconButton(
-            onPressed: onMore,
-            icon: const Icon(Icons.more_vert_rounded),
-            color: AppColors.textPrimary,
-          ),
-        ],
-      ),
+    return AdminTopBar(
+      title: 'Customer Details',
+      leadingIcon: Icons.arrow_back_rounded,
+      onLeadingTap: onBack,
+      actions: [
+        DeliveryTopBarAction(
+          icon: Icons.more_vert_rounded,
+          tooltip: 'More actions',
+          onTap: onMore,
+        ),
+      ],
     );
   }
 }

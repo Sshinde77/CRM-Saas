@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../constants/app_colors.dart';
 import '../../../providers/api_provider.dart';
 import '../../../widgets/admin/app_drawer.dart';
+import '../../../widgets/admin/admin_top_bar.dart';
+import '../../../widgets/delivery/delivery_top_bar.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
 import '../../sales_manager/attendance/sales_manager_attendance_screen.dart';
@@ -649,7 +651,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
               children: [
                 widget.useSalesManagerShell
                     ? const SalesManagerTopBar(title: 'Sales Orders')
-                    : _buildTopBar(isMobile),
+                    : _buildTopBar(),
                 Expanded(
                   child: RefreshIndicator(
                     color: AppColors.primary,
@@ -734,131 +736,18 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     }
   }
 
-  Widget _buildTopBar(bool isMobile) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(
-        isMobile ? 10 : 14,
-        10,
-        isMobile ? 10 : 14,
-        8,
-      ),
-      child: Row(
-        children: [
-          if (isMobile) ...[
-            IconButton(
-              onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-              icon: const Icon(
-                Icons.menu_rounded,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(width: 2),
-          ],
-          const Text(
-            'Orders',
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const Spacer(),
-          if (!isMobile) ...[_topRightActionButton(), const SizedBox(width: 8)],
-          _roundIconButton(Icons.help_outline_rounded, () {}),
-          const SizedBox(width: 8),
-          _roundIconButton(Icons.notifications_none_rounded, () {}),
-          const SizedBox(width: 8),
-          Row(
-            children: [
-              Container(
-                width: 28,
-                height: 28,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF0B4A06),
-                  shape: BoxShape.circle,
-                ),
-                alignment: Alignment.center,
-                child: const Text(
-                  'S',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Sushil',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  SizedBox(height: 2),
-                  Text(
-                    'Admin',
-                    style: TextStyle(
-                      color: Color(0xFF0B4A06),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(width: 8),
-              const Icon(
-                Icons.keyboard_arrow_down_rounded,
-                color: Color(0xFF9CA3AF),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _topRightActionButton() {
-    return SizedBox(
-      width: 118,
-      height: 30,
-      child: ElevatedButton.icon(
-        onPressed: _openNewOrder,
-        icon: const Icon(Icons.add_rounded, size: 15),
-        label: const Text('New Order'),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF0B4A06),
-          foregroundColor: Colors.white,
-          elevation: 4,
-          shadowColor: const Color(0xFF0B4A06).withValues(alpha: 0.22),
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(999),
-          ),
-          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+  Widget _buildTopBar() {
+    return AdminTopBar(
+      title: 'Orders',
+      leadingIcon: Icons.menu_rounded,
+      onLeadingTap: () => _scaffoldKey.currentState?.openDrawer(),
+      actions: [
+        DeliveryTopBarAction(
+          icon: Icons.add_rounded,
+          tooltip: 'New Order',
+          onTap: _openNewOrder,
         ),
-      ),
-    );
-  }
-
-  Widget _roundIconButton(IconData icon, VoidCallback onTap) {
-    return Container(
-      width: 34,
-      height: 34,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      child: IconButton(
-        onPressed: onTap,
-        icon: Icon(icon, size: 17, color: const Color(0xFF6B7280)),
-        padding: EdgeInsets.zero,
-      ),
+      ],
     );
   }
 

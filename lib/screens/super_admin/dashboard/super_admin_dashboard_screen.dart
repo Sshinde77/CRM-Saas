@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../widgets/delivery/delivery_top_bar.dart';
 import '../../../widgets/super_admin/super_admin_sidebar.dart';
 
 class SuperAdminDashboardScreen extends StatefulWidget {
@@ -366,6 +367,7 @@ class _MainArea extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _TopBar(
+                title: currentPage,
                 showCompactMenuButton: showCompactMenuButton,
                 onOpenMenu: onOpenMenu,
               ),
@@ -461,146 +463,24 @@ class _MainArea extends StatelessWidget {
 }
 
 class _TopBar extends StatelessWidget {
+  final String title;
   final bool showCompactMenuButton;
   final VoidCallback? onOpenMenu;
 
-  const _TopBar({required this.showCompactMenuButton, this.onOpenMenu});
+  const _TopBar({
+    required this.title,
+    required this.showCompactMenuButton,
+    this.onOpenMenu,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        if (showCompactMenuButton) ...[
-          _RoundIconButton(
-            icon: Icons.menu_rounded,
-            onTap: onOpenMenu ?? () {},
-          ),
-          const SizedBox(width: 10),
-        ],
-        Expanded(
-          child: Container(
-            height: 40,
-            padding: const EdgeInsets.symmetric(horizontal: 14),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(999),
-              border: Border.all(color: AppColors.border),
-            ),
-            child: const Row(
-              children: [
-                Icon(
-                  Icons.search_rounded,
-                  size: 18,
-                  color: AppColors.textLightMuted,
-                ),
-                SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    'Search deliveries, customers, orders...',
-                    style: TextStyle(
-                      color: AppColors.textLightMuted,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        _RoundIconButton(icon: Icons.help_outline_rounded, onTap: () {}),
-        const SizedBox(width: 10),
-        _RoundIconButton(icon: Icons.notifications_none_rounded, onTap: () {}),
-        const SizedBox(width: 10),
-        Container(
-          padding: const EdgeInsets.fromLTRB(8, 8, 12, 8),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: AppColors.border),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 30,
-                height: 30,
-                decoration: const BoxDecoration(
-                  color: AppColors.primary,
-                  shape: BoxShape.circle,
-                ),
-                alignment: Alignment.center,
-                child: const Text(
-                  'RM',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Ravi Malhotra',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  SizedBox(height: 2),
-                  Text(
-                    'Super Admin',
-                    style: TextStyle(
-                      color: AppColors.primary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(width: 6),
-              const Icon(
-                Icons.keyboard_arrow_down_rounded,
-                color: AppColors.textLightMuted,
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _RoundIconButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onTap;
-
-  const _RoundIconButton({required this.icon, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      shape: const CircleBorder(),
-      child: InkWell(
-        onTap: onTap,
-        customBorder: const CircleBorder(),
-        child: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: AppColors.border),
-          ),
-          child: Icon(icon, size: 20, color: AppColors.textSecondary),
-        ),
-      ),
+    return DeliveryTopBar(
+      title: title,
+      leadingIcon: Icons.menu_rounded,
+      onLeadingTap: showCompactMenuButton ? onOpenMenu : null,
+      profileName: 'Ravi Malhotra',
+      profileRole: 'Super Admin',
     );
   }
 }

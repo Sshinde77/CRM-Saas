@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../constants/app_colors.dart';
 import '../../../models/auth_models.dart';
 import '../../../services/api_service.dart';
+import '../../../widgets/admin/admin_top_bar.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});
@@ -99,39 +100,42 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final isWide = constraints.maxWidth >= 780;
-            final contentWidth = constraints.maxWidth > 1200
-                ? 1200.0
-                : constraints.maxWidth;
+        child: Column(
+          children: [
+            AdminTopBar(
+              title: 'Change Password',
+              leadingIcon: Icons.arrow_back_rounded,
+              onLeadingTap: () => Navigator.of(context).maybePop(),
+            ),
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final isWide = constraints.maxWidth >= 780;
+                  final contentWidth = constraints.maxWidth > 1200
+                      ? 1200.0
+                      : constraints.maxWidth;
 
-            return Center(
-              child: SizedBox(
-                width: contentWidth,
-                child: ListView(
-                  padding: const EdgeInsets.fromLTRB(26, 38, 26, 34),
-                  children: [
-                    const Text(
-                      'Change Password',
-                      style: TextStyle(
-                        color: _titleColor,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Update the admin account password.',
-                      style: TextStyle(
-                        color: _mutedColor,
-                        fontSize: 14,
-                        height: 1.35,
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-                    const Divider(height: 1, thickness: 1, color: _borderColor),
-                    const SizedBox(height: 24),
+                  return Center(
+                    child: SizedBox(
+                      width: contentWidth,
+                      child: ListView(
+                        padding: const EdgeInsets.fromLTRB(26, 20, 26, 34),
+                        children: [
+                          const Text(
+                            'Update the admin account password.',
+                            style: TextStyle(
+                              color: _mutedColor,
+                              fontSize: 14,
+                              height: 1.35,
+                            ),
+                          ),
+                          const SizedBox(height: 18),
+                          const Divider(
+                            height: 1,
+                            thickness: 1,
+                            color: _borderColor,
+                          ),
+                          const SizedBox(height: 24),
                     _fieldBlock(
                       label: 'Current Password *',
                       child: _passwordField(
@@ -215,11 +219,14 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                         ),
                       ),
                     ),
-                  ],
-                ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
-            );
-          },
+            ),
+          ],
         ),
       ),
     );

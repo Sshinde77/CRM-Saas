@@ -11,6 +11,7 @@ import 'documents_screen.dart';
 import 'general_information_screen.dart';
 import 'online_presence_screen.dart';
 import '../../../widgets/admin/app_drawer.dart';
+import '../../../widgets/admin/admin_top_bar.dart';
 
 class CompanySettingsScreen extends StatefulWidget {
   const CompanySettingsScreen({super.key});
@@ -236,67 +237,10 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
   }
 
   Widget _buildTopBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(bottom: BorderSide(color: AppColors.borderLight)),
-      ),
-      child: Row(
-        children: [
-          InkWell(
-            onTap: () => _scaffoldKey.currentState?.openDrawer(),
-            borderRadius: BorderRadius.circular(18),
-            child: const SizedBox(
-              width: 40,
-              height: 40,
-              child: Icon(
-                Icons.menu_rounded,
-                color: AppColors.textPrimary,
-                size: 24,
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          const Expanded(
-            child: Text(
-              'Company Settings',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              const SizedBox(
-                width: 40,
-                height: 40,
-                child: Icon(
-                  Icons.notifications_none_rounded,
-                  color: AppColors.textPrimary,
-                  size: 24,
-                ),
-              ),
-              Positioned(
-                right: 10,
-                top: 10,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: AppColors.red,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+    return AdminTopBar(
+      title: 'Company Settings',
+      leadingIcon: Icons.menu_rounded,
+      onLeadingTap: () => _scaffoldKey.currentState?.openDrawer(),
     );
   }
 

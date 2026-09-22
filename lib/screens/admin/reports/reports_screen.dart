@@ -314,9 +314,9 @@ class _ReportCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.primary,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.secondary.withValues(alpha: 0.18)),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border),
         boxShadow: [
           BoxShadow(
             color: AppColors.textPrimary.withValues(alpha: 0.05),
@@ -419,7 +419,7 @@ class _ReportCard extends StatelessWidget {
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
-                    color: data.accent.withValues(alpha: 0.08),
+                    color: AppColors.surfaceSoft,
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Text(

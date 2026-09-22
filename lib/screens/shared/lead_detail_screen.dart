@@ -669,7 +669,11 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
         child: Column(
           children: [
             widget.useSalesManagerShell
-                ? const SalesManagerTopBar(title: 'Lead Details')
+                ? SalesManagerTopBar(
+                    title: 'Lead Details',
+                    leadingIcon: Icons.arrow_back_rounded,
+                    onLeadingTap: () => Navigator.of(context).maybePop(),
+                  )
                 : AdminTopBar(
                     title: 'Lead Details',
                     leadingIcon: Icons.menu_rounded,

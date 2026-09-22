@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
 import '../../../widgets/admin/app_drawer.dart';
+import '../../../widgets/admin/admin_top_bar.dart';
+import '../../../widgets/delivery/delivery_top_bar.dart';
 import 'new_sales_return_screen.dart';
 
 class SalesReturnsScreen extends StatefulWidget {
@@ -260,94 +262,17 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
   }
 
   Widget _topBar() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
-      child: Row(
-        children: [
-          _roundIconButton(Icons.help_outline_rounded, onTap: () {}),
-          const SizedBox(width: 10),
-          _roundIconButton(Icons.notifications_none_rounded, onTap: () {}),
-          const Spacer(),
-          Container(
-            padding: const EdgeInsets.fromLTRB(8, 8, 12, 8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(999),
-              border: Border.all(color: const Color(0xFFE5E7EB)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF0B4A06),
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: const Text(
-                    'RS',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Rahul Sharma',
-                      style: TextStyle(
-                        color: textPrimary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    SizedBox(height: 2),
-                    Text(
-                      'Admin',
-                      style: TextStyle(
-                        color: Color(0xFF0B4A06),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 8),
-                const Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  color: Color(0xFF94A3B8),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _roundIconButton(IconData icon, {required VoidCallback onTap}) {
-    return Material(
-      color: Colors.white,
-      shape: const CircleBorder(),
-      child: InkWell(
-        onTap: onTap,
-        customBorder: const CircleBorder(),
-        child: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: const Color(0xFFE5E7EB)),
-          ),
-          child: Icon(icon, color: const Color(0xFF64748B), size: 20),
+    return AdminTopBar(
+      title: 'Sales Returns',
+      leadingIcon: Icons.menu_rounded,
+      onLeadingTap: () => _scaffoldKey.currentState?.openDrawer(),
+      actions: [
+        DeliveryTopBarAction(
+          icon: Icons.add_rounded,
+          tooltip: 'New Return',
+          onTap: _handleNewReturn,
         ),
-      ),
+      ],
     );
   }
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
 import '../../../widgets/admin/app_drawer.dart';
+import '../../../widgets/admin/admin_top_bar.dart';
 
 class NewSalesReturnScreen extends StatefulWidget {
   const NewSalesReturnScreen({super.key});
@@ -114,35 +115,13 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        _backButton(),
-                        const SizedBox(width: 12),
-                        const Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'New Sales Return',
-                                style: TextStyle(
-                                  color: textPrimary,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                              SizedBox(height: 4),
-                              Text(
-                                'Raise a return request against an existing invoice.',
-                                style: TextStyle(
-                                  color: textSecondary,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                    const Text(
+                      'Raise a return request against an existing invoice.',
+                      style: TextStyle(
+                        color: textSecondary,
+                        fontSize: 14,
+                        height: 1.35,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     _sectionCard(
@@ -372,88 +351,10 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
   }
 
   Widget _topBar() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
-      child: Row(
-        children: [
-          _roundIconButton(Icons.help_outline_rounded, onTap: () {}),
-          const SizedBox(width: 10),
-          _roundIconButton(Icons.notifications_none_rounded, onTap: () {}),
-          const Spacer(),
-          Container(
-            padding: const EdgeInsets.fromLTRB(8, 8, 12, 8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(999),
-              border: Border.all(color: const Color(0xFFE5E7EB)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF0B4A06),
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: const Text(
-                    'RS',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Rahul Sharma',
-                      style: TextStyle(
-                        color: textPrimary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    SizedBox(height: 2),
-                    Text(
-                      'Admin',
-                      style: TextStyle(
-                        color: Color(0xFF0B4A06),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 8),
-                const Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  color: Color(0xFF94A3B8),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _backButton() {
-    return TextButton.icon(
-      onPressed: () => Navigator.of(context).pop(),
-      label: const Text('Back'),
-      style: TextButton.styleFrom(
-        foregroundColor: AppColors.textPrimary,
-        backgroundColor: const Color(0xFFF3F4F6),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-      ),
+    return AdminTopBar(
+      title: 'New Sales Return',
+      leadingIcon: Icons.arrow_back_rounded,
+      onLeadingTap: () => Navigator.of(context).maybePop(),
     );
   }
 
@@ -648,26 +549,6 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
         borderSide: const BorderSide(color: Color(0xFF0B4A06)),
-      ),
-    );
-  }
-
-  Widget _roundIconButton(IconData icon, {required VoidCallback onTap}) {
-    return Material(
-      color: Colors.white,
-      shape: const CircleBorder(),
-      child: InkWell(
-        onTap: onTap,
-        customBorder: const CircleBorder(),
-        child: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: const Color(0xFFE5E7EB)),
-          ),
-          child: Icon(icon, color: const Color(0xFF64748B), size: 20),
-        ),
       ),
     );
   }

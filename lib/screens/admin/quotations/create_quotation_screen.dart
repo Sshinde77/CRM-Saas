@@ -411,7 +411,11 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
         child: Column(
           children: [
             widget.useSalesManagerShell
-                ? const SalesManagerTopBar(title: 'Create Quotation')
+                ? SalesManagerTopBar(
+                    title: 'Create Quotation',
+                    leadingIcon: Icons.arrow_back_rounded,
+                    onLeadingTap: () => Navigator.of(context).maybePop(),
+                  )
                 : AdminTopBar(
                     title: 'Create Quotation',
                     leadingIcon: Icons.arrow_back_rounded,

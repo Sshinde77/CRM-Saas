@@ -409,7 +409,11 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            SalesManagerTopBar(title: _isEditMode ? 'Edit Lead' : 'Add Lead'),
+            SalesManagerTopBar(
+              title: _isEditMode ? 'Edit Lead' : 'Add Lead',
+              leadingIcon: Icons.arrow_back_rounded,
+              onLeadingTap: () => Navigator.of(context).maybePop(),
+            ),
             Expanded(
               child: _isLoading
                   ? const _CenteredState(
