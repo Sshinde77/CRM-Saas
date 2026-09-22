@@ -4,7 +4,6 @@ import '../../../widgets/delivery/delivery_bottom_navigation.dart';
 
 import '../../../constants/app_colors.dart';
 import '../../../core/theme/app_sizes.dart';
-import '../../../core/theme/app_spacing.dart';
 import '../../../providers/api_provider.dart';
 import '../../../routes/app_router.dart';
 import '../../../widgets/delivery/delivery_partner_sidebar.dart';
@@ -168,21 +167,51 @@ class _CheckpointsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final checkpoints = _CheckpointType.values;
+    final fullDate = _formatDate(DateTime.now());
+    final dateLabel = MediaQuery.sizeOf(context).width < 360
+        ? fullDate.substring(0, fullDate.lastIndexOf(' '))
+        : fullDate;
 
     return _SurfaceCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _CardTitle(
+          _CardTitle(
             icon: Icons.event_available_rounded,
             title: "Today's Checkpoints",
             subtitle: 'Mark your attendance for today',
+            trailing: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.deliveryGreenSoft,
+                borderRadius: BorderRadius.circular(AppSizes.pillRadius),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.calendar_today_outlined,
+                    size: 12,
+                    color: AppColors.deliveryGreen,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    dateLabel,
+                    style: const TextStyle(
+                      color: AppColors.deliveryInk,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
           if (error != null) ...[
             const SizedBox(height: 12),
             _InlineError(message: error!, onDismiss: onDismissError),
           ],
-          const SizedBox(height: 14),
+          const SizedBox(height: 10),
           LayoutBuilder(
             builder: (context, constraints) {
               final wide = constraints.maxWidth >= 620;
@@ -192,9 +221,9 @@ class _CheckpointsCard extends StatelessWidget {
                 itemCount: checkpoints.length,
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: wide ? 4 : 2,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  mainAxisExtent: 132,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                  mainAxisExtent: 124,
                 ),
                 itemBuilder: (context, index) {
                   final checkpoint = checkpoints[index];
@@ -234,11 +263,11 @@ class _CheckpointTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE0E5EC)),
+        color: checkpoint.softColor.withValues(alpha: 0.55),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: checkpoint.color.withValues(alpha: 0.16)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -248,9 +277,9 @@ class _CheckpointTile extends StatelessWidget {
               _TintIcon(
                 icon: checkpoint.icon,
                 color: checkpoint.color,
-                background: checkpoint.softColor,
+                background: Colors.white,
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   checkpoint.label,
@@ -258,23 +287,28 @@ class _CheckpointTile extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: AppColors.deliveryInk,
-                    fontSize: 14,
-                    height: 1.2,
-                    fontWeight: FontWeight.w900,
+                    fontSize: 13,
+                    height: 1.1,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
               ),
+              const Icon(
+                Icons.chevron_right_rounded,
+                size: 14,
+                color: AppColors.textMuted,
+              ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 5),
           Row(
             children: [
               const Icon(
                 Icons.schedule_rounded,
-                size: 17,
-                color: Color(0xFF566174),
+                size: 12,
+                color: AppColors.textMuted,
               ),
-              const SizedBox(width: 7),
+              const SizedBox(width: 4),
               Expanded(
                 child: Text(
                   time,
@@ -282,10 +316,10 @@ class _CheckpointTile extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: recorded
-                        ? const Color(0xFF065F1B)
+                        ? AppColors.deliveryInk
                         : AppColors.textMuted,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
@@ -294,15 +328,15 @@ class _CheckpointTile extends StatelessWidget {
           const Spacer(),
           SizedBox(
             width: double.infinity,
-            height: 36,
-            child: OutlinedButton.icon(
+            height: 30,
+            child: FilledButton.icon(
               onPressed: recorded || busy ? null : onMarkNow,
               icon: busy
                   ? SizedBox(
-                      width: 14,
-                      height: 14,
+                      width: 11,
+                      height: 11,
                       child: CircularProgressIndicator(
-                        strokeWidth: 2,
+                        strokeWidth: 1.5,
                         color: checkpoint.color,
                       ),
                     )
@@ -310,28 +344,23 @@ class _CheckpointTile extends StatelessWidget {
                       recorded
                           ? Icons.check_circle_outline_rounded
                           : Icons.play_arrow_rounded,
-                      size: 18,
+                      size: 14,
                     ),
               label: Text(recorded ? 'Recorded' : 'Mark now'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: recorded
-                    ? const Color(0xFF065F1B)
-                    : checkpoint.color,
-                disabledForegroundColor: const Color(0xFF065F1B),
-                side: BorderSide(
-                  color: recorded
-                      ? const Color(0xFF9FD7AA)
-                      : checkpoint.color.withValues(alpha: 0.75),
-                ),
-                backgroundColor: recorded
-                    ? const Color(0xFFF0FAF2)
-                    : checkpoint.softColor.withValues(alpha: 0.45),
+              style: FilledButton.styleFrom(
+                foregroundColor: checkpoint.color,
+                disabledForegroundColor: AppColors.deliveryGreen,
+                disabledBackgroundColor: AppColors.deliveryGreenSoft,
+                backgroundColor: checkpoint.softColor,
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                minimumSize: const Size(0, 30),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 textStyle: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w900,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(AppSizes.pillRadius),
                 ),
               ),
             ),
@@ -342,7 +371,7 @@ class _CheckpointTile extends StatelessWidget {
   }
 }
 
-class _HistoryCard extends StatelessWidget {
+class _HistoryCard extends StatefulWidget {
   final List<_AttendanceRecord> records;
   final bool isLoading;
   final String? error;
@@ -356,18 +385,43 @@ class _HistoryCard extends StatelessWidget {
   });
 
   @override
+  State<_HistoryCard> createState() => _HistoryCardState();
+}
+
+class _HistoryCardState extends State<_HistoryCard> {
+  bool _showAll = false;
+
+  @override
   Widget build(BuildContext context) {
     return _SurfaceCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _CardTitle(
+          _CardTitle(
             icon: Icons.event_available_rounded,
             title: 'Attendance History',
             subtitle: 'Your recent attendance records',
+            trailing: widget.records.length > 5
+                ? TextButton(
+                    onPressed: () => setState(() => _showAll = !_showAll),
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.deliveryGreen,
+                      backgroundColor: AppColors.deliveryGreenSoft,
+                      padding: const EdgeInsets.symmetric(horizontal: 9),
+                      minimumSize: const Size(0, 28),
+                    ),
+                    child: Text(
+                      _showAll ? 'Show Less' : 'View All',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  )
+                : null,
           ),
-          const SizedBox(height: 14),
-          if (isLoading)
+          const SizedBox(height: 10),
+          if (widget.isLoading)
             const SizedBox(
               height: 180,
               child: Center(
@@ -376,22 +430,26 @@ class _HistoryCard extends StatelessWidget {
                 ),
               ),
             )
-          else if (error != null)
+          else if (widget.error != null)
             _HistoryMessage(
               icon: Icons.error_outline_rounded,
               title: 'Attendance could not load',
-              message: error!,
+              message: widget.error!,
               action: 'Retry',
-              onAction: onRetry,
+              onAction: widget.onRetry,
             )
-          else if (records.isEmpty)
+          else if (widget.records.isEmpty)
             const _HistoryMessage(
               icon: Icons.event_busy_rounded,
               title: 'No attendance recorded yet',
               message: 'Your attendance history will appear here.',
             )
           else
-            _HistoryTable(records: records.take(5).toList()),
+            _HistoryTable(
+              records: _showAll
+                  ? widget.records
+                  : widget.records.take(5).toList(),
+            ),
         ],
       ),
     );
@@ -405,13 +463,24 @@ class _HistoryTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFE2E7F0)),
-      ),
-      child: Column(
-        children: [const _HistoryHeaderRow(), ...records.map(_HistoryRow.new)],
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: SizedBox(
+          width: constraints.maxWidth < 400 ? 400 : constraints.maxWidth,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.deliverySurfaceBorder),
+            ),
+            child: Column(
+              children: [
+                const _HistoryHeaderRow(),
+                ...records.map(_HistoryRow.new),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -422,15 +491,19 @@ class _HistoryHeaderRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      child: Row(
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      decoration: const BoxDecoration(
+        color: AppColors.deliveryGreenSoft,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(11)),
+      ),
+      child: const Row(
         children: [
-          Expanded(flex: 3, child: _HeaderText('Date')),
+          Expanded(flex: 4, child: _HeaderText('Date')),
           Expanded(flex: 3, child: _HeaderText('Status')),
           Expanded(flex: 3, child: _HeaderText('Check In')),
           Expanded(flex: 3, child: _HeaderText('Check Out')),
-          SizedBox(width: 18),
+          SizedBox(width: 12),
         ],
       ),
     );
@@ -445,14 +518,14 @@ class _HistoryRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       decoration: const BoxDecoration(
         border: Border(top: BorderSide(color: Color(0xFFE9EDF5))),
       ),
       child: Row(
         children: [
           Expanded(
-            flex: 3,
+            flex: 4,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -461,17 +534,17 @@ class _HistoryRow extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 14,
+                    fontSize: 12,
                     fontWeight: FontWeight.w800,
                     color: AppColors.deliveryInk,
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 1),
                 Text(
                   _weekday(record.date),
                   style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w400,
                     color: AppColors.textMuted,
                   ),
                 ),
@@ -482,10 +555,10 @@ class _HistoryRow extends StatelessWidget {
           Expanded(flex: 3, child: _TimeText(_formatTime(record.checkIn))),
           Expanded(flex: 3, child: _TimeText(_formatTime(record.checkOut))),
           const SizedBox(
-            width: 18,
+            width: 12,
             child: Icon(
               Icons.chevron_right_rounded,
-              size: 18,
+              size: 14,
               color: AppColors.deliveryInk,
             ),
           ),
@@ -499,11 +572,13 @@ class _CardTitle extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
+  final Widget? trailing;
 
   const _CardTitle({
     required this.icon,
     required this.title,
     required this.subtitle,
+    this.trailing,
   });
 
   @override
@@ -512,36 +587,41 @@ class _CardTitle extends StatelessWidget {
       children: [
         _TintIcon(
           icon: icon,
-          color: const Color(0xFF0D7A24),
-          background: const Color(0xFFE9F7EA),
+          color: AppColors.deliveryGreen,
+          background: AppColors.deliveryGreenSoft,
         ),
-        const SizedBox(width: 10),
+        const SizedBox(width: 8),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontSize: 16,
                   height: 1.2,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w800,
                   color: AppColors.deliveryInk,
                 ),
               ),
-              const SizedBox(height: 3),
+              const SizedBox(height: 2),
               Text(
                 subtitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  fontSize: 14,
+                  fontSize: 12,
                   height: 1.25,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w400,
                   color: AppColors.textMuted,
                 ),
               ),
             ],
           ),
         ),
+        if (trailing != null) ...[const SizedBox(width: 6), trailing!],
       ],
     );
   }
@@ -662,14 +742,14 @@ class _TintIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 40,
-      height: 40,
+      width: 32,
+      height: 32,
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: color.withValues(alpha: 0.12)),
       ),
-      child: Icon(icon, color: color, size: 22),
+      child: Icon(icon, color: color, size: 18),
     );
   }
 }
@@ -688,7 +768,7 @@ class _StatusBadge extends StatelessWidget {
     return Align(
       alignment: Alignment.centerLeft,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 4),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.10),
           borderRadius: BorderRadius.circular(AppSizes.pillRadius),
@@ -697,14 +777,14 @@ class _StatusBadge extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.circle, color: color, size: 7),
-            const SizedBox(width: 6),
+            Icon(Icons.circle, color: color, size: 5),
+            const SizedBox(width: 4),
             Text(
               label,
               style: TextStyle(
                 color: color,
-                fontSize: 14,
-                fontWeight: FontWeight.w800,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],
@@ -727,8 +807,8 @@ class _HeaderText extends StatelessWidget {
       overflow: TextOverflow.ellipsis,
       style: const TextStyle(
         color: AppColors.textMuted,
-        fontSize: 14,
-        fontWeight: FontWeight.w800,
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
       ),
     );
   }
@@ -741,15 +821,29 @@ class _TimeText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      text,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      style: TextStyle(
-        color: text == '--:-- --' ? AppColors.textMuted : AppColors.deliveryInk,
-        fontSize: 14,
-        fontWeight: FontWeight.w700,
-      ),
+    return Row(
+      children: [
+        const Icon(
+          Icons.schedule_outlined,
+          size: 12,
+          color: AppColors.textMuted,
+        ),
+        const SizedBox(width: 3),
+        Expanded(
+          child: Text(
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: text == '--:-- --'
+                  ? AppColors.textMuted
+                  : AppColors.deliveryInk,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -763,7 +857,7 @@ class _SurfaceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.card),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(AppSizes.cardRadius),
@@ -786,29 +880,29 @@ enum _CheckpointType {
     'office_check_in',
     'Office Check In',
     Icons.login_rounded,
-    Color(0xFF0D7A24),
-    Color(0xFFE9F7EA),
+    AppColors.deliveryGreen,
+    AppColors.deliveryGreenSoft,
   ),
   departure(
     'departure',
     'Departure',
     Icons.directions_car_filled_rounded,
-    Color(0xFFF97316),
-    Color(0xFFFFF4E5),
+    AppColors.deliveryOrange,
+    AppColors.deliveryOrangeSoft,
   ),
   returnToOffice(
     'return_to_office',
     'Return to Office',
     Icons.apartment_rounded,
-    Color(0xFF7C3AED),
-    Color(0xFFF3E8FF),
+    AppColors.deliveryViolet,
+    AppColors.deliveryVioletSoft,
   ),
   finalCheckOut(
     'final_check_out',
     'Final Check Out',
     Icons.logout_rounded,
-    Color(0xFF2563EB),
-    Color(0xFFEAF3FF),
+    AppColors.deliveryBlue,
+    AppColors.deliveryBlueSoft,
   );
 
   final String apiValue;
