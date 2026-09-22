@@ -165,13 +165,10 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
                       leadingIcon: Icons.menu_rounded,
                       onLeadingTap: () =>
                           _scaffoldKey.currentState?.openDrawer(),
-                      onNotificationTap: () =>
-                          _showComingSoon('Notifications'),
+                      onNotificationTap: () => _showComingSoon('Notifications'),
                     ),
                   ),
-                  SliverToBoxAdapter(
-                    child: _DashboardHeroSection(data: data),
-                  ),
+                  SliverToBoxAdapter(child: _DashboardHeroSection(data: data)),
                   if (data == null)
                     const SliverToBoxAdapter(
                       child: SizedBox(height: AppSpacing.md),
@@ -309,10 +306,7 @@ class _DashboardIdentityHeader extends StatelessWidget {
   final _DashboardData? data;
   final double bottomPadding;
 
-  const _DashboardIdentityHeader({
-    required this.data,
-    this.bottomPadding = 18,
-  });
+  const _DashboardIdentityHeader({required this.data, this.bottomPadding = 18});
 
   @override
   Widget build(BuildContext context) {

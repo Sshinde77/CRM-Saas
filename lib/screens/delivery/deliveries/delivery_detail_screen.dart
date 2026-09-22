@@ -77,10 +77,7 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
       payload: {
         'items': [
           for (final item in delivery.items)
-            {
-              'delivery_item_id': item.id,
-              'delivered_quantity': item.loaded,
-            },
+            {'delivery_item_id': item.id, 'delivered_quantity': item.loaded},
         ],
       },
       successMessage: 'Delivery confirmed.',

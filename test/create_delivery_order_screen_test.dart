@@ -550,41 +550,47 @@ void main() {
     },
   );
 
-  test('sales officer loads delivery partners without users-list access', () async {
-    ApiService.setAccessToken('sales-session-token');
-    addTearDown(() => ApiService.setAccessToken(null));
-    final requestedPaths = <String>[];
-    final service = ApiService(
-      client: MockClient((request) async {
-        requestedPaths.add(request.url.path);
-        expect(request.headers['Authorization'], 'Bearer sales-session-token');
-        if (request.url.path == '/users/assignable') {
-          return http.Response(
-            jsonEncode({
-              'users': [
-                {
-                  'id': 'driver-1',
-                  'name': 'Driver One',
-                  'role': 'delivery_partner',
-                  'is_active': true,
-                },
-              ],
-            }),
-            200,
+  test(
+    'sales officer loads delivery partners without users-list access',
+    () async {
+      ApiService.setAccessToken('sales-session-token');
+      addTearDown(() => ApiService.setAccessToken(null));
+      final requestedPaths = <String>[];
+      final service = ApiService(
+        client: MockClient((request) async {
+          requestedPaths.add(request.url.path);
+          expect(
+            request.headers['Authorization'],
+            'Bearer sales-session-token',
           );
-        }
-        return http.Response(
-          '{"detail":"You do not have permission to perform this action"}',
-          403,
-        );
-      }),
-    );
-    addTearDown(service.close);
+          if (request.url.path == '/users/assignable') {
+            return http.Response(
+              jsonEncode({
+                'users': [
+                  {
+                    'id': 'driver-1',
+                    'name': 'Driver One',
+                    'role': 'delivery_partner',
+                    'is_active': true,
+                  },
+                ],
+              }),
+              200,
+            );
+          }
+          return http.Response(
+            '{"detail":"You do not have permission to perform this action"}',
+            403,
+          );
+        }),
+      );
+      addTearDown(service.close);
 
-    final partners = await service.fetchDeliveryPartners();
-    expect(partners.map((partner) => partner.id), ['driver-1']);
-    expect(requestedPaths, ['/users/assignable']);
-  });
+      final partners = await service.fetchDeliveryPartners();
+      expect(partners.map((partner) => partner.id), ['driver-1']);
+      expect(requestedPaths, ['/users/assignable']);
+    },
+  );
 
   test('API diagnostics include status without logging credentials', () async {
     final logs = <String>[];

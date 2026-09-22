@@ -17,6 +17,11 @@ class CrmSaasApp extends StatefulWidget {
 class _CrmSaasAppState extends State<CrmSaasApp> {
   late final ApiProvider _apiProvider;
 
+  static const double _baseMobileWidth = 375;
+  static const double _minTextScale = 0.9;
+  static const double _maxTextScale = 1.2;
+  static const double _maxWidthTextScale = 1.15;
+
   @override
   void initState() {
     super.initState();
@@ -41,11 +46,11 @@ class _CrmSaasAppState extends State<CrmSaasApp> {
         title: 'CRM SaaS',
         theme: AppTheme.lightTheme,
         builder: (context, child) {
-          final textScaler = MediaQuery.textScalerOf(
-            context,
-          ).clamp(minScaleFactor: 0.9, maxScaleFactor: 1.2);
+          final mediaQuery = MediaQuery.of(context);
+          final textScaler = _responsiveTextScaler(mediaQuery);
+
           return MediaQuery(
-            data: MediaQuery.of(context).copyWith(textScaler: textScaler),
+            data: mediaQuery.copyWith(textScaler: textScaler),
             child: child ?? const SizedBox.shrink(),
           );
         },
@@ -56,5 +61,20 @@ class _CrmSaasAppState extends State<CrmSaasApp> {
         onGenerateRoute: AppRouter.onGenerateRoute,
       ),
     );
+  }
+
+  TextScaler _responsiveTextScaler(MediaQueryData mediaQuery) {
+    final width = mediaQuery.size.width;
+    final widthScale = (width / _baseMobileWidth).clamp(
+      _minTextScale,
+      _maxWidthTextScale,
+    ).toDouble();
+    final platformScale = mediaQuery.textScaler.scale(14) / 14;
+    final combinedScale = (platformScale * widthScale).clamp(
+      _minTextScale,
+      _maxTextScale,
+    ).toDouble();
+
+    return TextScaler.linear(combinedScale);
   }
 }

@@ -1813,14 +1813,13 @@ class _AssignedDelivery {
 
   bool get canRespond => status == 'planned' || status == 'pending';
 
-  bool get canPrepareDelivery => status == 'accepted' &&
-      internalStatus == 'accepted';
+  bool get canPrepareDelivery =>
+      status == 'accepted' && internalStatus == 'accepted';
 
-  bool get canLoadDelivery => status == 'accepted' &&
-      internalStatus == 'ready';
+  bool get canLoadDelivery => status == 'accepted' && internalStatus == 'ready';
 
-  bool get canStartDelivery => status == 'accepted' &&
-      internalStatus == 'loaded';
+  bool get canStartDelivery =>
+      status == 'accepted' && internalStatus == 'loaded';
 
   bool get canMarkDelivered => status == 'in_transit';
 

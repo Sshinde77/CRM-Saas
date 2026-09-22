@@ -68,10 +68,9 @@ Future<void> _handleRequest(HttpClient client, HttpRequest request) async {
   var responseCommitted = false;
 
   try {
-    final target = Uri.parse(_targetBaseUrl).replace(
-      path: request.uri.path,
-      query: request.uri.query,
-    );
+    final target = Uri.parse(
+      _targetBaseUrl,
+    ).replace(path: request.uri.path, query: request.uri.query);
     final upstream = await client.openUrl(request.method, target);
 
     request.headers.forEach((name, values) {

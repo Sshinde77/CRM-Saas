@@ -617,10 +617,7 @@ class _SalesTargetCard extends StatelessWidget {
                   ),
                   const Text(
                     'Target',
-                    style: TextStyle(
-                      color: AppColors.textMuted,
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(color: AppColors.textMuted, fontSize: 14),
                   ),
                 ],
               ),

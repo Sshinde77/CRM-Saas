@@ -30,7 +30,7 @@ class ApiConstants {
     acceptHeader: jsonMimeType,
     contentTypeHeader: jsonMimeType,
   };
-    
+
   static Map<String, String> authorizedHeaders(String token) {
     return {...defaultHeaders, authorizationHeader: '$bearerPrefix $token'};
   }
@@ -92,7 +92,8 @@ class ApiEndpoints {
   static const String deliveriesAcceptTemplate =
       '/deliveries/{delivery_id}/accept';
   static const String deliveriesPickTemplate = '/deliveries/{delivery_id}/pick';
-  static const String deliveriesReadyTemplate = '/deliveries/{delivery_id}/ready';
+  static const String deliveriesReadyTemplate =
+      '/deliveries/{delivery_id}/ready';
   static const String deliveriesLoadTemplate = '/deliveries/{delivery_id}/load';
   static const String deliveriesRejectTemplate =
       '/deliveries/{delivery_id}/reject';

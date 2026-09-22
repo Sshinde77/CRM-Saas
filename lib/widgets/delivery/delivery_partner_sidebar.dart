@@ -79,7 +79,10 @@ class DeliveryPartnerSidebar extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppSizes.cardRadius),
                 ),
-                leading: const Icon(Icons.logout_rounded, color: Color(0xFFB4232D)),
+                leading: const Icon(
+                  Icons.logout_rounded,
+                  color: Color(0xFFB4232D),
+                ),
                 title: const Text(
                   'Logout',
                   style: TextStyle(

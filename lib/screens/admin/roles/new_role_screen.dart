@@ -495,10 +495,7 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
           maxLines: maxLines,
           decoration: InputDecoration(
             hintText: hintText,
-            hintStyle: const TextStyle(
-              color: Color(0xFF94A3B8),
-              fontSize: 14,
-            ),
+            hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
             filled: true,
             fillColor: const Color(0xFFF8FAFC),
             border: OutlineInputBorder(

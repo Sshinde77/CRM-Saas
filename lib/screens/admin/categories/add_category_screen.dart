@@ -599,10 +599,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(999),
           ),
-          textStyle: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-          ),
+          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
         ),
       ),
     );
@@ -680,10 +677,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
               ),
               child: Text(
                 value,
-                style: const TextStyle(
-                  color: Color(0xFFB45309),
-                  fontSize: 14,
-                ),
+                style: const TextStyle(color: Color(0xFFB45309), fontSize: 14),
               ),
             )
           else

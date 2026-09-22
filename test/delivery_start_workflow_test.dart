@@ -64,10 +64,7 @@ class _DeliveryWorkflowProvider extends ApiProvider {
     required String deliveryId,
     required List<Map<String, dynamic>> items,
   }) async {
-    expect(items.single, {
-      'delivery_item_id': 'line-1',
-      'picked_quantity': 2,
-    });
+    expect(items.single, {'delivery_item_id': 'line-1', 'picked_quantity': 2});
     actions.add('pick');
     return {'id': deliveryId};
   }

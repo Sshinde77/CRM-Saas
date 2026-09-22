@@ -222,267 +222,274 @@ class _CreateDeliveryCustomerScreenState
                           Center(
                             child: Column(
                               children: [
-                          const Text(
-                            'Profile Image (Optional)',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.deliveryDashboardHeaderEnd,
+                                const Text(
+                                  'Profile Image (Optional)',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.deliveryDashboardHeaderEnd,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                Stack(
+                                  children: [
+                                    SizedBox(
+                                      width: 100,
+                                      height: 100,
+                                      child: ClipOval(
+                                        child: ColoredBox(
+                                          color: _green.withValues(alpha: 0.1),
+                                          child: _photoBytes == null
+                                              ? const Icon(
+                                                  Icons.person_outline_rounded,
+                                                  size: 52,
+                                                  color: _green,
+                                                )
+                                              : Image.memory(
+                                                  _photoBytes!,
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder:
+                                                      (
+                                                        _,
+                                                        error,
+                                                        stack,
+                                                      ) => const Icon(
+                                                        Icons
+                                                            .broken_image_outlined,
+                                                        color: _green,
+                                                      ),
+                                                ),
+                                        ),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      right: 0,
+                                      bottom: 0,
+                                      child: IconButton.filled(
+                                        tooltip: 'Choose profile image',
+                                        onPressed: _saving || _pickingPhoto
+                                            ? null
+                                            : _pickPhoto,
+                                        style: IconButton.styleFrom(
+                                          backgroundColor: _green,
+                                          foregroundColor: Colors.white,
+                                        ),
+                                        icon: const Icon(
+                                          Icons.add_a_photo_outlined,
+                                          size: 20,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    TextButton(
+                                      onPressed: _saving || _pickingPhoto
+                                          ? null
+                                          : _pickPhoto,
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: _green,
+                                      ),
+                                      child: Text(
+                                        _pickingPhoto
+                                            ? 'Opening photos…'
+                                            : _photoBytes == null
+                                            ? 'Add Photo'
+                                            : 'Change Photo',
+                                      ),
+                                    ),
+                                    if (_photoBytes != null)
+                                      TextButton(
+                                        onPressed: _saving || _pickingPhoto
+                                            ? null
+                                            : () => setState(() {
+                                                _photoBytes = null;
+                                                _photoName = null;
+                                                _uploadedPhoto = null;
+                                              }),
+                                        child: const Text(
+                                          'Remove',
+                                          style: TextStyle(
+                                            color: AppColors.deliveryRed,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 12),
-                          Stack(
-                            children: [
-                              SizedBox(
-                                width: 100,
-                                height: 100,
-                                child: ClipOval(
-                                  child: ColoredBox(
-                                    color: _green.withValues(alpha: 0.1),
-                                    child: _photoBytes == null
-                                        ? const Icon(
-                                            Icons.person_outline_rounded,
-                                            size: 52,
-                                            color: _green,
-                                          )
-                                        : Image.memory(
-                                            _photoBytes!,
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (_, error, stack) =>
-                                                const Icon(
-                                                  Icons.broken_image_outlined,
-                                                  color: _green,
-                                                ),
-                                          ),
-                                  ),
+                          const SizedBox(height: 16),
+                          if (_error != null)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: Text(
+                                _error!,
+                                style: const TextStyle(
+                                  color: AppColors.deliveryRed,
                                 ),
                               ),
-                              Positioned(
-                                right: 0,
-                                bottom: 0,
-                                child: IconButton.filled(
-                                  tooltip: 'Choose profile image',
-                                  onPressed: _saving || _pickingPhoto
-                                      ? null
-                                      : _pickPhoto,
-                                  style: IconButton.styleFrom(
-                                    backgroundColor: _green,
-                                    foregroundColor: Colors.white,
-                                  ),
-                                  icon: const Icon(
-                                    Icons.add_a_photo_outlined,
-                                    size: 20,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              TextButton(
-                                onPressed: _saving || _pickingPhoto
-                                    ? null
-                                    : _pickPhoto,
-                                style: TextButton.styleFrom(
-                                  foregroundColor: _green,
-                                ),
-                                child: Text(
-                                  _pickingPhoto
-                                      ? 'Opening photos…'
-                                      : _photoBytes == null
-                                      ? 'Add Photo'
-                                      : 'Change Photo',
-                                ),
-                              ),
-                              if (_photoBytes != null)
-                                TextButton(
-                                  onPressed: _saving || _pickingPhoto
-                                      ? null
-                                      : () => setState(() {
-                                          _photoBytes = null;
-                                          _photoName = null;
-                                          _uploadedPhoto = null;
-                                        }),
-                                  child: const Text(
-                                    'Remove',
-                                    style: TextStyle(
-                                      color: AppColors.deliveryRed,
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    if (_error != null)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: Text(
-                          _error!,
-                          style: const TextStyle(color: AppColors.deliveryRed),
-                        ),
-                      ),
-                    _field(
-                      'Shop Name',
-                      _shop,
-                      hint: 'Enter shop name',
-                      capitalization: TextCapitalization.words,
-                    ),
-                    _field(
-                      'Contact Person',
-                      _contact,
-                      hint: 'Enter contact person',
-                      capitalization: TextCapitalization.words,
-                    ),
-                    _field(
-                      'Mobile Number',
-                      _phone,
-                      hint: '+91 98765 43210',
-                      keyboard: TextInputType.phone,
-                      validator: (value) {
-                        final digits = (value ?? '').replaceAll(
-                          RegExp(r'\D'),
-                          '',
-                        );
-                        return digits.length < 10 || digits.length > 15
-                            ? 'Enter a valid mobile number'
-                            : null;
-                      },
-                    ),
-                    _field(
-                      'GSTIN',
-                      _gst,
-                      hint: 'Enter GSTIN',
-                      required: false,
-                      capitalization: TextCapitalization.characters,
-                      validator: (value) {
-                        final text = (value ?? '').trim();
-                        if (text.isEmpty) return null;
-                        return RegExp(
-                              r'^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$',
-                            ).hasMatch(text.toUpperCase())
-                            ? null
-                            : 'Enter a valid 15-character GSTIN';
-                      },
-                    ),
-                    _label('Customer Type'),
-                    DropdownButtonFormField<String>(
-                      initialValue: _type,
-                      decoration: _decoration('Select customer type'),
-                      isExpanded: true,
-                      items:
-                          const [
-                                'General Trade',
-                                'Retail',
-                                'Wholesale',
-                                'Distributor',
-                                'Business',
-                                'Individual',
-                              ]
-                              .map(
-                                (type) => DropdownMenuItem(
-                                  value: type,
-                                  child: Text(type),
-                                ),
-                              )
-                              .toList(),
-                      onChanged: _saving
-                          ? null
-                          : (value) => setState(() => _type = value),
-                      validator: _required,
-                    ),
-                    const SizedBox(height: 18),
-                    _field(
-                      'Address',
-                      _address,
-                      hint: 'Shop / building, street and area',
-                      lines: 3,
-                      capitalization: TextCapitalization.sentences,
-                    ),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: _field(
-                            'City',
-                            _city,
-                            hint: 'City',
+                            ),
+                          _field(
+                            'Shop Name',
+                            _shop,
+                            hint: 'Enter shop name',
                             capitalization: TextCapitalization.words,
                           ),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: _field(
-                            'Pincode',
-                            _pincode,
-                            hint: '560034',
-                            keyboard: TextInputType.number,
-                            formatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                              LengthLimitingTextInputFormatter(6),
-                            ],
-                            validator: (value) =>
-                                RegExp(
-                                  r'^[1-9][0-9]{5}$',
-                                ).hasMatch((value ?? '').trim())
+                          _field(
+                            'Contact Person',
+                            _contact,
+                            hint: 'Enter contact person',
+                            capitalization: TextCapitalization.words,
+                          ),
+                          _field(
+                            'Mobile Number',
+                            _phone,
+                            hint: '+91 98765 43210',
+                            keyboard: TextInputType.phone,
+                            validator: (value) {
+                              final digits = (value ?? '').replaceAll(
+                                RegExp(r'\D'),
+                                '',
+                              );
+                              return digits.length < 10 || digits.length > 15
+                                  ? 'Enter a valid mobile number'
+                                  : null;
+                            },
+                          ),
+                          _field(
+                            'GSTIN',
+                            _gst,
+                            hint: 'Enter GSTIN',
+                            required: false,
+                            capitalization: TextCapitalization.characters,
+                            validator: (value) {
+                              final text = (value ?? '').trim();
+                              if (text.isEmpty) return null;
+                              return RegExp(
+                                    r'^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$',
+                                  ).hasMatch(text.toUpperCase())
+                                  ? null
+                                  : 'Enter a valid 15-character GSTIN';
+                            },
+                          ),
+                          _label('Customer Type'),
+                          DropdownButtonFormField<String>(
+                            initialValue: _type,
+                            decoration: _decoration('Select customer type'),
+                            isExpanded: true,
+                            items:
+                                const [
+                                      'General Trade',
+                                      'Retail',
+                                      'Wholesale',
+                                      'Distributor',
+                                      'Business',
+                                      'Individual',
+                                    ]
+                                    .map(
+                                      (type) => DropdownMenuItem(
+                                        value: type,
+                                        child: Text(type),
+                                      ),
+                                    )
+                                    .toList(),
+                            onChanged: _saving
                                 ? null
-                                : 'Enter a 6-digit pincode',
+                                : (value) => setState(() => _type = value),
+                            validator: _required,
                           ),
-                        ),
-                      ],
-                    ),
-                    _label('Geo-tag Location'),
-                    TextFormField(
-                      controller: _location,
-                      focusNode: _locationFocus,
-                      enabled: !_saving,
-                      textInputAction: TextInputAction.done,
-                      decoration: _decoration('12.9352, 77.6245').copyWith(
-                        helperText:
-                            'Pin on the map or enter latitude, longitude',
-                        suffixIcon: IconButton(
-                          tooltip: 'Pin location on map',
-                          onPressed: _saving ? null : _pickLocation,
-                          icon: const Icon(
-                            Icons.my_location_rounded,
-                            color: _green,
-                            size: 21,
+                          const SizedBox(height: 18),
+                          _field(
+                            'Address',
+                            _address,
+                            hint: 'Shop / building, street and area',
+                            lines: 3,
+                            capitalization: TextCapitalization.sentences,
                           ),
-                        ),
-                      ),
-                      validator: _validateLocation,
-                      onFieldSubmitted: (_) => _save(),
-                    ),
-                    const SizedBox(height: 26),
-                    FilledButton(
-                      onPressed: _saving || _pickingPhoto ? null : _save,
-                      style: FilledButton.styleFrom(
-                        backgroundColor: _green,
-                        foregroundColor: AppColors.surface,
-                        minimumSize: const Size.fromHeight(52),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: _saving
-                          ? const SizedBox(
-                              width: 22,
-                              height: 22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: _field(
+                                  'City',
+                                  _city,
+                                  hint: 'City',
+                                  capitalization: TextCapitalization.words,
+                                ),
                               ),
-                            )
-                          : const Text(
-                              'CREATE CUSTOMER',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0.4,
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: _field(
+                                  'Pincode',
+                                  _pincode,
+                                  hint: '560034',
+                                  keyboard: TextInputType.number,
+                                  formatters: [
+                                    FilteringTextInputFormatter.digitsOnly,
+                                    LengthLimitingTextInputFormatter(6),
+                                  ],
+                                  validator: (value) =>
+                                      RegExp(
+                                        r'^[1-9][0-9]{5}$',
+                                      ).hasMatch((value ?? '').trim())
+                                      ? null
+                                      : 'Enter a 6-digit pincode',
+                                ),
+                              ),
+                            ],
+                          ),
+                          _label('Geo-tag Location'),
+                          TextFormField(
+                            controller: _location,
+                            focusNode: _locationFocus,
+                            enabled: !_saving,
+                            textInputAction: TextInputAction.done,
+                            decoration: _decoration('12.9352, 77.6245').copyWith(
+                              helperText:
+                                  'Pin on the map or enter latitude, longitude',
+                              suffixIcon: IconButton(
+                                tooltip: 'Pin location on map',
+                                onPressed: _saving ? null : _pickLocation,
+                                icon: const Icon(
+                                  Icons.my_location_rounded,
+                                  color: _green,
+                                  size: 21,
+                                ),
                               ),
                             ),
-                    ),
+                            validator: _validateLocation,
+                            onFieldSubmitted: (_) => _save(),
+                          ),
+                          const SizedBox(height: 26),
+                          FilledButton(
+                            onPressed: _saving || _pickingPhoto ? null : _save,
+                            style: FilledButton.styleFrom(
+                              backgroundColor: _green,
+                              foregroundColor: AppColors.surface,
+                              minimumSize: const Size.fromHeight(52),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: _saving
+                                ? const SizedBox(
+                                    width: 22,
+                                    height: 22,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Text(
+                                    'CREATE CUSTOMER',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 0.4,
+                                    ),
+                                  ),
+                          ),
                         ],
                       ),
                     ),

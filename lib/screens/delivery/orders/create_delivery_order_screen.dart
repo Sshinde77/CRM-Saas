@@ -105,7 +105,9 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
     if (mounted) setState(() => _loading = false);
   }
 
-  Future<void> _loadDeliveryPartners({bool preserveSelectedPartner = false}) async {
+  Future<void> _loadDeliveryPartners({
+    bool preserveSelectedPartner = false,
+  }) async {
     if (_partnersLoading) return;
     setState(() {
       _partnersLoading = true;
@@ -494,330 +496,354 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                     child: ListView(
                       padding: const EdgeInsets.all(16),
                       children: [
-                if (_loading)
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: 16),
-                    child: LinearProgressIndicator(color: _green),
-                  ),
-                if (_loadErrors.isNotEmpty)
-                  Container(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.border),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Some order details are unavailable',
-                          style: TextStyle(fontWeight: FontWeight.w700),
-                        ),
-                        const SizedBox(height: 6),
-                        ..._loadErrors.entries.map(
-                          (e) => Text('${e.key}: ${e.value}'),
-                        ),
-                        TextButton(
-                          onPressed: _loading ? null : _load,
-                          child: const Text('Retry'),
-                        ),
-                      ],
-                    ),
-                  ),
-                _label('Customer *'),
-                DropdownButtonFormField<CustomerModel>(
-                  isExpanded: true,
-                  initialValue: _customer,
-                  decoration: _decoration(
-                    'Select customer',
-                    icon: Icons.storefront_outlined,
-                  ),
-                  items: _customers
-                      .map(
-                        (c) => DropdownMenuItem(
-                          value: c,
-                          child: Text(c.name, overflow: TextOverflow.ellipsis),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (value) => setState(() => _customer = value),
-                  validator: (value) =>
-                      value == null ? 'Select a customer' : null,
-                ),
-                if (selectedCustomer != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Icon(
-                          Icons.location_on_outlined,
-                          size: 16,
-                          color: _green,
-                        ),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            selectedCustomer.deliveryAddress ??
-                                selectedCustomer.address ??
-                                selectedCustomer.billingAddress ??
-                                'No address available',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: AppColors.textLightMuted,
+                        if (_loading)
+                          const Padding(
+                            padding: EdgeInsets.only(bottom: 16),
+                            child: LinearProgressIndicator(color: _green),
+                          ),
+                        if (_loadErrors.isNotEmpty)
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 16),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: AppColors.surface,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: AppColors.border),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Some order details are unavailable',
+                                  style: TextStyle(fontWeight: FontWeight.w700),
+                                ),
+                                const SizedBox(height: 6),
+                                ..._loadErrors.entries.map(
+                                  (e) => Text('${e.key}: ${e.value}'),
+                                ),
+                                TextButton(
+                                  onPressed: _loading ? null : _load,
+                                  child: const Text('Retry'),
+                                ),
+                              ],
                             ),
                           ),
+                        _label('Customer *'),
+                        DropdownButtonFormField<CustomerModel>(
+                          isExpanded: true,
+                          initialValue: _customer,
+                          decoration: _decoration(
+                            'Select customer',
+                            icon: Icons.storefront_outlined,
+                          ),
+                          items: _customers
+                              .map(
+                                (c) => DropdownMenuItem(
+                                  value: c,
+                                  child: Text(
+                                    c.name,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (value) =>
+                              setState(() => _customer = value),
+                          validator: (value) =>
+                              value == null ? 'Select a customer' : null,
                         ),
-                      ],
-                    ),
-                  ),
-                _heading('Order Details'),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _dateField('Order Date', _orderDate, false),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _dateField('Delivery Date *', _deliveryDate, true),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                _label('Warehouse *'),
-                DropdownButtonFormField<String>(
-                  key: ObjectKey(_warehouses),
-                  isExpanded: true,
-                  initialValue: _selectedWarehouseId,
-                  decoration: _decoration(
-                    !_loaded.contains('Warehouses') && _loading
-                        ? 'Loading warehouses...'
-                        : _loadErrors.containsKey('Warehouses')
-                        ? 'Could not load warehouses'
-                        : _warehouses.isEmpty
-                        ? 'No warehouses available'
-                        : 'Select warehouse',
-                  ).copyWith(errorText: _loadErrors['Warehouses']),
-                  items: _warehouses
-                      .map(
-                        (w) => DropdownMenuItem(
-                          value: _text(w, ['id', 'warehouse_id']),
-                          child: Text(
-                            _warehouseLabel(w),
-                            overflow: TextOverflow.ellipsis,
+                        if (selectedCustomer != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Icon(
+                                  Icons.location_on_outlined,
+                                  size: 16,
+                                  color: _green,
+                                ),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    selectedCustomer.deliveryAddress ??
+                                        selectedCustomer.address ??
+                                        selectedCustomer.billingAddress ??
+                                        'No address available',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: AppColors.textLightMuted,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        _heading('Order Details'),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _dateField(
+                                'Order Date',
+                                _orderDate,
+                                false,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _dateField(
+                                'Delivery Date *',
+                                _deliveryDate,
+                                true,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        _label('Warehouse *'),
+                        DropdownButtonFormField<String>(
+                          key: ObjectKey(_warehouses),
+                          isExpanded: true,
+                          initialValue: _selectedWarehouseId,
+                          decoration: _decoration(
+                            !_loaded.contains('Warehouses') && _loading
+                                ? 'Loading warehouses...'
+                                : _loadErrors.containsKey('Warehouses')
+                                ? 'Could not load warehouses'
+                                : _warehouses.isEmpty
+                                ? 'No warehouses available'
+                                : 'Select warehouse',
+                          ).copyWith(errorText: _loadErrors['Warehouses']),
+                          items: _warehouses
+                              .map(
+                                (w) => DropdownMenuItem(
+                                  value: _text(w, ['id', 'warehouse_id']),
+                                  child: Text(
+                                    _warehouseLabel(w),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: _warehouses.isEmpty
+                              ? null
+                              : (v) => setState(() => _selectedWarehouseId = v),
+                          validator: (v) =>
+                              v == null ? 'Select a warehouse' : null,
+                        ),
+                        if (_loadErrors.containsKey('Warehouses'))
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: _loading ? null : _load,
+                              child: const Text('Retry warehouses'),
+                            ),
+                          ),
+                        _heading('Add products'),
+                        TextField(
+                          decoration: _decoration(
+                            'Search products by name or SKU',
+                            icon: Icons.search,
+                          ),
+                          onChanged: (v) =>
+                              setState(() => _query = v.toLowerCase().trim()),
+                        ),
+                        const SizedBox(height: 10),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children:
+                                [
+                                      'All',
+                                      ..._products
+                                          .map((p) => p.category)
+                                          .where(
+                                            (c) => c.isNotEmpty && c != 'All',
+                                          )
+                                          .toSet(),
+                                    ]
+                                    .map(
+                                      (c) => Padding(
+                                        padding: const EdgeInsets.only(
+                                          right: 8,
+                                        ),
+                                        child: ChoiceChip(
+                                          label: Text(c),
+                                          selected: _category == c,
+                                          showCheckmark: false,
+                                          selectedColor: _green,
+                                          side: BorderSide(
+                                            color: _category == c
+                                                ? _green
+                                                : AppColors.border,
+                                            width: 0.7,
+                                          ),
+                                          labelStyle: TextStyle(
+                                            color: _category == c
+                                                ? Colors.white
+                                                : AppColors.textLightMuted,
+                                          ),
+                                          onSelected: (_) =>
+                                              setState(() => _category = c),
+                                        ),
+                                      ),
+                                    )
+                                    .toList(),
                           ),
                         ),
-                      )
-                      .toList(),
-                  onChanged: _warehouses.isEmpty
-                      ? null
-                      : (v) => setState(() => _selectedWarehouseId = v),
-                  validator: (v) => v == null ? 'Select a warehouse' : null,
-                ),
-                if (_loadErrors.containsKey('Warehouses'))
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: _loading ? null : _load,
-                      child: const Text('Retry warehouses'),
-                    ),
-                  ),
-                _heading('Add products'),
-                TextField(
-                  decoration: _decoration(
-                    'Search products by name or SKU',
-                    icon: Icons.search,
-                  ),
-                  onChanged: (v) =>
-                      setState(() => _query = v.toLowerCase().trim()),
-                ),
-                const SizedBox(height: 10),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children:
-                        [
-                              'All',
-                              ..._products
-                                  .map((p) => p.category)
-                                  .where((c) => c.isNotEmpty && c != 'All')
-                                  .toSet(),
-                            ]
-                            .map(
-                              (c) => Padding(
-                                padding: const EdgeInsets.only(right: 8),
-                                child: ChoiceChip(
-                                  label: Text(c),
-                                  selected: _category == c,
+                        const SizedBox(height: 8),
+                        ..._productList(),
+                        _heading('Delivery Method'),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: _choice(
+                                'Takeaway / Self Pickup',
+                                'Customer will collect the order.',
+                                Icons.storefront_outlined,
+                                !_homeDelivery,
+                                () => _setHomeDelivery(false),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: _choice(
+                                'Home Delivery',
+                                'Deliver the order to the customer address.',
+                                Icons.local_shipping_outlined,
+                                _homeDelivery,
+                                () => _setHomeDelivery(true),
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (_homeDelivery) ...[
+                          _label('Delivery Partner *'),
+                          DropdownButtonFormField<String>(
+                            key: ValueKey(_selectedPartnerId ?? 'no-partner'),
+                            isExpanded: true,
+                            initialValue: _selectedPartnerId,
+                            decoration: _decoration(
+                              _partnersLoading
+                                  ? 'Loading delivery partners...'
+                                  : _partnersError != null
+                                  ? 'Could not load delivery partners'
+                                  : _deliveryPartners.isEmpty
+                                  ? 'No delivery partners available'
+                                  : 'Select delivery partner',
+                              icon: Icons.delivery_dining_outlined,
+                            ),
+                            items: _deliveryPartners
+                                .map(
+                                  (partner) => DropdownMenuItem(
+                                    value: partner.id,
+                                    child: Text(
+                                      partner.name,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged:
+                                _partnersLoading || _deliveryPartners.isEmpty
+                                ? null
+                                : (value) => setState(
+                                    () => _selectedPartnerId = value,
+                                  ),
+                            validator: (value) => value == null
+                                ? 'Select a delivery partner'
+                                : null,
+                          ),
+                          if (_partnersError != null)
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    _partnersError!,
+                                    style: const TextStyle(
+                                      color: AppColors.deliveryRed,
+                                    ),
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: _partnersLoading
+                                      ? null
+                                      : () => _loadDeliveryPartners(
+                                          preserveSelectedPartner:
+                                              !widget.assignDeliveryPartner,
+                                        ),
+                                  child: const Text('Retry'),
+                                ),
+                              ],
+                            ),
+                        ],
+                        _heading('Payment Type *'),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: ['Cash', 'Phone Pe', 'Other', 'Google Pay']
+                              .map(
+                                (p) => ChoiceChip(
+                                  avatar: Icon(
+                                    _payment == p
+                                        ? Icons.radio_button_checked
+                                        : Icons.radio_button_off,
+                                    color: _green,
+                                    size: 18,
+                                  ),
+                                  label: Text(p),
+                                  selected: _payment == p,
                                   showCheckmark: false,
-                                  selectedColor: _green,
+                                  selectedColor: _green.withValues(alpha: 0.12),
                                   side: BorderSide(
-                                    color: _category == c
+                                    color: _payment == p
                                         ? _green
                                         : AppColors.border,
                                     width: 0.7,
                                   ),
-                                  labelStyle: TextStyle(
-                                    color: _category == c
-                                        ? Colors.white
-                                        : AppColors.textLightMuted,
-                                  ),
                                   onSelected: (_) =>
-                                      setState(() => _category = c),
+                                      setState(() => _payment = p),
                                 ),
+                              )
+                              .toList(),
+                        ),
+                        _heading('Order Summary'),
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: AppColors.surface,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: AppColors.border),
+                          ),
+                          child: Column(
+                            children: [
+                              _summary(),
+                              const SizedBox(height: 12),
+                              TextFormField(
+                                controller: _discount,
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                      decimal: true,
+                                    ),
+                                decoration: _decoration(
+                                  '0',
+                                ).copyWith(labelText: 'Discount amount (₹)'),
+                                onChanged: (_) => setState(() {}),
+                                validator: (v) {
+                                  final amount = double.tryParse(v ?? '');
+                                  return amount == null ||
+                                          !amount.isFinite ||
+                                          amount < 0 ||
+                                          amount > _subtotal
+                                      ? 'Enter a discount between 0 and ${_subtotal.toStringAsFixed(2)}'
+                                      : null;
+                                },
                               ),
-                            )
-                            .toList(),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                ..._productList(),
-                _heading('Delivery Method'),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: _choice(
-                        'Takeaway / Self Pickup',
-                        'Customer will collect the order.',
-                        Icons.storefront_outlined,
-                        !_homeDelivery,
-                        () => _setHomeDelivery(false),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: _choice(
-                        'Home Delivery',
-                        'Deliver the order to the customer address.',
-                        Icons.local_shipping_outlined,
-                        _homeDelivery,
-                        () => _setHomeDelivery(true),
-                      ),
-                    ),
-                  ],
-                ),
-                if (_homeDelivery) ...[
-                  _label('Delivery Partner *'),
-                  DropdownButtonFormField<String>(
-                    key: ValueKey(_selectedPartnerId ?? 'no-partner'),
-                    isExpanded: true,
-                    initialValue: _selectedPartnerId,
-                    decoration: _decoration(
-                      _partnersLoading
-                          ? 'Loading delivery partners...'
-                          : _partnersError != null
-                          ? 'Could not load delivery partners'
-                          : _deliveryPartners.isEmpty
-                          ? 'No delivery partners available'
-                          : 'Select delivery partner',
-                      icon: Icons.delivery_dining_outlined,
-                    ),
-                    items: _deliveryPartners
-                        .map(
-                          (partner) => DropdownMenuItem(
-                            value: partner.id,
-                            child: Text(
-                              partner.name,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        )
-                        .toList(),
-                    onChanged:
-                        _partnersLoading || _deliveryPartners.isEmpty
-                        ? null
-                        : (value) => setState(() => _selectedPartnerId = value),
-                    validator: (value) =>
-                        value == null ? 'Select a delivery partner' : null,
-                  ),
-                  if (_partnersError != null)
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            _partnersError!,
-                            style: const TextStyle(
-                              color: AppColors.deliveryRed,
-                            ),
+                            ],
                           ),
                         ),
-                        TextButton(
-                          onPressed: _partnersLoading
-                              ? null
-                              : () => _loadDeliveryPartners(
-                                  preserveSelectedPartner:
-                                      !widget.assignDeliveryPartner,
-                                ),
-                          child: const Text('Retry'),
-                        ),
-                      ],
-                    ),
-                ],
-                _heading('Payment Type *'),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: ['Cash', 'Phone Pe', 'Other', 'Google Pay']
-                      .map(
-                        (p) => ChoiceChip(
-                          avatar: Icon(
-                            _payment == p
-                                ? Icons.radio_button_checked
-                                : Icons.radio_button_off,
-                            color: _green,
-                            size: 18,
-                          ),
-                          label: Text(p),
-                          selected: _payment == p,
-                          showCheckmark: false,
-                          selectedColor: _green.withValues(alpha: 0.12),
-                          side: BorderSide(
-                            color: _payment == p ? _green : AppColors.border,
-                            width: 0.7,
-                          ),
-                          onSelected: (_) => setState(() => _payment = p),
-                        ),
-                      )
-                      .toList(),
-                ),
-                _heading('Order Summary'),
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.border),
-                  ),
-                  child: Column(
-                    children: [
-                      _summary(),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: _discount,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        decoration: _decoration(
-                          '0',
-                        ).copyWith(labelText: 'Discount amount (₹)'),
-                        onChanged: (_) => setState(() {}),
-                        validator: (v) {
-                          final amount = double.tryParse(v ?? '');
-                          return amount == null ||
-                                  !amount.isFinite ||
-                                  amount < 0 ||
-                                  amount > _subtotal
-                              ? 'Enter a discount between 0 and ${_subtotal.toStringAsFixed(2)}'
-                              : null;
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
+                        const SizedBox(height: 20),
                       ],
                     ),
                   ),
@@ -1511,196 +1537,209 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                     controller: _previewScrollController,
                     padding: const EdgeInsets.fromLTRB(16, 18, 16, 24),
                     children: [
-              const Text(
-                'Draft Sales Order',
-                style: TextStyle(
-                  color: _header,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              if (_error != null) ...[const SizedBox(height: 12), _errorCard()],
-              const SizedBox(height: 12),
-              _card(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    CircleAvatar(
-                      radius: 24,
-                      backgroundColor: AppColors.deliveryGreenSoft,
-                      child: const Icon(
-                        Icons.storefront_outlined,
-                        color: _green,
+                      const Text(
+                        'Draft Sales Order',
+                        style: TextStyle(
+                          color: _header,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.customer.name,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          if (address != null && address.isNotEmpty)
-                            Text(
-                              address,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              _card(
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.receipt_long_outlined,
-                          color: _green,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        const Expanded(
-                          child: Text(
-                            'Order Summary',
-                            style: TextStyle(fontWeight: FontWeight.w800),
-                          ),
-                        ),
-                        Text(
-                          '${_items.length} items',
-                          style: const TextStyle(
-                            color: _green,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
+                      if (_error != null) ...[
+                        const SizedBox(height: 12),
+                        _errorCard(),
                       ],
-                    ),
-                    const SizedBox(height: 12),
-                    _productTable(),
-                    const Divider(height: 24, color: AppColors.border),
-                    _detailRow('Subtotal', _money(_subtotal)),
-                    _detailRow(
-                      'Discount',
-                      '− ${_money(_discount)}',
-                      color: _green,
-                    ),
-                    const Divider(height: 18, color: AppColors.border),
-                    _detailRow('Total', _money(_total), strong: true),
-                    _detailRow(
-                      'Previous Balance',
-                      '+ ${_money(_previousBalance)}',
-                    ),
-                    _detailRow(
-                      'Grand Total',
-                      _money(_grandTotal),
-                      color: _green,
-                      strong: true,
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        const Expanded(
-                          child: Text(
-                            'Paid Amount',
-                            style: TextStyle(
-                              color: AppColors.textPrimary,
-                              fontWeight: FontWeight.w700,
+                      const SizedBox(height: 12),
+                      _card(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CircleAvatar(
+                              radius: 24,
+                              backgroundColor: AppColors.deliveryGreenSoft,
+                              child: const Icon(
+                                Icons.storefront_outlined,
+                                color: _green,
+                              ),
                             ),
-                          ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    widget.customer.name,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  if (address != null && address.isNotEmpty)
+                                    Text(
+                                      address,
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        color: AppColors.textSecondary,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                        SizedBox(
-                          width: 136,
-                          child: TextField(
-                            controller: _paidController,
-                            readOnly: _createdOrderId != null,
-                            keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true,
-                            ),
-                            textAlign: TextAlign.right,
-                            style: const TextStyle(
-                              color: AppColors.textPrimary,
-                              fontWeight: FontWeight.w700,
-                            ),
-                            decoration: InputDecoration(
-                              prefixText: '₹ ',
-                              prefixStyle: const TextStyle(color: _green),
-                              filled: true,
-                              fillColor: AppColors.surface,
-                              isDense: true,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 9,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: const BorderSide(
-                                  color: AppColors.border,
-                                ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: const BorderSide(
-                                  color: AppColors.border,
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: const BorderSide(
+                      ),
+                      const SizedBox(height: 12),
+                      _card(
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.receipt_long_outlined,
                                   color: _green,
-                                  width: 1.5,
+                                  size: 20,
                                 ),
-                              ),
+                                const SizedBox(width: 8),
+                                const Expanded(
+                                  child: Text(
+                                    'Order Summary',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  '${_items.length} items',
+                                  style: const TextStyle(
+                                    color: _green,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
                             ),
-                            onChanged: (_) => setState(() => _error = null),
-                          ),
+                            const SizedBox(height: 12),
+                            _productTable(),
+                            const Divider(height: 24, color: AppColors.border),
+                            _detailRow('Subtotal', _money(_subtotal)),
+                            _detailRow(
+                              'Discount',
+                              '− ${_money(_discount)}',
+                              color: _green,
+                            ),
+                            const Divider(height: 18, color: AppColors.border),
+                            _detailRow('Total', _money(_total), strong: true),
+                            _detailRow(
+                              'Previous Balance',
+                              '+ ${_money(_previousBalance)}',
+                            ),
+                            _detailRow(
+                              'Grand Total',
+                              _money(_grandTotal),
+                              color: _green,
+                              strong: true,
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                const Expanded(
+                                  child: Text(
+                                    'Paid Amount',
+                                    style: TextStyle(
+                                      color: AppColors.textPrimary,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 136,
+                                  child: TextField(
+                                    controller: _paidController,
+                                    readOnly: _createdOrderId != null,
+                                    keyboardType:
+                                        const TextInputType.numberWithOptions(
+                                          decimal: true,
+                                        ),
+                                    textAlign: TextAlign.right,
+                                    style: const TextStyle(
+                                      color: AppColors.textPrimary,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                    decoration: InputDecoration(
+                                      prefixText: '₹ ',
+                                      prefixStyle: const TextStyle(
+                                        color: _green,
+                                      ),
+                                      filled: true,
+                                      fillColor: AppColors.surface,
+                                      isDense: true,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                            vertical: 9,
+                                          ),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: const BorderSide(
+                                          color: AppColors.border,
+                                        ),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: const BorderSide(
+                                          color: AppColors.border,
+                                        ),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: const BorderSide(
+                                          color: _green,
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                    ),
+                                    onChanged: (_) =>
+                                        setState(() => _error = null),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            _detailRow(
+                              'Balance',
+                              _money(_grandTotal - (_paid ?? 0)),
+                              color: _red,
+                              strong: true,
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    _detailRow(
-                      'Balance',
-                      _money(_grandTotal - (_paid ?? 0)),
-                      color: _red,
-                      strong: true,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              _card(
-                child: Column(
-                  children: [
-                    _detailRow('Order Date', _date(widget.orderDate)),
-                    _detailRow('Delivery Date', _date(widget.deliveryDate)),
-                    _detailRow('Warehouse', warehouseName),
-                    _detailRow('Payment Type', widget.paymentType),
-                    _detailRow(
-                      'Delivery Method',
-                      widget.homeDelivery
-                          ? 'Home Delivery'
-                          : 'Takeaway / Self Pickup',
-                    ),
-                    _detailRow(
-                      'Order Delivery By',
-                      widget.deliveryPartner?.name ??
-                          (widget.homeDelivery
-                              ? 'Home Delivery'
-                              : 'Self Pickup'),
-                    ),
-                  ],
-                ),
-              ),
+                      ),
+                      const SizedBox(height: 12),
+                      _card(
+                        child: Column(
+                          children: [
+                            _detailRow('Order Date', _date(widget.orderDate)),
+                            _detailRow(
+                              'Delivery Date',
+                              _date(widget.deliveryDate),
+                            ),
+                            _detailRow('Warehouse', warehouseName),
+                            _detailRow('Payment Type', widget.paymentType),
+                            _detailRow(
+                              'Delivery Method',
+                              widget.homeDelivery
+                                  ? 'Home Delivery'
+                                  : 'Takeaway / Self Pickup',
+                            ),
+                            _detailRow(
+                              'Order Delivery By',
+                              widget.deliveryPartner?.name ??
+                                  (widget.homeDelivery
+                                      ? 'Home Delivery'
+                                      : 'Self Pickup'),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),

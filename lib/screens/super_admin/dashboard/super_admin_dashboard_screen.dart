@@ -2476,10 +2476,7 @@ class _InfoChip extends StatelessWidget {
       ),
       child: RichText(
         text: TextSpan(
-          style: const TextStyle(
-            fontSize: 14,
-            color: AppColors.textSecondary,
-          ),
+          style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
           children: [
             TextSpan(
               text: '$label: ',

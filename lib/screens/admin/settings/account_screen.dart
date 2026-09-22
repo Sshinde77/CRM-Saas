@@ -569,10 +569,7 @@ class _AccountScreenState extends State<AccountScreen> {
                     const SizedBox(height: 2),
                     Text(
                       metric.subtitle,
-                      style: const TextStyle(
-                        color: _mutedColor,
-                        fontSize: 14,
-                      ),
+                      style: const TextStyle(color: _mutedColor, fontSize: 14),
                     ),
                   ],
                 ),
@@ -707,26 +704,17 @@ class _AccountScreenState extends State<AccountScreen> {
                     const SizedBox(height: 3),
                     Text(
                       _savedDesignation,
-                      style: const TextStyle(
-                        color: _mutedColor,
-                        fontSize: 14,
-                      ),
+                      style: const TextStyle(color: _mutedColor, fontSize: 14),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       _savedEmail,
-                      style: const TextStyle(
-                        color: _mutedColor,
-                        fontSize: 14,
-                      ),
+                      style: const TextStyle(color: _mutedColor, fontSize: 14),
                     ),
                     const SizedBox(height: 3),
                     Text(
                       _savedMobileNumber,
-                      style: const TextStyle(
-                        color: _mutedColor,
-                        fontSize: 14,
-                      ),
+                      style: const TextStyle(color: _mutedColor, fontSize: 14),
                     ),
                   ],
                 ),
