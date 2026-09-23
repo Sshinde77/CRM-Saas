@@ -9,6 +9,7 @@ import '../../../models/app_user.dart';
 import '../../../models/auth_models.dart';
 import '../../../providers/api_provider.dart';
 import '../../../services/api_service.dart';
+import '../../../utils/product_image_url.dart';
 import '../../../widgets/app_calendar_date_picker.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
 
@@ -2110,7 +2111,7 @@ class _OrderProduct {
       category is Map<String, dynamic>
           ? _text(category, ['name'])
           : _text(data, ['category_name', 'category']),
-      _text(data, ['image_url', 'imageUrl', 'image', 'thumbnail_url']),
+      productImageUrlFromJson(data) ?? '',
       double.tryParse(
             _text(data, [
               'selling_price',

@@ -1,11 +1,8 @@
-import 'dart:convert';
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 
-import '../../../constants/api_constants.dart';
 import '../../../constants/app_colors.dart';
 import '../../../providers/api_provider.dart';
+import '../../../utils/product_image_url.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
 
@@ -706,7 +703,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
   Widget _productVisual(_ProductItem product, {required double size}) {
     final imageUrl = product.imageUrl?.trim();
-    final imageBytes = _productImageBytes(imageUrl);
+    final imageBytes = productImageBytes(imageUrl);
     final Widget visualChild;
 
     if (imageBytes != null) {
@@ -1191,7 +1188,7 @@ class _ProductItem {
         'sku',
         'product_id',
       ], fallback: '-'),
-      imageUrl: _productImageUrl(json),
+      imageUrl: productImageUrlFromJson(json),
       price: _productPrice(json),
       stock: stock,
       status: _productStatus(json),
@@ -1248,103 +1245,6 @@ String _productText(
     }
   }
   return fallback;
-}
-
-String? _productImageUrl(Map<String, dynamic> json) {
-  final direct = _productAssetText(json, const [
-    'image_url',
-    'imageUrl',
-    'product_image_url',
-    'productImageUrl',
-    'thumbnail_url',
-    'thumbnailUrl',
-    'photo_url',
-    'photoUrl',
-    'image',
-    'product_image',
-    'productImage',
-    'thumbnail',
-    'photo',
-    'picture',
-    'cover_image',
-    'coverImage',
-  ]);
-  final normalized = _normalizeProductAssetUrl(direct);
-  if (normalized != null) return normalized;
-
-  final fileId = _productAssetText(json, const [
-    'image_file_id',
-    'imageFileId',
-    'product_image_id',
-    'productImageId',
-    'file_id',
-    'fileId',
-  ]);
-  if (fileId == null || fileId.isEmpty) return null;
-
-  return Uri.parse(
-    ApiConstants.baseUrl,
-  ).resolve(ApiEndpoints.fileDetail(fileId)).toString();
-}
-
-String? _productAssetText(Map<String, dynamic> json, List<String> keys) {
-  for (final key in keys) {
-    final value = json[key];
-    final text = _assetValueText(value);
-    if (text != null && text.isNotEmpty) return text;
-  }
-  return null;
-}
-
-String? _assetValueText(Object? value) {
-  if (value == null) return null;
-  if (value is List && value.isNotEmpty) {
-    return _assetValueText(value.first);
-  }
-  if (value is Map<String, dynamic>) {
-    return _productAssetText(value, const [
-      'url',
-      'download_url',
-      'downloadUrl',
-      'file_url',
-      'fileUrl',
-      'path',
-      'file_id',
-      'fileId',
-      'id',
-    ]);
-  }
-  final text = value.toString().trim();
-  return text.isEmpty ? null : text;
-}
-
-String? _normalizeProductAssetUrl(String? value) {
-  final text = value?.trim();
-  if (text == null || text.isEmpty) return null;
-  if (text.startsWith('data:image/')) return text;
-  final uri = Uri.tryParse(text);
-  if (uri != null && uri.hasScheme) return text;
-  if (text.startsWith('/')) {
-    return Uri.parse(ApiConstants.baseUrl).resolve(text).toString();
-  }
-  if (RegExp(r'^[0-9a-fA-F-]{20,}$').hasMatch(text)) {
-    return Uri.parse(
-      ApiConstants.baseUrl,
-    ).resolve(ApiEndpoints.fileDetail(text)).toString();
-  }
-  return Uri.parse(ApiConstants.baseUrl).resolve('/$text').toString();
-}
-
-Uint8List? _productImageBytes(String? value) {
-  final text = value?.trim();
-  if (text == null || !text.startsWith('data:image/')) return null;
-  final commaIndex = text.indexOf(',');
-  if (commaIndex == -1 || commaIndex == text.length - 1) return null;
-  try {
-    return base64Decode(text.substring(commaIndex + 1));
-  } catch (_) {
-    return null;
-  }
 }
 
 double _productPrice(Map<String, dynamic> json) {

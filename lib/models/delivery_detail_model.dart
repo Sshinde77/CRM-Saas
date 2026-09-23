@@ -1,4 +1,5 @@
 import 'delivery_schedule.dart';
+import '../utils/product_image_url.dart';
 
 class DeliveryDetail {
   final String id;
@@ -260,11 +261,7 @@ class DeliveryDetailItem {
         'variantName',
         'variant',
       ], fallback: _text(variant, const ['name', 'title'])),
-      imageUrl: _text(json, const [
-        'image_url',
-        'imageUrl',
-        'image',
-      ], fallback: _text(product, const ['image_url', 'image'])),
+      imageUrl: productImageUrlFromJson(json) ?? '',
       planned: planned,
       picked: _int(
         json['picked'] ?? json['picked_quantity'],

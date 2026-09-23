@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
 import '../../../providers/api_provider.dart';
+import '../../../utils/product_image_url.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
@@ -583,6 +584,7 @@ class _ItemTile extends StatelessWidget {
     final uom = _readString(item, const ['uom', 'unit', 'unit_of_measure']);
     final price = _readDouble(item, const ['unit_price', 'unitPrice', 'price']);
     final total = _readDouble(item, const ['line_total', 'lineTotal', 'total']);
+    final imageUrl = productImageUrlFromJson(item);
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(10),
@@ -594,17 +596,26 @@ class _ItemTile extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            _readString(item, const [
-              'product_name',
-              'productName',
-              'name',
-            ], fallback: 'Product'),
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w900,
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _OrderProductThumb(imageUrl: imageUrl),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  _readString(item, const [
+                    'product_name',
+                    'productName',
+                    'name',
+                  ], fallback: 'Product'),
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 6),
           _DetailRow('Qty / UOM', '$quantity $uom'),
@@ -612,6 +623,44 @@ class _ItemTile extends StatelessWidget {
           _DetailRow('Line Total', _formatMoney(total)),
         ],
       ),
+    );
+  }
+}
+
+class _OrderProductThumb extends StatelessWidget {
+  final String? imageUrl;
+
+  const _OrderProductThumb({required this.imageUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    final url = imageUrl?.trim() ?? '';
+    return Container(
+      width: 44,
+      height: 44,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.borderLight),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: url.isEmpty
+          ? const Icon(
+              Icons.inventory_2_outlined,
+              color: AppColors.textLightMuted,
+              size: 22,
+            )
+          : Image.network(
+              url,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return const Icon(
+                  Icons.inventory_2_outlined,
+                  color: AppColors.textLightMuted,
+                  size: 22,
+                );
+              },
+            ),
     );
   }
 }

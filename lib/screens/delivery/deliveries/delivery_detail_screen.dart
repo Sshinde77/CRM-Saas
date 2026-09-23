@@ -658,7 +658,7 @@ class _ItemRow extends StatelessWidget {
           _ItemColumns(
             product: Row(
               children: [
-                _DeliveryImage(url: item.imageUrl, size: 30),
+                _DeliveryImage(url: item.imageUrl, size: 34, fit: BoxFit.cover),
                 const SizedBox(width: 7),
                 Expanded(
                   child: Column(
@@ -714,21 +714,31 @@ class _ItemRow extends StatelessWidget {
 class _DeliveryImage extends StatelessWidget {
   final String url;
   final double size;
-  const _DeliveryImage({required this.url, required this.size});
+  final BoxFit fit;
+  const _DeliveryImage({
+    required this.url,
+    required this.size,
+    this.fit = BoxFit.contain,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final placeholder = Container(
-      color: AppColors.surfaceSoft,
-      alignment: Alignment.center,
-      child: Icon(
-        Icons.inventory_2_outlined,
-        color: AppColors.textMuted,
-        size: size < 40 ? 20 : 28,
+    final placeholder = DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppColors.surfaceSoft,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.borderLight),
+      ),
+      child: Center(
+        child: Icon(
+          Icons.inventory_2_outlined,
+          color: AppColors.textMuted,
+          size: size < 40 ? 20 : 28,
+        ),
       ),
     );
     return ClipRRect(
-      borderRadius: BorderRadius.circular(4),
+      borderRadius: BorderRadius.circular(8),
       child: SizedBox(
         width: size,
         height: size,
@@ -736,7 +746,7 @@ class _DeliveryImage extends StatelessWidget {
             ? placeholder
             : Image.network(
                 url,
-                fit: BoxFit.contain,
+                fit: fit,
                 errorBuilder: (_, _, _) => placeholder,
               ),
       ),
