@@ -33,10 +33,7 @@ class AdminTopBar extends StatelessWidget {
       leadingIcon: leadingIcon,
       onLeadingTap: onLeadingTap,
       onNotificationTap: onNotificationTap,
-      actions: [
-        ...actions,
-        if (trailingAvatar != null) trailingAvatar!,
-      ],
+      actions: [...actions, if (trailingAvatar != null) trailingAvatar!],
       profileName: profileName ?? 'Admin',
       profileRole: profileRole ?? 'Admin',
       onSignOut: onSignOut,

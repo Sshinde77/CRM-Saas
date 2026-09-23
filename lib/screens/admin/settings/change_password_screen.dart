@@ -136,89 +136,99 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                             color: _borderColor,
                           ),
                           const SizedBox(height: 24),
-                    _fieldBlock(
-                      label: 'Current Password *',
-                      child: _passwordField(
-                        controller: _currentPasswordController,
-                        obscureText: _obscureCurrent,
-                        hintText: 'Enter current password',
-                        onToggleVisibility: () {
-                          setState(() => _obscureCurrent = !_obscureCurrent);
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    _ResponsivePasswordRow(
-                      isWide: isWide,
-                      children: [
-                        _fieldBlock(
-                          label: 'New Password',
-                          child: _passwordField(
-                            controller: _newPasswordController,
-                            obscureText: _obscureNew,
-                            hintText: 'Enter new password',
-                            onToggleVisibility: () {
-                              setState(() => _obscureNew = !_obscureNew);
-                            },
+                          _fieldBlock(
+                            label: 'Current Password *',
+                            child: _passwordField(
+                              controller: _currentPasswordController,
+                              obscureText: _obscureCurrent,
+                              hintText: 'Enter current password',
+                              onToggleVisibility: () {
+                                setState(
+                                  () => _obscureCurrent = !_obscureCurrent,
+                                );
+                              },
+                            ),
                           ),
-                        ),
-                        _fieldBlock(
-                          label: 'Confirm Password',
-                          child: _passwordField(
-                            controller: _confirmPasswordController,
-                            obscureText: _obscureConfirm,
-                            hintText: 'Confirm new password',
-                            onToggleVisibility: () {
-                              setState(
-                                () => _obscureConfirm = !_obscureConfirm,
-                              );
-                            },
+                          const SizedBox(height: 16),
+                          _ResponsivePasswordRow(
+                            isWide: isWide,
+                            children: [
+                              _fieldBlock(
+                                label: 'New Password',
+                                child: _passwordField(
+                                  controller: _newPasswordController,
+                                  obscureText: _obscureNew,
+                                  hintText: 'Enter new password',
+                                  onToggleVisibility: () {
+                                    setState(() => _obscureNew = !_obscureNew);
+                                  },
+                                ),
+                              ),
+                              _fieldBlock(
+                                label: 'Confirm Password',
+                                child: _passwordField(
+                                  controller: _confirmPasswordController,
+                                  obscureText: _obscureConfirm,
+                                  hintText: 'Confirm new password',
+                                  onToggleVisibility: () {
+                                    setState(
+                                      () => _obscureConfirm = !_obscureConfirm,
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: SizedBox(
-                        height: 42,
-                        child: ElevatedButton.icon(
-                          onPressed: _saving ? null : _handleChangePassword,
-                          icon: _saving
-                              ? const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white,
-                                    ),
+                          const SizedBox(height: 20),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: SizedBox(
+                              height: 42,
+                              child: ElevatedButton.icon(
+                                onPressed: _saving
+                                    ? null
+                                    : _handleChangePassword,
+                                icon: _saving
+                                    ? const SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                Colors.white,
+                                              ),
+                                        ),
+                                      )
+                                    : const Icon(
+                                        Icons.vpn_key_outlined,
+                                        size: 18,
+                                      ),
+                                label: Text(
+                                  _saving ? 'Changing...' : 'Change Password',
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: _accent,
+                                  foregroundColor: Colors.white,
+                                  elevation: 6,
+                                  shadowColor: Colors.black.withValues(
+                                    alpha: 0.22,
                                   ),
-                                )
-                              : const Icon(Icons.vpn_key_outlined, size: 18),
-                          label: Text(
-                            _saving ? 'Changing...' : 'Change Password',
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: _accent,
-                            foregroundColor: Colors.white,
-                            elevation: 6,
-                            shadowColor: Colors.black.withValues(alpha: 0.22),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 18,
-                              vertical: 10,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(22),
-                            ),
-                            textStyle: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 18,
+                                    vertical: 10,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(22),
+                                  ),
+                                  textStyle: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                    ),
                         ],
                       ),
                     ),

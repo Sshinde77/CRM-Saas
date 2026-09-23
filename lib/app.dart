@@ -65,15 +65,13 @@ class _CrmSaasAppState extends State<CrmSaasApp> {
 
   TextScaler _responsiveTextScaler(MediaQueryData mediaQuery) {
     final width = mediaQuery.size.width;
-    final widthScale = (width / _baseMobileWidth).clamp(
-      _minTextScale,
-      _maxWidthTextScale,
-    ).toDouble();
+    final widthScale = (width / _baseMobileWidth)
+        .clamp(_minTextScale, _maxWidthTextScale)
+        .toDouble();
     final platformScale = mediaQuery.textScaler.scale(14) / 14;
-    final combinedScale = (platformScale * widthScale).clamp(
-      _minTextScale,
-      _maxTextScale,
-    ).toDouble();
+    final combinedScale = (platformScale * widthScale)
+        .clamp(_minTextScale, _maxTextScale)
+        .toDouble();
 
     return TextScaler.linear(combinedScale);
   }
