@@ -55,7 +55,11 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
   @override
   void initState() {
     super.initState();
-    _loadCustomers();
+    // The customer provider depends on inherited context and notifies listeners.
+    // Wait until the first build finishes before starting the request.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _loadCustomers();
+    });
     _amountController.addListener(() => setState(() {}));
   }
 
@@ -80,6 +84,7 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
         _loadingCustomers = false;
       });
     } catch (_) {
+      if (!mounted) return;
       setState(() {
         _loadingCustomers = false;
         _error = 'Could not load customers. Please try again.';

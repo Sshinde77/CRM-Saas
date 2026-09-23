@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../constants/api_constants.dart';
 import '../../constants/app_colors.dart';
+import '../../models/customer_model.dart';
 import '../../providers/api_provider.dart';
 import '../../routes/app_router.dart';
 import '../../screens/delivery/customers/create_delivery_customer_screen.dart';
@@ -141,16 +142,34 @@ class DeliveryBottomNavigation extends StatelessWidget {
         ),
       );
       if (result == true && context.mounted) {
-        await onCollectionCreated?.call();
+        if (currentIndex == 4 && onCollectionCreated != null) {
+          await onCollectionCreated!();
+        } else {
+          Navigator.of(
+            context,
+          ).pushReplacementNamed(AppRoutes.deliveryCollections);
+        }
       }
     } else if (action == 'customer') {
-      await Navigator.of(context).push(
+      final customer = await Navigator.of(context).push<CustomerModel>(
         MaterialPageRoute(builder: (_) => const CreateDeliveryCustomerScreen()),
       );
+      if (customer != null && context.mounted) {
+        Navigator.of(context).pushReplacementNamed(AppRoutes.deliveryCustomers);
+      }
     } else {
-      await Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => const CreateDeliveryOrderScreen()),
+      final result = await Navigator.of(context).push<bool>(
+        MaterialPageRoute(
+          builder: (formContext) => CreateDeliveryOrderScreen(
+            onCreated: () => Navigator.of(formContext).pop(true),
+          ),
+        ),
       );
+      if (result == true && context.mounted) {
+        Navigator.of(
+          context,
+        ).pushReplacementNamed(AppRoutes.deliveryDeliveries);
+      }
     }
   }
 

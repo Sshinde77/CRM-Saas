@@ -16,11 +16,13 @@ import '../../../widgets/delivery/delivery_top_bar.dart';
 class CreateDeliveryOrderScreen extends StatefulWidget {
   final Widget? drawer;
   final bool assignDeliveryPartner;
+  final VoidCallback? onCreated;
 
   const CreateDeliveryOrderScreen({
     super.key,
     this.drawer,
     this.assignDeliveryPartner = false,
+    this.onCreated,
   });
 
   @override
@@ -393,6 +395,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Sales order created successfully.')),
       );
+      widget.onCreated?.call();
     }
   }
 
@@ -790,6 +793,12 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                                     size: 18,
                                   ),
                                   label: Text(p),
+                                  labelStyle: TextStyle(
+                                    color: _payment == p
+                                        ? AppColors.primary
+                                        : AppColors.textPrimary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                   selected: _payment == p,
                                   showCheckmark: false,
                                   selectedColor: _green.withValues(alpha: 0.12),
@@ -1011,13 +1020,6 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
           padding: EdgeInsets.only(bottom: 10),
           child: Text('Add products to see your order summary.'),
         ),
-      ..._selected.map(
-        (p) => _totalRow(
-          '${p.name} × ${_quantities[p.id]}',
-          _money(p.price * (_quantities[p.id] ?? 0)),
-        ),
-      ),
-      const Divider(),
       _totalRow('Subtotal', _money(_subtotal)),
       _totalRow('Discount', '− ${_money(_discountValue)}'),
       _totalRow('Total', _money(_total), bold: true),
@@ -1589,121 +1591,157 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                       _card(
                         child: Column(
                           children: [
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.receipt_long_outlined,
-                                  color: _green,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 8),
-                                const Expanded(
-                                  child: Text(
-                                    'Order Summary',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w800,
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: AppColors.surfaceSoft,
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: Row(
+                                children: [
+                                  _summaryIcon(Icons.receipt_long_outlined),
+                                  const SizedBox(width: 10),
+                                  const Expanded(
+                                    child: Text(
+                                      'Order Summary',
+                                      style: TextStyle(
+                                        color: AppColors.primary,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w800,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                Text(
-                                  '${_items.length} items',
-                                  style: const TextStyle(
-                                    color: _green,
-                                    fontWeight: FontWeight.w700,
+                                  Text(
+                                    '${_items.length} ${_items.length == 1 ? 'item' : 'items'}',
+                                    style: const TextStyle(
+                                      color: _green,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                             const SizedBox(height: 12),
                             _productTable(),
                             const Divider(height: 24, color: AppColors.border),
-                            _detailRow('Subtotal', _money(_subtotal)),
-                            _detailRow(
+                            _summaryRow(
+                              'Subtotal',
+                              _money(_subtotal),
+                              icon: Icons.sell_outlined,
+                            ),
+                            _summaryRow(
                               'Discount',
                               '− ${_money(_discount)}',
+                              icon: Icons.percent_rounded,
                               color: _green,
                             ),
                             const Divider(height: 18, color: AppColors.border),
-                            _detailRow('Total', _money(_total), strong: true),
-                            _detailRow(
+                            _summaryRow(
+                              'Total',
+                              _money(_total),
+                              icon: Icons.account_balance_wallet_outlined,
+                              strong: true,
+                            ),
+                            _summaryRow(
                               'Previous Balance',
                               '+ ${_money(_previousBalance)}',
+                              icon: Icons.receipt_long_outlined,
                             ),
-                            _detailRow(
+                            _summaryRow(
                               'Grand Total',
                               _money(_grandTotal),
-                              color: _green,
+                              icon: Icons.shopping_bag_outlined,
+                              highlight: true,
+                              color: AppColors.primary,
                               strong: true,
                             ),
                             const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                const Expanded(
-                                  child: Text(
-                                    'Paid Amount',
-                                    style: TextStyle(
-                                      color: AppColors.textPrimary,
-                                      fontWeight: FontWeight.w700,
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.surfaceSoft,
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: Row(
+                                children: [
+                                  _summaryIcon(Icons.payments_outlined),
+                                  const SizedBox(width: 10),
+                                  const Expanded(
+                                    child: Text(
+                                      'Paid Amount',
+                                      style: TextStyle(
+                                        color: AppColors.textPrimary,
+                                        fontWeight: FontWeight.w700,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                SizedBox(
-                                  width: 136,
-                                  child: TextField(
-                                    controller: _paidController,
-                                    readOnly: _createdOrderId != null,
-                                    keyboardType:
-                                        const TextInputType.numberWithOptions(
-                                          decimal: true,
-                                        ),
-                                    textAlign: TextAlign.right,
-                                    style: const TextStyle(
-                                      color: AppColors.textPrimary,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                    decoration: InputDecoration(
-                                      prefixText: '₹ ',
-                                      prefixStyle: const TextStyle(
-                                        color: _green,
-                                      ),
-                                      filled: true,
-                                      fillColor: AppColors.surface,
-                                      isDense: true,
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                            horizontal: 10,
-                                            vertical: 9,
+                                  Flexible(
+                                    child: TextField(
+                                      controller: _paidController,
+                                      readOnly: _createdOrderId != null,
+                                      keyboardType:
+                                          const TextInputType.numberWithOptions(
+                                            decimal: true,
                                           ),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: const BorderSide(
-                                          color: AppColors.border,
-                                        ),
+                                      textAlign: TextAlign.right,
+                                      style: const TextStyle(
+                                        color: AppColors.textPrimary,
+                                        fontWeight: FontWeight.w700,
                                       ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: const BorderSide(
-                                          color: AppColors.border,
-                                        ),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: const BorderSide(
+                                      decoration: InputDecoration(
+                                        prefixText: '₹ ',
+                                        prefixStyle: const TextStyle(
                                           color: _green,
-                                          width: 1.5,
+                                        ),
+                                        filled: true,
+                                        fillColor: AppColors.surface,
+                                        isDense: true,
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                              vertical: 9,
+                                            ),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                          borderSide: const BorderSide(
+                                            color: AppColors.border,
+                                          ),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                          borderSide: const BorderSide(
+                                            color: AppColors.border,
+                                          ),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                          borderSide: const BorderSide(
+                                            color: _green,
+                                            width: 1.5,
+                                          ),
                                         ),
                                       ),
+                                      onChanged: (_) =>
+                                          setState(() => _error = null),
                                     ),
-                                    onChanged: (_) =>
-                                        setState(() => _error = null),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                             const SizedBox(height: 8),
-                            _detailRow(
+                            _summaryRow(
                               'Balance',
                               _money(_grandTotal - (_paid ?? 0)),
+                              icon: Icons.account_balance_wallet_outlined,
                               color: _red,
                               strong: true,
                             ),
@@ -1757,6 +1795,60 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
       border: Border.all(color: AppColors.border),
     ),
     child: child,
+  );
+
+  Widget _summaryIcon(IconData icon) => Container(
+    width: 34,
+    height: 34,
+    decoration: const BoxDecoration(
+      color: AppColors.adminSidebarBg,
+      shape: BoxShape.circle,
+    ),
+    child: Icon(icon, size: 20, color: AppColors.primary),
+  );
+
+  Widget _summaryRow(
+    String label,
+    String value, {
+    required IconData icon,
+    Color? color,
+    bool strong = false,
+    bool highlight = false,
+  }) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+    decoration: BoxDecoration(
+      color: highlight ? AppColors.surfaceSoft : null,
+      borderRadius: BorderRadius.circular(14),
+    ),
+    child: Row(
+      children: [
+        _summaryIcon(icon),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(
+              color: color ?? AppColors.textPrimary,
+              fontWeight: strong ? FontWeight.w800 : FontWeight.w500,
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Flexible(
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                color: color ?? AppColors.textPrimary,
+                fontWeight: strong ? FontWeight.w800 : FontWeight.w500,
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
   );
 
   Widget _detailRow(
@@ -1985,9 +2077,14 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              width: 40,
-              height: 44,
+            Container(
+              width: 64,
+              height: 64,
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceSoft,
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: item.product.image.isEmpty
                   ? const Icon(Icons.inventory_2_outlined, color: _green)
                   : Image.network(
@@ -2022,8 +2119,12 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
         const SizedBox(height: 10),
         Row(
           children: [
-            IconButton.outlined(
+            IconButton.filledTonal(
               tooltip: 'Remove one ${item.product.name}',
+              style: IconButton.styleFrom(
+                backgroundColor: AppColors.surfaceSoft,
+                foregroundColor: AppColors.primary,
+              ),
               visualDensity: VisualDensity.compact,
               constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
               onPressed: _createdOrderId == null
@@ -2038,8 +2139,12 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                 style: const TextStyle(fontWeight: FontWeight.w800),
               ),
             ),
-            IconButton.outlined(
+            IconButton.filledTonal(
               tooltip: 'Add one ${item.product.name}',
+              style: IconButton.styleFrom(
+                backgroundColor: AppColors.surfaceSoft,
+                foregroundColor: AppColors.primary,
+              ),
               visualDensity: VisualDensity.compact,
               constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
               onPressed: _createdOrderId == null
@@ -2047,25 +2152,29 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                   : null,
               icon: const Icon(Icons.add, size: 17, color: _green),
             ),
-            const Spacer(),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  '${_money(item.product.price)} / ${item.product.unit}',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: AppColors.textSecondary,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '${_money(item.product.price)} / ${item.product.unit}',
+                    textAlign: TextAlign.right,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
-                ),
-                Text(
-                  _money(item.product.price * item.quantity),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w800,
-                    color: _header,
+                  Text(
+                    _money(item.product.price * item.quantity),
+                    textAlign: TextAlign.right,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      color: _header,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),

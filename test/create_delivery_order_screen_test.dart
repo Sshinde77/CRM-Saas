@@ -154,6 +154,7 @@ void main() {
   testWidgets('Delivery home order pre-selects its associated partner', (
     tester,
   ) async {
+    var completed = false;
     final provider = _OrderProvider()
       ..warehouseFails = false
       ..includeCustomer = true
@@ -168,7 +169,9 @@ void main() {
     await tester.pumpWidget(
       ApiProviderScope(
         notifier: provider,
-        child: const MaterialApp(home: CreateDeliveryOrderScreen()),
+        child: MaterialApp(
+          home: CreateDeliveryOrderScreen(onCreated: () => completed = true),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -217,6 +220,7 @@ void main() {
     await tester.tap(find.text('Create Order'));
     await tester.pumpAndSettle();
     expect(provider.assignedPartnerId, 'driver-2');
+    expect(completed, isTrue);
     expect(
       provider.createdOrder?['delivery_date'],
       matches(RegExp(r'^\d{4}-\d{2}-\d{2}$')),
