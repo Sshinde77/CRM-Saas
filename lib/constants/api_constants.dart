@@ -41,6 +41,9 @@ class ApiEndpoints {
 
   static const String health = '/health';
   static const String adminDashboard = '/dashboard/admin';
+  static const String deliveryPartnerDashboard = '/dashboard/delivery-partner';
+  static const String deliveryPartnerDashboardOrders =
+      '/dashboard/delivery-partner/orders';
 
   static const String authLogin = '/auth/login';
   static const String authRegister = '/auth/register';

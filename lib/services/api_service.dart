@@ -572,6 +572,66 @@ class ApiService {
     return AdminDashboardData.fromJson(decoded);
   }
 
+  Future<Map<String, dynamic>> fetchDeliveryPartnerDashboard() async {
+    http.Response response;
+    try {
+      response = await _send(
+        method: 'GET',
+        endpoint: ApiEndpoints.deliveryPartnerDashboard,
+        requiresAuth: true,
+      );
+    } on ApiException catch (error) {
+      if (error.statusCode != 404) rethrow;
+      response = await _send(
+        method: 'GET',
+        endpoint: '${ApiEndpoints.deliveryPartnerDashboard}/',
+        requiresAuth: true,
+      );
+    }
+
+    return _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid delivery partner dashboard response.',
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> fetchDeliveryPartnerCompanyOrders({
+    String? status,
+    String? fulfilmentStatus,
+    String? customerId,
+    String? search,
+    int limit = 50,
+    int offset = 0,
+  }) async {
+    final queryParameters = _cleanQuery({
+      'status': status,
+      'fulfilment_status': fulfilmentStatus,
+      'customer_id': customerId,
+      'search': search,
+      'limit': '$limit',
+      'offset': '$offset',
+    });
+    const candidateKeys = ['orders', 'data', 'items', 'results'];
+    const fallbackMessage = 'Invalid delivery partner company orders response.';
+
+    try {
+      return await fetchRawList(
+        endpoint: ApiEndpoints.deliveryPartnerDashboardOrders,
+        queryParameters: queryParameters,
+        candidateKeys: candidateKeys,
+        fallbackMessage: fallbackMessage,
+      );
+    } on ApiException catch (error) {
+      if (error.statusCode != 404) rethrow;
+      return fetchRawList(
+        endpoint: '${ApiEndpoints.deliveryPartnerDashboardOrders}/',
+        queryParameters: queryParameters,
+        candidateKeys: candidateKeys,
+        fallbackMessage: fallbackMessage,
+      );
+    }
+  }
+
   Future<List<Map<String, dynamic>>> fetchDeliveryPartnerDeliveries({
     required String deliveryPartnerId,
   }) {

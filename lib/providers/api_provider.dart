@@ -211,6 +211,28 @@ class ApiProvider extends ChangeNotifier {
     );
   }
 
+  Future<Map<String, dynamic>> fetchDeliveryPartnerDashboard() {
+    return _apiService.fetchDeliveryPartnerDashboard();
+  }
+
+  Future<List<Map<String, dynamic>>> fetchDeliveryPartnerCompanyOrders({
+    String? status,
+    String? fulfilmentStatus,
+    String? customerId,
+    String? search,
+    int limit = 50,
+    int offset = 0,
+  }) {
+    return _apiService.fetchDeliveryPartnerCompanyOrders(
+      status: status,
+      fulfilmentStatus: fulfilmentStatus,
+      customerId: customerId,
+      search: search,
+      limit: limit,
+      offset: offset,
+    );
+  }
+
   Future<DeliveryDetail> fetchDeliveryById(String deliveryId) {
     return _apiService.fetchDeliveryById(deliveryId);
   }

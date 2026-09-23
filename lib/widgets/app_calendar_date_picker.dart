@@ -184,7 +184,8 @@ class _AppCalendarDatePickerState extends State<AppCalendarDatePicker> {
           Row(
             children: [
               TextButton(
-                onPressed: today.isBefore(widget.firstDate) ||
+                onPressed:
+                    today.isBefore(widget.firstDate) ||
                         today.isAfter(widget.lastDate)
                     ? null
                     : () {

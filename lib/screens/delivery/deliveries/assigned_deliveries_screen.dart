@@ -610,27 +610,39 @@ class _SearchAndFilterBar extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 10),
-        SizedBox(
-          height: 44,
-          child: Row(
-            children: [
-              for (
-                var index = 0;
-                index < _statusFilterTabs.length;
-                index++
-              ) ...[
-                if (index > 0) const SizedBox(width: 6),
-                Expanded(
-                  child: _FilterTab(
-                    tab: _statusFilterTabs[index],
-                    selected: _statusFilterTabs[index].value == statusFilter,
-                    onTap: () =>
-                        onStatusChanged(_statusFilterTabs[index].value),
-                  ),
-                ),
-              ],
-            ],
-          ),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final scale = (constraints.maxWidth / 390)
+                .clamp(0.82, 1.0)
+                .toDouble();
+            final gap = 6.0 * scale;
+            final tabHeight = 44.0 * scale;
+
+            return SizedBox(
+              height: tabHeight,
+              child: Row(
+                children: [
+                  for (
+                    var index = 0;
+                    index < _statusFilterTabs.length;
+                    index++
+                  ) ...[
+                    if (index > 0) SizedBox(width: gap),
+                    Expanded(
+                      child: _FilterTab(
+                        tab: _statusFilterTabs[index],
+                        selected:
+                            _statusFilterTabs[index].value == statusFilter,
+                        scale: scale,
+                        onTap: () =>
+                            onStatusChanged(_statusFilterTabs[index].value),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            );
+          },
         ),
       ],
     );
@@ -640,11 +652,13 @@ class _SearchAndFilterBar extends StatelessWidget {
 class _FilterTab extends StatelessWidget {
   final _StatusFilterInfo tab;
   final bool selected;
+  final double scale;
   final VoidCallback onTap;
 
   const _FilterTab({
     required this.tab,
     required this.selected,
+    required this.scale,
     required this.onTap,
   });
 
@@ -657,7 +671,8 @@ class _FilterTab extends StatelessWidget {
         duration: const Duration(milliseconds: 160),
         curve: Curves.easeOut,
         alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(horizontal: 4),
+        constraints: BoxConstraints(minHeight: 40 * scale),
+        padding: EdgeInsets.symmetric(horizontal: 5 * scale),
         decoration: BoxDecoration(
           color: selected ? AppColors.deliveryGreen : AppColors.surface,
           borderRadius: BorderRadius.circular(999),
@@ -681,9 +696,11 @@ class _FilterTab extends StatelessWidget {
           child: Text(
             tab.label,
             maxLines: 1,
+            softWrap: false,
             style: TextStyle(
               color: selected ? AppColors.surface : AppColors.textSecondary,
-              fontSize: 12,
+              fontSize: 12 * scale,
+              height: 1.05,
               fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
             ),
           ),

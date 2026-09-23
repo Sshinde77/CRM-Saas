@@ -11,6 +11,7 @@ import '../../../providers/api_provider.dart';
 import '../../../routes/app_router.dart';
 import '../../../widgets/delivery/delivery_partner_sidebar.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
+import 'delivery_company_orders_screen.dart';
 
 class DeliveryDashboardScreen extends StatefulWidget {
   const DeliveryDashboardScreen({super.key});
@@ -62,14 +63,27 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
     final attendanceRecords = (results[2] as List<Map<String, dynamic>>)
         .map(_AttendanceRecord.fromJson)
         .toList();
+    final summary = await _loadDashboardSummary(provider);
 
     return _DashboardData(
       userName: currentUser?.name ?? 'Partner',
       profilePhoto: currentUser?.profilePhoto,
+      summary: summary,
       deliveries: deliveries,
       vehicleStock: vehicleStock,
       todayAttendance: _AttendanceRecord.todayFrom(attendanceRecords),
     );
+  }
+
+  Future<_DeliveryDashboardSummary> _loadDashboardSummary(
+    ApiProvider provider,
+  ) async {
+    try {
+      final json = await provider.fetchDeliveryPartnerDashboard();
+      return _DeliveryDashboardSummary.fromJson(json);
+    } catch (_) {
+      return const _DeliveryDashboardSummary(totalCompanyOrders: 0);
+    }
   }
 
   Future<void> _refresh() async {
@@ -910,7 +924,7 @@ class _StatsGrid extends StatelessWidget {
       _StatInfo(
         icon: Icons.fact_check_outlined,
         value: data.assignedOrders,
-        label: 'My Assigned Orders',
+        label: 'My Assigned Deliveries',
         color: AppColors.deliveryKpiYellowIcon,
         background: AppColors.deliveryKpiYellowBg,
       ),
@@ -956,28 +970,61 @@ class _StatsGrid extends StatelessWidget {
       ),
       itemBuilder: (context, index) {
         final card = _StatCard(info: stats[index]);
-        if (index != 1) return card;
-        return Stack(
-          fit: StackFit.expand,
-          children: [
-            card,
-            Material(
-              type: MaterialType.transparency,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(AppSizes.cardRadius),
-                onTap: () => Navigator.of(
-                  context,
-                ).pushNamed(AppRoutes.deliveryDeliveries),
-                child: Semantics(
-                  button: true,
-                  label: 'View my assigned orders',
-                  child: const SizedBox.expand(),
-                ),
+        if (index == 0) {
+          return _StatCardTapTarget(
+            label: 'View total company orders',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const DeliveryCompanyOrdersScreen(),
               ),
             ),
-          ],
-        );
+            child: card,
+          );
+        }
+        if (index == 1) {
+          return _StatCardTapTarget(
+            label: 'View my assigned deliveries',
+            onTap: () =>
+                Navigator.of(context).pushNamed(AppRoutes.deliveryDeliveries),
+            child: card,
+          );
+        }
+        return card;
       },
+    );
+  }
+}
+
+class _StatCardTapTarget extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+  final Widget child;
+
+  const _StatCardTapTarget({
+    required this.label,
+    required this.onTap,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        child,
+        Material(
+          type: MaterialType.transparency,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(AppSizes.cardRadius),
+            onTap: onTap,
+            child: Semantics(
+              button: true,
+              label: label,
+              child: const SizedBox.expand(),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -1894,6 +1941,7 @@ class _ErrorPanel extends StatelessWidget {
 class _DashboardData {
   final String userName;
   final String? profilePhoto;
+  final _DeliveryDashboardSummary summary;
   final List<_DeliveryItem> deliveries;
   final _VehicleStockSession? vehicleStock;
   final _AttendanceRecord? todayAttendance;
@@ -1901,6 +1949,7 @@ class _DashboardData {
   const _DashboardData({
     required this.userName,
     required this.profilePhoto,
+    required this.summary,
     required this.deliveries,
     required this.vehicleStock,
     required this.todayAttendance,
@@ -1925,7 +1974,7 @@ class _DashboardData {
 
   int get deliveriesToday => todaysDeliveries.length;
 
-  int get totalOrdersCompany => deliveries.length;
+  int get totalOrdersCompany => summary.totalCompanyOrders;
 
   int get assignedOrders => deliveries.length;
 
@@ -2045,6 +2094,21 @@ class _DashboardData {
     return vehicleNumber == null || vehicleNumber.isEmpty
         ? 'Vehicle not assigned'
         : vehicleNumber;
+  }
+}
+
+class _DeliveryDashboardSummary {
+  final int totalCompanyOrders;
+
+  const _DeliveryDashboardSummary({required this.totalCompanyOrders});
+
+  factory _DeliveryDashboardSummary.fromJson(Map<String, dynamic> json) {
+    return _DeliveryDashboardSummary(
+      totalCompanyOrders: _readInt(json, const [
+        'total_company_orders',
+        'totalCompanyOrders',
+      ]),
+    );
   }
 }
 
@@ -2331,6 +2395,17 @@ double _readDouble(Map<String, dynamic> json, List<String> keys) {
     final value = json[key];
     if (value is num) return value.toDouble();
     final parsed = double.tryParse(value?.toString() ?? '');
+    if (parsed != null) return parsed;
+  }
+  return 0;
+}
+
+int _readInt(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    final parsed = int.tryParse(value?.toString() ?? '');
     if (parsed != null) return parsed;
   }
   return 0;

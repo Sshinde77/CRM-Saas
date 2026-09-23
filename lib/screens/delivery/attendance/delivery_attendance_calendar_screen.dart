@@ -181,7 +181,10 @@ class _CalendarCard extends StatelessWidget {
                   ],
                 ),
               ),
-              _IconButton(icon: Icons.chevron_right_rounded, onTap: onNextMonth),
+              _IconButton(
+                icon: Icons.chevron_right_rounded,
+                onTap: onNextMonth,
+              ),
             ],
           ),
           const SizedBox(height: 12),

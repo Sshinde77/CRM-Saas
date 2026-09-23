@@ -85,8 +85,7 @@ class _DeliveryAttendanceScreenState extends State<DeliveryAttendanceScreen> {
         child: FutureBuilder<List<DeliveryAttendanceRecord>>(
           future: _future,
           builder: (context, snapshot) {
-            final records =
-                snapshot.data ?? const <DeliveryAttendanceRecord>[];
+            final records = snapshot.data ?? const <DeliveryAttendanceRecord>[];
             final today = DeliveryAttendanceRecord.todayFrom(records);
             final isLoading =
                 snapshot.connectionState == ConnectionState.waiting &&
@@ -458,9 +457,7 @@ class _HistoryCardState extends State<_HistoryCard> {
               message: 'Your attendance history will appear here.',
             )
           else
-            _HistoryTable(
-              records: widget.records.take(5).toList(),
-            ),
+            _HistoryTable(records: widget.records.take(5).toList()),
         ],
       ),
     );

@@ -58,54 +58,71 @@ class DeliveryBottomNavigation extends StatelessWidget {
         );
       },
       pageBuilder: (menuContext, animation, secondaryAnimation) => SafeArea(
-        child: Align(
-          alignment: Alignment.bottomCenter,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 112),
-            child: Material(
-              type: MaterialType.transparency,
-              child: SizedBox(
-                width: 480,
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(8),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: _OrderActionTile(
-                          icon: Icons.account_balance_wallet_outlined,
-                          color: AppColors.deliveryKpiMintIcon,
-                          background: AppColors.deliveryKpiMintBg,
-                          label: 'Create Collection',
-                          onTap: () => Navigator.pop(menuContext, 'collection'),
-                        ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final width = constraints.maxWidth;
+            final scale = (width / 390).clamp(0.82, 1.0).toDouble();
+
+            return Align(
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  16 * scale,
+                  16 * scale,
+                  16 * scale,
+                  96 * scale,
+                ),
+                child: Material(
+                  type: MaterialType.transparency,
+                  child: SizedBox(
+                    width: 420 * scale,
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.all(6 * scale),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: _OrderActionTile(
+                              icon: Icons.account_balance_wallet_outlined,
+                              color: AppColors.deliveryKpiMintIcon,
+                              background: AppColors.deliveryKpiMintBg,
+                              label: 'Create Collection',
+                              scale: scale,
+                              onTap: () =>
+                                  Navigator.pop(menuContext, 'collection'),
+                            ),
+                          ),
+                          SizedBox(width: 6 * scale),
+                          Expanded(
+                            child: _OrderActionTile(
+                              icon: Icons.shopping_bag_outlined,
+                              color: AppColors.deliveryKpiYellowIcon,
+                              background: AppColors.deliveryKpiYellowBg,
+                              label: 'Create Orders',
+                              scale: scale,
+                              onTap: () => Navigator.pop(menuContext, 'create'),
+                            ),
+                          ),
+                          SizedBox(width: 6 * scale),
+                          Expanded(
+                            child: _OrderActionTile(
+                              icon: Icons.person_outline_rounded,
+                              color: AppColors.deliveryKpiAquaIcon,
+                              background: AppColors.deliveryKpiAquaBg,
+                              label: 'Create Customer',
+                              scale: scale,
+                              onTap: () =>
+                                  Navigator.pop(menuContext, 'customer'),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _OrderActionTile(
-                          icon: Icons.shopping_bag_outlined,
-                          color: AppColors.deliveryKpiYellowIcon,
-                          background: AppColors.deliveryKpiYellowBg,
-                          label: 'Create Orders',
-                          onTap: () => Navigator.pop(menuContext, 'create'),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _OrderActionTile(
-                          icon: Icons.person_outline_rounded,
-                          color: AppColors.deliveryKpiAquaIcon,
-                          background: AppColors.deliveryKpiAquaBg,
-                          label: 'Create Customer',
-                          onTap: () => Navigator.pop(menuContext, 'customer'),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ),
+            );
+          },
         ),
       ),
     );
@@ -139,6 +156,9 @@ class DeliveryBottomNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textScaler = MediaQuery.textScalerOf(
+      context,
+    ).clamp(minScaleFactor: 0.9, maxScaleFactor: 1.2);
     const items = [
       _BottomNavInfo(Icons.home_rounded, 'Dashboard'),
       _BottomNavInfo(Icons.assignment_outlined, 'Orders'),
@@ -147,88 +167,147 @@ class DeliveryBottomNavigation extends StatelessWidget {
       _BottomNavInfo(Icons.account_balance_wallet_outlined, 'Collections'),
     ];
 
-    return SafeArea(
-      top: false,
-      child: SizedBox(
-        height: 100,
-        child: Stack(
-          children: [
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: Container(
-                height: 76,
-                margin: const EdgeInsets.fromLTRB(0, 6, 0, 0),
-                padding: const EdgeInsets.all(7),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(0),
-                  gradient: const LinearGradient(
-                    colors: [
-                      AppColors.deliveryDashboardNavStart,
-                      AppColors.deliveryDashboardNavEnd,
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.deliveryHeroShadow.withValues(
-                        alpha: 0.22,
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(textScaler: textScaler),
+      child: SafeArea(
+        top: false,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final width = constraints.maxWidth;
+            final scale = (width / 390).clamp(0.82, 1.0).toDouble();
+            final navHeight = 72.0 * scale;
+            final fabOuterSize = 68.0 * scale;
+            final fabIconSize = 30.0 * scale;
+            final centerGap = fabOuterSize + (14.0 * scale);
+
+            return SizedBox(
+              height: navHeight + (22.0 * scale),
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: Container(
+                      height: navHeight,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 6 * scale,
+                        vertical: 7 * scale,
                       ),
-                      blurRadius: 16,
-                      offset: const Offset(0, 8),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(0),
+                        gradient: const LinearGradient(
+                          colors: [
+                            AppColors.deliveryDashboardNavStart,
+                            AppColors.deliveryDashboardNavEnd,
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.deliveryHeroShadow.withValues(
+                              alpha: 0.22,
+                            ),
+                            blurRadius: 16,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: _BottomNavItem(
+                                    info: items[0],
+                                    selected: currentIndex == 0,
+                                    scale: scale,
+                                    onTap: () => _navigate(context, 0),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: _BottomNavItem(
+                                    info: items[1],
+                                    selected: currentIndex == 1,
+                                    scale: scale,
+                                    onTap: () => _navigate(context, 1),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(width: centerGap),
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: _BottomNavItem(
+                                    info: items[3],
+                                    selected: currentIndex == 3,
+                                    scale: scale,
+                                    onTap: () => _navigate(context, 3),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: _BottomNavItem(
+                                    info: items[4],
+                                    selected: currentIndex == 4,
+                                    scale: scale,
+                                    onTap: () => _navigate(context, 4),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    for (var index = 0; index < items.length; index++)
-                      Expanded(
-                        child: index == 2
-                            ? const SizedBox.shrink()
-                            : _BottomNavItem(
-                                info: items[index],
-                                selected: currentIndex == index,
-                                onTap: () => _navigate(context, index),
+                  ),
+                  Align(
+                    alignment: Alignment.topCenter,
+                    child: SizedBox(
+                      width: fabOuterSize,
+                      height: fabOuterSize,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: AppColors.deliveryBackground,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.deliveryHeroShadow.withValues(
+                                alpha: 0.2,
                               ),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.all(4 * scale),
+                          child: IconButton.filled(
+                            onPressed: () => _navigate(context, 2),
+                            tooltip: 'Create actions',
+                            style: IconButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: AppColors.surface,
+                              minimumSize: Size.square(44 * scale),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              padding: EdgeInsets.zero,
+                              shape: const CircleBorder(),
+                            ),
+                            icon: Icon(Icons.add_rounded, size: fabIconSize),
+                          ),
+                        ),
                       ),
-                  ],
-                ),
-              ),
-            ),
-            Align(
-              alignment: Alignment.topCenter,
-              child: Container(
-                width: 72,
-                height: 72,
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: AppColors.deliveryBackground,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.deliveryHeroShadow.withValues(
-                        alpha: 0.2,
-                      ),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
                     ),
-                  ],
-                ),
-                child: IconButton.filled(
-                  onPressed: () => _navigate(context, 2),
-                  tooltip: 'Create actions',
-                  style: IconButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: AppColors.surface,
-                    shape: const CircleBorder(),
                   ),
-                  icon: const Icon(Icons.add_rounded, size: 36),
-                ),
+                ],
               ),
-            ),
-          ],
+            );
+          },
         ),
       ),
     );
@@ -240,6 +319,7 @@ class _OrderActionTile extends StatelessWidget {
   final Color color;
   final Color background;
   final String label;
+  final double scale;
   final VoidCallback onTap;
 
   const _OrderActionTile({
@@ -247,29 +327,36 @@ class _OrderActionTile extends StatelessWidget {
     required this.color,
     required this.background,
     required this.label,
+    required this.scale,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final tileSize = 54.0 * scale;
+    final badgeSize = 16.0 * scale;
+
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(14 * scale),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
+        padding: EdgeInsets.symmetric(
+          horizontal: 3 * scale,
+          vertical: 7 * scale,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 64,
-              height: 64,
+              width: tileSize,
+              height: tileSize,
               decoration: BoxDecoration(
                 color: background,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(16 * scale),
                 boxShadow: [
                   BoxShadow(
                     color: color.withValues(alpha: 0.18),
-                    blurRadius: 12,
+                    blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
                 ],
@@ -277,29 +364,29 @@ class _OrderActionTile extends StatelessWidget {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  Icon(icon, color: color, size: 29),
+                  Icon(icon, color: color, size: 24 * scale),
                   Positioned(
-                    right: 6,
-                    bottom: 6,
+                    right: 5 * scale,
+                    bottom: 5 * scale,
                     child: Container(
-                      width: 18,
-                      height: 18,
+                      width: badgeSize,
+                      height: badgeSize,
                       decoration: BoxDecoration(
                         color: color,
                         shape: BoxShape.circle,
                         border: Border.all(color: background, width: 1.5),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.add_rounded,
                         color: AppColors.surface,
-                        size: 13,
+                        size: 11 * scale,
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 8 * scale),
             FittedBox(
               fit: BoxFit.scaleDown,
               child: Text(
@@ -307,11 +394,12 @@ class _OrderActionTile extends StatelessWidget {
                 maxLines: 1,
                 softWrap: false,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 12,
+                style: TextStyle(
+                  fontSize: 11 * scale,
+                  height: 1.05,
                   fontWeight: FontWeight.w700,
                   color: AppColors.surface,
-                  shadows: [Shadow(color: Colors.black54, blurRadius: 4)],
+                  shadows: const [Shadow(color: Colors.black54, blurRadius: 4)],
                 ),
               ),
             ),
@@ -325,11 +413,13 @@ class _OrderActionTile extends StatelessWidget {
 class _BottomNavItem extends StatelessWidget {
   final _BottomNavInfo info;
   final bool selected;
+  final double scale;
   final VoidCallback onTap;
 
   const _BottomNavItem({
     required this.info,
     required this.selected,
+    required this.scale,
     required this.onTap,
   });
 
@@ -342,12 +432,17 @@ class _BottomNavItem extends StatelessWidget {
         duration: const Duration(milliseconds: 180),
         curve: Curves.easeOut,
         height: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 7),
+        constraints: BoxConstraints(minHeight: 48 * scale),
+        margin: EdgeInsets.symmetric(horizontal: 2 * scale),
+        padding: EdgeInsets.symmetric(
+          horizontal: 3 * scale,
+          vertical: 6 * scale,
+        ),
         decoration: BoxDecoration(
           color: selected
               ? AppColors.deliveryDashboardNavActive
               : Colors.transparent,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(13 * scale),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -355,19 +450,21 @@ class _BottomNavItem extends StatelessWidget {
             Icon(
               info.icon,
               color: selected ? AppColors.primary : AppColors.surface,
-              size: selected ? 25 : 23,
+              size: (selected ? 23 : 21) * scale,
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: 3 * scale),
             FittedBox(
               fit: BoxFit.scaleDown,
               child: Text(
                 info.label,
                 maxLines: 1,
+                softWrap: false,
                 style: TextStyle(
                   color: selected
                       ? AppColors.primary
                       : AppColors.surface.withValues(alpha: 0.88),
-                  fontSize: 14,
+                  fontSize: 11.5 * scale,
+                  height: 1.05,
                   fontWeight: selected ? FontWeight.w900 : FontWeight.w600,
                 ),
               ),
