@@ -370,15 +370,15 @@ class _DashboardIdentityHeader extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: AppSpacing.xs),
-                        const Text(
+                        Text(
                           'Delivery Person',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            color: AppColors.surface,
-                            fontSize: 14,
+                            color: AppColors.surface.withValues(alpha: 0.78),
+                            fontSize: 12,
                             height: 1.2,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w400,
                           ),
                         ),
                       ],
@@ -448,8 +448,8 @@ class _DatePill extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: compact ? 8 : 12,
-        vertical: compact ? 7 : 9,
+        horizontal: compact ? 7 : 9,
+        vertical: compact ? 5 : 6,
       ),
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -469,15 +469,15 @@ class _DatePill extends StatelessWidget {
             'Today ${_formatDateLong(DateTime.now())}',
             style: const TextStyle(
               color: AppColors.deliveryDashboardHeaderEnd,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(width: AppSpacing.xs),
+          const SizedBox(width: 3),
           const Icon(
             Icons.keyboard_arrow_down_rounded,
             color: AppColors.deliveryDashboardHeaderEnd,
-            size: AppSizes.iconSmall,
+            size: 16,
           ),
         ],
       ),
@@ -989,6 +989,30 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final label = Text(
+      info.label,
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
+      style: const TextStyle(
+        fontSize: 11,
+        height: 1.1,
+        fontWeight: FontWeight.w400,
+        color: AppColors.deliveryDashboardText,
+      ),
+    );
+    final value = Text(
+      info.value.toString().padLeft(
+        info.label == 'Canceled Orders' ? 2 : 1,
+        '0',
+      ),
+      style: const TextStyle(
+        fontSize: 18,
+        height: 1,
+        fontWeight: FontWeight.w900,
+        color: AppColors.deliveryDashboardText,
+      ),
+    );
+
     return _SurfaceCard(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       child: Row(
@@ -1008,30 +1032,9 @@ class _StatCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  info.label,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    height: 1.14,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.deliveryDashboardText,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  info.value.toString().padLeft(
-                    info.label == 'Canceled Orders' ? 2 : 1,
-                    '0',
-                  ),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    height: 1,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.deliveryDashboardText,
-                  ),
-                ),
+                value,
+                const SizedBox(height: 3),
+                label,
               ],
             ),
           ),
@@ -1111,26 +1114,26 @@ class _CollectionsCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Total Amount to Collect',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textMuted,
-                        ),
-                      ),
-                      const SizedBox(height: 3),
                       Text(
                         data.formattedTotalToCollect,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          fontSize: 16,
+                          fontSize: 18,
                           height: 1.1,
                           fontWeight: FontWeight.w900,
                           color: AppColors.deliveryInk,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      const Text(
+                        'Total Amount to Collect',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.textMuted,
                         ),
                       ),
                     ],
@@ -1188,25 +1191,25 @@ class _CollectionMetricTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  info.label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textMuted,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
                   info.value,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 14,
+                    fontSize: 16,
                     height: 1.1,
                     fontWeight: FontWeight.w900,
                     color: AppColors.deliveryInk,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  info.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.textMuted,
                   ),
                 ),
               ],
@@ -1586,24 +1589,6 @@ class _DeliveryPreviewTile extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text(
-                delivery.orderNumber,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.deliveryInk,
-                ),
-              ),
-              const Spacer(),
-              const Icon(
-                Icons.visibility_outlined,
-                size: 18,
-                color: AppColors.deliveryBlue,
-              ),
-            ],
-          ),
-          Row(
-            children: [
               Expanded(
                 child: Text(
                   delivery.customerName,
@@ -1617,11 +1602,33 @@ class _DeliveryPreviewTile extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
+              const Icon(
+                Icons.visibility_outlined,
+                size: 18,
+                color: AppColors.deliveryBlue,
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  delivery.orderNumber,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.deliveryInk,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
               Text(
                 delivery.formattedAmount,
                 style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
                   color: AppColors.deliveryInk,
                 ),
               ),
@@ -1632,9 +1639,9 @@ class _DeliveryPreviewTile extends StatelessWidget {
               Text(
                 delivery.formattedDate,
                 style: const TextStyle(
-                  fontSize: 14,
+                  fontSize: 11,
                   color: AppColors.textMuted,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w400,
                 ),
               ),
               const Spacer(),
@@ -1647,8 +1654,8 @@ class _DeliveryPreviewTile extends StatelessWidget {
                 child: Text(
                   delivery.statusLabel,
                   style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w400,
                     color: color,
                   ),
                 ),

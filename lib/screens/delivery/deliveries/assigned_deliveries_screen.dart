@@ -611,21 +611,25 @@ class _SearchAndFilterBar extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         SizedBox(
-          height: 38,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            itemCount: _statusFilterTabs.length,
-            separatorBuilder: (_, _) => const SizedBox(width: 8),
-            itemBuilder: (context, index) {
-              final tab = _statusFilterTabs[index];
-              final selected = tab.value == statusFilter;
-              return _FilterTab(
-                tab: tab,
-                selected: selected,
-                onTap: () => onStatusChanged(tab.value),
-              );
-            },
+          height: 44,
+          child: Row(
+            children: [
+              for (
+                var index = 0;
+                index < _statusFilterTabs.length;
+                index++
+              ) ...[
+                if (index > 0) const SizedBox(width: 6),
+                Expanded(
+                  child: _FilterTab(
+                    tab: _statusFilterTabs[index],
+                    selected: _statusFilterTabs[index].value == statusFilter,
+                    onTap: () =>
+                        onStatusChanged(_statusFilterTabs[index].value),
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
       ],
@@ -653,7 +657,7 @@ class _FilterTab extends StatelessWidget {
         duration: const Duration(milliseconds: 160),
         curve: Curves.easeOut,
         alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(horizontal: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 4),
         decoration: BoxDecoration(
           color: selected ? AppColors.deliveryGreen : AppColors.surface,
           borderRadius: BorderRadius.circular(999),
@@ -672,12 +676,16 @@ class _FilterTab extends StatelessWidget {
                 ]
               : null,
         ),
-        child: Text(
-          tab.label,
-          style: TextStyle(
-            color: selected ? AppColors.surface : AppColors.textSecondary,
-            fontSize: 14,
-            fontWeight: FontWeight.w800,
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            tab.label,
+            maxLines: 1,
+            style: TextStyle(
+              color: selected ? AppColors.surface : AppColors.textSecondary,
+              fontSize: 12,
+              fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+            ),
           ),
         ),
       ),
@@ -811,7 +819,9 @@ class _DeliveryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final statusTone = _StatusTone.forStatus(delivery.status);
+    final statusTone = _StatusTone.forStatus(
+      delivery.canLoadDelivery ? 'ready' : delivery.status,
+    );
     final compact = MediaQuery.sizeOf(context).width < 360;
     final action = showActions
         ? _DeliveryCardAction.forDelivery(
@@ -826,140 +836,202 @@ class _DeliveryCard extends StatelessWidget {
 
     return InkWell(
       onTap: onViewDetails,
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(12),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        padding: EdgeInsets.fromLTRB(
-          compact ? 12 : 16,
-          compact ? 12 : 14,
-          compact ? 10 : 12,
-          compact ? 12 : 14,
-        ),
-        decoration: _surfaceDecoration(radius: 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        clipBehavior: Clip.antiAlias,
+        decoration: _surfaceDecoration(radius: 12),
+        child: Stack(
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        delivery.orderNumber,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: AppColors.deliveryInk,
-                          fontSize: compact ? 14 : 15,
-                          height: 1.15,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        delivery.formattedDate,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: AppColors.textMuted,
-                          fontSize: compact ? 10.5 : 12,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 10),
-                _StatusPill(
-                  delivery: delivery,
-                  tone: statusTone,
-                  compact: compact,
-                ),
-              ],
+            Positioned(
+              left: 0,
+              top: 0,
+              bottom: 0,
+              child: ColoredBox(
+                color: statusTone.foreground,
+                child: const SizedBox(width: 3),
+              ),
             ),
-            SizedBox(height: compact ? 14 : 18),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Expanded(
-                  flex: compact ? 10 : 11,
-                  child: Column(
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                compact ? 10 : 12,
+                10,
+                compact ? 10 : 12,
+                9,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _DeliveryCardLabel('Customer', compact: compact),
-                      const SizedBox(height: 4),
-                      Text(
-                        delivery.customerName,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: AppColors.deliveryInk,
-                          fontSize: compact ? 12.5 : 14,
-                          height: 1.12,
-                          fontWeight: FontWeight.w800,
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: statusTone.background,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          delivery.canLoadDelivery
+                              ? Icons.local_shipping_outlined
+                              : Icons.person_outline_rounded,
+                          color: statusTone.foreground,
+                          size: 20,
                         ),
                       ),
-                      SizedBox(height: compact ? 10 : 12),
-                      Text(
-                        delivery.formattedAmountDue,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: AppColors.deliveryGreen,
-                          fontSize: compact ? 15 : 17,
-                          height: 1,
-                          fontWeight: FontWeight.w900,
+                      const SizedBox(width: 9),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    delivery.orderNumber,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      color: AppColors.deliveryInk,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 5),
+                                _StatusPill(
+                                  delivery: delivery,
+                                  tone: statusTone,
+                                  compact: compact,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 3),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.calendar_today_outlined,
+                                  color: AppColors.textMuted,
+                                  size: 11,
+                                ),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Text(
+                                    delivery.formattedDate,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      color: AppColors.textMuted,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 7),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      _DeliveryCardLabel(
+                                        'Customer',
+                                        compact: compact,
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        delivery.customerName,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          color: AppColors.deliveryInk,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Container(
+                                  width: 1,
+                                  height: 25,
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: 9,
+                                  ),
+                                  color: const Color(0xFFE2E7F0),
+                                ),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      _DeliveryCardLabel(
+                                        'Payment',
+                                        compact: compact,
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        delivery.paymentLabel,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          color: AppColors.deliveryInk,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const Icon(
+                                  Icons.chevron_right_rounded,
+                                  color: AppColors.deliveryInk,
+                                  size: 17,
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
-                ),
-                SizedBox(width: compact ? 6 : 10),
-                Expanded(
-                  flex: compact ? 7 : 8,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  const SizedBox(height: 8),
+                  Row(
                     children: [
-                      _DeliveryCardLabel('Payment', compact: compact),
-                      const SizedBox(height: 4),
-                      Text(
-                        delivery.paymentLabel,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: AppColors.deliveryInk,
-                          fontSize: compact ? 12.5 : 14,
-                          height: 1.12,
-                          fontWeight: FontWeight.w800,
+                      Expanded(
+                        child: Text(
+                          delivery.formattedAmountDue,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: AppColors.deliveryGreen,
+                            fontSize: 15,
+                            height: 1,
+                            fontWeight: FontWeight.w900,
+                          ),
                         ),
                       ),
+                      if (action != null) const SizedBox(width: 8),
+                      if (action != null)
+                        _DeliveryCardActions(
+                          primaryAction: action,
+                          busy: isBusy,
+                          compact: compact,
+                          onCallCustomer: delivery.canContactCustomer
+                              ? onCallCustomer
+                              : null,
+                          onNavigateCustomer: delivery.canContactCustomer
+                              ? onNavigateCustomer
+                              : null,
+                        ),
                     ],
-                  ),
-                ),
-                if (action != null) ...[
-                  const SizedBox(width: 8),
-                  _DeliveryCardActions(
-                    primaryAction: action,
-                    busy: isBusy,
-                    compact: compact,
-                    onCallCustomer: delivery.canContactCustomer
-                        ? onCallCustomer
-                        : null,
-                    onNavigateCustomer: delivery.canContactCustomer
-                        ? onNavigateCustomer
-                        : null,
-                  ),
-                ] else ...[
-                  const SizedBox(width: 6),
-                  const Icon(
-                    Icons.chevron_right_rounded,
-                    color: AppColors.deliveryInk,
-                    size: 20,
                   ),
                 ],
-              ],
+              ),
             ),
           ],
         ),
@@ -1014,17 +1086,12 @@ class _DeliveryCardActions extends StatelessWidget {
       );
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
+    return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Wrap(
-          alignment: WrapAlignment.end,
-          spacing: compact ? 5 : 6,
-          runSpacing: compact ? 5 : 6,
-          children: iconActions,
+        ...iconActions.expand(
+          (button) => [button, SizedBox(width: compact ? 5 : 6)],
         ),
-        SizedBox(height: compact ? 6 : 8),
         _DeliveryActionButton(
           action: primaryAction,
           busy: busy,
@@ -1054,19 +1121,22 @@ class _DeliveryIconActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = compact ? 32.0 : 34.0;
+    final size = compact ? 30.0 : 32.0;
     return Tooltip(
       message: tooltip,
       child: SizedBox.square(
         dimension: size,
         child: Material(
           color: background,
-          borderRadius: BorderRadius.circular(10),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+            side: BorderSide(color: foreground.withValues(alpha: 0.24)),
+          ),
           child: InkWell(
             onTap: onPressed,
             borderRadius: BorderRadius.circular(10),
             child: Center(
-              child: Icon(icon, color: foreground, size: compact ? 17 : 18),
+              child: Icon(icon, color: foreground, size: compact ? 19 : 20),
             ),
           ),
         ),
@@ -1424,6 +1494,8 @@ class _StatusPill extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
+          Icon(tone.icon, color: tone.foreground, size: compact ? 10 : 11),
+          const SizedBox(width: 3),
           Text(
             delivery.statusLabel,
             style: TextStyle(

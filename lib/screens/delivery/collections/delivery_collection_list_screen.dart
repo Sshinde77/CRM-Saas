@@ -288,26 +288,26 @@ class _CollectionsCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Total Amount to Collect',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textMuted,
-                        ),
-                      ),
-                      const SizedBox(height: 3),
                       Text(
                         data.formattedTotalToCollect,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          fontSize: 16,
+                          fontSize: 18,
                           height: 1.1,
                           fontWeight: FontWeight.w900,
                           color: AppColors.deliveryInk,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      const Text(
+                        'Total Amount to Collect',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.textMuted,
                         ),
                       ),
                     ],
@@ -365,25 +365,25 @@ class _CollectionMetricTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  info.label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textMuted,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
                   info.value,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 14,
+                    fontSize: 16,
                     height: 1.1,
                     fontWeight: FontWeight.w900,
                     color: AppColors.deliveryInk,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  info.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.textMuted,
                   ),
                 ),
               ],
@@ -402,85 +402,155 @@ class _CollectionListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _SurfaceCard(
-      padding: const EdgeInsets.all(12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _MiniIcon(
-            icon: delivery.amountDue > 0
-                ? Icons.pending_actions_outlined
-                : Icons.check_circle_outline_rounded,
-            color: delivery.amountDue > 0
-                ? AppColors.deliveryRed
-                : AppColors.deliveryGreen,
-            background: delivery.amountDue > 0
-                ? AppColors.deliveryRedSoft
-                : AppColors.deliveryGreenSoft,
+    final hasDue = delivery.amountDue > 0;
+    final accent = hasDue ? AppColors.deliveryRed : AppColors.deliveryGreen;
+    final statusColor = switch (delivery.status) {
+      'accepted' || 'delivered' => AppColors.deliveryGreen,
+      'failed' => AppColors.deliveryRed,
+      _ => AppColors.deliveryOrange,
+    };
+
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppSizes.cardRadius),
+        border: Border.all(color: AppColors.deliverySurfaceBorder),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.secondary.withValues(alpha: 0.035),
+            blurRadius: 14,
+            offset: const Offset(0, 8),
           ),
-          const SizedBox(width: 12),
-          Expanded(
+        ],
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            left: 0,
+            top: 0,
+            bottom: 0,
+            child: ColoredBox(color: accent, child: const SizedBox(width: 3)),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: hasDue
+                            ? AppColors.deliveryRedSoft
+                            : AppColors.deliveryGreenSoft,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        hasDue
+                            ? Icons.pending_actions_outlined
+                            : Icons.check_circle_outline_rounded,
+                        color: accent,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 9),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  delivery.orderNumber,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.deliveryInk,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 5),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 7,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: statusColor.withValues(alpha: 0.10),
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                                child: Text(
+                                  delivery.statusLabel,
+                                  style: TextStyle(
+                                    color: statusColor,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 9),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _CollectionCardDetail(
+                                  label: 'Customer',
+                                  value: delivery.customerName,
+                                ),
+                              ),
+                              Container(
+                                width: 1,
+                                height: 25,
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 9,
+                                ),
+                                color: AppColors.deliverySurfaceBorder,
+                              ),
+                              Expanded(
+                                child: _CollectionCardDetail(
+                                  label: 'Payment',
+                                  value: delivery.paymentModeLabel,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 9),
+                Row(
                   children: [
                     Expanded(
                       child: Text(
-                        delivery.customerName,
+                        delivery.formattedDue,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.deliveryInk,
+                        style: TextStyle(
+                          color: accent,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w900,
                         ),
                       ),
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      delivery.formattedDue,
+                      'Collected ${delivery.formattedCollected}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w900,
-                        color: delivery.amountDue > 0
-                            ? AppColors.deliveryRed
-                            : AppColors.deliveryGreen,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  '${delivery.orderNumber} â€¢ ${delivery.statusLabel}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textMuted,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _SmallAmountPill(
-                        label: 'Collected',
-                        value: delivery.formattedCollected,
-                        color: AppColors.deliveryGreen,
-                        background: AppColors.deliveryGreenSoft,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: _SmallAmountPill(
-                        label: 'Mode',
-                        value: delivery.paymentModeLabel,
-                        color: AppColors.deliveryBlue,
-                        background: AppColors.deliveryBlueSoft,
+                      style: const TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -494,53 +564,39 @@ class _CollectionListTile extends StatelessWidget {
   }
 }
 
-class _SmallAmountPill extends StatelessWidget {
-  const _SmallAmountPill({
-    required this.label,
-    required this.value,
-    required this.color,
-    required this.background,
-  });
+class _CollectionCardDetail extends StatelessWidget {
+  const _CollectionCardDetail({required this.label, required this.value});
 
   final String label;
   final String value;
-  final Color color;
-  final Color background;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textMuted,
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w400,
+            color: AppColors.textMuted,
           ),
-          const SizedBox(height: 2),
-          Text(
-            value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w900,
-              color: color,
-            ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            color: AppColors.deliveryInk,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

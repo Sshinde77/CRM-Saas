@@ -73,7 +73,9 @@ class DeliveryBottomNavigation extends StatelessWidget {
                     children: [
                       Expanded(
                         child: _OrderActionTile(
-                          icon: Icons.add_card_rounded,
+                          icon: Icons.account_balance_wallet_outlined,
+                          color: AppColors.deliveryKpiMintIcon,
+                          background: AppColors.deliveryKpiMintBg,
                           label: 'Create Collection',
                           onTap: () => Navigator.pop(menuContext, 'collection'),
                         ),
@@ -81,7 +83,9 @@ class DeliveryBottomNavigation extends StatelessWidget {
                       const SizedBox(width: 8),
                       Expanded(
                         child: _OrderActionTile(
-                          icon: Icons.add_shopping_cart_rounded,
+                          icon: Icons.shopping_bag_outlined,
+                          color: AppColors.deliveryKpiYellowIcon,
+                          background: AppColors.deliveryKpiYellowBg,
                           label: 'Create Orders',
                           onTap: () => Navigator.pop(menuContext, 'create'),
                         ),
@@ -89,7 +93,9 @@ class DeliveryBottomNavigation extends StatelessWidget {
                       const SizedBox(width: 8),
                       Expanded(
                         child: _OrderActionTile(
-                          icon: Icons.person_add_alt_1_rounded,
+                          icon: Icons.person_outline_rounded,
+                          color: AppColors.deliveryKpiAquaIcon,
+                          background: AppColors.deliveryKpiAquaBg,
                           label: 'Create Customer',
                           onTap: () => Navigator.pop(menuContext, 'customer'),
                         ),
@@ -231,11 +237,15 @@ class DeliveryBottomNavigation extends StatelessWidget {
 
 class _OrderActionTile extends StatelessWidget {
   final IconData icon;
+  final Color color;
+  final Color background;
   final String label;
   final VoidCallback onTap;
 
   const _OrderActionTile({
     required this.icon,
+    required this.color,
+    required this.background,
     required this.label,
     required this.onTap,
   });
@@ -246,30 +256,63 @@ class _OrderActionTile extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Padding(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: const EdgeInsets.all(16),
+              width: 64,
+              height: 64,
               decoration: BoxDecoration(
-                color: Color.alphaBlend(
-                  AppColors.deliveryGreen.withValues(alpha: 0.10),
-                  AppColors.surface,
-                ),
-                borderRadius: BorderRadius.circular(18),
+                color: background,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.18),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-              child: Icon(icon, color: AppColors.deliveryGreen, size: 30),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Icon(icon, color: color, size: 29),
+                  Positioned(
+                    right: 6,
+                    bottom: 6,
+                    child: Container(
+                      width: 18,
+                      height: 18,
+                      decoration: BoxDecoration(
+                        color: color,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: background, width: 1.5),
+                      ),
+                      child: const Icon(
+                        Icons.add_rounded,
+                        color: AppColors.surface,
+                        size: 13,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 12),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: AppColors.surface,
-                shadows: [Shadow(color: Colors.black54, blurRadius: 4)],
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                label,
+                maxLines: 1,
+                softWrap: false,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.surface,
+                  shadows: [Shadow(color: Colors.black54, blurRadius: 4)],
+                ),
               ),
             ),
           ],
