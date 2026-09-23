@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../constants/app_colors.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
+import '../../../widgets/app_calendar_date_picker.dart';
 
 // Place this file at: lib/screens/purchases/purchases_screen.dart
 
@@ -563,11 +564,12 @@ class _PurchaseInvoiceFormDialogState
       _itemRows.fold(0, (sum, row) => sum + row.lineTotal);
 
   Future<void> _pickDate() async {
-    final picked = await showDatePicker(
+    final picked = await showAppCalendarDatePicker(
       context: context,
       initialDate: _date,
       firstDate: DateTime(2020),
       lastDate: DateTime(2100),
+      title: 'Purchase Date',
     );
     if (picked != null) setState(() => _date = picked);
   }

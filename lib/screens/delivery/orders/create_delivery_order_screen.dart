@@ -9,6 +9,7 @@ import '../../../models/app_user.dart';
 import '../../../models/auth_models.dart';
 import '../../../providers/api_provider.dart';
 import '../../../services/api_service.dart';
+import '../../../widgets/app_calendar_date_picker.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
 
 class CreateDeliveryOrderScreen extends StatefulWidget {
@@ -303,17 +304,12 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
       '${date.day.toString().padLeft(2, '0')} ${const ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][date.month - 1]} ${date.year}';
 
   Future<void> _pickDate(bool delivery) async {
-    final date = await showDatePicker(
+    final date = await showAppCalendarDatePicker(
       context: context,
       initialDate: delivery ? _deliveryDate : _orderDate,
       firstDate: delivery ? _orderDate : DateTime(2020),
       lastDate: DateTime(DateTime.now().year + 10),
-      builder: (context, child) => Theme(
-        data: Theme.of(
-          context,
-        ).copyWith(colorScheme: ColorScheme.fromSeed(seedColor: _green)),
-        child: child!,
-      ),
+      title: delivery ? 'Delivery Date' : 'Order Date',
     );
     if (date == null || !mounted) return;
     setState(() {

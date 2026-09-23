@@ -10,6 +10,7 @@ import '../../models/lead_detail_model.dart';
 import '../../providers/api_provider.dart';
 import '../../widgets/admin/admin_top_bar.dart';
 import '../../widgets/admin/app_drawer.dart';
+import '../../widgets/app_calendar_date_picker.dart';
 import '../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../widgets/sales_manager/sales_manager_top_bar.dart';
 import '../admin/customers/customers_screen.dart';
@@ -2085,11 +2086,12 @@ class _FollowUpSheetState extends State<_FollowUpSheet> {
   }
 
   Future<void> _pickDate() async {
-    final picked = await showDatePicker(
+    final picked = await showAppCalendarDatePicker(
       context: context,
       initialDate: _dueDate,
       firstDate: DateTime(2020),
       lastDate: DateTime(2100),
+      title: 'Follow-up Date',
     );
     if (picked != null) setState(() => _dueDate = picked);
   }
@@ -2267,11 +2269,12 @@ class _VisitSheetState extends State<_VisitSheet> {
   }
 
   Future<void> _pickDate() async {
-    final picked = await showDatePicker(
+    final picked = await showAppCalendarDatePicker(
       context: context,
       initialDate: _dueDate,
       firstDate: DateTime(2020),
       lastDate: DateTime(2100),
+      title: 'Visit Date',
     );
     if (picked != null) setState(() => _dueDate = picked);
   }
@@ -2569,11 +2572,12 @@ class _ConvertLeadSheetState extends State<_ConvertLeadSheet> {
   }
 
   Future<void> _pickCustomerSince() async {
-    final picked = await showDatePicker(
+    final picked = await showAppCalendarDatePicker(
       context: context,
       initialDate: _customerSince,
       firstDate: DateTime(2020),
       lastDate: DateTime(2100),
+      title: 'Customer Since',
     );
     if (picked != null) setState(() => _customerSince = picked);
   }

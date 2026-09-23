@@ -6,6 +6,7 @@ import '../../../models/customer_model.dart';
 import '../../../providers/api_provider.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
+import '../../../widgets/app_calendar_date_picker.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
 import '../../sales_manager/attendance/sales_manager_attendance_screen.dart';
@@ -887,11 +888,12 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
   }
 
   Future<void> _pickDate({required bool isValidUntil}) async {
-    final picked = await showDatePicker(
+    final picked = await showAppCalendarDatePicker(
       context: context,
       initialDate: isValidUntil ? _validUntil : _quotationDate,
       firstDate: DateTime(2020),
       lastDate: DateTime(2100),
+      title: isValidUntil ? 'Valid Until' : 'Quotation Date',
     );
     if (picked == null) return;
     setState(() {

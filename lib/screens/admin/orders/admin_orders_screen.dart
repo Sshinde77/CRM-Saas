@@ -4,6 +4,7 @@ import '../../../constants/app_colors.dart';
 import '../../../providers/api_provider.dart';
 import '../../../widgets/admin/app_drawer.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
+import '../../../widgets/app_calendar_date_picker.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
@@ -378,97 +379,12 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
         ? (_fromDate ?? DateTime.now())
         : (_toDate ?? _fromDate ?? DateTime.now());
 
-    final picked = await showDialog<DateTime>(
+    final picked = await showAppCalendarDatePicker(
       context: context,
-      barrierColor: Colors.black26,
-      builder: (dialogContext) {
-        DateTime selectedDate = initialDate;
-
-        return Dialog(
-          insetPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 24,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child: StatefulBuilder(
-            builder: (context, setLocalState) {
-              return Theme(
-                data: Theme.of(context).copyWith(
-                  colorScheme: Theme.of(context).colorScheme.copyWith(
-                    primary: const Color(0xFF111827),
-                    onPrimary: Colors.white,
-                    surface: Colors.white,
-                    onSurface: AppColors.textPrimary,
-                  ),
-                ),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 320),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CalendarDatePicker(
-                          initialDate: initialDate,
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime(2100),
-                          currentDate: DateTime.now(),
-                          onDateChanged: (date) {
-                            setLocalState(() => selectedDate = date);
-                          },
-                        ),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton(
-                            onPressed: () {
-                              setLocalState(
-                                () => selectedDate = DateTime.now(),
-                              );
-                            },
-                            child: const Text(
-                              'Today',
-                              style: TextStyle(
-                                color: Color(0xFF0B4A06),
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            TextButton(
-                              onPressed: () =>
-                                  Navigator.of(dialogContext).pop(),
-                              child: const Text('Cancel'),
-                            ),
-                            const SizedBox(width: 8),
-                            ElevatedButton(
-                              onPressed: () =>
-                                  Navigator.of(dialogContext).pop(selectedDate),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF0B4A06),
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(999),
-                                ),
-                              ),
-                              child: const Text('Select'),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        );
-      },
+      initialDate: initialDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+      title: isFrom ? 'From Date' : 'To Date',
     );
 
     if (picked == null) return;

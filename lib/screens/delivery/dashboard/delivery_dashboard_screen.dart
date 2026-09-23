@@ -1031,11 +1031,7 @@ class _StatCard extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                value,
-                const SizedBox(height: 3),
-                label,
-              ],
+              children: [value, const SizedBox(height: 3), label],
             ),
           ),
         ],

@@ -10,6 +10,7 @@ import '../../../models/auth_models.dart';
 import '../../../models/role_model.dart';
 import '../../../services/api_service.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
+import '../../../widgets/app_calendar_date_picker.dart';
 
 class AddStaffScreen extends StatefulWidget {
   final String? userId;
@@ -2661,11 +2662,12 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
     final today = DateTime.now();
     final earliest = DateTime(1900, 1, 1);
 
-    final picked = await showDatePicker(
+    final picked = await showAppCalendarDatePicker(
       context: context,
       initialDate: initialDate.isAfter(today) ? today : initialDate,
       firstDate: earliest,
       lastDate: today,
+      title: 'Select Date',
     );
 
     if (picked == null || !mounted) {

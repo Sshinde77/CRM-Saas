@@ -10,6 +10,7 @@ import '../../../models/app_user.dart';
 import '../../../models/customer_model.dart';
 import '../../../providers/api_provider.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
+import '../../../widgets/app_calendar_date_picker.dart';
 
 class AddCustomerScreen extends StatefulWidget {
   final String? customerId;
@@ -310,39 +311,12 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   Future<void> _pickCustomerSinceDate() async {
     final now = DateTime.now();
     final initialDate = _parseDisplayDate(_customerSinceController.text) ?? now;
-    final picked = await showDatePicker(
+    final picked = await showAppCalendarDatePicker(
       context: context,
       initialDate: initialDate,
       firstDate: DateTime(2000),
       lastDate: DateTime(now.year + 10),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: AppColors.primary,
-              onPrimary: Colors.white,
-              surface: Colors.white,
-              onSurface: AppColors.textPrimary,
-            ),
-            datePickerTheme: const DatePickerThemeData(
-              backgroundColor: Colors.white,
-              headerBackgroundColor: Colors.white,
-              headerForegroundColor: AppColors.textPrimary,
-              dayBackgroundColor: WidgetStatePropertyAll<Color>(
-                Colors.transparent,
-              ),
-              dayForegroundColor: WidgetStatePropertyAll<Color>(
-                AppColors.textPrimary,
-              ),
-              todayBackgroundColor: WidgetStatePropertyAll<Color>(
-                AppColors.primary,
-              ),
-              todayForegroundColor: WidgetStatePropertyAll<Color>(Colors.white),
-            ),
-          ),
-          child: child!,
-        );
-      },
+      title: 'Customer Since',
     );
     if (picked == null || !mounted) return;
 

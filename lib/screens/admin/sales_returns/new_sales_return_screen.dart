@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../constants/app_colors.dart';
 import '../../../widgets/admin/app_drawer.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
+import '../../../widgets/app_calendar_date_picker.dart';
 
 class NewSalesReturnScreen extends StatefulWidget {
   const NewSalesReturnScreen({super.key});
@@ -49,36 +50,12 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
   }
 
   Future<void> _pickDate() async {
-    final picked = await showDatePicker(
+    final picked = await showAppCalendarDatePicker(
       context: context,
       initialDate: _selectedDate,
       firstDate: DateTime(2020),
       lastDate: DateTime(2100),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: Color(0xFF0B4A06),
-              onPrimary: Colors.white,
-              surface: Colors.white,
-              onSurface: AppColors.textPrimary,
-            ),
-            datePickerTheme: const DatePickerThemeData(
-              backgroundColor: Colors.white,
-              headerBackgroundColor: Colors.white,
-              headerForegroundColor: AppColors.textPrimary,
-              dayBackgroundColor: WidgetStatePropertyAll<Color>(
-                Colors.transparent,
-              ),
-              todayBackgroundColor: WidgetStatePropertyAll<Color>(
-                Color(0xFF0B4A06),
-              ),
-              todayForegroundColor: WidgetStatePropertyAll<Color>(Colors.white),
-            ),
-          ),
-          child: child!,
-        );
-      },
+      title: 'Return Date',
     );
     if (picked != null) {
       setState(() => _selectedDate = picked);

@@ -5,6 +5,7 @@ import '../../../constants/app_colors.dart';
 import '../../../providers/api_provider.dart';
 import '../../../routes/app_router.dart';
 import '../../../services/api_service.dart';
+import '../../../widgets/app_calendar_date_picker.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
 
 class DeliveryVehicleLoadingScreen extends StatefulWidget {
@@ -177,21 +178,12 @@ class _DeliveryVehicleLoadingScreenState
   }
 
   Future<void> _pickDate() async {
-    final picked = await showDatePicker(
+    final picked = await showAppCalendarDatePicker(
       context: context,
       initialDate: _loadingDate,
       firstDate: DateTime.now().subtract(const Duration(days: 30)),
       lastDate: DateTime.now().add(const Duration(days: 30)),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: Theme.of(
-              context,
-            ).colorScheme.copyWith(primary: AppColors.deliveryGreen),
-          ),
-          child: child!,
-        );
-      },
+      title: 'Loading Date',
     );
     if (picked != null) {
       setState(() => _loadingDate = picked);

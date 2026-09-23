@@ -4,10 +4,12 @@ import '../../../widgets/delivery/delivery_bottom_navigation.dart';
 
 import '../../../constants/app_colors.dart';
 import '../../../core/theme/app_sizes.dart';
+import '../../../models/delivery_attendance_record.dart';
 import '../../../providers/api_provider.dart';
 import '../../../routes/app_router.dart';
 import '../../../widgets/delivery/delivery_partner_sidebar.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
+import 'delivery_attendance_calendar_screen.dart';
 
 class DeliveryAttendanceScreen extends StatefulWidget {
   const DeliveryAttendanceScreen({super.key});
@@ -19,7 +21,7 @@ class DeliveryAttendanceScreen extends StatefulWidget {
 
 class _DeliveryAttendanceScreenState extends State<DeliveryAttendanceScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  Future<List<_AttendanceRecord>>? _future;
+  Future<List<DeliveryAttendanceRecord>>? _future;
   final Set<String> _busyTypes = <String>{};
   String? _markError;
   bool _didStartLoad = false;
@@ -33,9 +35,9 @@ class _DeliveryAttendanceScreenState extends State<DeliveryAttendanceScreen> {
     }
   }
 
-  Future<List<_AttendanceRecord>> _loadAttendance() async {
+  Future<List<DeliveryAttendanceRecord>> _loadAttendance() async {
     final rows = await ApiProviderScope.of(context).fetchMyAttendance();
-    return rows.map(_AttendanceRecord.fromJson).toList()
+    return rows.map(DeliveryAttendanceRecord.fromJson).toList()
       ..sort((a, b) => b.date.compareTo(a.date));
   }
 
@@ -80,11 +82,12 @@ class _DeliveryAttendanceScreenState extends State<DeliveryAttendanceScreen> {
       ),
       body: SafeArea(
         bottom: false,
-        child: FutureBuilder<List<_AttendanceRecord>>(
+        child: FutureBuilder<List<DeliveryAttendanceRecord>>(
           future: _future,
           builder: (context, snapshot) {
-            final records = snapshot.data ?? const <_AttendanceRecord>[];
-            final today = _AttendanceRecord.todayFrom(records);
+            final records =
+                snapshot.data ?? const <DeliveryAttendanceRecord>[];
+            final today = DeliveryAttendanceRecord.todayFrom(records);
             final isLoading =
                 snapshot.connectionState == ConnectionState.waiting &&
                 !snapshot.hasData;
@@ -132,6 +135,16 @@ class _DeliveryAttendanceScreenState extends State<DeliveryAttendanceScreen> {
                                     ? _cleanError(snapshot.error)
                                     : null,
                                 onRetry: _refresh,
+                                onViewAll: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          DeliveryAttendanceCalendarScreen(
+                                            records: records,
+                                          ),
+                                    ),
+                                  );
+                                },
                               ),
                             ],
                           ),
@@ -150,7 +163,7 @@ class _DeliveryAttendanceScreenState extends State<DeliveryAttendanceScreen> {
 }
 
 class _CheckpointsCard extends StatelessWidget {
-  final _AttendanceRecord? today;
+  final DeliveryAttendanceRecord? today;
   final String? error;
   final Set<String> busyTypes;
   final VoidCallback onDismissError;
@@ -167,7 +180,7 @@ class _CheckpointsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final checkpoints = _CheckpointType.values;
-    final fullDate = _formatDate(DateTime.now());
+    final fullDate = formatAttendanceDate(DateTime.now());
     final dateLabel = MediaQuery.sizeOf(context).width < 360
         ? fullDate.substring(0, fullDate.lastIndexOf(' '))
         : fullDate;
@@ -227,10 +240,10 @@ class _CheckpointsCard extends StatelessWidget {
                 ),
                 itemBuilder: (context, index) {
                   final checkpoint = checkpoints[index];
-                  final time = today?.timeFor(checkpoint);
+                  final time = today?.timeFor(checkpoint.recordCheckpoint);
                   return _CheckpointTile(
                     checkpoint: checkpoint,
-                    time: _formatTime(time),
+                    time: formatAttendanceTime(time),
                     recorded: time != null,
                     busy: busyTypes.contains(checkpoint.apiValue),
                     onMarkNow: () => onMarkNow(checkpoint),
@@ -372,16 +385,18 @@ class _CheckpointTile extends StatelessWidget {
 }
 
 class _HistoryCard extends StatefulWidget {
-  final List<_AttendanceRecord> records;
+  final List<DeliveryAttendanceRecord> records;
   final bool isLoading;
   final String? error;
   final Future<void> Function() onRetry;
+  final VoidCallback onViewAll;
 
   const _HistoryCard({
     required this.records,
     required this.isLoading,
     required this.error,
     required this.onRetry,
+    required this.onViewAll,
   });
 
   @override
@@ -389,8 +404,6 @@ class _HistoryCard extends StatefulWidget {
 }
 
 class _HistoryCardState extends State<_HistoryCard> {
-  bool _showAll = false;
-
   @override
   Widget build(BuildContext context) {
     return _SurfaceCard(
@@ -403,7 +416,7 @@ class _HistoryCardState extends State<_HistoryCard> {
             subtitle: 'Your recent attendance records',
             trailing: widget.records.length > 5
                 ? TextButton(
-                    onPressed: () => setState(() => _showAll = !_showAll),
+                    onPressed: widget.onViewAll,
                     style: TextButton.styleFrom(
                       foregroundColor: AppColors.deliveryGreen,
                       backgroundColor: AppColors.deliveryGreenSoft,
@@ -411,7 +424,7 @@ class _HistoryCardState extends State<_HistoryCard> {
                       minimumSize: const Size(0, 28),
                     ),
                     child: Text(
-                      _showAll ? 'Show Less' : 'View All',
+                      'View All',
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
@@ -446,9 +459,7 @@ class _HistoryCardState extends State<_HistoryCard> {
             )
           else
             _HistoryTable(
-              records: _showAll
-                  ? widget.records
-                  : widget.records.take(5).toList(),
+              records: widget.records.take(5).toList(),
             ),
         ],
       ),
@@ -457,7 +468,7 @@ class _HistoryCardState extends State<_HistoryCard> {
 }
 
 class _HistoryTable extends StatelessWidget {
-  final List<_AttendanceRecord> records;
+  final List<DeliveryAttendanceRecord> records;
 
   const _HistoryTable({required this.records});
 
@@ -511,7 +522,7 @@ class _HistoryHeaderRow extends StatelessWidget {
 }
 
 class _HistoryRow extends StatelessWidget {
-  final _AttendanceRecord record;
+  final DeliveryAttendanceRecord record;
 
   const _HistoryRow(this.record);
 
@@ -530,7 +541,7 @@ class _HistoryRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _formatDate(record.date),
+                  formatAttendanceDate(record.date),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -541,7 +552,7 @@ class _HistoryRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 1),
                 Text(
-                  _weekday(record.date),
+                  attendanceWeekday(record.date),
                   style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w400,
@@ -552,8 +563,14 @@ class _HistoryRow extends StatelessWidget {
             ),
           ),
           Expanded(flex: 3, child: _StatusBadge(status: record.status)),
-          Expanded(flex: 3, child: _TimeText(_formatTime(record.checkIn))),
-          Expanded(flex: 3, child: _TimeText(_formatTime(record.checkOut))),
+          Expanded(
+            flex: 3,
+            child: _TimeText(formatAttendanceTime(record.checkIn)),
+          ),
+          Expanded(
+            flex: 3,
+            child: _TimeText(formatAttendanceTime(record.checkOut)),
+          ),
           const SizedBox(
             width: 12,
             child: Icon(
@@ -918,170 +935,18 @@ enum _CheckpointType {
     this.color,
     this.softColor,
   );
-}
 
-class _AttendanceRecord {
-  final DateTime date;
-  final DateTime? officeCheckIn;
-  final DateTime? departure;
-  final DateTime? returnToOffice;
-  final DateTime? finalCheckOut;
-  final String rawStatus;
-
-  const _AttendanceRecord({
-    required this.date,
-    this.officeCheckIn,
-    this.departure,
-    this.returnToOffice,
-    this.finalCheckOut,
-    required this.rawStatus,
-  });
-
-  factory _AttendanceRecord.fromJson(Map<String, dynamic> json) {
-    final parsedDate =
-        _parseDate(_readString(json, const ['date', 'attendance_date'])) ??
-        DateTime.now();
-    return _AttendanceRecord(
-      date: parsedDate,
-      officeCheckIn: _parseDateTime(
-        _readString(json, const [
-          'office_check_in',
-          'officeCheckIn',
-          'checkIn',
-          'check_in',
-        ]),
-        parsedDate,
-      ),
-      departure: _parseDateTime(
-        _readString(json, const ['departure', 'departure_time']),
-        parsedDate,
-      ),
-      returnToOffice: _parseDateTime(
-        _readString(json, const ['return_to_office', 'returnToOffice']),
-        parsedDate,
-      ),
-      finalCheckOut: _parseDateTime(
-        _readString(json, const [
-          'final_check_out',
-          'finalCheckOut',
-          'checkOut',
-          'check_out',
-        ]),
-        parsedDate,
-      ),
-      rawStatus: _readString(json, const ['status', 'attendance_status']),
-    );
-  }
-
-  DateTime? timeFor(_CheckpointType type) {
-    return switch (type) {
-      _CheckpointType.officeCheckIn => officeCheckIn,
-      _CheckpointType.departure => departure,
-      _CheckpointType.returnToOffice => returnToOffice,
-      _CheckpointType.finalCheckOut => finalCheckOut,
+  DeliveryAttendanceCheckpoint get recordCheckpoint {
+    return switch (this) {
+      _CheckpointType.officeCheckIn =>
+        DeliveryAttendanceCheckpoint.officeCheckIn,
+      _CheckpointType.departure => DeliveryAttendanceCheckpoint.departure,
+      _CheckpointType.returnToOffice =>
+        DeliveryAttendanceCheckpoint.returnToOffice,
+      _CheckpointType.finalCheckOut =>
+        DeliveryAttendanceCheckpoint.finalCheckOut,
     };
   }
-
-  DateTime? get checkIn => officeCheckIn;
-
-  DateTime? get checkOut => finalCheckOut;
-
-  String get status {
-    final normalized = rawStatus.trim().toLowerCase();
-    if (normalized.contains('absent')) return 'absent';
-    if (officeCheckIn == null && finalCheckOut == null) return 'absent';
-    return 'present';
-  }
-
-  static _AttendanceRecord? todayFrom(List<_AttendanceRecord> records) {
-    final now = DateTime.now();
-    for (final record in records) {
-      if (record.date.year == now.year &&
-          record.date.month == now.month &&
-          record.date.day == now.day) {
-        return record;
-      }
-    }
-    return null;
-  }
-}
-
-String _readString(Map<String, dynamic> json, List<String> keys) {
-  for (final key in keys) {
-    final value = json[key];
-    if (value == null) continue;
-    final text = value.toString().trim();
-    if (text.isNotEmpty) return text;
-  }
-  return '';
-}
-
-DateTime? _parseDate(String value) {
-  final text = value.trim();
-  if (text.isEmpty) return null;
-  return DateTime.tryParse(text);
-}
-
-DateTime? _parseDateTime(String value, DateTime fallbackDate) {
-  final text = value.trim();
-  if (text.isEmpty) return null;
-  final parsed = DateTime.tryParse(text);
-  if (parsed != null) return parsed;
-
-  final match = RegExp(
-    r'^(\d{1,2}):(\d{2})(?:\s*([AaPp][Mm]))?$',
-  ).firstMatch(text);
-  if (match == null) return null;
-
-  var hour = int.tryParse(match.group(1) ?? '');
-  final minute = int.tryParse(match.group(2) ?? '');
-  final period = match.group(3)?.toUpperCase();
-  if (hour == null || minute == null) return null;
-  if (period == 'PM' && hour < 12) hour += 12;
-  if (period == 'AM' && hour == 12) hour = 0;
-  return DateTime(
-    fallbackDate.year,
-    fallbackDate.month,
-    fallbackDate.day,
-    hour,
-    minute,
-  );
-}
-
-String _formatTime(DateTime? value) {
-  if (value == null) return '--:-- --';
-  final local = value.toLocal();
-  final hour = local.hour == 0
-      ? 12
-      : local.hour > 12
-      ? local.hour - 12
-      : local.hour;
-  final minute = local.minute.toString().padLeft(2, '0');
-  final period = local.hour >= 12 ? 'PM' : 'AM';
-  return '${hour.toString().padLeft(2, '0')}:$minute $period';
-}
-
-String _formatDate(DateTime value) {
-  const months = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
-  return '${value.day.toString().padLeft(2, '0')} ${months[value.month - 1]} ${value.year}';
-}
-
-String _weekday(DateTime value) {
-  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  return days[value.weekday - 1];
 }
 
 String _cleanError(Object? error) {

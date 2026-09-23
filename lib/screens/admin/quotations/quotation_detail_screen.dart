@@ -4,6 +4,7 @@ import '../../../constants/app_colors.dart';
 import '../../../providers/api_provider.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
+import '../../../widgets/app_calendar_date_picker.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
 import '../../sales_manager/attendance/sales_manager_attendance_screen.dart';
@@ -813,11 +814,12 @@ class _ConvertQuotationDialogState extends State<_ConvertQuotationDialog> {
             const SizedBox(height: 12),
             InkWell(
               onTap: () async {
-                final picked = await showDatePicker(
+                final picked = await showAppCalendarDatePicker(
                   context: context,
                   initialDate: DateTime.now().add(const Duration(days: 1)),
                   firstDate: DateTime.now(),
                   lastDate: DateTime.now().add(const Duration(days: 365)),
+                  title: 'Delivery Date',
                 );
                 if (picked != null) {
                   setState(() => _deliveryDate = picked);
