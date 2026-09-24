@@ -12,6 +12,7 @@ import '../models/admin_dashboard_model.dart';
 import '../models/customer_activity_models.dart';
 import '../models/customer_model.dart';
 import '../models/delivery_detail_model.dart';
+import '../models/delivery_expense_model.dart';
 import '../models/auth_models.dart';
 import '../models/app_user.dart';
 import '../models/plan_model.dart';
@@ -1166,6 +1167,83 @@ class ApiService {
     );
   }
 
+  Future<List<String>> fetchExpenseCategories() async {
+    final response = await _send(
+      method: 'GET',
+      endpoint: ApiEndpoints.expenseCategories,
+      requiresAuth: true,
+    );
+    final decoded = _tryDecodeBody(response.body.trim());
+    return _extractExpenseCategories(decoded);
+  }
+
+  Future<List<DeliveryExpense>> fetchExpenses({String? submittedBy}) async {
+    final response = await _send(
+      method: 'GET',
+      endpoint: ApiEndpoints.expensesList,
+      requiresAuth: true,
+      queryParameters: _cleanQuery({'submitted_by': submittedBy}),
+    );
+    final decoded = _tryDecodeBody(response.body.trim());
+    return _extractExpensesList(
+      decoded,
+    ).map((item) => DeliveryExpense.fromJson(item)).toList();
+  }
+
+  Future<DeliveryExpense> createExpense(DeliveryExpenseRequest request) async {
+    final response = await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.expensesList,
+      requiresAuth: true,
+      body: request.toJson(),
+    );
+    final decoded = _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid create expense response.',
+    );
+    return DeliveryExpense.fromJson(_extractExpenseMap(decoded));
+  }
+
+  Future<DeliveryExpense> updateExpense({
+    required String expenseId,
+    required DeliveryExpenseRequest request,
+  }) async {
+    final response = await _send(
+      method: 'PATCH',
+      endpoint: ApiEndpoints.expenseDetail(expenseId),
+      requiresAuth: true,
+      body: request.toJson(),
+    );
+    final decoded = _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid update expense response.',
+    );
+    return DeliveryExpense.fromJson(_extractExpenseMap(decoded));
+  }
+
+  Future<void> deleteExpense(String expenseId) async {
+    await _send(
+      method: 'DELETE',
+      endpoint: ApiEndpoints.expenseDetail(expenseId),
+      requiresAuth: true,
+    );
+  }
+
+  Future<String?> uploadExpenseReceipt({
+    required String expenseId,
+    required Uint8List fileBytes,
+    required String fileName,
+  }) async {
+    final response = await _sendMultipart(
+      method: 'POST',
+      endpoint: ApiEndpoints.expenseReceipt(expenseId),
+      requiresAuth: true,
+      fileBytes: fileBytes,
+      fileName: fileName,
+    );
+    return _extractUploadedUrl(_tryDecodeBody(response.body.trim()));
+  }
+
   Future<List<Map<String, dynamic>>> fetchLeads({String? status}) {
     return fetchRawList(
       endpoint: ApiEndpoints.leadsList,
@@ -2311,6 +2389,60 @@ class ApiService {
     }
 
     throw ApiException(message: fallbackMessage);
+  }
+
+  List<Map<String, dynamic>> _extractExpensesList(dynamic decoded) {
+    if (decoded is Map<String, dynamic>) {
+      final data = decoded['data'];
+      if (data is Map<String, dynamic>) {
+        return _extractExpensesList(data);
+      }
+    }
+
+    final list = _extractGenericList(decoded, const [
+      'expenses',
+      'data',
+      'items',
+      'results',
+    ], fallbackMessage: 'Invalid expenses response.');
+    return list.whereType<Map<String, dynamic>>().toList();
+  }
+
+  Map<String, dynamic> _extractExpenseMap(Map<String, dynamic> decoded) {
+    for (final key in const ['expense', 'data', 'item', 'result']) {
+      final value = decoded[key];
+      if (value is Map<String, dynamic>) return value;
+    }
+    return decoded;
+  }
+
+  List<String> _extractExpenseCategories(dynamic decoded) {
+    if (decoded is Map<String, dynamic>) {
+      final data = decoded['data'];
+      if (data is Map<String, dynamic>) {
+        return _extractExpenseCategories(data);
+      }
+    }
+
+    final raw = _extractGenericList(decoded, const [
+      'categories',
+      'data',
+      'items',
+      'results',
+    ], fallbackMessage: 'Invalid expense categories response.');
+    return raw
+        .map((item) {
+          if (item is Map<String, dynamic>) {
+            return (item['name'] ?? item['category'] ?? item['label'])
+                ?.toString()
+                .trim();
+          }
+          return item.toString().trim();
+        })
+        .whereType<String>()
+        .where((item) => item.isNotEmpty)
+        .toSet()
+        .toList();
   }
 
   Map<String, dynamic> _requireDecodedMap(

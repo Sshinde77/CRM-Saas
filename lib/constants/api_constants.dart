@@ -114,6 +114,10 @@ class ApiEndpoints {
   static const String attendanceMe = '/attendance/me';
   static const String attendanceCheckIn = '/attendance/check-in';
   static const String usersMeLocation = '/users/me/location';
+  static const String expensesList = '/expenses';
+  static const String expenseCategories = '/expenses/categories';
+  static const String expenseDetailTemplate = '/expenses/{expense_id}';
+  static const String expenseReceiptTemplate = '/expenses/{expense_id}/receipt';
   static const String quotationsList = '/quotations';
   static const String quotationsDetailTemplate = '/quotations/{quotation_id}';
   static const String quotationsPdfTemplate = '/quotations/{quotation_id}/pdf';
@@ -214,6 +218,12 @@ class ApiEndpoints {
 
   static String deliveriesConfirm(String deliveryId) =>
       deliveriesConfirmTemplate.replaceFirst('{delivery_id}', deliveryId);
+
+  static String expenseDetail(String expenseId) =>
+      expenseDetailTemplate.replaceFirst('{expense_id}', expenseId);
+
+  static String expenseReceipt(String expenseId) =>
+      expenseReceiptTemplate.replaceFirst('{expense_id}', expenseId);
 
   static String vehicleStockCurrent(String deliveryPartnerId) =>
       vehicleStockCurrentTemplate.replaceFirst(

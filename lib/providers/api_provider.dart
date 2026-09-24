@@ -6,6 +6,7 @@ import '../models/api_response.dart';
 import '../models/customer_activity_models.dart';
 import '../models/customer_model.dart';
 import '../models/delivery_detail_model.dart';
+import '../models/delivery_expense_model.dart';
 import '../models/app_user.dart';
 import '../models/auth_models.dart';
 import '../services/api_service.dart';
@@ -415,6 +416,41 @@ class ApiProvider extends ChangeNotifier {
       accuracyMeters: accuracyMeters,
       label: label,
       capturedAt: capturedAt,
+    );
+  }
+
+  Future<List<String>> fetchExpenseCategories() {
+    return _apiService.fetchExpenseCategories();
+  }
+
+  Future<List<DeliveryExpense>> fetchExpenses({String? submittedBy}) {
+    return _apiService.fetchExpenses(submittedBy: submittedBy);
+  }
+
+  Future<DeliveryExpense> createExpense(DeliveryExpenseRequest request) {
+    return _apiService.createExpense(request);
+  }
+
+  Future<DeliveryExpense> updateExpense({
+    required String expenseId,
+    required DeliveryExpenseRequest request,
+  }) {
+    return _apiService.updateExpense(expenseId: expenseId, request: request);
+  }
+
+  Future<void> deleteExpense(String expenseId) {
+    return _apiService.deleteExpense(expenseId);
+  }
+
+  Future<String?> uploadExpenseReceipt({
+    required String expenseId,
+    required Uint8List fileBytes,
+    required String fileName,
+  }) {
+    return _apiService.uploadExpenseReceipt(
+      expenseId: expenseId,
+      fileBytes: fileBytes,
+      fileName: fileName,
     );
   }
 

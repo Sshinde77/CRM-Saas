@@ -162,6 +162,8 @@ class DeliveryPartnerSidebar extends StatelessWidget {
         Navigator.of(context).pushNamed(AppRoutes.deliveryVehicleLoading);
       case AppRoutes.deliveryAttendance:
         Navigator.of(context).pushNamed(AppRoutes.deliveryAttendance);
+      case AppRoutes.deliveryExpenses:
+        Navigator.of(context).pushNamed(AppRoutes.deliveryExpenses);
       case AppRoutes.deliveryEndOfDay:
         Navigator.of(context).pushNamed(AppRoutes.deliveryEndOfDay);
       default:
