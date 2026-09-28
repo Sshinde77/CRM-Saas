@@ -8,6 +8,8 @@ import '../constants/app_colors.dart';
 import '../models/customer_model.dart';
 import '../providers/api_provider.dart';
 import '../widgets/delivery/delivery_top_bar.dart';
+import '../widgets/delivery/customer_search_dialog.dart';
+import 'delivery/customers/create_delivery_customer_screen.dart';
 
 class PaymentCollectionScreen extends StatefulWidget {
   const PaymentCollectionScreen({
@@ -34,7 +36,7 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
   final _referenceController = TextEditingController();
   final _notesController = TextEditingController();
 
-  List<_PaymentCustomer> _customers = const [];
+  List<CustomerModel> _customers = const [];
   _PaymentCustomer? _selectedCustomer;
   String _paymentMode = 'cash';
   bool _loadingCustomers = true;
@@ -80,7 +82,7 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
       final customers = await ApiProviderScope.of(context).fetchCustomers();
       if (!mounted) return;
       setState(() {
-        _customers = customers.map(_PaymentCustomer.fromModel).toList();
+        _customers = customers;
         _loadingCustomers = false;
       });
     } catch (_) {
@@ -237,21 +239,47 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
       children: [
         const _Label('Customer'),
         const SizedBox(height: 8),
-        DropdownButtonFormField<_PaymentCustomer>(
+        FormField<_PaymentCustomer>(
           initialValue: _selectedCustomer,
-          isExpanded: true,
-          decoration: _decoration(),
-          hint: const Text('Select customer'),
-          items: _customers
-              .map(
-                (c) => DropdownMenuItem(
-                  value: c,
-                  child: Text(c.name, overflow: TextOverflow.ellipsis),
-                ),
-              )
-              .toList(),
-          onChanged: _loadingDetail ? null : _selectCustomer,
           validator: (v) => v == null ? 'Please select customer' : null,
+          builder: (field) => InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: _loadingDetail || _submitting
+                ? null
+                : () async {
+                    final customer = await showDialog<CustomerModel>(
+                      context: context,
+                      builder: (_) => CustomerSearchDialog(
+                        customers: _customers,
+                        selectedCustomerId: _selectedCustomer?.id.toString(),
+                        onCreateCustomer: () =>
+                            Navigator.of(context).push<CustomerModel>(
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    const CreateDeliveryCustomerScreen(),
+                              ),
+                            ),
+                      ),
+                    );
+                    if (!mounted || customer == null) return;
+                    if (!_customers.any((c) => c.id == customer.id)) {
+                      _customers = [..._customers, customer];
+                    }
+                    final selected = _PaymentCustomer.fromModel(customer);
+                    field.didChange(selected);
+                    await _selectCustomer(selected);
+                  },
+            child: InputDecorator(
+              decoration: _decoration().copyWith(
+                errorText: field.errorText,
+                suffixIcon: const Icon(Icons.keyboard_arrow_down),
+              ),
+              child: Text(
+                _selectedCustomer?.name ?? 'Select customer',
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
         ),
         const SizedBox(height: 16),
         _AmountSummary(

@@ -10,6 +10,17 @@ class _CollectionProvider extends ApiProvider {
   int requests = 0;
   bool fail = false;
   Completer<List<CustomerModel>>? pending;
+  String? detailCustomerId;
+
+  @override
+  Future<CustomerModel> fetchCustomerById(String id) async {
+    detailCustomerId = id;
+    return CustomerModel.fromJson({
+      'id': id,
+      'name': 'Test Shop',
+      'outstanding': 1250,
+    });
+  }
 
   @override
   Future<List<CustomerModel>> fetchCustomers({
@@ -43,11 +54,29 @@ void main() {
     expect(provider.requests, 1);
     expect(find.text('Retry'), findsNothing);
     expect(find.text('Select customer'), findsOneWidget);
-    await tester.tap(
-      find.byWidgetPredicate((widget) => widget is DropdownButton).first,
+    await tester.tap(find.text('Select customer'));
+    await tester.pumpAndSettle();
+    expect(find.text('Search Customer'), findsOneWidget);
+    expect(find.text('Create Customer'), findsOneWidget);
+    final search = find.descendant(
+      of: find.byType(Dialog),
+      matching: find.byType(TextField),
     );
+    await tester.enterText(search, 'missing');
+    await tester.pumpAndSettle();
+    expect(
+      find.text('No customers found. Try another search.'),
+      findsOneWidget,
+    );
+    await tester.enterText(search, 'Test');
     await tester.pumpAndSettle();
     expect(find.text('Test Shop').last, findsOneWidget);
+    await tester.tap(find.text('Test Shop').last);
+    await tester.pumpAndSettle();
+    expect(find.byType(Dialog), findsNothing);
+    expect(find.text('Test Shop'), findsOneWidget);
+    expect(provider.detailCustomerId, 'customer-1');
+    expect(find.widgetWithText(TextFormField, '1250'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

@@ -12,6 +12,8 @@ import '../../../services/api_service.dart';
 import '../../../utils/product_image_url.dart';
 import '../../../widgets/app_calendar_date_picker.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
+import '../../../widgets/delivery/customer_search_dialog.dart';
+import '../customers/create_delivery_customer_screen.dart';
 
 class CreateDeliveryOrderScreen extends StatefulWidget {
   final Widget? drawer;
@@ -529,28 +531,61 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                             ),
                           ),
                         _label('Customer *'),
-                        DropdownButtonFormField<CustomerModel>(
-                          isExpanded: true,
+                        FormField<CustomerModel>(
                           initialValue: _customer,
-                          decoration: _decoration(
-                            'Select customer',
-                            icon: Icons.storefront_outlined,
-                          ),
-                          items: _customers
-                              .map(
-                                (c) => DropdownMenuItem(
-                                  value: c,
-                                  child: Text(
-                                    c.name,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                          onChanged: (value) =>
-                              setState(() => _customer = value),
                           validator: (value) =>
                               value == null ? 'Select a customer' : null,
+                          builder: (field) => InkWell(
+                            borderRadius: BorderRadius.circular(12),
+                            onTap:
+                                _loading || _loadErrors.containsKey('Customers')
+                                ? null
+                                : () async {
+                                    final customer =
+                                        await showDialog<CustomerModel>(
+                                          context: context,
+                                          builder: (_) => CustomerSearchDialog(
+                                            customers: _customers,
+                                            selectedCustomerId: _customer?.id,
+                                            onCreateCustomer: () =>
+                                                Navigator.of(
+                                                  context,
+                                                ).push<CustomerModel>(
+                                                  MaterialPageRoute(
+                                                    builder: (_) =>
+                                                        const CreateDeliveryCustomerScreen(),
+                                                  ),
+                                                ),
+                                          ),
+                                        );
+                                    if (!mounted || customer == null) return;
+                                    setState(() {
+                                      if (!_customers.any(
+                                        (c) => c.id == customer.id,
+                                      )) {
+                                        _customers = [..._customers, customer];
+                                      }
+                                      _customer = customer;
+                                    });
+                                    field.didChange(customer);
+                                  },
+                            child: InputDecorator(
+                              decoration:
+                                  _decoration(
+                                    '',
+                                    icon: Icons.storefront_outlined,
+                                  ).copyWith(
+                                    errorText: field.errorText,
+                                    suffixIcon: const Icon(
+                                      Icons.keyboard_arrow_down,
+                                    ),
+                                  ),
+                              child: Text(
+                                _customer?.name ?? 'Select customer',
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ),
                         ),
                         if (selectedCustomer != null)
                           Padding(

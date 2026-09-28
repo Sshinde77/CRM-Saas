@@ -137,6 +137,43 @@ class _OrderProvider extends ApiProvider {
 }
 
 void main() {
+  testWidgets('customer popup filters results and closes without selection', (
+    tester,
+  ) async {
+    final provider = _OrderProvider()
+      ..warehouseFails = false
+      ..includeCustomer = true;
+    addTearDown(provider.dispose);
+    await tester.pumpWidget(
+      ApiProviderScope(
+        notifier: provider,
+        child: const MaterialApp(home: CreateDeliveryOrderScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Select customer'));
+    await tester.pumpAndSettle();
+    expect(find.text('Search Customer'), findsOneWidget);
+    expect(find.text('Create Customer'), findsOneWidget);
+    final search = find.descendant(
+      of: find.byType(Dialog),
+      matching: find.byType(TextField),
+    );
+    await tester.enterText(search, 'missing customer');
+    await tester.pumpAndSettle();
+    expect(
+      find.text('No customers found. Try another search.'),
+      findsOneWidget,
+    );
+    await tester.enterText(search, 'CUSTOMER-1');
+    await tester.pumpAndSettle();
+    expect(find.text('Riyal Retail Store'), findsWidgets);
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.byTooltip('Close'));
+    await tester.pumpAndSettle();
+    expect(find.text('Select customer'), findsOneWidget);
+  });
+
   test('current user profile reads an associated delivery partner', () {
     final profile = CurrentUserProfile.fromJson({
       'id': 'user-1',
@@ -175,7 +212,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.byType(DropdownButtonFormField<CustomerModel>));
+    await tester.tap(find.byType(FormField<CustomerModel>));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Riyal Retail Store').last);
     await tester.pumpAndSettle();
@@ -285,7 +322,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('Delivery Partner *'), findsNothing);
-        await tester.tap(find.byType(DropdownButtonFormField<CustomerModel>));
+        await tester.tap(find.byType(FormField<CustomerModel>));
         await tester.pumpAndSettle();
         await tester.tap(find.text('Riyal Retail Store').last);
         await tester.pumpAndSettle();
@@ -348,7 +385,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.byType(DropdownButtonFormField<CustomerModel>));
+      await tester.tap(find.byType(FormField<CustomerModel>));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Riyal Retail Store').last);
       await tester.pumpAndSettle();
@@ -412,7 +449,7 @@ void main() {
         expect(provider.productRequests, 1);
         expect(find.text('Create Order is not wired yet'), findsNothing);
 
-        await tester.tap(find.byType(DropdownButtonFormField<CustomerModel>));
+        await tester.tap(find.byType(FormField<CustomerModel>));
         await tester.pumpAndSettle();
         await tester.tap(find.text('Riyal Retail Store').last);
         await tester.pumpAndSettle();
@@ -768,7 +805,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final customerField = find.byType(DropdownButtonFormField<CustomerModel>);
+    final customerField = find.byType(FormField<CustomerModel>);
     await tester.tap(customerField);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Riyal Retail Store').last);
@@ -858,7 +895,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Stock checked when order is created'), findsOneWidget);
-    await tester.tap(find.byType(DropdownButtonFormField<CustomerModel>));
+    await tester.tap(find.byType(FormField<CustomerModel>));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Riyal Retail Store').last);
     await tester.pumpAndSettle();
