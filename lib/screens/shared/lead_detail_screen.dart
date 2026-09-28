@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:latlong2/latlong.dart' as latlong;
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../constants/app_colors.dart';
@@ -19,6 +20,7 @@ import '../admin/leads/admin_leads_screen.dart';
 import '../admin/orders/admin_orders_screen.dart';
 import '../admin/orders/new_admin_order_screen.dart';
 import '../admin/quotations/admin_quotations_screen.dart';
+import '../delivery/customers/customer_location_picker_screen.dart';
 import '../sales_manager/leads/add_lead_screen.dart';
 import '../sales_manager/attendance/sales_manager_attendance_screen.dart';
 import '../sales_manager/dashboard/sales_manager_dashboard_screen.dart';
@@ -2345,6 +2347,7 @@ class _ConvertLeadSheetState extends State<_ConvertLeadSheet> {
   late DateTime _customerSince;
   String? _nameError;
   String? _phoneError;
+  PickedMapLocation? _pickedMapsLocation;
 
   @override
   void initState() {
@@ -2517,6 +2520,16 @@ class _ConvertLeadSheetState extends State<_ConvertLeadSheet> {
                   label: 'Maps Location',
                   hint: '19.076,72.877 or Maps URL',
                   controller: _mapsController,
+                  onChanged: (_) => _pickedMapsLocation = null,
+                  suffixIcon: IconButton(
+                    tooltip: 'Pick on Google Maps',
+                    onPressed: _pickMapsLocation,
+                    icon: const Icon(
+                      Icons.my_location_outlined,
+                      color: AppColors.primary,
+                      size: 20,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -2582,6 +2595,28 @@ class _ConvertLeadSheetState extends State<_ConvertLeadSheet> {
     if (picked != null) setState(() => _customerSince = picked);
   }
 
+  Future<void> _pickMapsLocation() async {
+    FocusScope.of(context).unfocus();
+    final current = _parseCoordinates(_mapsController.text);
+    final selected = await Navigator.of(context).push<PickedMapLocation>(
+      MaterialPageRoute(
+        builder: (_) => CustomerLocationPickerScreen(
+          initialLocation:
+              _pickedMapsLocation?.location ??
+              (current == null
+                  ? null
+                  : latlong.LatLng(current.latitude, current.longitude)),
+          initialPlaceName: _pickedMapsLocation?.placeName,
+        ),
+      ),
+    );
+    if (!mounted || selected == null) return;
+    setState(() {
+      _pickedMapsLocation = selected;
+      _mapsController.text = selected.placeName;
+    });
+  }
+
   void _submit() {
     final name = _nameController.text.trim();
     final phone = _phoneController.text.trim();
@@ -2613,7 +2648,13 @@ class _ConvertLeadSheetState extends State<_ConvertLeadSheet> {
     _putNumber(payload, 'credit_limit', _creditLimitController.text);
     _putNumber(payload, 'opening_balance', _openingBalanceController.text);
 
-    final coords = _parseCoordinates(_mapsController.text);
+    final pickedLocation = _pickedMapsLocation?.location;
+    final coords = pickedLocation == null
+        ? _parseCoordinates(_mapsController.text)
+        : _Coordinates(
+            latitude: pickedLocation.latitude,
+            longitude: pickedLocation.longitude,
+          );
     if (coords != null) {
       payload['maps_latitude'] = coords.latitude;
       payload['maps_longitude'] = coords.longitude;
@@ -2721,6 +2762,8 @@ class _SheetTextField extends StatelessWidget {
   final int maxLines;
   final TextInputType? keyboardType;
   final String? errorText;
+  final Widget? suffixIcon;
+  final ValueChanged<String>? onChanged;
 
   const _SheetTextField({
     required this.label,
@@ -2729,6 +2772,8 @@ class _SheetTextField extends StatelessWidget {
     this.maxLines = 1,
     this.keyboardType,
     this.errorText,
+    this.suffixIcon,
+    this.onChanged,
   });
 
   @override
@@ -2740,7 +2785,11 @@ class _SheetTextField extends StatelessWidget {
         controller: controller,
         maxLines: maxLines,
         keyboardType: keyboardType,
-        decoration: _sheetInputDecoration(hint, errorText: errorText),
+        onChanged: onChanged,
+        decoration: _sheetInputDecoration(
+          hint,
+          errorText: errorText,
+        ).copyWith(suffixIcon: suffixIcon),
       ),
     );
   }

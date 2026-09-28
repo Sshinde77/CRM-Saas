@@ -657,10 +657,7 @@ class _ExpenseCard extends StatelessWidget {
   final DeliveryExpense expense;
   final ValueChanged<DeliveryExpense> onDetails;
 
-  const _ExpenseCard({
-    required this.expense,
-    required this.onDetails,
-  });
+  const _ExpenseCard({required this.expense, required this.onDetails});
 
   @override
   Widget build(BuildContext context) {
@@ -1149,7 +1146,9 @@ class _ExpenseFormPageState extends State<_ExpenseFormPage> {
                                     child: Row(
                                       children: [
                                         Expanded(
-                                          child: Text(_formatDate(_expenseDate)),
+                                          child: Text(
+                                            _formatDate(_expenseDate),
+                                          ),
                                         ),
                                         const Icon(
                                           Icons.calendar_today_rounded,

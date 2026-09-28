@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:csc_picker/csc_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:latlong2/latlong.dart' as latlong;
 
 import '../../../constants/app_colors.dart';
 import '../../../models/app_user.dart';
@@ -11,6 +12,7 @@ import '../../../models/customer_model.dart';
 import '../../../providers/api_provider.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/app_calendar_date_picker.dart';
+import '../../delivery/customers/customer_location_picker_screen.dart';
 
 class AddCustomerScreen extends StatefulWidget {
   final String? customerId;
@@ -186,6 +188,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   bool _customerLoadFailed = false;
   int _currentStep = 0;
   CustomerModel? _loadedCustomer;
+  PickedMapLocation? _pickedGoogleMapsLocation;
   Uint8List? _gstCertificateBytes;
   String? _gstCertificateName;
   String? _gstCertificateFileId;
@@ -343,6 +346,43 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     return int.tryParse(normalized);
   }
 
+  latlong.LatLng? _locationFromText(String value) {
+    final match = RegExp(
+      r'(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)',
+    ).firstMatch(value.trim());
+    if (match == null) return null;
+    final latitude = double.tryParse(match.group(1) ?? '');
+    final longitude = double.tryParse(match.group(2) ?? '');
+    if (latitude == null ||
+        longitude == null ||
+        !latitude.isFinite ||
+        !longitude.isFinite ||
+        latitude.abs() > 90 ||
+        longitude.abs() > 180) {
+      return null;
+    }
+    return latlong.LatLng(latitude, longitude);
+  }
+
+  Future<void> _pickGoogleMapsLocation() async {
+    FocusScope.of(context).unfocus();
+    final selected = await Navigator.of(context).push<PickedMapLocation>(
+      MaterialPageRoute(
+        builder: (_) => CustomerLocationPickerScreen(
+          initialLocation:
+              _pickedGoogleMapsLocation?.location ??
+              _locationFromText(_googleMapsController.text),
+          initialPlaceName: _pickedGoogleMapsLocation?.placeName,
+        ),
+      ),
+    );
+    if (!mounted || selected == null) return;
+    setState(() {
+      _pickedGoogleMapsLocation = selected;
+      _googleMapsController.text = selected.placeName;
+    });
+  }
+
   Future<void> _loadCustomerForEdit() async {
     final customerId = (widget.customerId ?? widget.existingCustomer?.id ?? '')
         .trim();
@@ -381,6 +421,20 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
         customer.billingAddress ?? customer.address ?? '';
     _deliveryAddressController.text =
         customer.deliveryAddress ?? customer.billingAddress ?? '';
+    if (customer.mapLatitude != null && customer.mapLongitude != null) {
+      final location = latlong.LatLng(
+        customer.mapLatitude!,
+        customer.mapLongitude!,
+      );
+      _pickedGoogleMapsLocation = PickedMapLocation(
+        location: location,
+        placeName: customer.deliveryAddress ?? customer.billingAddress ?? 'Saved location',
+      );
+      _googleMapsController.text = _pickedGoogleMapsLocation!.placeName;
+    } else {
+      _pickedGoogleMapsLocation = null;
+      _googleMapsController.clear();
+    }
     _creditLimitController.text = (customer.creditLimit ?? 0).toString();
     _openingBalanceController.text = (customer.openingBalance ?? 0).toString();
     _categoryController.text = customer.category ?? '';
@@ -722,6 +776,9 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
         }
 
         await _ensureCustomerDocumentsAreUploaded();
+        final mapLocation =
+            _pickedGoogleMapsLocation?.location ??
+            _locationFromText(_googleMapsController.text);
         final request = CustomerUpdateRequest(
           name: name,
           businessName: businessName,
@@ -730,6 +787,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           gstNumber: gstNumber,
           billingAddress: billingAddress,
           deliveryAddress: deliveryAddress,
+          mapLatitude: mapLocation?.latitude,
+          mapLongitude: mapLocation?.longitude,
           assignedSalesOfficerId: selected?.id,
           creditLimit: creditLimit,
           category: category,
@@ -757,6 +816,9 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
         Navigator.of(context).pop(updated);
       } else {
         await _ensureCustomerDocumentsAreUploaded();
+        final mapLocation =
+            _pickedGoogleMapsLocation?.location ??
+            _locationFromText(_googleMapsController.text);
         final request = CustomerCreateRequest(
           name: name,
           businessName: businessName,
@@ -765,6 +827,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           gstNumber: gstNumber,
           billingAddress: billingAddress,
           deliveryAddress: deliveryAddress,
+          mapLatitude: mapLocation?.latitude,
+          mapLongitude: mapLocation?.longitude,
           assignedSalesOfficerId: selected?.id,
           creditLimit: creditLimit,
           openingBalance: openingBalance,
@@ -1799,9 +1863,9 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                 label: 'Google Maps Location *',
                 controller: _googleMapsController,
                 hintText: 'Paste Google Maps link or coordinates',
+                onChanged: (_) => _pickedGoogleMapsLocation = null,
                 suffixIcon: TextButton.icon(
-                  onPressed: () =>
-                      _showMessage('Map picker not connected yet.'),
+                  onPressed: _pickGoogleMapsLocation,
                   icon: const Icon(
                     Icons.my_location_outlined,
                     size: 18,
@@ -2727,6 +2791,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     bool enabled = true,
     bool readOnly = false,
     Widget? suffixIcon,
+    ValueChanged<String>? onChanged,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -2748,6 +2813,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           readOnly: readOnly,
           keyboardType: keyboardType,
           maxLines: maxLines,
+          onChanged: onChanged,
           style: const TextStyle(color: AppColors.textPrimary),
           decoration: _inputDecoration(hintText, suffixIcon: suffixIcon),
         ),

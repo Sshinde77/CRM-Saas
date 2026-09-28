@@ -7,6 +7,7 @@ import '../../../constants/app_colors.dart';
 import '../../../models/customer_activity_models.dart';
 import '../../../models/customer_model.dart';
 import '../../../providers/api_provider.dart';
+import '../../shared/map_location_view_screen.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
 import 'add_customer_screen.dart';
@@ -328,18 +329,23 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
     ).showSnackBar(SnackBar(content: Text('$label copied')));
   }
 
-  Future<void> _openMapLocation(CustomerModel customer) async {
+  void _openMapLocation(CustomerModel customer) {
     final latitude = customer.mapLatitude;
     final longitude = customer.mapLongitude;
     if (latitude == null || longitude == null) {
       return;
     }
 
-    final uri = Uri.parse(
-      'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude',
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => MapLocationViewScreen(
+          latitude: latitude,
+          longitude: longitude,
+          title: 'Customer location',
+          subtitle: customer.businessName ?? customer.name,
+        ),
+      ),
     );
-    final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
-    if (!launched || !mounted) return;
   }
 
   String _visibleCustomerId(CustomerModel customer) {

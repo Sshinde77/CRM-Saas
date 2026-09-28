@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../core/theme/app_sizes.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../models/customer_model.dart';
 import '../../../providers/api_provider.dart';
 import '../../../routes/app_router.dart';
@@ -67,6 +69,9 @@ class _DeliveryCustomersScreenState extends State<DeliveryCustomersScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final textScaler = MediaQuery.textScalerOf(
+      context,
+    ).clamp(minScaleFactor: 0.9, maxScaleFactor: 1.2);
     final query = _search.text.trim().toLowerCase();
     final customers = _customers.where((customer) {
       return [
@@ -74,170 +79,326 @@ class _DeliveryCustomersScreenState extends State<DeliveryCustomersScreen> {
         customer.businessName,
         customer.phone,
         customer.customerId,
+        customer.city,
+        customer.territory,
       ].whereType<String>().any((value) => value.toLowerCase().contains(query));
     }).toList();
 
-    return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: AppColors.deliveryBackground,
-      drawer: const DeliveryPartnerSidebar(
-        currentRoute: AppRoutes.deliveryCustomers,
-      ),
-      bottomNavigationBar: const DeliveryBottomNavigation(currentIndex: -1),
-      floatingActionButton: FloatingActionButton.extended(
-        heroTag: 'delivery-create-customer',
-        onPressed: _createCustomer,
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.surface,
-        icon: const Icon(Icons.person_add_alt_1_outlined),
-        label: const Text('Create Customer'),
-      ),
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            DeliveryTopBar(
-              title: 'Customers',
-              subtitle: 'View and search your customers',
-              leadingIcon: Icons.menu_rounded,
-              onLeadingTap: () => _scaffoldKey.currentState?.openDrawer(),
-            ),
-            Expanded(
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 720),
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: TextField(
-                          controller: _search,
-                          onChanged: (_) => setState(() {}),
-                          decoration: InputDecoration(
-                            hintText: 'Search by name, phone or customer ID',
-                            prefixIcon: const Icon(
-                              Icons.search,
-                              color: AppColors.primary,
-                            ),
-                            suffixIcon: query.isEmpty
-                                ? null
-                                : IconButton(
-                                    tooltip: 'Clear search',
-                                    icon: const Icon(Icons.close),
-                                    onPressed: () => setState(_search.clear),
-                                  ),
-                            filled: true,
-                            fillColor: AppColors.surface,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(textScaler: textScaler),
+      child: Scaffold(
+        key: _scaffoldKey,
+        backgroundColor: AppColors.deliveryBackground,
+        drawer: const DeliveryPartnerSidebar(
+          currentRoute: AppRoutes.deliveryCustomers,
+        ),
+        bottomNavigationBar: const DeliveryBottomNavigation(currentIndex: -1),
+        floatingActionButton: FloatingActionButton.extended(
+          heroTag: 'delivery-create-customer',
+          onPressed: _createCustomer,
+          backgroundColor: AppColors.deliveryGreen,
+          foregroundColor: AppColors.surface,
+          icon: const Icon(Icons.person_add_alt_1_outlined, size: 22),
+          label: const Text(
+            'Create Customer',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+          ),
+        ),
+        body: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              DeliveryTopBar(
+                title: 'Customers',
+                subtitle: 'View and search your customers',
+                leadingIcon: Icons.menu_rounded,
+                onLeadingTap: () => _scaffoldKey.currentState?.openDrawer(),
+                actions: [
+                  DeliveryTopBarAction(
+                    icon: Icons.refresh_rounded,
+                    tooltip: 'Refresh customers',
+                    onTap: _loadCustomers,
+                  ),
+                ],
+              ),
+              Expanded(
+                child: _loading
+                    ? const _StateView.loading()
+                    : _error != null
+                    ? _StateView.error(
+                        message: _error!,
+                        onRetry: _loadCustomers,
+                      )
+                    : RefreshIndicator(
+                        color: AppColors.deliveryGreen,
+                        onRefresh: _loadCustomers,
+                        child: ListView(
+                          physics: const AlwaysScrollableScrollPhysics(
+                            parent: BouncingScrollPhysics(),
                           ),
-                        ),
-                      ),
-                      Expanded(
-                        child: _loading
-                            ? const Center(child: CircularProgressIndicator())
-                            : _error != null
-                            ? Center(
+                          padding: const EdgeInsets.fromLTRB(
+                            AppSpacing.screenSmall,
+                            AppSpacing.md,
+                            AppSpacing.screenSmall,
+                            AppSpacing.xl + 92,
+                          ),
+                          children: [
+                            Center(
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(
+                                  maxWidth: 820,
+                                ),
                                 child: Column(
-                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(_error!, textAlign: TextAlign.center),
-                                    const SizedBox(height: 12),
-                                    OutlinedButton.icon(
-                                      onPressed: _loadCustomers,
-                                      icon: const Icon(Icons.refresh),
-                                      label: const Text('Retry'),
+                                    _HeaderCard(
+                                      total: _customers.length,
+                                      onAdd: _createCustomer,
                                     ),
+                                    const SizedBox(height: AppSpacing.md),
+                                    _MetricsGrid(customers: _customers),
+                                    const SizedBox(height: AppSpacing.md),
+                                    _SearchCard(
+                                      controller: _search,
+                                      query: query,
+                                      onChanged: (_) => setState(() {}),
+                                      onClear: () => setState(_search.clear),
+                                    ),
+                                    const SizedBox(height: AppSpacing.md),
+                                    _SectionHeader(
+                                      title: 'Customer List',
+                                      count: customers.length,
+                                      trailingIcon: Icons.groups_2_outlined,
+                                    ),
+                                    const SizedBox(height: AppSpacing.sm),
+                                    if (customers.isEmpty)
+                                      _StateView.empty(
+                                        hasSearch: query.isNotEmpty,
+                                      )
+                                    else
+                                      ...customers.map(
+                                        (customer) => Padding(
+                                          padding: const EdgeInsets.only(
+                                            bottom: 10,
+                                          ),
+                                          child: _CustomerCard(
+                                            customer: customer,
+                                          ),
+                                        ),
+                                      ),
                                   ],
                                 ),
-                              )
-                            : RefreshIndicator(
-                                onRefresh: _loadCustomers,
-                                child: ListView.separated(
-                                  physics:
-                                      const AlwaysScrollableScrollPhysics(),
-                                  padding: const EdgeInsets.fromLTRB(
-                                    16,
-                                    0,
-                                    16,
-                                    96,
-                                  ),
-                                  itemCount: customers.isEmpty
-                                      ? 1
-                                      : customers.length,
-                                  separatorBuilder: (_, index) =>
-                                      const SizedBox(height: 10),
-                                  itemBuilder: (_, index) => customers.isEmpty
-                                      ? Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 48,
-                                          ),
-                                          child: Text(
-                                            query.isEmpty
-                                                ? 'No customers yet. Create your first customer.'
-                                                : 'No customers match your search.',
-                                            textAlign: TextAlign.center,
-                                          ),
-                                        )
-                                      : _customerCard(customers[index]),
-                                ),
                               ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ],
-                  ),
-                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
+}
 
-  Widget _customerCard(CustomerModel customer) {
-    final address =
-        customer.deliveryAddress ?? customer.address ?? customer.billingAddress;
-    final details = [
-      customer.customerId,
-      customer.phone,
-      address,
-    ].whereType<String>().where((value) => value.trim().isNotEmpty);
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
-      ),
+class _HeaderCard extends StatelessWidget {
+  final int total;
+  final VoidCallback onAdd;
+
+  const _HeaderCard({required this.total, required this.onAdd});
+
+  @override
+  Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 420;
+
+    return _SurfaceCard(
+      padding: EdgeInsets.all(compact ? 10 : 12),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const CircleAvatar(
-            backgroundColor: AppColors.surfaceSoft,
-            child: Icon(Icons.storefront_outlined, color: AppColors.primary),
+          Container(
+            width: compact ? 34 : 38,
+            height: compact ? 34 : 38,
+            decoration: BoxDecoration(
+              color: AppColors.deliveryGreenSoft,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              Icons.groups_2_outlined,
+              color: AppColors.deliveryGreen,
+              size: compact ? 18 : 21,
+            ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: compact ? 8 : 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  customer.name,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.primary,
+                  'My Customers',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: AppColors.deliveryInk,
+                    fontSize: compact ? 14 : 16,
+                    height: 1.15,
+                    fontWeight: FontWeight.w900,
                   ),
                 ),
-                for (final detail in details)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Text(
-                      detail,
-                      style: const TextStyle(color: AppColors.textSecondary),
-                    ),
+                const SizedBox(height: 4),
+                Text(
+                  '$total Customers',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: const Color(0xFF4F5870),
+                    fontSize: compact ? 10.5 : 11.5,
+                    fontWeight: FontWeight.w700,
                   ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Material(
+            color: AppColors.deliveryGreen,
+            borderRadius: BorderRadius.circular(10),
+            child: InkWell(
+              onTap: onAdd,
+              borderRadius: BorderRadius.circular(10),
+              child: const SizedBox(
+                width: 40,
+                height: 40,
+                child: Icon(
+                  Icons.add_rounded,
+                  color: AppColors.surface,
+                  size: 22,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MetricsGrid extends StatelessWidget {
+  final List<CustomerModel> customers;
+
+  const _MetricsGrid({required this.customers});
+
+  @override
+  Widget build(BuildContext context) {
+    final active = customers.where((customer) => customer.isActive != false);
+    final withLocation = customers.where((customer) {
+      return _customerAddress(customer).trim().isNotEmpty ||
+          (customer.mapLatitude != null && customer.mapLongitude != null);
+    }).length;
+    final withDue = customers.where((customer) {
+      return (customer.outstanding ?? 0) > 0;
+    }).length;
+    final rows = [
+      _MetricInfo(
+        'Active',
+        active.length.toString(),
+        Icons.verified_outlined,
+        AppColors.deliveryGreen,
+        AppColors.deliveryGreenSoft,
+      ),
+      _MetricInfo(
+        'Locations',
+        withLocation.toString(),
+        Icons.location_on_outlined,
+        AppColors.deliveryBlue,
+        AppColors.deliveryBlueSoft,
+      ),
+      _MetricInfo(
+        'With Due',
+        withDue.toString(),
+        Icons.pending_actions_outlined,
+        AppColors.deliveryRed,
+        AppColors.deliveryRedSoft,
+      ),
+      _MetricInfo(
+        'Territories',
+        _uniqueCount(
+          customers.map((customer) => customer.territory),
+        ).toString(),
+        Icons.map_outlined,
+        AppColors.deliveryOrange,
+        AppColors.deliveryOrangeSoft,
+      ),
+    ];
+
+    return _SurfaceCard(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        children: [
+          for (var index = 0; index < rows.length; index += 2) ...[
+            Row(
+              children: [
+                Expanded(child: _MetricTile(info: rows[index])),
+                const SizedBox(width: 10),
+                Expanded(child: _MetricTile(info: rows[index + 1])),
+              ],
+            ),
+            if (index < rows.length - 2) const SizedBox(height: 10),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _MetricTile extends StatelessWidget {
+  final _MetricInfo info;
+
+  const _MetricTile({required this.info});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: AppColors.deliveryCardSoft,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.deliveryCardBorder),
+      ),
+      child: Row(
+        children: [
+          _MiniIcon(
+            icon: info.icon,
+            color: info.color,
+            background: info.background,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  info.value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.deliveryInk,
+                    fontSize: 14,
+                    height: 1.1,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  info.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF586176),
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ],
             ),
           ),
@@ -245,4 +406,604 @@ class _DeliveryCustomersScreenState extends State<DeliveryCustomersScreen> {
       ),
     );
   }
+}
+
+class _SearchCard extends StatelessWidget {
+  final TextEditingController controller;
+  final String query;
+  final ValueChanged<String> onChanged;
+  final VoidCallback onClear;
+
+  const _SearchCard({
+    required this.controller,
+    required this.query,
+    required this.onChanged,
+    required this.onClear,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return _SurfaceCard(
+      padding: const EdgeInsets.all(12),
+      child: SizedBox(
+        height: 44,
+        child: TextField(
+          controller: controller,
+          onChanged: onChanged,
+          textInputAction: TextInputAction.search,
+          style: const TextStyle(
+            color: AppColors.deliveryInk,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+          decoration: InputDecoration(
+            hintText: 'Search by name, phone, ID or city',
+            hintStyle: const TextStyle(
+              color: AppColors.textMuted,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
+            prefixIcon: const Icon(
+              Icons.search_rounded,
+              color: AppColors.deliveryGreen,
+              size: 20,
+            ),
+            suffixIcon: query.isEmpty
+                ? null
+                : IconButton(
+                    tooltip: 'Clear search',
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      color: AppColors.textSecondary,
+                      size: 20,
+                    ),
+                    onPressed: onClear,
+                  ),
+            filled: true,
+            fillColor: AppColors.deliveryCardSoft,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 0,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppSizes.inputRadius),
+              borderSide: const BorderSide(
+                color: AppColors.deliverySurfaceBorder,
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppSizes.inputRadius),
+              borderSide: const BorderSide(
+                color: AppColors.deliverySurfaceBorder,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppSizes.inputRadius),
+              borderSide: const BorderSide(color: AppColors.deliveryGreen),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CustomerCard extends StatelessWidget {
+  final CustomerModel customer;
+
+  const _CustomerCard({required this.customer});
+
+  @override
+  Widget build(BuildContext context) {
+    final address = _customerAddress(customer);
+    final statusColor = customer.isActive == false
+        ? AppColors.deliveryRed
+        : AppColors.deliveryGreen;
+    final outstanding = customer.outstanding ?? 0;
+
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: _surfaceDecoration(),
+      child: Stack(
+        children: [
+          Positioned(
+            left: 0,
+            top: 0,
+            bottom: 0,
+            child: ColoredBox(
+              color: statusColor,
+              child: const SizedBox(width: 3),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: AppColors.deliveryGreenSoft,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: AppColors.surface),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        customer.initials,
+                        style: const TextStyle(
+                          color: AppColors.deliveryGreen,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 9),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  customer.name,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w900,
+                                    color: AppColors.deliveryInk,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 5),
+                              _StatusBadge(
+                                label: customer.statusLabel,
+                                color: statusColor,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            _firstNonEmpty([
+                              customer.businessName,
+                              customer.customerId,
+                              customer.category,
+                              'Customer',
+                            ]),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: AppColors.textMuted,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 9),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _CustomerCardDetail(
+                                  label: 'Phone',
+                                  value: _firstNonEmpty([
+                                    customer.phone,
+                                    customer.alternatePhone,
+                                    'Not available',
+                                  ]),
+                                ),
+                              ),
+                              Container(
+                                width: 1,
+                                height: 25,
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 9,
+                                ),
+                                color: AppColors.deliverySurfaceBorder,
+                              ),
+                              Expanded(
+                                child: _CustomerCardDetail(
+                                  label: 'Area',
+                                  value: _firstNonEmpty([
+                                    customer.city,
+                                    customer.territory,
+                                    customer.state,
+                                    'Not set',
+                                  ]),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                if (address.isNotEmpty) ...[
+                  const SizedBox(height: 9),
+                  _InlineInfo(
+                    icon: Icons.location_on_outlined,
+                    text: address,
+                    color: AppColors.deliveryBlue,
+                  ),
+                ],
+                const SizedBox(height: 9),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _InlineInfo(
+                        icon: Icons.badge_outlined,
+                        text: _firstNonEmpty([
+                          customer.customerId,
+                          customer.category,
+                          'Customer profile',
+                        ]),
+                        color: AppColors.deliveryGreen,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      outstanding > 0 ? _formatMoney(outstanding) : 'No due',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: outstanding > 0
+                            ? AppColors.deliveryRed
+                            : AppColors.textMuted,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CustomerCardDetail extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _CustomerCardDetail({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w400,
+            color: AppColors.textMuted,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            color: AppColors.deliveryInk,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _InlineInfo extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  final Color color;
+
+  const _InlineInfo({
+    required this.icon,
+    required this.text,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, color: color, size: 16),
+        const SizedBox(width: 5),
+        Expanded(
+          child: Text(
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: AppColors.textMuted,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  final String title;
+  final int count;
+  final IconData trailingIcon;
+
+  const _SectionHeader({
+    required this.title,
+    required this.count,
+    required this.trailingIcon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            '$title ($count)',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: AppColors.deliveryInk,
+              fontSize: 14,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ),
+        Icon(trailingIcon, color: AppColors.deliveryGreen, size: 20),
+      ],
+    );
+  }
+}
+
+class _MiniIcon extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final Color background;
+
+  const _MiniIcon({
+    required this.icon,
+    required this.color,
+    required this.background,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 34,
+      height: 34,
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(11),
+      ),
+      child: Icon(icon, color: color, size: 19),
+    );
+  }
+}
+
+class _StatusBadge extends StatelessWidget {
+  final String label;
+  final Color color;
+
+  const _StatusBadge({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
+      ),
+      child: Text(
+        label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: color,
+          fontSize: 9.5,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    );
+  }
+}
+
+class _StateView extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback? onRetry;
+  final bool loading;
+
+  const _StateView._({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    this.onRetry,
+    this.loading = false,
+  });
+
+  const _StateView.loading()
+    : this._(
+        icon: Icons.hourglass_empty_rounded,
+        title: 'Loading customers',
+        subtitle: 'Fetching your latest customer list.',
+        loading: true,
+      );
+
+  const _StateView.empty({required bool hasSearch})
+    : this._(
+        icon: Icons.groups_2_outlined,
+        title: hasSearch ? 'No matching customers' : 'No customers found',
+        subtitle: hasSearch
+            ? 'Try a different name, phone, ID or city.'
+            : 'Create your first delivery customer to get started.',
+      );
+
+  const _StateView.error({required String message, VoidCallback? onRetry})
+    : this._(
+        icon: Icons.error_outline_rounded,
+        title: 'Customers could not load',
+        subtitle: message,
+        onRetry: onRetry,
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.screenSmall),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 520),
+          child: _SurfaceCard(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (loading)
+                  const CircularProgressIndicator(
+                    color: AppColors.deliveryGreen,
+                  )
+                else
+                  Icon(icon, color: AppColors.deliveryGreen, size: 48),
+                const SizedBox(height: 14),
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: AppColors.deliveryInk,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  subtitle,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 13,
+                    height: 1.35,
+                  ),
+                ),
+                if (onRetry != null) ...[
+                  const SizedBox(height: 14),
+                  OutlinedButton.icon(
+                    onPressed: onRetry,
+                    icon: const Icon(Icons.refresh_rounded, size: 18),
+                    label: const Text('Retry'),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SurfaceCard extends StatelessWidget {
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+
+  const _SurfaceCard({
+    required this.child,
+    this.padding = const EdgeInsets.all(16),
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: padding,
+      decoration: _surfaceDecoration(),
+      child: child,
+    );
+  }
+}
+
+class _MetricInfo {
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color color;
+  final Color background;
+
+  const _MetricInfo(
+    this.label,
+    this.value,
+    this.icon,
+    this.color,
+    this.background,
+  );
+}
+
+BoxDecoration _surfaceDecoration({double? radius}) {
+  return BoxDecoration(
+    color: AppColors.surface,
+    borderRadius: BorderRadius.circular(radius ?? AppSizes.cardRadius),
+    border: Border.all(color: AppColors.deliverySurfaceBorder),
+    boxShadow: [
+      BoxShadow(
+        color: AppColors.secondary.withValues(alpha: 0.035),
+        blurRadius: 14,
+        offset: const Offset(0, 8),
+      ),
+    ],
+  );
+}
+
+String _customerAddress(CustomerModel customer) {
+  return _firstNonEmpty([
+    customer.deliveryAddress,
+    customer.address,
+    customer.billingAddress,
+  ]);
+}
+
+String _firstNonEmpty(List<String?> values) {
+  for (final value in values) {
+    final text = value?.trim();
+    if (text != null && text.isNotEmpty) return text;
+  }
+  return '';
+}
+
+int _uniqueCount(Iterable<String?> values) {
+  return values
+      .map((value) => value?.trim().toLowerCase() ?? '')
+      .where((value) => value.isNotEmpty)
+      .toSet()
+      .length;
+}
+
+String _formatMoney(int value) {
+  final source = value.abs().toString();
+  final buffer = StringBuffer();
+  for (var i = 0; i < source.length; i++) {
+    final remaining = source.length - i;
+    buffer.write(source[i]);
+    if (remaining > 1 && remaining % 3 == 1) {
+      buffer.write(',');
+    }
+  }
+  return '${value < 0 ? '-' : ''}Rs ${buffer.toString()} due';
 }

@@ -1141,6 +1141,8 @@ class CustomerCreateRequest {
   final String? gstNumber;
   final String? billingAddress;
   final String? deliveryAddress;
+  final double? mapLatitude;
+  final double? mapLongitude;
   final String? assignedSalesOfficerId;
   final int? creditLimit;
   final int? openingBalance;
@@ -1161,6 +1163,8 @@ class CustomerCreateRequest {
     this.gstNumber,
     this.billingAddress,
     this.deliveryAddress,
+    this.mapLatitude,
+    this.mapLongitude,
     this.assignedSalesOfficerId,
     this.creditLimit,
     this.openingBalance,
@@ -1197,6 +1201,16 @@ class CustomerCreateRequest {
     put('gst_number', gstNumber);
     put('billing_address', billingAddress);
     put('delivery_address', deliveryAddress);
+    put('map_latitude', mapLatitude);
+    put('map_longitude', mapLongitude);
+    if (mapLatitude != null && mapLongitude != null) {
+      json['address_information'] = {
+        'google_maps_location': {
+          'latitude': mapLatitude,
+          'longitude': mapLongitude,
+        },
+      };
+    }
     put('assigned_sales_officer_id', assignedSalesOfficerId);
     put('credit_limit', creditLimit);
     put('opening_balance', openingBalance);
@@ -1226,6 +1240,8 @@ class CustomerUpdateRequest {
   final String? gstNumber;
   final String? billingAddress;
   final String? deliveryAddress;
+  final double? mapLatitude;
+  final double? mapLongitude;
   final String? assignedSalesOfficerId;
   final int? creditLimit;
   final String? category;
@@ -1246,6 +1262,8 @@ class CustomerUpdateRequest {
     this.gstNumber,
     this.billingAddress,
     this.deliveryAddress,
+    this.mapLatitude,
+    this.mapLongitude,
     this.assignedSalesOfficerId,
     this.creditLimit,
     this.category,
@@ -1282,6 +1300,16 @@ class CustomerUpdateRequest {
     put('gst_number', gstNumber);
     put('billing_address', billingAddress);
     put('delivery_address', deliveryAddress);
+    put('map_latitude', mapLatitude);
+    put('map_longitude', mapLongitude);
+    if (mapLatitude != null && mapLongitude != null) {
+      json['address_information'] = {
+        'google_maps_location': {
+          'latitude': mapLatitude,
+          'longitude': mapLongitude,
+        },
+      };
+    }
     put('assigned_sales_officer_id', assignedSalesOfficerId);
     put('credit_limit', creditLimit);
     put('category', category);

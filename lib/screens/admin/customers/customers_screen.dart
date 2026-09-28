@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../constants/app_colors.dart';
 import '../../../models/customer_model.dart';
 import '../../../providers/api_provider.dart';
+import '../../shared/map_location_view_screen.dart';
 import 'customer_details_screen.dart';
 import 'add_customer_screen.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
@@ -923,7 +924,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
     );
   }
 
-  Future<void> _openMapLocation(CustomerModel customer) async {
+  void _openMapLocation(CustomerModel customer) {
     final latitude = customer.mapLatitude;
     final longitude = customer.mapLongitude;
     if (latitude == null || longitude == null) {
@@ -931,13 +932,16 @@ class _CustomersScreenState extends State<CustomersScreen> {
       return;
     }
 
-    final uri = Uri.parse(
-      'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude',
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => MapLocationViewScreen(
+          latitude: latitude,
+          longitude: longitude,
+          title: 'Customer location',
+          subtitle: customer.businessName ?? customer.name,
+        ),
+      ),
     );
-    final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
-    if (!launched && mounted) {
-      _showMessage('Unable to open the map.');
-    }
   }
 
   String _locationLabel(CustomerModel customer) {

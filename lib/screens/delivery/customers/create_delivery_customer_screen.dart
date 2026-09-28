@@ -1,16 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:latlong2/latlong.dart' as latlong;
 
 import '../../../constants/app_colors.dart';
 import '../../../models/customer_model.dart';
 import '../../../providers/api_provider.dart';
 import '../../../services/api_service.dart';
+import '../../../services/voice_customer_extraction_service.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
+import '../../../widgets/delivery/voice_input_sheet.dart';
+import 'customer_location_picker_screen.dart';
 
 class CreateDeliveryCustomerScreen extends StatefulWidget {
-  const CreateDeliveryCustomerScreen({super.key});
+  const CreateDeliveryCustomerScreen({
+    super.key,
+    this.voiceTranscriptPicker,
+    this.voiceExtractionService = const VoiceCustomerExtractionService(),
+  });
+
+  final Future<String?> Function(BuildContext context)? voiceTranscriptPicker;
+  final VoiceCustomerExtractionService voiceExtractionService;
 
   @override
   State<CreateDeliveryCustomerScreen> createState() =>
@@ -34,10 +44,23 @@ class _CreateDeliveryCustomerScreenState
   String? _photoName;
   UploadedFileReference? _uploadedPhoto;
   bool _pickingPhoto = false;
+  bool _extractingVoice = false;
   String? _type;
   String? _error;
+  String? _voiceReviewMessage;
   bool _saving = false;
+  PickedMapLocation? _pickedLocation;
+  final Set<String> _autoFilledFields = <String>{};
+  final Map<String, String> _voiceWarnings = <String, String>{};
   static const _green = AppColors.deliveryGreen;
+  static const _customerTypes = [
+    'General Trade',
+    'Retail',
+    'Wholesale',
+    'Distributor',
+    'Business',
+    'Individual',
+  ];
 
   @override
   void dispose() {
@@ -59,6 +82,40 @@ class _CreateDeliveryCustomerScreenState
 
   String? _required(String? value) =>
       value == null || value.trim().isEmpty ? 'This field is required' : null;
+
+  bool _validMobile(String? value) {
+    final digits = (value ?? '').replaceAll(RegExp(r'\D'), '');
+    return RegExp(r'^[6-9]\d{9}$').hasMatch(digits);
+  }
+
+  bool _validPincode(String? value) {
+    return RegExp(r'^\d{6}$').hasMatch((value ?? '').trim());
+  }
+
+  bool _validGstin(String? value) {
+    final text = (value ?? '').trim().toUpperCase().replaceAll(' ', '');
+    if (text.isEmpty) return true;
+    return RegExp(
+      r'^\d{2}[A-Z]{5}\d{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$',
+    ).hasMatch(text);
+  }
+
+  bool get _canCreateCustomer {
+    final phoneDigits = _phone.text.replaceAll(RegExp(r'\D'), '');
+    return !_saving &&
+        !_pickingPhoto &&
+        !_extractingVoice &&
+        _shop.text.trim().isNotEmpty &&
+        _contact.text.trim().isNotEmpty &&
+        phoneDigits.length >= 10 &&
+        phoneDigits.length <= 15 &&
+        _validGstin(_gst.text) &&
+        _type != null &&
+        _address.text.trim().isNotEmpty &&
+        _city.text.trim().isNotEmpty &&
+        RegExp(r'^[1-9][0-9]{5}$').hasMatch(_pincode.text.trim()) &&
+        _validateLocation(_location.text) == null;
+  }
 
   Future<void> _pickPhoto() async {
     if (_saving || _pickingPhoto) return;
@@ -99,9 +156,181 @@ class _CreateDeliveryCustomerScreenState
     }
   }
 
+  Future<void> _startVoiceEntry() async {
+    if (_saving || _extractingVoice) return;
+    final transcript = await (widget.voiceTranscriptPicker?.call(context) ??
+        showModalBottomSheet<String>(
+          context: context,
+          isScrollControlled: true,
+          useSafeArea: true,
+          builder: (_) => const VoiceInputSheet(),
+        ));
+    if (!mounted || transcript == null) return;
+    if (transcript.trim().length < 8) {
+      _showSnack("Didn't catch that, please try again.");
+      return;
+    }
+
+    setState(() {
+      _extractingVoice = true;
+      _error = null;
+    });
+    try {
+      final result = await widget.voiceExtractionService.extract(
+        transcript: transcript.trim(),
+        customerTypes: _customerTypes,
+      );
+      if (!mounted) return;
+      _applyVoiceExtraction(result);
+    } catch (_) {
+      if (!mounted) return;
+      _showSnack('Could not parse voice details. Please fill manually.');
+      setState(() {
+        _voiceReviewMessage =
+            'Voice transcript captured, but we could not parse it clearly. Please fill the form manually.';
+      });
+    } finally {
+      if (mounted) setState(() => _extractingVoice = false);
+    }
+  }
+
+  void _applyVoiceExtraction(VoiceExtractionResult result) {
+    final filled = Set<String>.from(_autoFilledFields);
+    final updated = <String>{};
+    final warnings = Map<String, String>.from(_voiceWarnings);
+
+    void fillText({
+      required String key,
+      required TextEditingController controller,
+      required ExtractedField<String> field,
+      bool allowMedium = true,
+      bool Function(String value)? validator,
+      String? invalidMessage,
+      String Function(String value)? normalize,
+    }) {
+      if (!field.wasSpoken) return;
+
+      warnings.remove(key);
+      final value = field.value?.trim();
+      final allowedConfidence = field.isHigh || (allowMedium && field.isMedium);
+      if (value == null || value.isEmpty || !allowedConfidence) {
+        warnings[key] =
+            "Couldn't understand this clearly, please enter manually";
+        return;
+      }
+      final normalized = normalize == null ? value : normalize(value);
+      if (validator != null && !validator(normalized)) {
+        warnings[key] =
+            invalidMessage ??
+            "Couldn't understand this clearly, please enter manually";
+        return;
+      }
+      controller.text = normalized;
+      filled.add(key);
+      updated.add(key);
+    }
+
+    fillText(
+      key: 'shopName',
+      controller: _shop,
+      field: result.shopName,
+    );
+    fillText(
+      key: 'contactPerson',
+      controller: _contact,
+      field: result.contactPerson,
+    );
+    fillText(
+      key: 'mobileNumber',
+      controller: _phone,
+      field: result.mobileNumber,
+      allowMedium: false,
+      normalize: (value) => value.replaceAll(RegExp(r'\D'), ''),
+      validator: _validMobile,
+      invalidMessage: 'Please enter a valid 10-digit mobile number',
+    );
+    fillText(
+      key: 'gstin',
+      controller: _gst,
+      field: result.gstin,
+      allowMedium: false,
+      normalize: (value) => value.toUpperCase().replaceAll(' ', ''),
+      validator: _validGstin,
+      invalidMessage: 'Please enter a valid GSTIN',
+    );
+    fillText(
+      key: 'address',
+      controller: _address,
+      field: result.address,
+    );
+    fillText(
+      key: 'city',
+      controller: _city,
+      field: result.city,
+    );
+    fillText(
+      key: 'pincode',
+      controller: _pincode,
+      field: result.pincode,
+      allowMedium: false,
+      normalize: (value) => value.replaceAll(RegExp(r'\D'), ''),
+      validator: _validPincode,
+      invalidMessage: 'Please enter a valid 6-digit pincode',
+    );
+
+    final type = _mapCustomerType(result.customerType.value);
+    if (result.customerType.wasSpoken) {
+      warnings.remove('customerType');
+      if (type != null &&
+          (result.customerType.isHigh || result.customerType.isMedium)) {
+        _type = type;
+        filled.add('customerType');
+        updated.add('customerType');
+      } else {
+        warnings['customerType'] =
+            "Couldn't match the customer type, please select manually";
+      }
+    }
+
+    setState(() {
+      _autoFilledFields
+        ..clear()
+        ..addAll(filled);
+      _voiceWarnings
+        ..clear()
+        ..addAll(warnings);
+      _voiceReviewMessage =
+          'We updated ${updated.length} field${updated.length == 1 ? '' : 's'} from what you said. Please review before submitting.';
+    });
+  }
+
+  String? _mapCustomerType(String? value) {
+    final text = value?.trim().toLowerCase();
+    if (text == null || text.isEmpty) return null;
+    for (final type in _customerTypes) {
+      if (type.toLowerCase() == text) return type;
+    }
+    if (text.contains('retail') || text.contains('dukaan')) return 'Retail';
+    if (text.contains('whole')) return 'Wholesale';
+    if (text.contains('distrib')) return 'Distributor';
+    if (text.contains('business')) return 'Business';
+    if (text.contains('individual')) return 'Individual';
+    if (text.contains('general')) return 'General Trade';
+    return null;
+  }
+
+  void _showSnack(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
   String? _validateLocation(String? value) {
+    if (_pickedLocation != null && (value ?? '').trim().isNotEmpty) {
+      return null;
+    }
     final parts = (value ?? '').split(',');
-    if (parts.length != 2) return 'Enter latitude, longitude';
+    if (parts.length != 2) return 'Pick a location on Google Maps';
     final latitude = double.tryParse(parts[0].trim());
     final longitude = double.tryParse(parts[1].trim());
     if (latitude == null ||
@@ -115,30 +344,31 @@ class _CreateDeliveryCustomerScreenState
     return null;
   }
 
+  latlong.LatLng? _locationFromText(String value) {
+    if (_validateLocation(value) != null) return null;
+    final parts = value.split(',');
+    return latlong.LatLng(
+      double.parse(parts[0].trim()),
+      double.parse(parts[1].trim()),
+    );
+  }
+
   Future<void> _pickLocation() async {
     FocusScope.of(context).unfocus();
-    String query;
-    if (_validateLocation(_location.text) == null) {
-      final parts = _location.text.split(',');
-      query = '${parts[0].trim()},${parts[1].trim()}';
-    } else {
-      query = [
-        _address.text.trim(),
-        _city.text.trim(),
-        _pincode.text.trim(),
-      ].where((part) => part.isNotEmpty).join(', ');
-    }
-
-    final uri = Uri.https('www.google.com', '/maps/search/', {
-      'api': '1',
-      if (query.isNotEmpty) 'query': query,
-    });
-
-    final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
-    if (!mounted || opened) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Could not open Google Maps.')),
+    final selected = await Navigator.of(context).push<PickedMapLocation>(
+      MaterialPageRoute(
+        builder: (_) => CustomerLocationPickerScreen(
+          initialLocation:
+              _pickedLocation?.location ?? _locationFromText(_location.text),
+          initialPlaceName: _pickedLocation?.placeName,
+        ),
+      ),
     );
+    if (!mounted || selected == null) return;
+    setState(() {
+      _pickedLocation = selected;
+      _location.text = selected.placeName;
+    });
   }
 
   Future<void> _save() async {
@@ -159,6 +389,11 @@ class _CreateDeliveryCustomerScreenState
         );
         if (!mounted) return;
       }
+      final mapLocation =
+          _pickedLocation?.location ?? _locationFromText(_location.text);
+      final locationNote = _pickedLocation == null
+          ? _location.text.trim()
+          : '${_pickedLocation!.placeName} (${_coordinateText(_pickedLocation!.location)})';
       final customer = await provider.createCustomer(
         request: CustomerCreateRequest(
           name: _shop.text.trim(),
@@ -168,8 +403,10 @@ class _CreateDeliveryCustomerScreenState
           category: _type,
           billingAddress: address,
           deliveryAddress: address,
+          mapLatitude: mapLocation?.latitude,
+          mapLongitude: mapLocation?.longitude,
           notes:
-              'Contact person: ${_contact.text.trim()}\nGeo-tag location: ${_location.text.trim()}'
+              'Contact person: ${_contact.text.trim()}\nGeo-tag location: $locationNote'
               '${_uploadedPhoto == null ? '' : '\nProfile image attachment: ${_uploadedPhoto!.fileId}'}',
           otherDocumentIds: _uploadedPhoto == null
               ? null
@@ -195,6 +432,10 @@ class _CreateDeliveryCustomerScreenState
     } finally {
       if (mounted) setState(() => _saving = false);
     }
+  }
+
+  String _coordinateText(latlong.LatLng location) {
+    return '${location.latitude.toStringAsFixed(6)}, ${location.longitude.toStringAsFixed(6)}';
   }
 
   @override
@@ -335,21 +576,33 @@ class _CreateDeliveryCustomerScreenState
                                 ),
                               ),
                             ),
+                          _VoiceEntryCard(
+                            extracting: _extractingVoice,
+                            onTap: _startVoiceEntry,
+                          ),
+                          if (_voiceReviewMessage != null) ...[
+                            const SizedBox(height: 12),
+                            _VoiceReviewBanner(message: _voiceReviewMessage!),
+                          ],
+                          const SizedBox(height: 16),
                           _field(
                             'Shop Name',
                             _shop,
+                            fieldKey: 'shopName',
                             hint: 'Enter shop name',
                             capitalization: TextCapitalization.words,
                           ),
                           _field(
                             'Contact Person',
                             _contact,
+                            fieldKey: 'contactPerson',
                             hint: 'Enter contact person',
                             capitalization: TextCapitalization.words,
                           ),
                           _field(
                             'Mobile Number',
                             _phone,
+                            fieldKey: 'mobileNumber',
                             hint: '+91 98765 43210',
                             keyboard: TextInputType.phone,
                             validator: (value) {
@@ -365,6 +618,7 @@ class _CreateDeliveryCustomerScreenState
                           _field(
                             'GSTIN',
                             _gst,
+                            fieldKey: 'gstin',
                             hint: 'Enter GSTIN',
                             required: false,
                             capitalization: TextCapitalization.characters,
@@ -381,17 +635,12 @@ class _CreateDeliveryCustomerScreenState
                           _label('Customer Type'),
                           DropdownButtonFormField<String>(
                             initialValue: _type,
-                            decoration: _decoration('Select customer type'),
+                            decoration: _decoration(
+                              'Select customer type',
+                              fieldKey: 'customerType',
+                            ),
                             isExpanded: true,
-                            items:
-                                const [
-                                      'General Trade',
-                                      'Retail',
-                                      'Wholesale',
-                                      'Distributor',
-                                      'Business',
-                                      'Individual',
-                                    ]
+                            items: _customerTypes
                                     .map(
                                       (type) => DropdownMenuItem(
                                         value: type,
@@ -401,13 +650,23 @@ class _CreateDeliveryCustomerScreenState
                                     .toList(),
                             onChanged: _saving
                                 ? null
-                                : (value) => setState(() => _type = value),
+                                : (value) => setState(() {
+                                    _type = value;
+                                    _voiceWarnings.remove('customerType');
+                                  }),
                             validator: _required,
+                          ),
+                          _FieldAssist(
+                            autoFilled: _autoFilledFields.contains(
+                              'customerType',
+                            ),
+                            warning: _voiceWarnings['customerType'],
                           ),
                           const SizedBox(height: 18),
                           _field(
                             'Address',
                             _address,
+                            fieldKey: 'address',
                             hint: 'Shop / building, street and area',
                             lines: 3,
                             capitalization: TextCapitalization.sentences,
@@ -419,6 +678,7 @@ class _CreateDeliveryCustomerScreenState
                                 child: _field(
                                   'City',
                                   _city,
+                                  fieldKey: 'city',
                                   hint: 'City',
                                   capitalization: TextCapitalization.words,
                                 ),
@@ -428,6 +688,7 @@ class _CreateDeliveryCustomerScreenState
                                 child: _field(
                                   'Pincode',
                                   _pincode,
+                                  fieldKey: 'pincode',
                                   hint: '560034',
                                   keyboard: TextInputType.number,
                                   formatters: [
@@ -452,9 +713,9 @@ class _CreateDeliveryCustomerScreenState
                             textInputAction: TextInputAction.done,
                             decoration: _decoration('12.9352, 77.6245').copyWith(
                               helperText:
-                                  'Open Google Maps or enter latitude, longitude',
+                                  'Pick on Google Maps or enter latitude, longitude',
                               suffixIcon: IconButton(
-                                tooltip: 'Open Google Maps',
+                                tooltip: 'Pick on Google Maps',
                                 onPressed: _saving ? null : _pickLocation,
                                 icon: const Icon(
                                   Icons.map_outlined,
@@ -464,11 +725,14 @@ class _CreateDeliveryCustomerScreenState
                               ),
                             ),
                             validator: _validateLocation,
+                            onChanged: (_) => setState(() {
+                              _pickedLocation = null;
+                            }),
                             onFieldSubmitted: (_) => _save(),
                           ),
                           const SizedBox(height: 26),
                           FilledButton(
-                            onPressed: _saving || _pickingPhoto ? null : _save,
+                            onPressed: _canCreateCustomer ? _save : null,
                             style: FilledButton.styleFrom(
                               backgroundColor: _green,
                               foregroundColor: AppColors.surface,
@@ -535,6 +799,7 @@ class _CreateDeliveryCustomerScreenState
   Widget _field(
     String title,
     TextEditingController controller, {
+    required String fieldKey,
     String? hint,
     bool required = true,
     int lines = 1,
@@ -557,30 +822,211 @@ class _CreateDeliveryCustomerScreenState
           inputFormatters: formatters,
           textCapitalization: capitalization,
           textInputAction: TextInputAction.next,
-          decoration: _decoration(hint),
+          decoration: _decoration(hint, fieldKey: fieldKey),
           validator: validator ?? (required ? _required : null),
+          onChanged: (_) {
+            setState(() => _voiceWarnings.remove(fieldKey));
+          },
+        ),
+        _FieldAssist(
+          autoFilled: _autoFilledFields.contains(fieldKey),
+          warning: _voiceWarnings[fieldKey],
         ),
       ],
     ),
   );
 
-  InputDecoration _decoration(String? hint) => InputDecoration(
-    hintText: hint,
-    hintStyle: const TextStyle(color: AppColors.textLightMuted, fontSize: 14),
-    filled: true,
-    fillColor: AppColors.surface,
-    contentPadding: const EdgeInsets.symmetric(horizontal: 13, vertical: 14),
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8),
-      borderSide: const BorderSide(color: AppColors.border),
-    ),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8),
-      borderSide: const BorderSide(color: AppColors.border),
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8),
-      borderSide: const BorderSide(color: _green, width: 1.5),
-    ),
-  );
+  InputDecoration _decoration(String? hint, {String? fieldKey}) {
+    final hasWarning = fieldKey != null && _voiceWarnings.containsKey(fieldKey);
+    final autoFilled =
+        fieldKey != null && _autoFilledFields.contains(fieldKey);
+    final borderColor = hasWarning
+        ? AppColors.deliveryOrange
+        : autoFilled
+        ? _green
+        : AppColors.border;
+
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: const TextStyle(
+        color: AppColors.textLightMuted,
+        fontSize: 14,
+      ),
+      filled: true,
+      fillColor: autoFilled
+          ? _green.withValues(alpha: 0.08)
+          : hasWarning
+          ? AppColors.deliveryOrange.withValues(alpha: 0.08)
+          : AppColors.surface,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 13, vertical: 14),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: borderColor),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: borderColor),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: _green, width: 1.5),
+      ),
+    );
+  }
+}
+
+class _VoiceEntryCard extends StatelessWidget {
+  const _VoiceEntryCard({required this.extracting, required this.onTap});
+
+  final bool extracting;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: AppColors.deliveryGreen.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.mic_rounded,
+              color: AppColors.deliveryGreen,
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Fill with voice',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+                ),
+                SizedBox(height: 3),
+                Text(
+                  'Say field names first, e.g. "Shop name ABC Traders, mobile number 9876543210, city Pune, pincode 411001".',
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          FilledButton.icon(
+            onPressed: extracting ? null : onTap,
+            icon: extracting
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.auto_fix_high_rounded, size: 18),
+            label: Text(extracting ? 'Extracting' : 'Start'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _VoiceReviewBanner extends StatelessWidget {
+  const _VoiceReviewBanner({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.deliveryGreen.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: AppColors.deliveryGreen.withValues(alpha: 0.2),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Icons.fact_check_outlined,
+            color: AppColors.deliveryGreen,
+            size: 20,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: AppColors.deliveryDashboardHeaderEnd,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FieldAssist extends StatelessWidget {
+  const _FieldAssist({required this.autoFilled, this.warning});
+
+  final bool autoFilled;
+  final String? warning;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!autoFilled && warning == null) return const SizedBox.shrink();
+    final isWarning = warning != null;
+    return Padding(
+      padding: const EdgeInsets.only(top: 6, left: 2),
+      child: Row(
+        children: [
+          Icon(
+            isWarning ? Icons.warning_amber_rounded : Icons.mic_rounded,
+            size: 14,
+            color: isWarning
+                ? AppColors.deliveryOrange
+                : AppColors.deliveryGreen,
+          ),
+          const SizedBox(width: 5),
+          Expanded(
+            child: Text(
+              warning ?? 'Auto-filled from voice',
+              style: TextStyle(
+                color: isWarning
+                    ? AppColors.deliveryOrange
+                    : AppColors.deliveryGreen,
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

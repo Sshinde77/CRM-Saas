@@ -60,6 +60,36 @@ class LocationSearchService {
         .toList(growable: false);
   }
 
+  Future<LocationSearchResult?> reverseLookup(LatLng location) async {
+    final response = await http
+        .get(
+          Uri.parse('$_baseUrl/reverse').replace(
+            queryParameters: {
+              'lat': location.latitude.toString(),
+              'lon': location.longitude.toString(),
+              'lang': 'en',
+            },
+          ),
+          headers: const {
+            'Accept': 'application/json',
+            'User-Agent': 'CRM-SaaS customer location search',
+          },
+        )
+        .timeout(const Duration(seconds: 12));
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception('Location lookup failed (${response.statusCode})');
+    }
+
+    final decoded = jsonDecode(response.body);
+    if (decoded is! Map<String, dynamic>) return null;
+    final features = decoded['features'];
+    if (features is! List || features.isEmpty) return null;
+    for (final feature in features.whereType<Map>()) {
+      return _fromFeature(Map<String, dynamic>.from(feature));
+    }
+    return null;
+  }
+
   LocationSearchResult? _fromFeature(Map<String, dynamic> feature) {
     final geometry = feature['geometry'];
     final properties = feature['properties'];
