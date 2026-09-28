@@ -923,7 +923,7 @@ class _VoiceEntryCard extends StatelessWidget {
                 ),
                 SizedBox(height: 3),
                 Text(
-                  'Say field names first, e.g. "Shop name ABC Traders, mobile number 9876543210, city Pune, pincode 411001".',
+                  'Hold the mic and say field names first, e.g. "Shop name ABC Traders, mobile number 9876543210, city Pune, pincode 411001".',
                   style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 12,
@@ -942,7 +942,7 @@ class _VoiceEntryCard extends StatelessWidget {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.auto_fix_high_rounded, size: 18),
-            label: Text(extracting ? 'Extracting' : 'Start'),
+            label: Text(extracting ? 'Extracting' : 'Voice'),
           ),
         ],
       ),

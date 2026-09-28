@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
@@ -16,15 +14,13 @@ class VoiceInputSheet extends StatefulWidget {
 
 class _VoiceInputSheetState extends State<VoiceInputSheet>
     with SingleTickerProviderStateMixin {
-  static const _silenceAutoStopDelay = Duration(seconds: 2);
-
   final _speech = SpeechToText();
   final _transcriptController = TextEditingController();
   late final AnimationController _pulseController;
-  Timer? _silenceAutoStopTimer;
 
   bool _speechReady = false;
   bool _initializing = true;
+  bool _holdingMic = false;
   bool _listening = false;
   String? _error;
 
@@ -42,7 +38,6 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
 
   @override
   void dispose() {
-    _silenceAutoStopTimer?.cancel();
     _pulseController.dispose();
     _transcriptController.dispose();
     _speech.stop();
@@ -69,15 +64,13 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
         setState(() => _listening = isListening);
         if (isListening) {
           _pulseController.repeat(reverse: true);
-          _restartSilenceAutoStopTimer();
+          if (!_holdingMic) _speech.stop();
         } else {
-          _silenceAutoStopTimer?.cancel();
           _pulseController.stop();
         }
       },
       onError: (error) {
         if (!mounted) return;
-        _silenceAutoStopTimer?.cancel();
         setState(() {
           _listening = false;
           _error = error.errorMsg.isEmpty
@@ -96,25 +89,28 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
     });
   }
 
-  Future<void> _toggleListening() async {
+  Future<void> _startHoldListening() async {
     if (_initializing || !_speechReady) return;
-    if (_listening) {
-      _silenceAutoStopTimer?.cancel();
-      await _speech.stop();
-      return;
-    }
-
+    _holdingMic = true;
+    if (_listening) return;
     setState(() => _error = null);
     await _speech.listen(
       partialResults: true,
       listenFor: const Duration(minutes: 2),
-      pauseFor: _silenceAutoStopDelay,
+      pauseFor: const Duration(minutes: 2),
       onResult: _onSpeechResult,
     );
+    if (!mounted || _holdingMic) return;
+    await _speech.stop();
+  }
+
+  Future<void> _stopHoldListening() async {
+    _holdingMic = false;
+    if (!_speechReady) return;
+    await _speech.stop();
   }
 
   void _onSpeechResult(SpeechRecognitionResult result) {
-    if (_listening) _restartSilenceAutoStopTimer();
     _transcriptController.text = result.recognizedWords;
     _transcriptController.selection = TextSelection.collapsed(
       offset: _transcriptController.text.length,
@@ -122,17 +118,8 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
     if (mounted) setState(() {});
   }
 
-  void _restartSilenceAutoStopTimer() {
-    _silenceAutoStopTimer?.cancel();
-    _silenceAutoStopTimer = Timer(_silenceAutoStopDelay, () async {
-      if (!mounted || !_listening) return;
-      await _speech.stop();
-    });
-  }
-
   Future<void> _useTranscript() async {
-    _silenceAutoStopTimer?.cancel();
-    if (_listening) await _speech.stop();
+    await _stopHoldListening();
     final transcript = _transcriptController.text.trim();
     if (!mounted) return;
     if (transcript.length < 8) {
@@ -146,6 +133,7 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
     final canUse = _transcriptController.text.trim().length >= 8;
+    final micDisabled = _initializing || !_speechReady;
 
     return Padding(
       padding: EdgeInsets.fromLTRB(16, 12, 16, 16 + bottomInset),
@@ -192,20 +180,46 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
           Center(
             child: ScaleTransition(
               scale: _pulseController,
-              child: IconButton.filled(
-                tooltip: _listening ? 'Stop listening' : 'Start voice input',
-                onPressed: _initializing || !_speechReady
-                    ? null
-                    : _toggleListening,
-                style: IconButton.styleFrom(
-                  backgroundColor: _listening
-                      ? AppColors.deliveryRed
-                      : AppColors.deliveryGreen,
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size(64, 64),
-                  iconSize: 30,
+              child: GestureDetector(
+                onTapDown: micDisabled ? null : (_) => _startHoldListening(),
+                onTapUp: micDisabled ? null : (_) => _stopHoldListening(),
+                onTapCancel: micDisabled ? null : _stopHoldListening,
+                child: Semantics(
+                  button: true,
+                  enabled: !micDisabled,
+                  label: _listening
+                      ? 'Release to stop voice input'
+                      : 'Hold to start voice input',
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 160),
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: micDisabled
+                          ? AppColors.textLightMuted.withValues(alpha: 0.35)
+                          : _listening
+                          ? AppColors.deliveryRed
+                          : AppColors.deliveryGreen,
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: [
+                        BoxShadow(
+                          color:
+                              (_listening
+                                      ? AppColors.deliveryRed
+                                      : AppColors.deliveryGreen)
+                                  .withValues(alpha: micDisabled ? 0 : 0.22),
+                          blurRadius: _listening ? 18 : 12,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      _listening ? Icons.mic_off_rounded : Icons.mic_rounded,
+                      color: Colors.white,
+                      size: 30,
+                    ),
+                  ),
                 ),
-                icon: Icon(_listening ? Icons.stop_rounded : Icons.mic_rounded),
               ),
             ),
           ),
@@ -214,8 +228,8 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
             _initializing
                 ? 'Preparing speech recognition...'
                 : _listening
-                ? 'Listening... stops after 2 seconds of silence.'
-                : 'Tap the mic and follow the example above.',
+                ? 'Listening... release the mic to stop.'
+                : 'Hold the mic, speak the customer details, then release.',
             textAlign: TextAlign.center,
             style: const TextStyle(
               color: AppColors.textSecondary,
@@ -254,12 +268,7 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: _listening
-                      ? () {
-                          _silenceAutoStopTimer?.cancel();
-                          _speech.stop();
-                        }
-                      : null,
+                  onPressed: _listening ? _stopHoldListening : null,
                   child: const Text('Stop'),
                 ),
               ),
