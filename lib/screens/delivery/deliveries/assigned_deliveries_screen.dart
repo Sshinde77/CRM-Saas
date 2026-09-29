@@ -11,6 +11,7 @@ import '../../../models/delivery_schedule.dart';
 import '../../../providers/api_provider.dart';
 import '../../../routes/app_router.dart';
 import '../../../services/api_service.dart';
+import '../../../utils/product_image_url.dart';
 import '../../../widgets/delivery/delivery_bottom_navigation.dart';
 import '../../../widgets/delivery/delivery_partner_sidebar.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
@@ -882,20 +883,13 @@ class _DeliveryCard extends StatelessWidget {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: statusTone.background,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          delivery.canLoadDelivery
-                              ? Icons.local_shipping_outlined
-                              : Icons.person_outline_rounded,
-                          color: statusTone.foreground,
-                          size: 20,
-                        ),
+                      _CustomerAvatar(
+                        imageUrl: delivery.customerProfileImageUrl,
+                        fallbackIcon: delivery.canLoadDelivery
+                            ? Icons.local_shipping_outlined
+                            : Icons.person_outline_rounded,
+                        foreground: statusTone.foreground,
+                        background: statusTone.background,
                       ),
                       const SizedBox(width: 9),
                       Expanded(
@@ -1301,6 +1295,40 @@ class _DeliveryCardLabel extends StatelessWidget {
   }
 }
 
+class _CustomerAvatar extends StatelessWidget {
+  final String imageUrl;
+  final IconData fallbackIcon;
+  final Color foreground;
+  final Color background;
+
+  const _CustomerAvatar({
+    required this.imageUrl,
+    required this.fallbackIcon,
+    required this.foreground,
+    required this.background,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final url = imageUrl.trim();
+    return Container(
+      width: 36,
+      height: 36,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(color: background, shape: BoxShape.circle),
+      child: url.isEmpty
+          ? Icon(fallbackIcon, color: foreground, size: 20)
+          : Image.network(
+              url,
+              fit: BoxFit.cover,
+              errorBuilder: (_, error, stackTrace) {
+                return Icon(fallbackIcon, color: foreground, size: 20);
+              },
+            ),
+    );
+  }
+}
+
 class _RejectDeliverySheet extends StatelessWidget {
   final _AssignedDelivery delivery;
   final TextEditingController controller;
@@ -1669,6 +1697,7 @@ class _AssignedDelivery {
   final String deliveryNumber;
   final String orderNumber;
   final String customerName;
+  final String customerProfileImageUrl;
   final String status;
   final String internalStatus;
   final DateTime? scheduledDate;
@@ -1688,6 +1717,7 @@ class _AssignedDelivery {
     required this.deliveryNumber,
     required this.orderNumber,
     required this.customerName,
+    required this.customerProfileImageUrl,
     required this.status,
     required this.internalStatus,
     required this.scheduledDate,
@@ -1730,6 +1760,30 @@ class _AssignedDelivery {
           orderId ??
           (id.isEmpty ? 'ORD-NEW' : 'ORD-${id.toUpperCase()}'),
       customerName: customerName,
+      customerProfileImageUrl:
+          normalizeProductImageUrl(
+            _readString(json, const [
+                  'customerProfileImageUrl',
+                  'customer_profile_image_url',
+                  'profileImageUrl',
+                  'profile_image_url',
+                ]) ??
+                _readNestedString(json, 'customer', const [
+                  'profileImageUrl',
+                  'profile_image_url',
+                ]) ??
+                _readNestedString(json, 'order', const [
+                  'customerProfileImageUrl',
+                  'customer_profile_image_url',
+                  'profileImageUrl',
+                  'profile_image_url',
+                ]) ??
+                _readPathString(json, const ['order', 'customer'], const [
+                  'profileImageUrl',
+                  'profile_image_url',
+                ]),
+          ) ??
+          '',
       status: _normalizeStatus(
         _readString(json, const ['status', 'delivery_status']) ?? 'planned',
       ),
@@ -2174,6 +2228,22 @@ String? _readNestedString(
   final parent = json[parentKey];
   if (parent is Map<String, dynamic>) {
     return _readString(parent, keys);
+  }
+  return null;
+}
+
+String? _readPathString(
+  Map<String, dynamic> json,
+  List<String> path,
+  List<String> keys,
+) {
+  dynamic current = json;
+  for (final key in path) {
+    if (current is! Map<String, dynamic>) return null;
+    current = current[key];
+  }
+  if (current is Map<String, dynamic>) {
+    return _readString(current, keys);
   }
   return null;
 }

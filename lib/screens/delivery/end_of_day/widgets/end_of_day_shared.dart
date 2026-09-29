@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../constants/app_colors.dart';
 import '../../../../core/theme/app_sizes.dart';
-import '../../../../core/theme/app_spacing.dart';
 
 class EndOfDayCard extends StatelessWidget {
   final Widget child;
@@ -11,7 +10,7 @@ class EndOfDayCard extends StatelessWidget {
   const EndOfDayCard({
     super.key,
     required this.child,
-    this.padding = const EdgeInsets.all(AppSpacing.card),
+    this.padding = const EdgeInsets.all(12),
   });
 
   @override
@@ -21,12 +20,12 @@ class EndOfDayCard extends StatelessWidget {
       padding: padding,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(AppSizes.cardRadius),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.deliverySurfaceBorder),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 18,
+            blurRadius: 16,
             offset: const Offset(0, 8),
           ),
         ],
@@ -96,28 +95,28 @@ class EndOfDayProductImage extends StatelessWidget {
   Widget build(BuildContext context) {
     final url = imageUrl.trim();
     return Container(
-      width: 42,
-      height: 42,
+      width: 64,
+      height: 64,
       decoration: BoxDecoration(
         color: const Color(0xFFF7F9FC),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: const Color(0xFFE2E7F0)),
       ),
       clipBehavior: Clip.antiAlias,
       child: url.isEmpty
           ? const Icon(
               Icons.inventory_2_outlined,
-              color: Color(0xFF4A546B),
-              size: 20,
+              color: AppColors.deliveryGreen,
+              size: 30,
             )
           : Image.network(
               url,
-              fit: BoxFit.cover,
+              fit: BoxFit.contain,
               errorBuilder: (context, error, stackTrace) {
                 return const Icon(
                   Icons.inventory_2_outlined,
-                  color: Color(0xFF4A546B),
-                  size: 20,
+                  color: AppColors.deliveryGreen,
+                  size: 30,
                 );
               },
             ),

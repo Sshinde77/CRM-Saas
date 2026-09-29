@@ -5,7 +5,8 @@ class ApiConstants {
     'API_BASE_URL',
     defaultValue: '',
   );
-  static const String _productionBaseUrl = 'https://api.asynk.in';
+  static const String _productionBaseUrl =
+      'https://crm-saas-backend.bsmart.workers.dev';
 
   // Use API_BASE_URL only when a developer intentionally points the app at a
   // different API, such as the optional local CORS proxy.
@@ -113,6 +114,9 @@ class ApiEndpoints {
       '/vehicle-stock/{session_id}/reconcile';
   static const String attendanceMe = '/attendance/me';
   static const String attendanceCheckIn = '/attendance/check-in';
+  static const String leavesList = '/leaves';
+  static const String leavesMe = '/leaves/me';
+  static const String leaveDetailTemplate = '/leaves/{leave_id}';
   static const String usersMeLocation = '/users/me/location';
   static const String expensesList = '/expenses';
   static const String expenseCategories = '/expenses/categories';
@@ -224,6 +228,9 @@ class ApiEndpoints {
 
   static String expenseReceipt(String expenseId) =>
       expenseReceiptTemplate.replaceFirst('{expense_id}', expenseId);
+
+  static String leaveDetail(String leaveId) =>
+      leaveDetailTemplate.replaceFirst('{leave_id}', leaveId);
 
   static String vehicleStockCurrent(String deliveryPartnerId) =>
       vehicleStockCurrentTemplate.replaceFirst(

@@ -23,7 +23,6 @@ class StockReturnForm extends StatefulWidget {
   @override
   State<StockReturnForm> createState() => _StockReturnFormState();
 }
-
 class _StockReturnFormState extends State<StockReturnForm> {
   final Map<String, TextEditingController> _controllers = {};
 
@@ -116,8 +115,17 @@ class _StockReturnFormState extends State<StockReturnForm> {
                 ),
               ),
               const Divider(height: 1, color: Color(0xFFE9EDF5)),
-              const _ReturnHeader(),
-              ...widget.session.items.map(_returnRow),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+                child: Column(
+                  children: [
+                    for (final item in widget.session.items) ...[
+                      _returnRow(item),
+                      const SizedBox(height: 10),
+                    ],
+                  ],
+                ),
+              ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
                 child: SizedBox(
@@ -162,59 +170,64 @@ class _StockReturnFormState extends State<StockReturnForm> {
     final invalid = value > item.loadedQuantity || value < 0;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: Color(0xFFE9EDF5))),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.deliverySurfaceBorder),
       ),
-      child: Row(
+      child: Column(
         children: [
-          Expanded(
-            flex: 4,
-            child: Row(
-              children: [
-                EndOfDayProductImage(imageUrl: item.imageUrl),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.productName.isEmpty
-                            ? 'Unnamed product'
-                            : item.productName,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.deliveryInk,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w900,
-                        ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              EndOfDayProductImage(imageUrl: item.imageUrl),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.productName.isEmpty
+                          ? 'Unnamed product'
+                          : item.productName,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.deliveryInk,
+                        fontSize: 14,
+                        height: 1.15,
+                        fontWeight: FontWeight.w900,
                       ),
-                      const SizedBox(height: 2),
+                    ),
+                    if (item.variantId.isNotEmpty) ...[
+                      const SizedBox(height: 4),
                       Text(
-                        item.variantId.isEmpty ? '-' : item.variantId,
+                        'Variant: ${item.variantId}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: AppColors.textMuted,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ],
-                  ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-          Expanded(flex: 2, child: _NumberText(qty(item.loadedQuantity))),
-          Expanded(flex: 2, child: _NumberText(qty(item.deliveredQuantity))),
-          Expanded(
-            flex: 3,
-            child: Column(
-              children: [
-                SizedBox(
-                  height: 38,
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(child: _QuantityChip(label: 'Loaded', value: item.loadedQuantity)),
+              const SizedBox(width: 8),
+              Expanded(child: _QuantityChip(label: 'Delivered', value: item.deliveredQuantity)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: SizedBox(
+                  height: 40,
                   child: TextField(
                     controller: _controllers[item.id],
                     enabled: !widget.isSaving,
@@ -222,110 +235,89 @@ class _StockReturnFormState extends State<StockReturnForm> {
                     textAlign: TextAlign.center,
                     onChanged: (_) => setState(() {}),
                     decoration: InputDecoration(
+                      hintText: 'Return',
                       filled: true,
                       fillColor: Colors.white,
                       contentPadding: EdgeInsets.zero,
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: Color(0xFFE2E7F0)),
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 3),
-                Text(
-                  '0 - ${qty(item.loadedQuantity)}',
-                  style: const TextStyle(
-                    color: AppColors.textMuted,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
+              ),
+            ],
+          ),
+          if (invalid) ...[
+            const SizedBox(height: 8),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.deliveryRed.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Text(
+                'Return exceeds loaded quantity',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: AppColors.deliveryRed,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
                 ),
-                if (invalid) ...[
-                  const SizedBox(height: 3),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.deliveryRed.withValues(alpha: 0.10),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: const Text(
-                      'Return exceeds loaded quantity',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: AppColors.deliveryRed,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ),
-                ],
-              ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+class _QuantityChip extends StatelessWidget {
+  final String label;
+  final double value;
+
+  const _QuantityChip({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF7F9FC),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.deliverySurfaceBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            qty(value),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: AppColors.deliveryGreen,
+              fontSize: 13,
+              height: 1,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: AppColors.textMuted,
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _ReturnHeader extends StatelessWidget {
-  const _ReturnHeader();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.fromLTRB(14, 10, 14, 10),
-      child: Row(
-        children: [
-          Expanded(flex: 4, child: _HeaderText('Product')),
-          Expanded(flex: 2, child: _HeaderText('Loaded')),
-          Expanded(flex: 2, child: _HeaderText('Delivered')),
-          Expanded(flex: 3, child: _HeaderText('Actual Return')),
-        ],
-      ),
-    );
-  }
-}
-
-class _HeaderText extends StatelessWidget {
-  final String text;
-
-  const _HeaderText(this.text);
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      text,
-      maxLines: 2,
-      overflow: TextOverflow.ellipsis,
-      style: const TextStyle(
-        color: AppColors.deliveryInk,
-        fontSize: 14,
-        fontWeight: FontWeight.w900,
-      ),
-    );
-  }
-}
-
-class _NumberText extends StatelessWidget {
-  final String text;
-
-  const _NumberText(this.text);
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      text,
-      textAlign: TextAlign.center,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      style: const TextStyle(
-        color: AppColors.deliveryInk,
-        fontSize: 14,
-        fontWeight: FontWeight.w800,
       ),
     );
   }

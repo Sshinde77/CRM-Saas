@@ -156,12 +156,16 @@ class DeliveryPartnerSidebar extends StatelessWidget {
         Navigator.of(context).pushNamed(AppRoutes.deliveryDeliveries);
       case AppRoutes.deliveryCustomers:
         Navigator.of(context).pushNamed(AppRoutes.deliveryCustomers);
+      case AppRoutes.deliveryCollections:
+        Navigator.of(context).pushNamed(AppRoutes.deliveryCollections);
       case AppRoutes.deliveryVehicleStock:
         Navigator.of(context).pushNamed(AppRoutes.deliveryVehicleStock);
       case AppRoutes.deliveryVehicleLoading:
         Navigator.of(context).pushNamed(AppRoutes.deliveryVehicleLoading);
       case AppRoutes.deliveryAttendance:
         Navigator.of(context).pushNamed(AppRoutes.deliveryAttendance);
+      case AppRoutes.deliveryLeaves:
+        Navigator.of(context).pushNamed(AppRoutes.deliveryLeaves);
       case AppRoutes.deliveryExpenses:
         Navigator.of(context).pushNamed(AppRoutes.deliveryExpenses);
       case AppRoutes.deliveryEndOfDay:
@@ -438,6 +442,11 @@ const List<_DeliveryMenuItem> _deliveryMenuItems = [
     label: 'Customers',
     route: AppRoutes.deliveryCustomers,
     icon: Icons.people_outline_rounded,
+  ),
+  _DeliveryMenuItem(
+    label: 'Collections',
+    route: AppRoutes.deliveryCollections,
+    icon: Icons.account_balance_wallet_outlined,
   ),
   _DeliveryMenuItem(
     label: 'Vehicle Stock',

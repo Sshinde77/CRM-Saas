@@ -13,6 +13,7 @@ import '../../../utils/product_image_url.dart';
 import '../../../widgets/app_calendar_date_picker.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
 import '../../../widgets/delivery/customer_search_dialog.dart';
+import '../../../widgets/delivery/delivery_partner_search_dialog.dart';
 import '../customers/create_delivery_customer_screen.dart';
 
 class CreateDeliveryOrderScreen extends StatefulWidget {
@@ -34,6 +35,7 @@ class CreateDeliveryOrderScreen extends StatefulWidget {
 
 class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
   static const _green = AppColors.deliveryGreen;
+  static const _allWarehousesId = '__all_warehouses__';
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   final _form = GlobalKey<FormState>();
   final _quantities = <String, int>{};
@@ -43,13 +45,16 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
   List<_OrderProduct> _products = [];
   List<Map<String, dynamic>> _warehouses = [];
   List<AppUser> _deliveryPartners = [];
+  Map<String, double> _stockByProductId = {};
   CustomerModel? _customer;
-  String? _selectedWarehouseId;
+  String? _selectedWarehouseId = _allWarehousesId;
   String? _selectedPartnerId;
   String _query = '', _category = 'All', _payment = 'Cash';
   bool _homeDelivery = false, _loading = true, _started = false;
+  bool _stockLoading = false;
   bool _partnersLoading = false, _partnersLoaded = false;
   String? _partnersError;
+  String? _stockError;
   final _loadErrors = <String, String>{};
   final _loaded = <String>{};
   DateTime _orderDate = DateUtils.dateOnly(DateTime.now());
@@ -102,13 +107,50 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
             if (!warehouses.any(
               (w) => _text(w, ['id', 'warehouse_id']) == _selectedWarehouseId,
             )) {
-              _selectedWarehouseId = null;
+              _selectedWarehouseId = _allWarehousesId;
             }
           });
         }
       }),
     ]);
+    if (mounted) await _loadStockForWarehouse();
     if (mounted) setState(() => _loading = false);
+  }
+
+  Future<void> _loadStockForWarehouse() async {
+    setState(() {
+      _stockLoading = true;
+      _stockError = null;
+    });
+    try {
+      final selectedId = _selectedWarehouseId;
+      final rows = await ApiProviderScope.of(context).fetchStockBoard(
+        isActive: true,
+        warehouseId: selectedId == _allWarehousesId ? null : selectedId,
+      );
+      final stockByProductId = <String, double>{};
+      for (final row in rows) {
+        final productId = _productIdFromStockRow(row);
+        final stock = _stockFromRow(row);
+        if (productId.isNotEmpty && stock != null) {
+          stockByProductId[productId] = stock;
+        }
+      }
+      if (mounted) {
+        setState(() => _stockByProductId = stockByProductId);
+      }
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          _stockByProductId = {};
+          _stockError = error is ApiException
+              ? error.message
+              : 'Could not load product availability.';
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _stockLoading = false);
+    }
   }
 
   Future<void> _loadDeliveryPartners({
@@ -296,13 +338,53 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
 
   Map<String, dynamic>? _selectedWarehouse() {
     final selectedId = _selectedWarehouseId;
-    if (selectedId == null || selectedId.trim().isEmpty) return null;
+    if (selectedId == null ||
+        selectedId.trim().isEmpty ||
+        selectedId == _allWarehousesId) {
+      return null;
+    }
     for (final warehouse in _warehouses) {
       if (_text(warehouse, ['id', 'warehouse_id']) == selectedId) {
         return warehouse;
       }
     }
     return null;
+  }
+
+  String _productIdFromStockRow(Map<String, dynamic> row) {
+    final product = row['product'];
+    final data = product is Map<String, dynamic> ? {...row, ...product} : row;
+    return _text(data, ['product_id', 'productId', 'id', '_id']);
+  }
+
+  double? _stockFromRow(Map<String, dynamic> row) {
+    final product = row['product'];
+    final data = product is Map<String, dynamic> ? {...row, ...product} : row;
+    return _OrderProduct.readStock(data);
+  }
+
+  double? _displayStockFor(_OrderProduct product) {
+    if (_stockByProductId.containsKey(product.id)) {
+      return _stockByProductId[product.id];
+    }
+    return product.stock;
+  }
+
+  String _availabilityLabel(double? stock) {
+    if (_stockLoading) return 'Availability: Loading';
+    if (stock == null) return 'Availability: Checked on order';
+    if (stock <= 0) return 'Availability: 0';
+    final quantity = stock == stock.truncateToDouble()
+        ? stock.toStringAsFixed(0)
+        : stock.toString();
+    return 'Availability: $quantity';
+  }
+
+  Color _availabilityColor(double? stock) {
+    if (_stockLoading || stock == null) return AppColors.textLightMuted;
+    if (stock <= 0) return AppColors.red;
+    if (stock <= 10) return Colors.deepOrange;
+    return _green;
   }
 
   String _date(DateTime date) =>
@@ -649,20 +731,30 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                                 ? 'No warehouses available'
                                 : 'Select warehouse',
                           ).copyWith(errorText: _loadErrors['Warehouses']),
-                          items: _warehouses
-                              .map(
-                                (w) => DropdownMenuItem(
-                                  value: _text(w, ['id', 'warehouse_id']),
-                                  child: Text(
-                                    _warehouseLabel(w),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
+                          items: [
+                            const DropdownMenuItem(
+                              value: _allWarehousesId,
+                              child: Text(
+                                'All warehouses',
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            ..._warehouses.map(
+                              (w) => DropdownMenuItem(
+                                value: _text(w, ['id', 'warehouse_id']),
+                                child: Text(
+                                  _warehouseLabel(w),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                              )
-                              .toList(),
+                              ),
+                            ),
+                          ],
                           onChanged: _warehouses.isEmpty
                               ? null
-                              : (v) => setState(() => _selectedWarehouseId = v),
+                              : (v) {
+                                  setState(() => _selectedWarehouseId = v);
+                                  _loadStockForWarehouse();
+                                },
                           validator: (v) =>
                               v == null ? 'Select a warehouse' : null,
                         ),
@@ -672,6 +764,18 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                             child: TextButton(
                               onPressed: _loading ? null : _load,
                               child: const Text('Retry warehouses'),
+                            ),
+                          ),
+                        if (_stockError != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 6),
+                            child: Text(
+                              _stockError!,
+                              style: const TextStyle(
+                                color: AppColors.red,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         _heading('Add products'),
@@ -754,41 +858,81 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                           ],
                         ),
                         if (_homeDelivery) ...[
+                          const SizedBox(height: 12),
                           _label('Delivery Partner *'),
-                          DropdownButtonFormField<String>(
+                          FormField<String>(
                             key: ValueKey(_selectedPartnerId ?? 'no-partner'),
-                            isExpanded: true,
                             initialValue: _selectedPartnerId,
-                            decoration: _decoration(
-                              _partnersLoading
+                            validator: (value) => value == null
+                                ? 'Select a delivery partner'
+                                : null,
+                            builder: (field) {
+                              final selectedPartner = _deliveryPartners
+                                  .where(
+                                    (partner) =>
+                                        partner.id == _selectedPartnerId,
+                                  )
+                                  .firstOrNull;
+                              final disabled =
+                                  _partnersLoading ||
+                                  _deliveryPartners.isEmpty ||
+                                  _partnersError != null;
+                              final label = _partnersLoading
                                   ? 'Loading delivery partners...'
                                   : _partnersError != null
                                   ? 'Could not load delivery partners'
                                   : _deliveryPartners.isEmpty
                                   ? 'No delivery partners available'
-                                  : 'Select delivery partner',
-                              icon: Icons.delivery_dining_outlined,
-                            ),
-                            items: _deliveryPartners
-                                .map(
-                                  (partner) => DropdownMenuItem(
-                                    value: partner.id,
-                                    child: Text(
-                                      partner.name,
-                                      overflow: TextOverflow.ellipsis,
+                                  : selectedPartner?.name ??
+                                        'Select delivery partner';
+
+                              return InkWell(
+                                borderRadius: BorderRadius.circular(12),
+                                onTap: disabled
+                                    ? null
+                                    : () async {
+                                        final partner =
+                                            await showDialog<AppUser>(
+                                              context: context,
+                                              builder: (_) =>
+                                                  DeliveryPartnerSearchDialog(
+                                                    partners: _deliveryPartners,
+                                                    selectedPartnerId:
+                                                        _selectedPartnerId,
+                                                  ),
+                                            );
+                                        if (!mounted || partner == null) return;
+                                        setState(
+                                          () =>
+                                              _selectedPartnerId = partner.id,
+                                        );
+                                        field.didChange(partner.id);
+                                      },
+                                child: InputDecorator(
+                                  decoration:
+                                      _decoration(
+                                        '',
+                                        icon: Icons.delivery_dining_outlined,
+                                      ).copyWith(
+                                        errorText: field.errorText,
+                                        suffixIcon: const Icon(
+                                          Icons.keyboard_arrow_down,
+                                        ),
+                                      ),
+                                  child: Text(
+                                    label,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color:
+                                          selectedPartner == null &&
+                                              !_partnersLoading
+                                          ? AppColors.textLightMuted
+                                          : AppColors.textPrimary,
                                     ),
                                   ),
-                                )
-                                .toList(),
-                            onChanged:
-                                _partnersLoading || _deliveryPartners.isEmpty
-                                ? null
-                                : (value) => setState(
-                                    () => _selectedPartnerId = value,
-                                  ),
-                            validator: (value) => value == null
-                                ? 'Select a delivery partner'
-                                : null,
+                                ),
+                              );
+                            },
                           ),
                           if (_partnersError != null)
                             Row(
@@ -915,6 +1059,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
     }
     final cards = visible.map<Widget>((p) {
       final quantity = _quantities[p.id] ?? 0;
+      final displayStock = _displayStockFor(p);
       return Container(
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(10),
@@ -928,13 +1073,13 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
         child: Row(
           children: [
             SizedBox(
-              width: 48,
-              height: 64,
+              width: 72,
+              height: 72,
               child: p.image.isEmpty
                   ? const Icon(
                       Icons.inventory_2_outlined,
                       color: _green,
-                      size: 32,
+                      size: 40,
                     )
                   : Image.network(
                       p.image,
@@ -965,24 +1110,33 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                     ),
                   const SizedBox(height: 3),
                   Text(
-                    p.availabilityLabel,
+                    _availabilityLabel(displayStock),
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: p.stock == null
-                          ? AppColors.textLightMuted
-                          : p.stock! <= 0
-                          ? AppColors.red
-                          : p.stock! <= 20
-                          ? Colors.deepOrange
-                          : _green,
+                      color: _availabilityColor(displayStock),
                     ),
                   ),
-                  Text(
-                    '${_money(p.price)} / ${p.unit}',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
+                  RichText(
+                    text: TextSpan(
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 14,
+                      ),
+                      children: [
+                        TextSpan(
+                          text: _money(p.price),
+                          style: const TextStyle(fontWeight: FontWeight.w800),
+                        ),
+                        TextSpan(
+                          text: ' / ${p.unit}',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -2235,12 +2389,20 @@ class _OrderProduct {
 
   String get availabilityLabel {
     final available = stock;
-    if (available == null) return 'Stock checked when order is created';
-    if (available <= 0) return 'Catalog stock: 0 $unit';
+    if (available == null) return 'Availability: Checked on order';
+    if (available <= 0) return 'Availability: 0';
     final quantity = available == available.truncateToDouble()
         ? available.toStringAsFixed(0)
         : available.toString();
-    return 'Catalog stock: $quantity $unit (warehouse may differ)';
+    return 'Availability: $quantity';
+  }
+
+  Color get availabilityColor {
+    final available = stock;
+    if (available == null) return AppColors.textLightMuted;
+    if (available <= 0) return AppColors.red;
+    if (available <= 10) return Colors.deepOrange;
+    return AppColors.deliveryGreen;
   }
 
   factory _OrderProduct.fromJson(Map<String, dynamic> json) {
@@ -2266,11 +2428,11 @@ class _OrderProduct {
             ]),
           ) ??
           0,
-      _readStock(data),
+      readStock(data),
     );
   }
 
-  static double? _readStock(Map<String, dynamic> data) {
+  static double? readStock(Map<String, dynamic> data) {
     for (final key in const [
       'available_stock',
       'available_quantity',

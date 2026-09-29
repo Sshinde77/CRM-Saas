@@ -111,8 +111,17 @@ class _StockReconciliationFormState extends State<StockReconciliationForm> {
                 ),
               ),
               const Divider(height: 1, color: Color(0xFFE9EDF5)),
-              const _ReconcileHeader(),
-              ...widget.session.items.map(_reconcileRow),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+                child: Column(
+                  children: [
+                    for (final item in widget.session.items) ...[
+                      _reconcileRow(item),
+                      const SizedBox(height: 10),
+                    ],
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -195,61 +204,67 @@ class _StockReconciliationFormState extends State<StockReconciliationForm> {
     final variance = physical - item.expectedClosingQuantity;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: Color(0xFFE9EDF5))),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.deliverySurfaceBorder),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            flex: 4,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.productName.isEmpty
-                      ? 'Unnamed product'
-                      : item.productName,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.deliveryInk,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w900,
-                  ),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.productName.isEmpty
+                          ? 'Unnamed product'
+                          : item.productName,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.deliveryInk,
+                        fontSize: 14,
+                        height: 1.15,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    if (item.variantId.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        'Variant: ${item.variantId}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.textMuted,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  item.variantId.isEmpty ? '-' : item.variantId,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.textMuted,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            flex: 2,
-            child: Text(
-              qty(item.expectedClosingQuantity),
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: AppColors.deliveryInk,
-                fontSize: 14,
-                fontWeight: FontWeight.w800,
               ),
-            ),
+              const SizedBox(width: 10),
+              VarianceBadge(variance: variance),
+            ],
           ),
-          Expanded(
-            flex: 3,
-            child: Column(
-              children: [
-                SizedBox(
-                  height: 38,
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: _QuantityChip(
+                  label: 'Expected',
+                  value: item.expectedClosingQuantity,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: SizedBox(
+                  height: 40,
                   child: TextField(
                     controller: _controllers[item.id],
                     enabled: !widget.isSaving,
@@ -257,68 +272,70 @@ class _StockReconciliationFormState extends State<StockReconciliationForm> {
                     textAlign: TextAlign.center,
                     onChanged: (_) => setState(() {}),
                     decoration: InputDecoration(
+                      hintText: 'Physical',
                       filled: true,
                       fillColor: Colors.white,
                       contentPadding: EdgeInsets.zero,
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: Color(0xFFE2E7F0)),
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 3),
-                Text(
-                  '0 - ${qty(item.expectedClosingQuantity)}',
-                  style: const TextStyle(
-                    color: AppColors.textMuted,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _QuantityChip extends StatelessWidget {
+  final String label;
+  final double value;
+
+  const _QuantityChip({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF7F9FC),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.deliverySurfaceBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            qty(value),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: AppColors.deliveryGreen,
+              fontSize: 13,
+              height: 1,
+              fontWeight: FontWeight.w900,
             ),
           ),
-          Expanded(flex: 3, child: VarianceBadge(variance: variance)),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: AppColors.textMuted,
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ],
-      ),
-    );
-  }
-}
-
-class _ReconcileHeader extends StatelessWidget {
-  const _ReconcileHeader();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.fromLTRB(14, 10, 14, 10),
-      child: Row(
-        children: [
-          Expanded(flex: 4, child: _HeaderText('Product')),
-          Expanded(flex: 2, child: _HeaderText('Expected Closing')),
-          Expanded(flex: 3, child: _HeaderText('Physical Count')),
-          Expanded(flex: 3, child: _HeaderText('Variance')),
-        ],
-      ),
-    );
-  }
-}
-
-class _HeaderText extends StatelessWidget {
-  final String text;
-
-  const _HeaderText(this.text);
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      text,
-      maxLines: 2,
-      overflow: TextOverflow.ellipsis,
-      style: const TextStyle(
-        color: AppColors.deliveryInk,
-        fontSize: 14,
-        fontWeight: FontWeight.w900,
       ),
     );
   }

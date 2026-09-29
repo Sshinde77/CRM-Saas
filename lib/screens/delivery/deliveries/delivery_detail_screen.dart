@@ -309,14 +309,11 @@ class _Body extends StatelessWidget {
                   const SizedBox(height: 14),
                   Row(
                     children: [
-                      const CircleAvatar(
+                      _CustomerAvatar(
+                        imageUrl: delivery.customerProfileImageUrl,
                         radius: 28,
                         backgroundColor: AppColors.deliveryBlueSoft,
-                        child: Icon(
-                          Icons.storefront_outlined,
-                          color: AppColors.deliveryInk,
-                          size: 30,
-                        ),
+                        foregroundColor: AppColors.deliveryInk,
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -750,6 +747,45 @@ class _DeliveryImage extends StatelessWidget {
                 errorBuilder: (_, _, _) => placeholder,
               ),
       ),
+    );
+  }
+}
+
+class _CustomerAvatar extends StatelessWidget {
+  final String imageUrl;
+  final double radius;
+  final Color backgroundColor;
+  final Color foregroundColor;
+
+  const _CustomerAvatar({
+    required this.imageUrl,
+    required this.radius,
+    required this.backgroundColor,
+    required this.foregroundColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final url = imageUrl.trim();
+    final size = radius * 2;
+    final fallback = Icon(
+      Icons.storefront_outlined,
+      color: foregroundColor,
+      size: radius + 2,
+    );
+
+    return Container(
+      width: size,
+      height: size,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(color: backgroundColor, shape: BoxShape.circle),
+      child: url.isEmpty
+          ? fallback
+          : Image.network(
+              url,
+              fit: BoxFit.cover,
+              errorBuilder: (_, error, stackTrace) => fallback,
+            ),
     );
   }
 }

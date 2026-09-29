@@ -12,6 +12,7 @@ import '../screens/delivery/deliveries/assigned_deliveries_screen.dart';
 import '../screens/delivery/deliveries/delivery_detail_screen.dart';
 import '../screens/delivery/end_of_day/end_of_day_return_screen.dart';
 import '../screens/delivery/expenses/delivery_expenses_screen.dart';
+import '../screens/delivery/leaves/delivery_leaves_screen.dart';
 import '../screens/delivery/vehicle_stock/delivery_vehicle_loading_screen.dart';
 import '../screens/delivery/vehicle_stock/delivery_vehicle_stock_screen.dart';
 import '../screens/role_home_screen.dart';
@@ -56,6 +57,7 @@ class AppRouter {
       AppRoutes.deliveryCollections: (_) =>
           const DeliveryCollectionListScreen(),
       AppRoutes.deliveryAttendance: (_) => const DeliveryAttendanceScreen(),
+      AppRoutes.deliveryLeaves: (_) => const DeliveryLeavesScreen(),
       AppRoutes.deliveryVehicleStock: (_) => const DeliveryVehicleStockScreen(),
       AppRoutes.deliveryVehicleLoading: (_) =>
           const DeliveryVehicleLoadingScreen(),

@@ -178,11 +178,22 @@ class _CheckpointsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final checkpoints = _CheckpointType.values;
     final fullDate = formatAttendanceDate(DateTime.now());
     final dateLabel = MediaQuery.sizeOf(context).width < 360
         ? fullDate.substring(0, fullDate.lastIndexOf(' '))
         : fullDate;
+    final checkInTime = today?.timeFor(
+      DeliveryAttendanceCheckpoint.officeCheckIn,
+    );
+    final departureTime = today?.timeFor(
+      DeliveryAttendanceCheckpoint.departure,
+    );
+    final returnTime = today?.timeFor(
+      DeliveryAttendanceCheckpoint.returnToOffice,
+    );
+    final checkOutTime = today?.timeFor(
+      DeliveryAttendanceCheckpoint.finalCheckOut,
+    );
 
     return _SurfaceCard(
       child: Column(
@@ -224,32 +235,58 @@ class _CheckpointsCard extends StatelessWidget {
             _InlineError(message: error!, onDismiss: onDismissError),
           ],
           const SizedBox(height: 10),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final wide = constraints.maxWidth >= 620;
-              return GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: checkpoints.length,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: wide ? 4 : 2,
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
-                  mainAxisExtent: 124,
+          checkInTime == null
+              ? _CheckpointActionButton(
+                  checkpoint: _CheckpointType.officeCheckIn,
+                  label: 'Check In',
+                  time: formatAttendanceTime(checkInTime),
+                  recorded: false,
+                  busy: busyTypes.contains(
+                    _CheckpointType.officeCheckIn.apiValue,
+                  ),
+                  onMarkNow: () => onMarkNow(_CheckpointType.officeCheckIn),
+                )
+              : _OnDutyStatus(time: formatAttendanceTime(checkInTime)),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: _CheckpointActionButton(
+                  checkpoint: _CheckpointType.departure,
+                  label: 'Departure',
+                  time: formatAttendanceTime(departureTime),
+                  recorded: departureTime != null,
+                  busy: busyTypes.contains(_CheckpointType.departure.apiValue),
+                  compact: true,
+                  onMarkNow: () => onMarkNow(_CheckpointType.departure),
                 ),
-                itemBuilder: (context, index) {
-                  final checkpoint = checkpoints[index];
-                  final time = today?.timeFor(checkpoint.recordCheckpoint);
-                  return _CheckpointTile(
-                    checkpoint: checkpoint,
-                    time: formatAttendanceTime(time),
-                    recorded: time != null,
-                    busy: busyTypes.contains(checkpoint.apiValue),
-                    onMarkNow: () => onMarkNow(checkpoint),
-                  );
-                },
-              );
-            },
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _CheckpointActionButton(
+                  checkpoint: _CheckpointType.returnToOffice,
+                  label: 'Return to Office',
+                  time: formatAttendanceTime(returnTime),
+                  recorded: returnTime != null,
+                  busy: busyTypes.contains(
+                    _CheckpointType.returnToOffice.apiValue,
+                  ),
+                  compact: true,
+                  onMarkNow: () => onMarkNow(_CheckpointType.returnToOffice),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          _CheckpointActionButton(
+            checkpoint: _CheckpointType.finalCheckOut,
+            label: 'Check Out',
+            time: formatAttendanceTime(checkOutTime),
+            recorded: checkOutTime != null,
+            busy: busyTypes.contains(_CheckpointType.finalCheckOut.apiValue),
+            emphasisColor: AppColors.deliveryRed,
+            emphasisSoftColor: const Color(0xFFFFF1F1),
+            onMarkNow: () => onMarkNow(_CheckpointType.finalCheckOut),
           ),
         ],
       ),
@@ -257,127 +294,307 @@ class _CheckpointsCard extends StatelessWidget {
   }
 }
 
-class _CheckpointTile extends StatelessWidget {
-  final _CheckpointType checkpoint;
+class _OnDutyStatus extends StatelessWidget {
   final String time;
-  final bool recorded;
-  final bool busy;
-  final VoidCallback onMarkNow;
 
-  const _CheckpointTile({
-    required this.checkpoint,
-    required this.time,
-    required this.recorded,
-    required this.busy,
-    required this.onMarkNow,
-  });
+  const _OnDutyStatus({required this.time});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(8),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: checkpoint.softColor.withValues(alpha: 0.55),
+        color: AppColors.deliveryGreenSoft,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: checkpoint.color.withValues(alpha: 0.16)),
+        border: Border.all(
+          color: AppColors.deliveryGreen.withValues(alpha: 0.18),
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            children: [
-              _TintIcon(
-                icon: checkpoint.icon,
-                color: checkpoint.color,
-                background: Colors.white,
-              ),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  checkpoint.label,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.deliveryInk,
-                    fontSize: 13,
-                    height: 1.1,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-              const Icon(
-                Icons.chevron_right_rounded,
-                size: 14,
-                color: AppColors.textMuted,
-              ),
-            ],
+          _TintIcon(
+            icon: Icons.login_rounded,
+            color: AppColors.deliveryGreen,
+            background: Colors.white,
           ),
-          const SizedBox(height: 5),
-          Row(
-            children: [
-              const Icon(
-                Icons.schedule_rounded,
-                size: 12,
-                color: AppColors.textMuted,
-              ),
-              const SizedBox(width: 4),
-              Expanded(
-                child: Text(
-                  time,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+          const SizedBox(width: 10),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'You are',
                   style: TextStyle(
-                    color: recorded
-                        ? AppColors.deliveryInk
-                        : AppColors.textMuted,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
+                    color: AppColors.textMuted,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-              ),
-            ],
-          ),
-          const Spacer(),
-          SizedBox(
-            width: double.infinity,
-            height: 30,
-            child: FilledButton.icon(
-              onPressed: recorded || busy ? null : onMarkNow,
-              icon: busy
-                  ? SizedBox(
-                      width: 11,
-                      height: 11,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 1.5,
-                        color: checkpoint.color,
-                      ),
-                    )
-                  : Icon(
-                      recorded
-                          ? Icons.check_circle_outline_rounded
-                          : Icons.play_arrow_rounded,
-                      size: 14,
-                    ),
-              label: Text(recorded ? 'Recorded' : 'Mark now'),
-              style: FilledButton.styleFrom(
-                foregroundColor: checkpoint.color,
-                disabledForegroundColor: AppColors.deliveryGreen,
-                disabledBackgroundColor: AppColors.deliveryGreenSoft,
-                backgroundColor: checkpoint.softColor,
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                minimumSize: const Size(0, 30),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                textStyle: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
+                SizedBox(height: 1),
+                Text(
+                  'On Duty',
+                  style: TextStyle(
+                    color: AppColors.deliveryGreen,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppSizes.pillRadius),
-                ),
-              ),
+              ],
             ),
           ),
+          Text(
+            time,
+            style: const TextStyle(
+              color: AppColors.deliveryInk,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(width: 8),
+          const Icon(
+            Icons.check_circle_rounded,
+            size: 18,
+            color: AppColors.deliveryGreen,
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class _CheckpointActionButton extends StatelessWidget {
+  final _CheckpointType checkpoint;
+  final String label;
+  final String time;
+  final bool recorded;
+  final bool busy;
+  final bool compact;
+  final Color? emphasisColor;
+  final Color? emphasisSoftColor;
+  final VoidCallback onMarkNow;
+
+  const _CheckpointActionButton({
+    required this.checkpoint,
+    required this.label,
+    required this.time,
+    required this.recorded,
+    required this.busy,
+    required this.onMarkNow,
+    this.compact = false,
+    this.emphasisColor,
+    this.emphasisSoftColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = emphasisColor ?? checkpoint.color;
+    final softColor = emphasisSoftColor ?? checkpoint.softColor;
+
+    if (!compact) {
+      return SizedBox(
+        width: double.infinity,
+        height: 48,
+        child: FilledButton.icon(
+          onPressed: recorded || busy ? null : onMarkNow,
+          icon: busy
+              ? const SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 1.8,
+                    color: Colors.white,
+                  ),
+                )
+              : Icon(
+                  recorded
+                      ? Icons.check_circle_outline_rounded
+                      : checkpoint.icon,
+                  size: 20,
+                ),
+          label: Text(recorded ? 'Recorded' : label),
+          style: FilledButton.styleFrom(
+            backgroundColor: color,
+            foregroundColor: Colors.white,
+            disabledBackgroundColor: softColor,
+            disabledForegroundColor: color,
+            textStyle: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      constraints: BoxConstraints(minHeight: compact ? 86 : 52),
+      padding: EdgeInsets.all(compact ? 8 : 10),
+      decoration: BoxDecoration(
+        color: softColor.withValues(alpha: 0.62),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
+      ),
+      child: compact
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    _TintIcon(
+                      icon: checkpoint.icon,
+                      color: color,
+                      background: Colors.white,
+                    ),
+                    const SizedBox(width: 7),
+                    Expanded(
+                      child: Text(
+                        label,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.deliveryInk,
+                          fontSize: 13,
+                          height: 1.1,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                _CheckpointTime(time: time, recorded: recorded),
+                const Spacer(),
+                _CheckpointMarkButton(
+                  color: color,
+                  softColor: softColor,
+                  recorded: recorded,
+                  busy: busy,
+                  onPressed: onMarkNow,
+                ),
+              ],
+            )
+          : Row(
+              children: [
+                _TintIcon(
+                  icon: checkpoint.icon,
+                  color: color,
+                  background: Colors.white,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: AppColors.deliveryInk,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                _CheckpointTime(time: time, recorded: recorded),
+                const SizedBox(width: 10),
+                SizedBox(
+                  width: 118,
+                  child: _CheckpointMarkButton(
+                    color: color,
+                    softColor: softColor,
+                    recorded: recorded,
+                    busy: busy,
+                    onPressed: onMarkNow,
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+}
+
+class _CheckpointTime extends StatelessWidget {
+  final String time;
+  final bool recorded;
+
+  const _CheckpointTime({required this.time, required this.recorded});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Icon(Icons.schedule_rounded, size: 12, color: AppColors.textMuted),
+        const SizedBox(width: 4),
+        Text(
+          time,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: recorded ? AppColors.deliveryInk : AppColors.textMuted,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _CheckpointMarkButton extends StatelessWidget {
+  final Color color;
+  final Color softColor;
+  final bool recorded;
+  final bool busy;
+  final VoidCallback onPressed;
+
+  const _CheckpointMarkButton({
+    required this.color,
+    required this.softColor,
+    required this.recorded,
+    required this.busy,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 30,
+      child: FilledButton.icon(
+        onPressed: recorded || busy ? null : onPressed,
+        icon: busy
+            ? SizedBox(
+                width: 11,
+                height: 11,
+                child: CircularProgressIndicator(
+                  strokeWidth: 1.5,
+                  color: color,
+                ),
+              )
+            : Icon(
+                recorded
+                    ? Icons.check_circle_outline_rounded
+                    : Icons.play_arrow_rounded,
+                size: 14,
+              ),
+        label: Text(recorded ? 'Recorded' : 'Mark now'),
+        style: FilledButton.styleFrom(
+          foregroundColor: color,
+          disabledForegroundColor: color,
+          disabledBackgroundColor: softColor,
+          backgroundColor: softColor,
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          minimumSize: const Size(0, 30),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSizes.pillRadius),
+          ),
+        ),
       ),
     );
   }

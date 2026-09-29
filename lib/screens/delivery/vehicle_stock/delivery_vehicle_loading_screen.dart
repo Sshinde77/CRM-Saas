@@ -291,7 +291,7 @@ class _DeliveryVehicleLoadingScreenState
                     physics: const AlwaysScrollableScrollPhysics(
                       parent: BouncingScrollPhysics(),
                     ),
-                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
+                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 18),
                     child: Center(
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 760),
@@ -371,18 +371,16 @@ class _KpiPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF063B25),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFF146C42).withValues(alpha: 0.35),
-        ),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.deliverySurfaceBorder),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF063B25).withValues(alpha: 0.16),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -395,7 +393,7 @@ class _KpiPanel extends StatelessWidget {
               label: 'Product Lines',
             ),
           ),
-          const _MetricDivider(),
+          const SizedBox(width: 8),
           Expanded(
             child: _Metric(
               icon: Icons.layers_rounded,
@@ -403,7 +401,7 @@ class _KpiPanel extends StatelessWidget {
               label: 'Units Loaded',
             ),
           ),
-          const _MetricDivider(),
+          const SizedBox(width: 8),
           const Expanded(
             child: _Metric(
               icon: Icons.radio_button_unchecked_rounded,
@@ -433,48 +431,49 @@ class _Metric extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          width: 42,
-          height: 42,
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.10),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(icon, color: Colors.white, size: 22),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                value,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: accent,
-                  fontSize: 16,
-                  height: 1,
-                  fontWeight: FontWeight.w900,
+    final color = accent == Colors.white ? AppColors.deliveryGreen : accent;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withValues(alpha: 0.16)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 18),
+          const SizedBox(width: 7),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 14,
+                    height: 1,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Color(0xFFD8F5DF),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
+                const SizedBox(height: 4),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -719,21 +718,21 @@ class _LoadingItemRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFE9EDF2)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.035),
-            blurRadius: 14,
-            offset: const Offset(0, 8),
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
       child: Row(
         children: [
           _ProductAvatar(product: item.product),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -745,6 +744,7 @@ class _LoadingItemRow extends StatelessWidget {
                   style: const TextStyle(
                     color: AppColors.deliveryInk,
                     fontSize: 14,
+                    height: 1.15,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -755,8 +755,8 @@ class _LoadingItemRow extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: AppColors.textMuted,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
@@ -764,8 +764,8 @@ class _LoadingItemRow extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           SizedBox(
-            width: 62,
-            height: 42,
+            width: 58,
+            height: 38,
             child: TextField(
               controller: controller,
               textAlign: TextAlign.center,
@@ -798,7 +798,7 @@ class _LoadingItemRow extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 8),
           SizedBox(
             width: 32,
             child: Text(
@@ -808,7 +808,7 @@ class _LoadingItemRow extends StatelessWidget {
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: AppColors.textMuted,
-                fontSize: 14,
+                fontSize: 11,
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -847,7 +847,7 @@ class _BottomSummary extends StatelessWidget {
       top: false,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+        padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
         decoration: BoxDecoration(
           color: Colors.white,
           border: Border(
@@ -867,7 +867,7 @@ class _BottomSummary extends StatelessWidget {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 760),
             child: Container(
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: const Color(0xFFF7FBF8),
                 borderRadius: BorderRadius.circular(14),
@@ -879,7 +879,6 @@ class _BottomSummary extends StatelessWidget {
                     child: _SummaryStat(
                       label: 'Total Units',
                       value: totalUnits.toString(),
-                      suffix: 'kg / L',
                     ),
                   ),
                   Container(
@@ -897,7 +896,7 @@ class _BottomSummary extends StatelessWidget {
                   Expanded(
                     flex: 2,
                     child: SizedBox(
-                      height: 52,
+                      height: 48,
                       child: ElevatedButton.icon(
                         onPressed: onSave,
                         icon: isSubmitting
@@ -1153,8 +1152,8 @@ class _ProductAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final imageUrl = product.imageUrl.trim();
     return Container(
-      width: 52,
-      height: 52,
+      width: 64,
+      height: 64,
       decoration: BoxDecoration(
         color: const Color(0xFFF1F7F3),
         borderRadius: BorderRadius.circular(10),
@@ -1162,15 +1161,15 @@ class _ProductAvatar extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: imageUrl.isEmpty
-          ? Icon(product.fallbackIcon, color: const Color(0xFF39A04D), size: 26)
+          ? Icon(product.fallbackIcon, color: const Color(0xFF39A04D), size: 30)
           : Image.network(
               imageUrl,
-              fit: BoxFit.cover,
+              fit: BoxFit.contain,
               errorBuilder: (context, error, stackTrace) {
                 return Icon(
                   product.fallbackIcon,
                   color: const Color(0xFF39A04D),
-                  size: 26,
+                  size: 30,
                 );
               },
             ),
@@ -1213,16 +1212,16 @@ class _SurfaceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.deliverySurfaceBorder),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 24,
-            offset: const Offset(0, 12),
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
           ),
         ],
       ),

@@ -403,6 +403,28 @@ class ApiProvider extends ChangeNotifier {
     return _apiService.checkInAttendance(type);
   }
 
+  Future<List<Map<String, dynamic>>> fetchMyLeaves() {
+    return _apiService.fetchMyLeaves();
+  }
+
+  Future<Map<String, dynamic>> createLeave({
+    required String leaveType,
+    required DateTime startDate,
+    required DateTime endDate,
+    required String reason,
+  }) {
+    return _apiService.createLeave(
+      leaveType: leaveType,
+      startDate: startDate,
+      endDate: endDate,
+      reason: reason,
+    );
+  }
+
+  Future<void> deleteLeave(String leaveId) {
+    return _apiService.deleteLeave(leaveId);
+  }
+
   Future<void> shareMyLocation({
     required double latitude,
     required double longitude,
@@ -575,11 +597,13 @@ class ApiProvider extends ChangeNotifier {
     String? search,
     String? categoryId,
     bool? isActive,
+    String? warehouseId,
   }) {
     return _apiService.fetchStockBoard(
       search: search,
       categoryId: categoryId,
       isActive: isActive,
+      warehouseId: warehouseId,
     );
   }
 

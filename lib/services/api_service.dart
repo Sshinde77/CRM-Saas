@@ -1137,6 +1137,60 @@ class ApiService {
     return const <String, dynamic>{};
   }
 
+  Future<List<Map<String, dynamic>>> fetchMyLeaves() {
+    return fetchRawList(
+      endpoint: ApiEndpoints.leavesMe,
+      candidateKeys: const ['leaves', 'data', 'items', 'results'],
+      fallbackMessage: 'Invalid leaves response.',
+    );
+  }
+
+  Future<Map<String, dynamic>> createLeave({
+    required String leaveType,
+    required DateTime startDate,
+    required DateTime endDate,
+    required String reason,
+  }) async {
+    final type = leaveType.trim();
+    final trimmedReason = reason.trim();
+    if (type.isEmpty) {
+      throw const ApiException(message: 'Leave type is required.');
+    }
+    if (trimmedReason.isEmpty) {
+      throw const ApiException(message: 'Leave reason is required.');
+    }
+
+    final response = await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.leavesList,
+      requiresAuth: true,
+      body: {
+        'leave_type': type,
+        'start_date': _formatApiDate(startDate),
+        'end_date': _formatApiDate(endDate),
+        'reason': trimmedReason,
+      },
+    );
+
+    return _extractLeavePayload(
+      response.body.trim(),
+      fallbackMessage: 'Invalid create leave response.',
+    );
+  }
+
+  Future<void> deleteLeave(String leaveId) async {
+    final id = leaveId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing leave id.');
+    }
+
+    await _send(
+      method: 'DELETE',
+      endpoint: ApiEndpoints.leaveDetail(id),
+      requiresAuth: true,
+    );
+  }
+
   Future<void> shareMyLocation({
     required double latitude,
     required double longitude,
@@ -1575,6 +1629,7 @@ class ApiService {
     String? search,
     String? categoryId,
     bool? isActive,
+    String? warehouseId,
   }) {
     return fetchRawList(
       endpoint: ApiEndpoints.inventoryList,
@@ -1582,6 +1637,7 @@ class ApiService {
         'search': search,
         'category_id': categoryId,
         'is_active': isActive?.toString(),
+        'warehouse_id': warehouseId,
       }),
       candidateKeys: const [
         'inventory',
@@ -2462,6 +2518,20 @@ class ApiService {
   }) {
     final decoded = _requireDecodedMap(body, fallbackMessage: fallbackMessage);
     for (final key in const ['delivery', 'data', 'item', 'result']) {
+      final value = decoded[key];
+      if (value is Map<String, dynamic>) {
+        return value;
+      }
+    }
+    return decoded;
+  }
+
+  Map<String, dynamic> _extractLeavePayload(
+    String body, {
+    required String fallbackMessage,
+  }) {
+    final decoded = _requireDecodedMap(body, fallbackMessage: fallbackMessage);
+    for (final key in const ['leave', 'data', 'item', 'result']) {
       final value = decoded[key];
       if (value is Map<String, dynamic>) {
         return value;

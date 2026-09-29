@@ -7,6 +7,7 @@ import '../../../providers/api_provider.dart';
 import '../../../routes/app_router.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
+import '../../../widgets/delivery/delivery_bottom_navigation.dart';
 import '../../../widgets/delivery/delivery_partner_sidebar.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
 
@@ -119,6 +120,9 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
               currentRoute: AppRoutes.deliveryVehicleStock,
             )
           : const AppDrawer(activeItem: 'Vehicle Stock'),
+      bottomNavigationBar: _isDelivery
+          ? const DeliveryBottomNavigation(currentIndex: -1)
+          : null,
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -161,7 +165,12 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
                       physics: const AlwaysScrollableScrollPhysics(
                         parent: BouncingScrollPhysics(),
                       ),
-                      padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
+                      padding: EdgeInsets.fromLTRB(
+                        12,
+                        12,
+                        12,
+                        _isDelivery ? 116 : 24,
+                      ),
                       child: Center(
                         child: ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 920),
@@ -177,6 +186,11 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
                                       setState(() => _selectedPartner = value);
                                     }
                                   },
+                                ),
+                              if (_isDelivery && filtered.isNotEmpty)
+                                _DeliveryStockOverview(
+                                  session: filtered.first,
+                                  onLoadStock: _openVehicleLoading,
                                 ),
                               const SizedBox(height: 12),
                               if (isLoading)
@@ -302,6 +316,170 @@ class _PartnerFilter extends StatelessWidget {
   }
 }
 
+class _DeliveryStockOverview extends StatelessWidget {
+  final _VehicleStockSession session;
+  final VoidCallback onLoadStock;
+
+  const _DeliveryStockOverview({
+    required this.session,
+    required this.onLoadStock,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return _SurfaceCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const _TintIcon(
+                icon: Icons.local_shipping_outlined,
+                color: AppColors.deliveryGreen,
+                background: AppColors.deliveryGreenSoft,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      session.vehicleNumber.isEmpty
+                          ? 'Vehicle Stock'
+                          : session.vehicleNumber,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.deliveryInk,
+                        fontSize: 16,
+                        height: 1.15,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      '${session.items.length} products loaded',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              FilledButton.icon(
+                onPressed: onLoadStock,
+                icon: const Icon(Icons.add_box_outlined, size: 18),
+                label: const Text('Load'),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.deliveryGreen,
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(0, 38),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  textStyle: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _OverviewMetric(
+                  label: 'Loaded',
+                  value: _qty(session.totalLoaded),
+                  color: AppColors.deliveryBlue,
+                  background: AppColors.deliveryBlueSoft,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _OverviewMetric(
+                  label: 'Delivered',
+                  value: _qty(session.totalDelivered),
+                  color: AppColors.deliveryOrange,
+                  background: AppColors.deliveryOrangeSoft,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _OverviewMetric(
+                  label: 'Remaining',
+                  value: _qty(session.totalRemaining),
+                  color: AppColors.deliveryGreen,
+                  background: AppColors.deliveryGreenSoft,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _OverviewMetric extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+  final Color background;
+
+  const _OverviewMetric({
+    required this.label,
+    required this.value,
+    required this.color,
+    required this.background,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.14)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: color,
+              fontSize: 15,
+              height: 1,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: AppColors.textMuted,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _VehicleListCard extends StatelessWidget {
   final _VehicleStockSession session;
   final bool showPartner;
@@ -328,7 +506,7 @@ class _VehicleListCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppSizes.cardRadius),
         child: Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppSizes.cardRadius),
             border: Border.all(color: AppColors.deliverySurfaceBorder),
@@ -340,49 +518,139 @@ class _VehicleListCard extends StatelessWidget {
               ),
             ],
           ),
-          child: Row(
+          child: Column(
             children: [
-              const _TintIcon(
-                icon: Icons.local_shipping_rounded,
-                color: Color(0xFF2563EB),
-                background: Color(0xFFEAF3FF),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      session.vehicleNumber.isEmpty
-                          ? 'Vehicle not assigned'
-                          : session.vehicleNumber,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.deliveryInk,
-                      ),
+              Row(
+                children: [
+                  const _TintIcon(
+                    icon: Icons.local_shipping_rounded,
+                    color: Color(0xFF2563EB),
+                    background: Color(0xFFEAF3FF),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          session.vehicleNumber.isEmpty
+                              ? 'Vehicle not assigned'
+                              : session.vehicleNumber,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            height: 1.15,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.deliveryInk,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          subtitle.isEmpty ? 'Stock session' : subtitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textMuted,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle.isEmpty ? 'Stock session' : subtitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textMuted,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 8),
+                  _StatusPill(session.status),
+                  const SizedBox(width: 4),
+                  const Icon(
+                    Icons.chevron_right_rounded,
+                    color: AppColors.textMuted,
+                    size: 20,
+                  ),
+                ],
               ),
-              const SizedBox(width: 10),
-              _StatusPill(session.status),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _MiniStockStat(
+                      label: 'Loaded',
+                      value: _qty(session.totalLoaded),
+                      color: AppColors.deliveryBlue,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _MiniStockStat(
+                      label: 'Delivered',
+                      value: _qty(session.totalDelivered),
+                      color: AppColors.deliveryOrange,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _MiniStockStat(
+                      label: 'Remaining',
+                      value: _qty(session.totalRemaining),
+                      color: AppColors.deliveryGreen,
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _MiniStockStat extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+
+  const _MiniStockStat({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF7F9FC),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.deliverySurfaceBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: color,
+              fontSize: 13,
+              height: 1,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: AppColors.textMuted,
+              fontSize: 10.5,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -626,21 +894,215 @@ class _StockItemsTable extends StatelessWidget {
           if (session.items.isEmpty)
             const _InlineEmpty(message: 'No stock items found in this session.')
           else ...[
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFFE2E7F0)),
-              ),
-              child: Column(
-                children: [
-                  const _StockTableHeader(),
-                  ...session.items.map(_StockTableRow.new),
-                ],
-              ),
-            ),
+            for (final item in session.items) ...[
+              _StockProductCard(item: item),
+              const SizedBox(height: 10),
+            ],
             const SizedBox(height: 10),
             _RemainingSummary(total: session.totalRemaining),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+class _StockProductCard extends StatelessWidget {
+  final _VehicleStockItem item;
+
+  const _StockProductCard({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    final remainingColor = item.remaining <= 0
+        ? AppColors.deliveryRed
+        : AppColors.deliveryGreen;
+
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.deliverySurfaceBorder),
+      ),
+      child: Column(
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _ProductImage(imageUrl: item.imageUrl),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.productName.isEmpty
+                          ? 'Unnamed product'
+                          : item.productName,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.deliveryInk,
+                        fontSize: 14,
+                        height: 1.15,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    if (item.variantId.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        'Variant: ${item.variantId}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.textMuted,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              _QuantityBadge(
+                label: 'Left',
+                value: item.remaining,
+                color: remainingColor,
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: _StockMetricChip(
+                  label: 'Loaded',
+                  value: item.loaded,
+                  color: AppColors.deliveryBlue,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _StockMetricChip(
+                  label: 'Delivered',
+                  value: item.delivered,
+                  color: AppColors.deliveryOrange,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _StockMetricChip(
+                  label: 'Returned',
+                  value: item.returned,
+                  color: AppColors.deliveryViolet,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _QuantityBadge extends StatelessWidget {
+  final String label;
+  final double value;
+  final Color color;
+
+  const _QuantityBadge({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minWidth: 56),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
+      ),
+      child: Column(
+        children: [
+          Text(
+            _qty(value),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: color,
+              fontSize: 14,
+              height: 1,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: color,
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StockMetricChip extends StatelessWidget {
+  final String label;
+  final double value;
+  final Color color;
+
+  const _StockMetricChip({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF7F9FC),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.deliverySurfaceBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            _qty(value),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: color,
+              fontSize: 13,
+              height: 1,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: AppColors.textMuted,
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ],
       ),
     );
@@ -765,28 +1227,28 @@ class _ProductImage extends StatelessWidget {
   Widget build(BuildContext context) {
     final url = imageUrl.trim();
     return Container(
-      width: 48,
-      height: 48,
+      width: 64,
+      height: 64,
       decoration: BoxDecoration(
         color: const Color(0xFFF7F9FC),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: const Color(0xFFE2E7F0)),
       ),
       clipBehavior: Clip.antiAlias,
       child: url.isEmpty
           ? const Icon(
               Icons.inventory_2_outlined,
-              color: Color(0xFF4A546B),
-              size: 22,
+              color: AppColors.deliveryGreen,
+              size: 30,
             )
           : Image.network(
               url,
-              fit: BoxFit.cover,
+              fit: BoxFit.contain,
               errorBuilder: (context, error, stackTrace) {
                 return const Icon(
                   Icons.inventory_2_outlined,
-                  color: Color(0xFF4A546B),
-                  size: 22,
+                  color: AppColors.deliveryGreen,
+                  size: 30,
                 );
               },
             ),

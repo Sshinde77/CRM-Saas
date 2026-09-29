@@ -9,6 +9,7 @@ import '../../../routes/app_router.dart';
 import '../../../widgets/delivery/delivery_bottom_navigation.dart';
 import '../../../widgets/delivery/delivery_partner_sidebar.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
+import '../../admin/customers/customer_details_screen.dart';
 import 'create_delivery_customer_screen.dart';
 
 class DeliveryCustomersScreen extends StatefulWidget {
@@ -65,6 +66,17 @@ class _DeliveryCustomersScreenState extends State<DeliveryCustomersScreen> {
       _search.clear();
       await _loadCustomers();
     }
+  }
+
+  void _openCustomerDetail(CustomerModel customer) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => CustomerDetailsScreen(
+          customerId: customer.id,
+          initialCustomer: customer,
+        ),
+      ),
+    );
   }
 
   @override
@@ -183,6 +195,8 @@ class _DeliveryCustomersScreenState extends State<DeliveryCustomersScreen> {
                                           ),
                                           child: _CustomerCard(
                                             customer: customer,
+                                            onTap: () =>
+                                                _openCustomerDetail(customer),
                                           ),
                                         ),
                                       ),
@@ -490,8 +504,9 @@ class _SearchCard extends StatelessWidget {
 
 class _CustomerCard extends StatelessWidget {
   final CustomerModel customer;
+  final VoidCallback onTap;
 
-  const _CustomerCard({required this.customer});
+  const _CustomerCard({required this.customer, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -501,168 +516,182 @@ class _CustomerCard extends StatelessWidget {
         : AppColors.deliveryGreen;
     final outstanding = customer.outstanding ?? 0;
 
-    return Container(
-      clipBehavior: Clip.antiAlias,
-      decoration: _surfaceDecoration(),
-      child: Stack(
-        children: [
-          Positioned(
-            left: 0,
-            top: 0,
-            bottom: 0,
-            child: ColoredBox(
-              color: statusColor,
-              child: const SizedBox(width: 3),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppSizes.cardRadius),
+        child: Ink(
+          decoration: _surfaceDecoration(),
+          child: Stack(
+            children: [
+              Positioned(
+                left: 0,
+                top: 0,
+                bottom: 0,
+                child: ColoredBox(
+                  color: statusColor,
+                  child: const SizedBox(width: 3),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: AppColors.deliveryGreenSoft,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.surface),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        customer.initials,
-                        style: const TextStyle(
-                          color: AppColors.deliveryGreen,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 9),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  customer.name,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w900,
-                                    color: AppColors.deliveryInk,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 5),
-                              _StatusBadge(
-                                label: customer.statusLabel,
-                                color: statusColor,
-                              ),
-                            ],
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: AppColors.deliveryGreenSoft,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: AppColors.surface),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            _firstNonEmpty([
-                              customer.businessName,
-                              customer.customerId,
-                              customer.category,
-                              'Customer',
-                            ]),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          alignment: Alignment.center,
+                          child: Text(
+                            customer.initials,
                             style: const TextStyle(
-                              color: AppColors.textMuted,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
+                              color: AppColors.deliveryGreen,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w900,
                             ),
                           ),
-                          const SizedBox(height: 9),
-                          Row(
+                        ),
+                        const SizedBox(width: 9),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Expanded(
-                                child: _CustomerCardDetail(
-                                  label: 'Phone',
-                                  value: _firstNonEmpty([
-                                    customer.phone,
-                                    customer.alternatePhone,
-                                    'Not available',
-                                  ]),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      customer.name,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w900,
+                                        color: AppColors.deliveryInk,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 5),
+                                  _StatusBadge(
+                                    label: customer.statusLabel,
+                                    color: statusColor,
+                                  ),
+                                  const SizedBox(width: 3),
+                                  const Icon(
+                                    Icons.chevron_right_rounded,
+                                    color: AppColors.textMuted,
+                                    size: 18,
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                _firstNonEmpty([
+                                  customer.businessName,
+                                  customer.customerId,
+                                  customer.category,
+                                  'Customer',
+                                ]),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: AppColors.textMuted,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              Container(
-                                width: 1,
-                                height: 25,
-                                margin: const EdgeInsets.symmetric(
-                                  horizontal: 9,
-                                ),
-                                color: AppColors.deliverySurfaceBorder,
-                              ),
-                              Expanded(
-                                child: _CustomerCardDetail(
-                                  label: 'Area',
-                                  value: _firstNonEmpty([
-                                    customer.city,
-                                    customer.territory,
-                                    customer.state,
-                                    'Not set',
-                                  ]),
-                                ),
+                              const SizedBox(height: 9),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _CustomerCardDetail(
+                                      label: 'Phone',
+                                      value: _firstNonEmpty([
+                                        customer.phone,
+                                        customer.alternatePhone,
+                                        'Not available',
+                                      ]),
+                                    ),
+                                  ),
+                                  Container(
+                                    width: 1,
+                                    height: 25,
+                                    margin: const EdgeInsets.symmetric(
+                                      horizontal: 9,
+                                    ),
+                                    color: AppColors.deliverySurfaceBorder,
+                                  ),
+                                  Expanded(
+                                    child: _CustomerCardDetail(
+                                      label: 'Area',
+                                      value: _firstNonEmpty([
+                                        customer.city,
+                                        customer.territory,
+                                        customer.state,
+                                        'Not set',
+                                      ]),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                        ],
+                        ),
+                      ],
+                    ),
+                    if (address.isNotEmpty) ...[
+                      const SizedBox(height: 9),
+                      _InlineInfo(
+                        icon: Icons.location_on_outlined,
+                        text: address,
+                        color: AppColors.deliveryBlue,
                       ),
+                    ],
+                    const SizedBox(height: 9),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _InlineInfo(
+                            icon: Icons.badge_outlined,
+                            text: _firstNonEmpty([
+                              customer.customerId,
+                              customer.category,
+                              'Customer profile',
+                            ]),
+                            color: AppColors.deliveryGreen,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          outstanding > 0
+                              ? _formatMoney(outstanding)
+                              : 'No due',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: outstanding > 0
+                                ? AppColors.deliveryRed
+                                : AppColors.textMuted,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-                if (address.isNotEmpty) ...[
-                  const SizedBox(height: 9),
-                  _InlineInfo(
-                    icon: Icons.location_on_outlined,
-                    text: address,
-                    color: AppColors.deliveryBlue,
-                  ),
-                ],
-                const SizedBox(height: 9),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _InlineInfo(
-                        icon: Icons.badge_outlined,
-                        text: _firstNonEmpty([
-                          customer.customerId,
-                          customer.category,
-                          'Customer profile',
-                        ]),
-                        color: AppColors.deliveryGreen,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      outstanding > 0 ? _formatMoney(outstanding) : 'No due',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: outstanding > 0
-                            ? AppColors.deliveryRed
-                            : AppColors.textMuted,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

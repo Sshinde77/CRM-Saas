@@ -4,6 +4,7 @@ import '../../../constants/app_colors.dart';
 import '../../../models/end_of_day_return_models.dart';
 import '../../../providers/api_provider.dart';
 import '../../../routes/app_router.dart';
+import '../../../widgets/delivery/delivery_bottom_navigation.dart';
 import '../../../widgets/delivery/delivery_partner_sidebar.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
 import 'widgets/end_of_day_empty_state.dart';
@@ -184,6 +185,7 @@ class _EndOfDayReturnScreenState extends State<EndOfDayReturnScreen> {
       drawer: const DeliveryPartnerSidebar(
         currentRoute: AppRoutes.deliveryEndOfDay,
       ),
+      bottomNavigationBar: const DeliveryBottomNavigation(currentIndex: -1),
       body: SafeArea(
         bottom: false,
         child: FutureBuilder<EndOfDaySession?>(
@@ -212,7 +214,7 @@ class _EndOfDayReturnScreenState extends State<EndOfDayReturnScreen> {
                       physics: const AlwaysScrollableScrollPhysics(
                         parent: BouncingScrollPhysics(),
                       ),
-                      padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
+                      padding: const EdgeInsets.fromLTRB(12, 12, 12, 116),
                       child: Center(
                         child: ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 820),
@@ -231,7 +233,16 @@ class _EndOfDayReturnScreenState extends State<EndOfDayReturnScreen> {
                                 )
                               : session == null || session.items.isEmpty
                               ? const EndOfDayEmptyState()
-                              : _buildStep(session),
+                              : Column(
+                                  children: [
+                                    _EndOfDayProgress(
+                                      step: _step,
+                                      session: session,
+                                    ),
+                                    const SizedBox(height: 12),
+                                    _buildStep(session),
+                                  ],
+                                ),
                         ),
                       ),
                     ),
@@ -294,6 +305,271 @@ class _EndOfDayReturnScreenState extends State<EndOfDayReturnScreen> {
       _EndOfDayStep.summary =>
         'Physical count variance against expected closing stock.',
     };
+  }
+}
+
+class _EndOfDayProgress extends StatelessWidget {
+  final _EndOfDayStep step;
+  final EndOfDaySession session;
+
+  const _EndOfDayProgress({required this.step, required this.session});
+
+  int get _stepIndex => switch (step) {
+    _EndOfDayStep.returnStock => 0,
+    _EndOfDayStep.reconcile => 1,
+    _EndOfDayStep.summary => 2,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final loaded = session.items.fold<double>(
+      0,
+      (sum, item) => sum + item.loadedQuantity,
+    );
+    final delivered = session.items.fold<double>(
+      0,
+      (sum, item) => sum + item.deliveredQuantity,
+    );
+    final expected = session.items.fold<double>(
+      0,
+      (sum, item) => sum + item.expectedClosingQuantity,
+    );
+
+    return EndOfDayCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const _EndOfDayIconBox(icon: Icons.assignment_return_rounded),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      session.vehicleNumber.trim().isEmpty
+                          ? 'End of Day Session'
+                          : session.vehicleNumber,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.deliveryInk,
+                        fontSize: 16,
+                        height: 1.15,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      '${session.items.length} products to close',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              _StepPill(step: step),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _EndOfDayMetric(
+                  label: 'Loaded',
+                  value: qty(loaded),
+                  color: AppColors.deliveryBlue,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _EndOfDayMetric(
+                  label: 'Delivered',
+                  value: qty(delivered),
+                  color: AppColors.deliveryOrange,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _EndOfDayMetric(
+                  label: 'Expected',
+                  value: qty(expected),
+                  color: AppColors.deliveryGreen,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _StepDot(label: 'Return', active: _stepIndex >= 0),
+              const _StepLine(),
+              _StepDot(label: 'Count', active: _stepIndex >= 1),
+              const _StepLine(),
+              _StepDot(label: 'Summary', active: _stepIndex >= 2),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EndOfDayMetric extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+
+  const _EndOfDayMetric({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withValues(alpha: 0.16)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: color,
+              fontSize: 14,
+              height: 1,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: AppColors.textMuted,
+              fontSize: 10.5,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EndOfDayIconBox extends StatelessWidget {
+  final IconData icon;
+
+  const _EndOfDayIconBox({required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 34,
+      height: 34,
+      decoration: BoxDecoration(
+        color: AppColors.deliveryGreenSoft,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: AppColors.deliveryGreen.withValues(alpha: 0.12),
+        ),
+      ),
+      child: Icon(icon, color: AppColors.deliveryGreen, size: 20),
+    );
+  }
+}
+
+class _StepPill extends StatelessWidget {
+  final _EndOfDayStep step;
+
+  const _StepPill({required this.step});
+
+  @override
+  Widget build(BuildContext context) {
+    final label = switch (step) {
+      _EndOfDayStep.returnStock => 'Return',
+      _EndOfDayStep.reconcile => 'Count',
+      _EndOfDayStep.summary => 'Done',
+    };
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+      decoration: BoxDecoration(
+        color: AppColors.deliveryGreenSoft,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: AppColors.deliveryGreen.withValues(alpha: 0.18),
+        ),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: AppColors.deliveryGreen,
+          fontSize: 11,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    );
+  }
+}
+
+class _StepDot extends StatelessWidget {
+  final String label;
+  final bool active;
+
+  const _StepDot({required this.label, required this.active});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = active ? AppColors.deliveryGreen : AppColors.textMuted;
+    return Column(
+      children: [
+        Icon(
+          active ? Icons.check_circle_rounded : Icons.radio_button_unchecked,
+          color: color,
+          size: 18,
+        ),
+        const SizedBox(height: 3),
+        Text(
+          label,
+          style: TextStyle(
+            color: color,
+            fontSize: 10.5,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StepLine extends StatelessWidget {
+  const _StepLine();
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        height: 1,
+        margin: const EdgeInsets.fromLTRB(6, 0, 6, 18),
+        color: AppColors.deliverySurfaceBorder,
+      ),
+    );
   }
 }
 

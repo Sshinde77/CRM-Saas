@@ -8,6 +8,7 @@ class DeliveryDetail {
   final String customerName;
   final String customerPhone;
   final String customerEmail;
+  final String customerProfileImageUrl;
   final String partnerName;
   final String partnerPhone;
   final String partnerEmail;
@@ -36,6 +37,7 @@ class DeliveryDetail {
     required this.customerName,
     required this.customerPhone,
     required this.customerEmail,
+    required this.customerProfileImageUrl,
     required this.partnerName,
     required this.partnerPhone,
     required this.partnerEmail,
@@ -116,6 +118,23 @@ class DeliveryDetail {
         'customer_email',
         'customerEmail',
       ], fallback: _text(customer, const ['email'])),
+      customerProfileImageUrl:
+          normalizeProductImageUrl(
+            _text(
+              data,
+              const [
+                'customer_profile_image_url',
+                'customerProfileImageUrl',
+                'profile_image_url',
+                'profileImageUrl',
+              ],
+              fallback: _text(customer, const [
+                'profile_image_url',
+                'profileImageUrl',
+              ]),
+            ),
+          ) ??
+          '',
       partnerName: _text(
         data,
         const ['delivery_partner_name', 'deliveryPartnerName'],
