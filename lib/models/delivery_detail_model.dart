@@ -67,9 +67,29 @@ class DeliveryDetail {
         _map(json['item']) ??
         _map(json['result']) ??
         json;
-    final order = _map(data['order']) ?? const {};
+    final order =
+        _firstMap(data, const ['order', 'order_details', 'orderDetails']) ??
+        const {};
     final customer =
-        _map(data['customer']) ?? _map(order['customer']) ?? const {};
+        _firstMap(data, const [
+          'customer',
+          'customer_details',
+          'customerDetails',
+          'customer_info',
+          'customerInfo',
+          'customer_data',
+          'customerData',
+        ]) ??
+        _firstMap(order, const [
+          'customer',
+          'customer_details',
+          'customerDetails',
+          'customer_info',
+          'customerInfo',
+          'customer_data',
+          'customerData',
+        ]) ??
+        const {};
     final partner =
         _map(data['delivery_partner']) ??
         _map(data['deliveryPartner']) ??
@@ -101,23 +121,77 @@ class DeliveryDetail {
           'number',
         ], fallback: 'ORD-NEW'),
       ),
-      customerName: _text(
-        data,
-        const ['customer_name', 'customerName'],
-        fallback: _text(customer, const [
+      customerName: _firstText([
+        _text(data, const [
+          'customer_name',
+          'customerName',
+          'customer_business_name',
+          'customerBusinessName',
+        ]),
+        _text(customer, const [
+          'business_name',
+          'businessName',
+          'company_name',
+          'companyName',
+          'display_name',
+          'displayName',
+          'customer_name',
+          'customerName',
           'name',
           'full_name',
-        ], fallback: 'Customer'),
-      ),
+          'fullName',
+          'contact_person',
+          'contactPerson',
+        ]),
+        _text(order, const [
+          'customer_name',
+          'customerName',
+          'customer_business_name',
+          'customerBusinessName',
+        ]),
+        _text(data, const ['customer_id', 'customerId']),
+        _text(order, const ['customer_id', 'customerId']),
+        'Customer',
+      ]),
       customerPhone: _text(
         data,
-        const ['customer_phone', 'customerPhone'],
-        fallback: _text(customer, const ['phone', 'mobile', 'contact_number']),
+        const [
+          'customer_phone',
+          'customerPhone',
+          'phone',
+          'phone_number',
+          'mobile',
+          'mobile_number',
+          'contact_number',
+          'contactNumber',
+        ],
+        fallback: _firstText([
+          _text(customer, const [
+            'phone',
+            'phone_number',
+            'mobile',
+            'mobile_number',
+            'contact_number',
+            'contactNumber',
+          ]),
+          _text(order, const [
+            'customer_phone',
+            'customerPhone',
+            'phone',
+            'mobile',
+            'contact_number',
+            'contactNumber',
+          ]),
+        ]),
       ),
       customerEmail: _text(data, const [
         'customer_email',
         'customerEmail',
-      ], fallback: _text(customer, const ['email'])),
+        'email',
+      ], fallback: _firstText([
+        _text(customer, const ['email', 'email_address', 'emailAddress']),
+        _text(order, const ['customer_email', 'customerEmail', 'email']),
+      ])),
       customerProfileImageUrl:
           normalizeProductImageUrl(
             _text(
@@ -179,8 +253,31 @@ class DeliveryDetail {
       ], fallback: _text(warehouse, const ['name'])),
       deliveryAddress: _text(
         data,
-        const ['delivery_address', 'deliveryAddress', 'address'],
-        fallback: _text(order, const ['delivery_address', 'shipping_address']),
+        const [
+          'delivery_address',
+          'deliveryAddress',
+          'shipping_address',
+          'shippingAddress',
+          'address',
+        ],
+        fallback: _firstText([
+          _text(order, const [
+            'delivery_address',
+            'deliveryAddress',
+            'shipping_address',
+            'shippingAddress',
+            'address',
+          ]),
+          _text(customer, const [
+            'delivery_address',
+            'deliveryAddress',
+            'shipping_address',
+            'shippingAddress',
+            'billing_address',
+            'billingAddress',
+            'address',
+          ]),
+        ]),
       ),
       scheduledDate: deliveryScheduledDate(data),
       dispatchedAt: _date(_text(data, const ['dispatched_at', 'dispatchedAt'])),
@@ -323,6 +420,14 @@ Map<String, dynamic>? _map(dynamic value) {
   return null;
 }
 
+Map<String, dynamic>? _firstMap(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    final value = _map(json[key]);
+    if (value != null) return value;
+  }
+  return null;
+}
+
 List<dynamic> _list(dynamic value) => value is List ? value : const [];
 
 String _text(
@@ -334,6 +439,14 @@ String _text(
     final value = json[key];
     if (value == null) continue;
     final text = value.toString().trim();
+    if (text.isNotEmpty) return text;
+  }
+  return fallback;
+}
+
+String _firstText(List<String> values, {String fallback = ''}) {
+  for (final value in values) {
+    final text = value.trim();
     if (text.isNotEmpty) return text;
   }
   return fallback;

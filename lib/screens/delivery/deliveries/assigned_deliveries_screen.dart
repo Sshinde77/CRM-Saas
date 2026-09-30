@@ -1735,16 +1735,68 @@ class _AssignedDelivery {
 
   factory _AssignedDelivery.fromJson(Map<String, dynamic> json) {
     final id = _readString(json, const ['id', 'delivery_id']) ?? '';
-    final orderId = _readNestedString(json, 'order', const [
+    final order = _readMap(json, const [
+      'order',
+      'order_details',
+      'orderDetails',
+    ]);
+    final customer =
+        _readMap(json, const [
+          'customer',
+          'customer_details',
+          'customerDetails',
+          'customer_info',
+          'customerInfo',
+          'customer_data',
+          'customerData',
+        ]) ??
+        _readMap(order, const [
+          'customer',
+          'customer_details',
+          'customerDetails',
+          'customer_info',
+          'customerInfo',
+          'customer_data',
+          'customerData',
+        ]);
+    final orderId = _readString(order, const [
       'order_number',
       'orderNumber',
+      'orderNo',
       'number',
     ]);
-    final customerName =
-        _readString(json, const ['customerName', 'customer_name']) ??
-        _readNestedString(json, 'customer', const ['name', 'full_name']) ??
-        _readNestedString(json, 'order', const ['customer_name']) ??
-        'Customer';
+    final customerName = _firstNonEmpty([
+      _readString(json, const [
+        'customerName',
+        'customer_name',
+        'customerBusinessName',
+        'customer_business_name',
+      ]),
+      _readString(customer, const [
+        'business_name',
+        'businessName',
+        'company_name',
+        'companyName',
+        'display_name',
+        'displayName',
+        'customer_name',
+        'customerName',
+        'name',
+        'full_name',
+        'fullName',
+        'contact_person',
+        'contactPerson',
+      ]),
+      _readString(order, const [
+        'customer_name',
+        'customerName',
+        'customerBusinessName',
+        'customer_business_name',
+      ]),
+      _readString(json, const ['customer_id', 'customerId']),
+      _readString(order, const ['customer_id', 'customerId']),
+      'Customer',
+    ]);
 
     return _AssignedDelivery(
       id: id,
@@ -1768,11 +1820,13 @@ class _AssignedDelivery {
                   'profileImageUrl',
                   'profile_image_url',
                 ]) ??
-                _readNestedString(json, 'customer', const [
+                _readString(customer, const [
                   'profileImageUrl',
                   'profile_image_url',
+                  'avatar',
+                  'image',
                 ]) ??
-                _readNestedString(json, 'order', const [
+                _readString(order, const [
                   'customerProfileImageUrl',
                   'customer_profile_image_url',
                   'profileImageUrl',
@@ -1841,19 +1895,21 @@ class _AssignedDelivery {
             'mobile_number',
             'contact_number',
           ]) ??
-          _readNestedString(json, 'customer', const [
+          _readString(customer, const [
             'phone',
             'phone_number',
             'mobile',
             'mobile_number',
             'contact_number',
+            'contactNumber',
           ]) ??
-          _readNestedString(json, 'order', const [
+          _readString(order, const [
             'customerPhone',
             'customer_phone',
             'phone',
             'mobile',
             'contact_number',
+            'contactNumber',
           ]) ??
           '',
       deliveryAddress:
@@ -1864,18 +1920,20 @@ class _AssignedDelivery {
             'shipping_address',
             'address',
           ]) ??
-          _readNestedString(json, 'order', const [
+          _readString(order, const [
             'deliveryAddress',
             'delivery_address',
             'shippingAddress',
             'shipping_address',
             'address',
           ]) ??
-          _readNestedString(json, 'customer', const [
+          _readString(customer, const [
             'deliveryAddress',
             'delivery_address',
             'shippingAddress',
             'shipping_address',
+            'billingAddress',
+            'billing_address',
             'address',
           ]) ??
           '',
@@ -1888,8 +1946,8 @@ class _AssignedDelivery {
             'customer_lat',
             'customer_latitude',
           ]) ??
-          _readNestedDouble(json, 'customer', const ['latitude', 'lat']) ??
-          _readNestedDouble(json, 'customer', const [
+          _readNullableDouble(customer, const ['latitude', 'lat']) ??
+          _readNullableDouble(customer, const [
             'map_latitude',
             'maps_latitude',
           ]) ??
@@ -1918,12 +1976,12 @@ class _AssignedDelivery {
             'customer_long',
             'customer_longitude',
           ]) ??
-          _readNestedDouble(json, 'customer', const [
+          _readNullableDouble(customer, const [
             'longitude',
             'lng',
             'long',
           ]) ??
-          _readNestedDouble(json, 'customer', const [
+          _readNullableDouble(customer, const [
             'map_longitude',
             'maps_longitude',
           ]) ??
@@ -2210,7 +2268,29 @@ String _cleanError(Object error) {
   return error.toString().trim();
 }
 
-String? _readString(Map<String, dynamic> json, List<String> keys) {
+Map<String, dynamic>? _readMap(
+  Map<String, dynamic>? json,
+  List<String> keys,
+) {
+  if (json == null) return null;
+  for (final key in keys) {
+    final value = json[key];
+    if (value is Map<String, dynamic>) return value;
+    if (value is Map) return Map<String, dynamic>.from(value);
+  }
+  return null;
+}
+
+String _firstNonEmpty(List<String?> values, {String fallback = ''}) {
+  for (final value in values) {
+    final text = value?.trim() ?? '';
+    if (text.isNotEmpty) return text;
+  }
+  return fallback;
+}
+
+String? _readString(Map<String, dynamic>? json, List<String> keys) {
+  if (json == null) return null;
   for (final key in keys) {
     final value = json[key];
     if (value == null) continue;
@@ -2248,7 +2328,8 @@ String? _readPathString(
   return null;
 }
 
-double? _readNullableDouble(Map<String, dynamic> json, List<String> keys) {
+double? _readNullableDouble(Map<String, dynamic>? json, List<String> keys) {
+  if (json == null) return null;
   for (final key in keys) {
     final value = json[key];
     if (value is num) return value.toDouble();
