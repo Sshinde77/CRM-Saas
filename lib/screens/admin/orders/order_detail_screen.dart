@@ -297,6 +297,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             'number',
           ], fallback: 'Order'),
           customer: _customerName(order),
+          customerProfileImageUrl: _customerProfileImageUrl(order),
           status: status,
           total: _formatMoney(
             _readDouble(order, const [
@@ -400,6 +401,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 class _HeaderCard extends StatelessWidget {
   final String number;
   final String customer;
+  final String customerProfileImageUrl;
   final String status;
   final String total;
   final VoidCallback? onConfirm;
@@ -408,6 +410,7 @@ class _HeaderCard extends StatelessWidget {
   const _HeaderCard({
     required this.number,
     required this.customer,
+    required this.customerProfileImageUrl,
     required this.status,
     required this.total,
     this.onConfirm,
@@ -429,27 +432,38 @@ class _HeaderCard extends StatelessWidget {
         children: [
           Row(
             children: [
+              _CustomerAvatar(imageUrl: customerProfileImageUrl, size: 42),
+              const SizedBox(width: 10),
               Expanded(
-                child: Text(
-                  number,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      number,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      customer,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.86),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               _TinyChip(label: status),
             ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            customer,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.86),
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
           ),
           const SizedBox(height: 8),
           Text(
@@ -479,6 +493,41 @@ class _HeaderCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _CustomerAvatar extends StatelessWidget {
+  final String imageUrl;
+  final double size;
+
+  const _CustomerAvatar({required this.imageUrl, required this.size});
+
+  @override
+  Widget build(BuildContext context) {
+    final url = imageUrl.trim();
+    final fallback = Icon(
+      Icons.storefront_outlined,
+      color: AppColors.primary,
+      size: size * 0.52,
+    );
+
+    return Container(
+      width: size,
+      height: size,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.92),
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
+      ),
+      child: url.isEmpty
+          ? fallback
+          : Image.network(
+              url,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => fallback,
+            ),
     );
   }
 }
@@ -788,6 +837,37 @@ String _customerName(Map<String, dynamic> order) {
     _readString(customer, const ['business_name', 'businessName']),
     _readString(customer, const ['name', 'full_name', 'fullName']),
   ]);
+}
+
+String _customerProfileImageUrl(Map<String, dynamic> order) {
+  final customer = _readMap(order, const ['customer']);
+  return normalizeProductImageUrl(
+        _firstNonEmpty([
+          _readString(order, const [
+            'customer_profile_photo',
+            'customerProfilePhoto',
+            'customer_profile_image_url',
+            'customerProfileImageUrl',
+            'profile_photo',
+            'profilePhoto',
+            'profile_image_url',
+            'profileImageUrl',
+            'profile_image_id',
+            'profileImageId',
+          ]),
+          _readString(customer, const [
+            'profile_photo',
+            'profilePhoto',
+            'profile_image_url',
+            'profileImageUrl',
+            'profile_image_id',
+            'profileImageId',
+            'avatar',
+            'image',
+          ]),
+        ]),
+      ) ??
+      '';
 }
 
 String _creatorName(Map<String, dynamic> order) {

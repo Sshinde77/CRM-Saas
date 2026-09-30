@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../constants/app_colors.dart';
 import '../../../core/theme/app_sizes.dart';
 import '../../../providers/api_provider.dart';
+import '../../../utils/product_image_url.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
 
 class DeliveryCompanyOrdersScreen extends StatefulWidget {
@@ -345,18 +346,9 @@ class _OrderCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: AppColors.deliveryGreenSoft,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.receipt_long_outlined,
-                  color: AppColors.deliveryGreen,
-                  size: 20,
-                ),
+              _CustomerAvatar(
+                imageUrl: order.customerProfileImageUrl,
+                size: 38,
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -497,6 +489,41 @@ class _StatusPill extends StatelessWidget {
   }
 }
 
+class _CustomerAvatar extends StatelessWidget {
+  final String imageUrl;
+  final double size;
+
+  const _CustomerAvatar({required this.imageUrl, required this.size});
+
+  @override
+  Widget build(BuildContext context) {
+    final url = imageUrl.trim();
+    final fallback = const Icon(
+      Icons.storefront_outlined,
+      color: AppColors.deliveryGreen,
+      size: 20,
+    );
+
+    return Container(
+      width: size,
+      height: size,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: AppColors.deliveryGreenSoft,
+        shape: BoxShape.circle,
+        border: Border.all(color: AppColors.deliverySurfaceBorder),
+      ),
+      child: url.isEmpty
+          ? fallback
+          : Image.network(
+              url,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => fallback,
+            ),
+    );
+  }
+}
+
 class _StateCard extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -623,6 +650,7 @@ class _CompanyOrder {
   final String id;
   final String orderNumber;
   final String customerName;
+  final String customerProfileImageUrl;
   final String status;
   final String fulfilmentStatus;
   final String paymentStatus;
@@ -634,6 +662,7 @@ class _CompanyOrder {
     required this.id,
     required this.orderNumber,
     required this.customerName,
+    required this.customerProfileImageUrl,
     required this.status,
     required this.fulfilmentStatus,
     required this.paymentStatus,
@@ -643,14 +672,44 @@ class _CompanyOrder {
   });
 
   factory _CompanyOrder.fromJson(Map<String, dynamic> json) {
-    final customer = json['customer'];
+    final customer = _readMap(json['customer']);
     final rawItems = json['items'];
     return _CompanyOrder(
       id: _readString(json, const ['id']),
       orderNumber: _readString(json, const ['order_number', 'orderNumber']),
-      customerName: customer is Map<String, dynamic>
+      customerName: customer != null
           ? _readString(customer, const ['business_name', 'name'])
           : 'Customer',
+      customerProfileImageUrl:
+          normalizeProductImageUrl(
+            _firstNonEmpty([
+              customer != null
+                  ? _readString(customer, const [
+                      'profile_photo',
+                      'profilePhoto',
+                      'profile_image_url',
+                      'profileImageUrl',
+                      'profile_image_id',
+                      'profileImageId',
+                      'avatar',
+                      'image',
+                    ])
+                  : '',
+              _readString(json, const [
+                'customer_profile_photo',
+                'customerProfilePhoto',
+                'customer_profile_image_url',
+                'customerProfileImageUrl',
+                'profile_photo',
+                'profilePhoto',
+                'profile_image_url',
+                'profileImageUrl',
+                'profile_image_id',
+                'profileImageId',
+              ]),
+            ]),
+          ) ??
+          '',
       status: _normalize(_readString(json, const ['status'])),
       fulfilmentStatus: _normalize(
         _readString(json, const ['fulfilment_status', 'fulfilmentStatus']),
@@ -729,6 +788,20 @@ String _readString(Map<String, dynamic> json, List<String> keys) {
     final value = json[key];
     if (value == null) continue;
     final text = value.toString().trim();
+    if (text.isNotEmpty) return text;
+  }
+  return '';
+}
+
+Map<String, dynamic>? _readMap(Object? value) {
+  if (value is Map<String, dynamic>) return value;
+  if (value is Map) return Map<String, dynamic>.from(value);
+  return null;
+}
+
+String _firstNonEmpty(List<String> values) {
+  for (final value in values) {
+    final text = value.trim();
     if (text.isNotEmpty) return text;
   }
   return '';

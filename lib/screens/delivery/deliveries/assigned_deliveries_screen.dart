@@ -1817,24 +1817,44 @@ class _AssignedDelivery {
             _readString(json, const [
                   'customerProfileImageUrl',
                   'customer_profile_image_url',
+                  'customerProfilePhoto',
+                  'customer_profile_photo',
+                  'profilePhoto',
+                  'profile_photo',
                   'profileImageUrl',
                   'profile_image_url',
+                  'profileImageId',
+                  'profile_image_id',
                 ]) ??
                 _readString(customer, const [
+                  'profilePhoto',
+                  'profile_photo',
                   'profileImageUrl',
                   'profile_image_url',
+                  'profileImageId',
+                  'profile_image_id',
                   'avatar',
                   'image',
                 ]) ??
                 _readString(order, const [
                   'customerProfileImageUrl',
                   'customer_profile_image_url',
+                  'customerProfilePhoto',
+                  'customer_profile_photo',
+                  'profilePhoto',
+                  'profile_photo',
                   'profileImageUrl',
                   'profile_image_url',
+                  'profileImageId',
+                  'profile_image_id',
                 ]) ??
                 _readPathString(json, const ['order', 'customer'], const [
+                  'profilePhoto',
+                  'profile_photo',
                   'profileImageUrl',
                   'profile_image_url',
+                  'profileImageId',
+                  'profile_image_id',
                 ]),
           ) ??
           '',
