@@ -6,7 +6,7 @@ class ApiConstants {
     defaultValue: '',
   );
   static const String _productionBaseUrl =
-      'https://crm-saas-backend.bsmart.workers.dev';
+      'https://crm-saas-backend.bsmart.workers.deva';
 
   // Use API_BASE_URL only when a developer intentionally points the app at a
   // different API, such as the optional local CORS proxy.
