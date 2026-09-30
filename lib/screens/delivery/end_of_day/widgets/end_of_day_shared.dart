@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../../constants/app_colors.dart';
-import '../../../../core/theme/app_sizes.dart';
 
 class EndOfDayCard extends StatelessWidget {
   final Widget child;

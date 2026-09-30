@@ -1028,7 +1028,7 @@ class _ApplyLeaveSheetState extends State<_ApplyLeaveSheet> {
                   ),
                   const SizedBox(height: 14),
                   DropdownButtonFormField<String>(
-                    value: _leaveType,
+                    initialValue: _leaveType,
                     decoration: const InputDecoration(
                       labelText: 'Leave Type',
                       border: OutlineInputBorder(),

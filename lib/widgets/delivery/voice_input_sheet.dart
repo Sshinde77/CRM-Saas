@@ -95,10 +95,12 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
     if (_listening) return;
     setState(() => _error = null);
     await _speech.listen(
-      partialResults: true,
-      listenFor: const Duration(minutes: 2),
-      pauseFor: const Duration(minutes: 2),
       onResult: _onSpeechResult,
+      listenOptions: SpeechListenOptions(
+        partialResults: true,
+        listenFor: const Duration(minutes: 2),
+        pauseFor: const Duration(minutes: 2),
+      ),
     );
     if (!mounted || _holdingMic) return;
     await _speech.stop();

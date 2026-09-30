@@ -36,11 +36,7 @@ class ApiConstants {
     return {...defaultHeaders, authorizationHeader: '$bearerPrefix $token'};
   }
 }
-        
 
-
-
-        
 class ApiEndpoints {
   const ApiEndpoints._();
 

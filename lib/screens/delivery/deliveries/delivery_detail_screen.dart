@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../constants/app_colors.dart';
 import '../../../models/delivery_detail_model.dart';
 import '../../../providers/api_provider.dart';
+import '../../../utils/product_image_url.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
 
 class DeliveryDetailScreen extends StatefulWidget {
@@ -17,6 +18,7 @@ class DeliveryDetailScreen extends StatefulWidget {
 class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
   Future<DeliveryDetail>? _future;
   DeliveryDetail? _delivery;
+  String _customerProfileImageUrl = '';
   bool _isActionBusy = false;
 
   @override
@@ -26,11 +28,61 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
   }
 
   Future<DeliveryDetail> _load() async {
-    final detail = await ApiProviderScope.of(
-      context,
-    ).fetchDeliveryById(widget.deliveryId);
-    if (mounted) setState(() => _delivery = detail);
+    final provider = ApiProviderScope.of(context);
+    final detail = await provider.fetchDeliveryById(widget.deliveryId);
+    final customerProfileImageUrl = detail.customerProfileImageUrl.isNotEmpty
+        ? detail.customerProfileImageUrl
+        : await _resolveCustomerProfileImageUrl(provider, detail);
+    if (mounted) {
+      setState(() {
+        _delivery = detail;
+        _customerProfileImageUrl = customerProfileImageUrl;
+      });
+    }
     return detail;
+  }
+
+  Future<String> _resolveCustomerProfileImageUrl(
+    ApiProvider provider,
+    DeliveryDetail detail,
+  ) async {
+    final orderNumber = detail.orderNumber.trim();
+    if (orderNumber.isEmpty) return '';
+
+    final List<Map<String, dynamic>> orders;
+    try {
+      orders = await provider.fetchOrders(search: orderNumber);
+    } catch (_) {
+      return '';
+    }
+    for (final order in orders) {
+      final orderMap = _readMap(order, const [
+        'order',
+        'order_details',
+        'orderDetails',
+      ]);
+      final source = orderMap.isEmpty ? order : <String, dynamic>{
+        ...order,
+        ...orderMap,
+      };
+      final foundOrderNumber = _readString(source, const [
+        'order_number',
+        'orderNumber',
+        'orderNo',
+        'number',
+        'sales_order_number',
+      ]);
+      if (foundOrderNumber != orderNumber) continue;
+
+      final customer = _readMap(source, const [
+        'customer',
+        'customer_details',
+        'customerDetails',
+      ]);
+      final photoUrl = _customerPhotoUrlFromMaps(source, customer);
+      if (photoUrl.isNotEmpty) return photoUrl;
+    }
+    return '';
   }
 
   Future<void> _refresh() async {
@@ -174,6 +226,8 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
                           onRefresh: _refresh,
                           child: _Body(
                             delivery: delivery!,
+                            customerProfileImageUrl:
+                                _customerProfileImageUrl,
                             isActionBusy: _isActionBusy,
                             onConfirm: delivery.canConfirm
                                 ? _confirmDelivery
@@ -264,12 +318,14 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
 
 class _Body extends StatelessWidget {
   final DeliveryDetail delivery;
+  final String customerProfileImageUrl;
   final bool isActionBusy;
   final VoidCallback? onConfirm;
   final VoidCallback? onFailed;
 
   const _Body({
     required this.delivery,
+    required this.customerProfileImageUrl,
     required this.isActionBusy,
     required this.onConfirm,
     required this.onFailed,
@@ -310,7 +366,9 @@ class _Body extends StatelessWidget {
                   Row(
                     children: [
                       _CustomerAvatar(
-                        imageUrl: delivery.customerProfileImageUrl,
+                        imageUrl: customerProfileImageUrl.isEmpty
+                            ? delivery.customerProfileImageUrl
+                            : customerProfileImageUrl,
                         radius: 28,
                         backgroundColor: AppColors.deliveryBlueSoft,
                         foregroundColor: AppColors.deliveryInk,
@@ -945,6 +1003,65 @@ String _formatMoney(double value) {
     grouped.add(chars[i]);
   }
   return '${value < 0 ? '-' : ''}\u20b9 ${grouped.reversed.join()}.${parts.last}';
+}
+
+Map<String, dynamic> _readMap(Map<String, dynamic> source, List<String> keys) {
+  for (final key in keys) {
+    final value = source[key];
+    if (value is Map<String, dynamic>) return value;
+    if (value is Map) return Map<String, dynamic>.from(value);
+  }
+  return const {};
+}
+
+String _readString(Map<String, dynamic> source, List<String> keys) {
+  for (final key in keys) {
+    final value = source[key];
+    final text = value?.toString().trim() ?? '';
+    if (text.isNotEmpty && text.toLowerCase() != 'null') return text;
+  }
+  return '';
+}
+
+String _firstNonEmpty(List<String> values) {
+  for (final value in values) {
+    final text = value.trim();
+    if (text.isNotEmpty) return text;
+  }
+  return '';
+}
+
+String _customerPhotoUrlFromMaps(
+  Map<String, dynamic> source,
+  Map<String, dynamic> customer,
+) {
+  return normalizeProductImageUrl(
+        _firstNonEmpty([
+          _readString(customer, const [
+            'profile_photo',
+            'profilePhoto',
+            'profile_image_url',
+            'profileImageUrl',
+            'profile_image_id',
+            'profileImageId',
+            'avatar',
+            'image',
+          ]),
+          _readString(source, const [
+            'customer_profile_photo',
+            'customerProfilePhoto',
+            'customer_profile_image_url',
+            'customerProfileImageUrl',
+            'profile_photo',
+            'profilePhoto',
+            'profile_image_url',
+            'profileImageUrl',
+            'profile_image_id',
+            'profileImageId',
+          ]),
+        ]),
+      ) ??
+      '';
 }
 
 String _cleanError(Object? error) {

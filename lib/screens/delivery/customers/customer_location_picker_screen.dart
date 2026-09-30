@@ -482,7 +482,7 @@ class _SearchPanel extends StatelessWidget {
                 shrinkWrap: true,
                 padding: const EdgeInsets.only(bottom: 8),
                 itemCount: results.length,
-                separatorBuilder: (_, __) => const Divider(height: 1),
+                separatorBuilder: (_, _) => const Divider(height: 1),
                 itemBuilder: (context, index) {
                   final result = results[index];
                   return ListTile(

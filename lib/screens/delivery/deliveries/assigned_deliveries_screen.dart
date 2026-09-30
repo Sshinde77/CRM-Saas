@@ -75,9 +75,15 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
       final rows = await provider.fetchDeliveryPartnerDeliveries(
         deliveryPartnerId: deliveryPartnerId,
       );
+      var deliveries = rows.map(_AssignedDelivery.fromJson).toList();
+      deliveries = await _hydrateDeliveryCustomerPhotos(
+        provider: provider,
+        deliveryPartnerId: deliveryPartnerId,
+        deliveries: deliveries,
+      );
       if (!mounted) return;
       setState(() {
-        _deliveries = rows.map(_AssignedDelivery.fromJson).toList();
+        _deliveries = deliveries;
         _isLoading = false;
       });
     } catch (error) {
@@ -88,6 +94,83 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  Future<List<_AssignedDelivery>> _hydrateDeliveryCustomerPhotos({
+    required ApiProvider provider,
+    required String deliveryPartnerId,
+    required List<_AssignedDelivery> deliveries,
+  }) async {
+    if (deliveries.every(
+      (delivery) => delivery.customerProfileImageUrl.isNotEmpty,
+    )) {
+      return deliveries;
+    }
+
+    final List<Map<String, dynamic>> orders;
+    try {
+      orders = await provider.fetchOrders(
+        assignedDeliveryPartnerId: deliveryPartnerId,
+      );
+    } catch (_) {
+      return deliveries;
+    }
+    final photosByOrderNumber = <String, String>{};
+    final photosByCustomerName = <String, String>{};
+
+    for (final order in orders) {
+      final nestedOrder = _readMap(order, const [
+        'order',
+        'order_details',
+        'orderDetails',
+      ]);
+      final orderMap = <String, dynamic>{...order};
+      if (nestedOrder != null && nestedOrder.isNotEmpty) {
+        orderMap.addAll(nestedOrder);
+      }
+      final customer = _readMap(orderMap, const [
+        'customer',
+        'customer_details',
+        'customerDetails',
+      ]);
+      final photoUrl = _customerPhotoUrlFromMaps(orderMap, customer);
+      if (photoUrl.isEmpty) continue;
+
+      final orderNumber = _readString(orderMap, const [
+        'orderNumber',
+        'order_number',
+        'orderNo',
+        'number',
+        'sales_order_number',
+      ]);
+      if (orderNumber != null && orderNumber.isNotEmpty) {
+        photosByOrderNumber[orderNumber.toLowerCase()] = photoUrl;
+      }
+
+      final customerName = _firstNonEmpty([
+        _readString(orderMap, const ['customerName', 'customer_name']),
+        _readString(customer, const [
+          'business_name',
+          'businessName',
+          'name',
+          'full_name',
+          'fullName',
+        ]),
+      ]);
+      if (customerName.isNotEmpty) {
+        photosByCustomerName[customerName.toLowerCase()] = photoUrl;
+      }
+    }
+
+    return deliveries.map((delivery) {
+      if (delivery.customerProfileImageUrl.isNotEmpty) return delivery;
+      final photoUrl =
+          photosByOrderNumber[delivery.orderNumber.toLowerCase()] ??
+          photosByCustomerName[delivery.customerName.toLowerCase()] ??
+          '';
+      if (photoUrl.isEmpty) return delivery;
+      return delivery.copyWith(customerProfileImageUrl: photoUrl);
+    }).toList();
   }
 
   Future<void> _accept(_AssignedDelivery delivery) async {
@@ -2032,6 +2115,30 @@ class _AssignedDelivery {
     );
   }
 
+  _AssignedDelivery copyWith({String? customerProfileImageUrl}) {
+    return _AssignedDelivery(
+      id: id,
+      deliveryNumber: deliveryNumber,
+      orderNumber: orderNumber,
+      customerName: customerName,
+      customerProfileImageUrl:
+          customerProfileImageUrl ?? this.customerProfileImageUrl,
+      status: status,
+      internalStatus: internalStatus,
+      scheduledDate: scheduledDate,
+      amountDue: amountDue,
+      items: items,
+      vehicleNumber: vehicleNumber,
+      warehouseName: warehouseName,
+      deliveryPartnerName: deliveryPartnerName,
+      paymentMode: paymentMode,
+      customerPhone: customerPhone,
+      deliveryAddress: deliveryAddress,
+      customerLatitude: customerLatitude,
+      customerLongitude: customerLongitude,
+    );
+  }
+
   bool get canRespond => status == 'planned' || status == 'pending';
 
   bool get canPrepareDelivery =>
@@ -2307,6 +2414,39 @@ String _firstNonEmpty(List<String?> values, {String fallback = ''}) {
     if (text.isNotEmpty) return text;
   }
   return fallback;
+}
+
+String _customerPhotoUrlFromMaps(
+  Map<String, dynamic> source,
+  Map<String, dynamic>? customer,
+) {
+  return normalizeProductImageUrl(
+        _firstNonEmpty([
+          _readString(customer, const [
+            'profilePhoto',
+            'profile_photo',
+            'profileImageUrl',
+            'profile_image_url',
+            'profileImageId',
+            'profile_image_id',
+            'avatar',
+            'image',
+          ]),
+          _readString(source, const [
+            'customerProfileImageUrl',
+            'customer_profile_image_url',
+            'customerProfilePhoto',
+            'customer_profile_photo',
+            'profilePhoto',
+            'profile_photo',
+            'profileImageUrl',
+            'profile_image_url',
+            'profileImageId',
+            'profile_image_id',
+          ]),
+        ]),
+      ) ??
+      '';
 }
 
 String? _readString(Map<String, dynamic>? json, List<String> keys) {

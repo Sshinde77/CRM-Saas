@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
 import '../../../providers/api_provider.dart';
+import '../../../utils/product_image_url.dart';
 import '../../../widgets/admin/app_drawer.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/app_calendar_date_picker.dart';
@@ -1590,15 +1591,32 @@ class _OrderMobileCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                _CustomerAvatar(imageUrl: record.customerProfileImageUrl),
+                const SizedBox(width: 9),
                 Expanded(
-                  child: Text(
-                    record.number,
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w800,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        record.number,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        record.customer,
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 _StatusChip(
@@ -1608,15 +1626,6 @@ class _OrderMobileCard extends StatelessWidget {
                 ),
                 _OrderActionsMenu(record: record, onSelected: onAction),
               ],
-            ),
-            const SizedBox(height: 4),
-            Text(
-              record.customer,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
             ),
             const SizedBox(height: 8),
             Row(
@@ -1707,6 +1716,39 @@ class _StatusChip extends StatelessWidget {
           fontWeight: FontWeight.w700,
         ),
       ),
+    );
+  }
+}
+
+class _CustomerAvatar extends StatelessWidget {
+  final String imageUrl;
+
+  const _CustomerAvatar({required this.imageUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    final url = imageUrl.trim();
+    const fallback = Icon(
+      Icons.storefront_outlined,
+      color: AppColors.primary,
+      size: 20,
+    );
+
+    return Container(
+      width: 38,
+      height: 38,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.10),
+        shape: BoxShape.circle,
+      ),
+      child: url.isEmpty
+          ? fallback
+          : Image.network(
+              url,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => fallback,
+            ),
     );
   }
 }
@@ -1830,6 +1872,7 @@ class _OrderRecord {
   final String id;
   final String number;
   final String customer;
+  final String customerProfileImageUrl;
   final String date;
   final DateTime? dateValue;
   final String items;
@@ -1849,6 +1892,7 @@ class _OrderRecord {
     this.id = '',
     required this.number,
     required this.customer,
+    this.customerProfileImageUrl = '',
     required this.date,
     this.dateValue,
     required this.items,
@@ -1931,6 +1975,7 @@ class _OrderRecord {
         _readString(customer, const ['name', 'full_name', 'fullName']),
         'Customer',
       ]),
+      customerProfileImageUrl: _customerProfileImageUrl(source, customer),
       date: dateValue == null ? '-' : _formatApiDate(dateValue),
       dateValue: dateValue,
       items: _readString(source, const [
@@ -2060,6 +2105,39 @@ String _firstNonEmpty(List<String> values) {
     if (trimmed.isNotEmpty) return trimmed;
   }
   return '';
+}
+
+String _customerProfileImageUrl(
+  Map<String, dynamic> source,
+  Map<String, dynamic> customer,
+) {
+  return normalizeProductImageUrl(
+        _firstNonEmpty([
+          _readString(customer, const [
+            'profile_photo',
+            'profilePhoto',
+            'profile_image_url',
+            'profileImageUrl',
+            'profile_image_id',
+            'profileImageId',
+            'avatar',
+            'image',
+          ]),
+          _readString(source, const [
+            'customer_profile_photo',
+            'customerProfilePhoto',
+            'customer_profile_image_url',
+            'customerProfileImageUrl',
+            'profile_photo',
+            'profilePhoto',
+            'profile_image_url',
+            'profileImageUrl',
+            'profile_image_id',
+            'profileImageId',
+          ]),
+        ]),
+      ) ??
+      '';
 }
 
 String _titleCase(String value) {

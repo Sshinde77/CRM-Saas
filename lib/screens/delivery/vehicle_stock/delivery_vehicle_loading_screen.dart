@@ -478,20 +478,6 @@ class _Metric extends StatelessWidget {
   }
 }
 
-class _MetricDivider extends StatelessWidget {
-  const _MetricDivider();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 1,
-      height: 44,
-      margin: const EdgeInsets.symmetric(horizontal: 10),
-      color: Colors.white.withValues(alpha: 0.24),
-    );
-  }
-}
-
 class _DetailsCard extends StatelessWidget {
   final DateTime loadingDate;
   final String deliveryPartner;
@@ -942,9 +928,8 @@ class _BottomSummary extends StatelessWidget {
 class _SummaryStat extends StatelessWidget {
   final String label;
   final String value;
-  final String? suffix;
 
-  const _SummaryStat({required this.label, required this.value, this.suffix});
+  const _SummaryStat({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -981,20 +966,6 @@ class _SummaryStat extends StatelessWidget {
                   ),
                 ),
               ),
-              if (suffix != null) ...[
-                const SizedBox(width: 5),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 2),
-                  child: Text(
-                    suffix!,
-                    style: const TextStyle(
-                      color: AppColors.textMuted,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-              ],
             ],
           ),
         ],
