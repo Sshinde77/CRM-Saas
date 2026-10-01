@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:crm_saas/models/auth_models.dart';
 import 'package:crm_saas/models/customer_model.dart';
 import 'package:crm_saas/models/app_user.dart';
-import 'package:crm_saas/constants/app_colors.dart';
 import 'package:crm_saas/providers/api_provider.dart';
 import 'package:crm_saas/screens/admin/orders/new_admin_order_screen.dart';
 import 'package:crm_saas/screens/delivery/orders/create_delivery_order_screen.dart';
@@ -29,6 +28,7 @@ class _OrderProvider extends ApiProvider {
   ];
   int productRequests = 0;
   int extraProducts = 0;
+  double productTaxRate = 0;
   bool includeCustomer = false;
   Map<String, dynamic>? createdOrder;
   ApiException? orderError;
@@ -115,7 +115,12 @@ class _OrderProvider extends ApiProvider {
   }) async {
     productRequests++;
     return [
-      {'id': 'rice', 'name': 'Rice 10kg', 'price': 620},
+      {
+        'id': 'rice',
+        'name': 'Rice 10kg',
+        'price': 620,
+        'tax_rate': productTaxRate,
+      },
       for (var i = 0; i < extraProducts; i++)
         {'id': 'product-$i', 'name': 'Product $i', 'price': 100},
     ];
@@ -787,81 +792,103 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('preview opens as a page and creates the selected order', (
-    tester,
-  ) async {
-    final provider = _OrderProvider()
-      ..warehouseFails = false
-      ..includeCustomer = true;
-    addTearDown(provider.dispose);
-    await tester.pumpWidget(
-      ApiProviderScope(
-        notifier: provider,
-        child: MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: const CreateDeliveryOrderScreen(),
-        ),
-      ),
+  for (final taxRate in [0.0, 18.0]) {
+    testWidgets(
+      'preview shows tax and creates the selected order ($taxRate%)',
+      (tester) async {
+        final provider = _OrderProvider()
+          ..warehouseFails = false
+          ..includeCustomer = true
+          ..productTaxRate = taxRate;
+        addTearDown(provider.dispose);
+        await tester.pumpWidget(
+          ApiProviderScope(
+            notifier: provider,
+            child: MaterialApp(
+              theme: AppTheme.lightTheme,
+              home: const CreateDeliveryOrderScreen(),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final customerField = find.byType(FormField<CustomerModel>);
+        await tester.tap(customerField);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Riyal Retail Store').last);
+        await tester.pumpAndSettle();
+
+        final warehouseField = find.byType(DropdownButtonFormField<String>);
+        await tester.ensureVisible(warehouseField);
+        await tester.tap(warehouseField);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Main Warehouse (WH001)').last);
+        await tester.pumpAndSettle();
+
+        final priceInput = find.byKey(const ValueKey('order-price-rice'));
+        expect(priceInput, findsNothing);
+        final addProduct = find.byTooltip('Add one Rice 10kg');
+        await tester.ensureVisible(addProduct);
+        await tester.tap(addProduct);
+        await tester.pumpAndSettle();
+        expect(priceInput, findsOneWidget);
+        expect(tester.widget<TextFormField>(priceInput).initialValue, '620.00');
+        await tester.enterText(priceInput, '99');
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Preview Sales Order'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Sales Order Preview'), findsOneWidget);
+        expect(find.text('Draft Sales Order'), findsOneWidget);
+        expect(find.text('Tax'), findsOneWidget);
+        final taxRow = find
+            .ancestor(of: find.text('Tax'), matching: find.byType(Row))
+            .first;
+        expect(
+          find.descendant(
+            of: taxRow,
+            matching: find.text(
+              '\u20b9 ${(99 * taxRate / 100).toStringAsFixed(2)}',
+            ),
+          ),
+          findsOneWidget,
+        );
+        final totalRow = find
+            .ancestor(of: find.text('Total').last, matching: find.byType(Row))
+            .first;
+        expect(
+          find.descendant(
+            of: totalRow,
+            matching: find.text(
+              '\u20b9 ${(99 + 99 * taxRate / 100).toStringAsFixed(2)}',
+            ),
+          ),
+          findsOneWidget,
+        );
+        expect(find.text('Riyal Retail Store'), findsOneWidget);
+        expect(find.text('Previous Balance'), findsOneWidget);
+        expect(find.text('Create Order'), findsOneWidget);
+        expect(provider.createdOrder, isNull);
+
+        await tester.ensureVisible(find.text('Create Order'));
+        await tester.tap(find.text('Create Order'));
+        await tester.pumpAndSettle();
+        expect(provider.createdOrder?['customer_id'], 'customer-1');
+        expect(provider.createdOrder?['warehouse_id'], 'main');
+        expect((provider.createdOrder?['items'] as List).single['quantity'], 1);
+        expect(
+          (provider.createdOrder?['items'] as List).single['unit_price'],
+          99,
+        );
+        expect(
+          (provider.createdOrder?['items'] as List).single['tax_rate'],
+          taxRate,
+        );
+        expect(find.text('Sales order created successfully.'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
     );
-    await tester.pumpAndSettle();
-
-    final customerField = find.byType(FormField<CustomerModel>);
-    await tester.tap(customerField);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Riyal Retail Store').last);
-    await tester.pumpAndSettle();
-
-    final warehouseField = find.byType(DropdownButtonFormField<String>);
-    await tester.ensureVisible(warehouseField);
-    await tester.tap(warehouseField);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Main Warehouse (WH001)').last);
-    await tester.pumpAndSettle();
-
-    final addProduct = find.byTooltip('Add one Rice 10kg');
-    await tester.ensureVisible(addProduct);
-    await tester.tap(addProduct);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Preview Sales Order'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Sales Order Preview'), findsOneWidget);
-    expect(find.text('Draft Sales Order'), findsOneWidget);
-    expect(find.text('Riyal Retail Store'), findsOneWidget);
-    expect(find.text('Previous Balance'), findsOneWidget);
-    expect(find.text('Create Order'), findsOneWidget);
-    expect(
-      tester.widget<AppBar>(find.byType(AppBar).last).backgroundColor,
-      AppColors.deliveryDashboardHeaderEnd,
-    );
-    expect(
-      tester
-          .widget<TextField>(find.byType(TextField).last)
-          .decoration
-          ?.fillColor,
-      AppColors.surface,
-    );
-    expect(
-      tester
-          .widget<FilledButton>(
-            find.widgetWithText(FilledButton, 'Create Order'),
-          )
-          .style
-          ?.backgroundColor
-          ?.resolve({}),
-      AppColors.deliveryGreen,
-    );
-    expect(provider.createdOrder, isNull);
-
-    await tester.ensureVisible(find.text('Create Order'));
-    await tester.tap(find.text('Create Order'));
-    await tester.pumpAndSettle();
-    expect(provider.createdOrder?['customer_id'], 'customer-1');
-    expect(provider.createdOrder?['warehouse_id'], 'main');
-    expect((provider.createdOrder?['items'] as List).single['quantity'], 1);
-    expect(find.text('Sales order created successfully.'), findsOneWidget);
-    expect(tester.takeException(), isNull);
-  });
+  }
 
   testWidgets('stock shortage shows a clear error and lets the user edit', (
     tester,

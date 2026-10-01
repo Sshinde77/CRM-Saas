@@ -39,6 +39,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   final _form = GlobalKey<FormState>();
   final _quantities = <String, int>{};
+  final _priceInputs = <String, String>{};
   final _productScrollController = ScrollController();
   final _discount = TextEditingController(text: '0');
   List<CustomerModel> _customers = [];
@@ -324,11 +325,39 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
 
   List<_OrderProduct> get _selected =>
       _products.where((p) => (_quantities[p.id] ?? 0) > 0).toList();
-  double get _subtotal =>
-      _selected.fold(0, (sum, p) => sum + p.price * (_quantities[p.id] ?? 0));
+  double _unitPrice(_OrderProduct product) {
+    final price = _priceInputs.containsKey(product.id)
+        ? double.tryParse(_priceInputs[product.id]!)
+        : product.price;
+    return price != null && price.isFinite && price >= 0 ? price : 0;
+  }
+
+  String? _priceError(String? text) {
+    final price = double.tryParse(text?.trim() ?? "");
+    return price == null || !price.isFinite || price < 0
+        ? "Enter a valid amount"
+        : null;
+  }
+
+  double get _subtotal => _selected.fold(
+    0,
+    (sum, p) => sum + _unitPrice(p) * (_quantities[p.id] ?? 0),
+  );
   double get _discountValue =>
       (double.tryParse(_discount.text) ?? 0).clamp(0, _subtotal).toDouble();
-  double get _total => _subtotal - _discountValue;
+  double get _tax => _customer?.taxExempt == true || _subtotal <= 0
+      ? 0
+      : _selected.fold<double>(
+          0,
+          (sum, product) =>
+              sum +
+              _unitPrice(product) *
+                  (_quantities[product.id] ?? 0) *
+                  (1 - _discountValue / _subtotal) *
+                  product.taxRate /
+                  100,
+        );
+  double get _total => _subtotal - _discountValue + _tax;
   String _money(double value) => _formatOrderMoney(value);
   String _warehouseLabel(Map<String, dynamic> warehouse) {
     final name = _text(warehouse, ['name', 'warehouse_name']);
@@ -415,6 +444,15 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
 
     final customer = _customer;
     final selectedItems = _selected;
+    for (final product in selectedItems) {
+      if (_priceError(_priceInputs[product.id] ?? product.price.toString()) !=
+          null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Enter a valid amount for ${product.name}.')),
+        );
+        return;
+      }
+    }
     final selectedWarehouse = _selectedWarehouse();
     final selectedPartner = _deliveryPartners
         .where((partner) => partner.id == _selectedPartnerId)
@@ -450,7 +488,11 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
           warehouse: selectedWarehouse,
           items: [
             for (final product in selectedItems)
-              _PreviewItem(product, _quantities[product.id]!),
+              _PreviewItem(
+                product,
+                _quantities[product.id]!,
+                _unitPrice(product),
+              ),
           ],
           orderDate: _orderDate,
           deliveryDate: _deliveryDate,
@@ -462,6 +504,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
             if (!mounted) return;
             setState(() {
               _quantities.clear();
+              _priceInputs.clear();
               _discount.text = '0';
             });
           },
@@ -833,29 +876,31 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                         const SizedBox(height: 8),
                         ..._productList(),
                         _heading('Delivery Method'),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: _choice(
-                                'Takeaway / Self Pickup',
-                                'Customer will collect the order.',
-                                Icons.storefront_outlined,
-                                !_homeDelivery,
-                                () => _setHomeDelivery(false),
+                        IntrinsicHeight(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Expanded(
+                                child: _choice(
+                                  'Takeaway / Self Pickup',
+                                  'Customer will collect the order.',
+                                  Icons.storefront_outlined,
+                                  !_homeDelivery,
+                                  () => _setHomeDelivery(false),
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: _choice(
-                                'Home Delivery',
-                                'Deliver the order to the customer address.',
-                                Icons.local_shipping_outlined,
-                                _homeDelivery,
-                                () => _setHomeDelivery(true),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: _choice(
+                                  'Home Delivery',
+                                  'Deliver the order to the customer address.',
+                                  Icons.local_shipping_outlined,
+                                  _homeDelivery,
+                                  () => _setHomeDelivery(true),
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                         if (_homeDelivery) ...[
                           const SizedBox(height: 12),
@@ -903,8 +948,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                                             );
                                         if (!mounted || partner == null) return;
                                         setState(
-                                          () =>
-                                              _selectedPartnerId = partner.id,
+                                          () => _selectedPartnerId = partner.id,
                                         );
                                         field.didChange(partner.id);
                                       },
@@ -1061,6 +1105,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
       final quantity = _quantities[p.id] ?? 0;
       final displayStock = _displayStockFor(p);
       return Container(
+        key: ValueKey('order-product-${p.id}'),
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
@@ -1104,7 +1149,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                     Text(
                       'SKU: ${p.sku}',
                       style: const TextStyle(
-                        fontSize: 14,
+                        fontSize: 11,
                         color: AppColors.textLightMuted,
                       ),
                     ),
@@ -1125,7 +1170,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                       ),
                       children: [
                         TextSpan(
-                          text: _money(p.price),
+                          text: _money(_unitPrice(p)),
                           style: const TextStyle(fontWeight: FontWeight.w800),
                         ),
                         TextSpan(
@@ -1146,6 +1191,41 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                if (quantity > 0)
+                  SizedBox(
+                    width: 100,
+                    child: TextFormField(
+                      key: ValueKey('order-price-${p.id}'),
+                      initialValue:
+                          _priceInputs[p.id] ?? p.price.toStringAsFixed(2),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      textAlign: TextAlign.right,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      decoration: const InputDecoration(
+                        prefixText: '\u20b9 ',
+                        labelText: 'Unit price',
+                        labelStyle: TextStyle(fontSize: 11),
+                        isDense: true,
+                        filled: true,
+                        fillColor: AppColors.surface,
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 8,
+                        ),
+                        border: OutlineInputBorder(),
+                        errorMaxLines: 2,
+                      ),
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      validator: _priceError,
+                      onChanged: (value) =>
+                          setState(() => _priceInputs[p.id] = value),
+                    ),
+                  ),
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -1210,6 +1290,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
           child: Text('Add products to see your order summary.'),
         ),
       _totalRow('Subtotal', _money(_subtotal)),
+      _totalRow('Tax', _money(_tax)),
       _totalRow('Discount', '− ${_money(_discountValue)}'),
       _totalRow('Total', _money(_total), bold: true),
     ],
@@ -1317,7 +1398,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
             Text(
               subtitle,
               style: const TextStyle(
-                fontSize: 14,
+                fontSize: 12,
                 color: AppColors.textLightMuted,
               ),
             ),
@@ -1370,7 +1451,9 @@ class _PreviewItem {
   final _OrderProduct product;
   int quantity;
 
-  _PreviewItem(this.product, this.quantity);
+  final double unitPrice;
+
+  _PreviewItem(this.product, this.quantity, this.unitPrice);
 }
 
 class _SalesOrderPreviewPage extends StatefulWidget {
@@ -1418,9 +1501,21 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
   List<_PreviewItem> get _items =>
       widget.items.where((item) => item.quantity > 0).toList();
   double get _subtotal =>
-      _items.fold(0, (sum, item) => sum + item.product.price * item.quantity);
+      _items.fold(0, (sum, item) => sum + item.unitPrice * item.quantity);
   double get _discount => widget.discount.clamp(0, _subtotal).toDouble();
-  double get _total => _subtotal - _discount;
+  double get _tax => widget.customer.taxExempt == true || _subtotal <= 0
+      ? 0
+      : _items.fold<double>(
+          0,
+          (sum, item) =>
+              sum +
+              item.unitPrice *
+                  item.quantity *
+                  (1 - _discount / _subtotal) *
+                  item.product.taxRate /
+                  100,
+        );
+  double get _total => _subtotal - _discount + _tax;
   double get _previousBalance => (widget.customer.outstanding ?? 0).toDouble();
   double get _grandTotal => _total + _previousBalance;
   double? get _paid => double.tryParse(_paidController.text.trim());
@@ -1491,7 +1586,10 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                 {
                   'product_id': item.product.id,
                   'quantity': item.quantity,
-                  'unit_price': item.product.price,
+                  'unit_price': item.unitPrice,
+                  'tax_rate': widget.customer.taxExempt == true
+                      ? 0
+                      : item.product.taxRate,
                 },
             ],
             'discount': _discount,
@@ -1819,6 +1917,11 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                               icon: Icons.sell_outlined,
                             ),
                             _summaryRow(
+                              'Tax',
+                              _money(_tax),
+                              icon: Icons.receipt_long_outlined,
+                            ),
+                            _summaryRow(
                               'Discount',
                               '− ${_money(_discount)}',
                               icon: Icons.percent_rounded,
@@ -2054,6 +2157,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
             label,
             style: TextStyle(
               color: color ?? AppColors.textPrimary,
+              fontSize: 12,
               fontWeight: strong ? FontWeight.w800 : FontWeight.w600,
             ),
           ),
@@ -2220,7 +2324,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                           Expanded(
                             flex: 2,
                             child: Text(
-                              _money(item.product.price),
+                              _money(item.unitPrice),
                               textAlign: TextAlign.right,
                               style: const TextStyle(fontSize: 14),
                             ),
@@ -2228,7 +2332,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                           Expanded(
                             flex: 2,
                             child: Text(
-                              _money(item.product.price * item.quantity),
+                              _money(item.unitPrice * item.quantity),
                               textAlign: TextAlign.right,
                               style: const TextStyle(
                                 fontSize: 14,
@@ -2347,7 +2451,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    '${_money(item.product.price)} / ${item.product.unit}',
+                    '${_money(item.unitPrice)} / ${item.product.unit}',
                     textAlign: TextAlign.right,
                     style: const TextStyle(
                       fontSize: 14,
@@ -2355,7 +2459,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                     ),
                   ),
                   Text(
-                    _money(item.product.price * item.quantity),
+                    _money(item.unitPrice * item.quantity),
                     textAlign: TextAlign.right,
                     style: const TextStyle(
                       fontWeight: FontWeight.w800,
@@ -2375,6 +2479,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
 class _OrderProduct {
   final String id, name, sku, unit, category, image;
   final double price;
+  final double taxRate;
   final double? stock;
   const _OrderProduct(
     this.id,
@@ -2385,6 +2490,7 @@ class _OrderProduct {
     this.image,
     this.price,
     this.stock,
+    this.taxRate,
   );
 
   String get availabilityLabel {
@@ -2429,7 +2535,16 @@ class _OrderProduct {
           ) ??
           0,
       readStock(data),
+      readTaxRate(data),
     );
+  }
+
+  static double readTaxRate(Map<String, dynamic> data) {
+    for (final key in const ['tax', 'tax_rate', 'taxRate', 'gst', 'gst_rate']) {
+      final rate = double.tryParse(data[key]?.toString() ?? '');
+      if (rate != null && rate.isFinite && rate >= 0) return rate;
+    }
+    return 0;
   }
 
   static double? readStock(Map<String, dynamic> data) {
