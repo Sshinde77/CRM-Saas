@@ -428,7 +428,10 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       );
       _pickedGoogleMapsLocation = PickedMapLocation(
         location: location,
-        placeName: customer.deliveryAddress ?? customer.billingAddress ?? 'Saved location',
+        placeName:
+            customer.deliveryAddress ??
+            customer.billingAddress ??
+            'Saved location',
       );
       _googleMapsController.text = _pickedGoogleMapsLocation!.placeName;
     } else {

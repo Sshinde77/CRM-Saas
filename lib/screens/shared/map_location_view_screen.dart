@@ -26,9 +26,9 @@ class MapLocationViewScreen extends StatelessWidget {
     );
     final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (launched || !context.mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Unable to open Google Maps.')));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Unable to open Google Maps.')),
+    );
   }
 
   @override

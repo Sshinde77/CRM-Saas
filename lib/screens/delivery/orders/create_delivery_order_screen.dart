@@ -564,27 +564,24 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                   ],
                 ),
               ),
-              Flexible(
-                flex: 2,
-                child: FilledButton(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: _green,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 18,
-                      vertical: 15,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+              FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: _green,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 15,
                   ),
-                  onPressed:
-                      _loading || _loadErrors.isNotEmpty || _warehouses.isEmpty
-                      ? null
-                      : _preview,
-                  child: const Text(
-                    'Preview Sales Order',
-                    textAlign: TextAlign.center,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
+                ),
+                onPressed:
+                    _loading || _loadErrors.isNotEmpty || _warehouses.isEmpty
+                    ? null
+                    : _preview,
+                child: const Text(
+                  'Preview Sales Order',
+                  textAlign: TextAlign.center,
                 ),
               ),
             ],
@@ -655,419 +652,533 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                               ],
                             ),
                           ),
-                        _label('Customer *'),
-                        FormField<CustomerModel>(
-                          initialValue: _customer,
-                          validator: (value) =>
-                              value == null ? 'Select a customer' : null,
-                          builder: (field) => InkWell(
-                            borderRadius: BorderRadius.circular(12),
-                            onTap:
-                                _loading || _loadErrors.containsKey('Customers')
-                                ? null
-                                : () async {
-                                    final customer =
-                                        await showDialog<CustomerModel>(
-                                          context: context,
-                                          builder: (_) => CustomerSearchDialog(
-                                            customers: _customers,
-                                            selectedCustomerId: _customer?.id,
-                                            onCreateCustomer: () =>
-                                                Navigator.of(
-                                                  context,
-                                                ).push<CustomerModel>(
-                                                  MaterialPageRoute(
-                                                    builder: (_) =>
-                                                        const CreateDeliveryCustomerScreen(),
-                                                  ),
-                                                ),
+                        _sectionSurface(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _label('Customer *'),
+                              FormField<CustomerModel>(
+                                initialValue: _customer,
+                                validator: (value) =>
+                                    value == null ? 'Select a customer' : null,
+                                builder: (field) => InkWell(
+                                  borderRadius: BorderRadius.circular(12),
+                                  onTap:
+                                      _loading ||
+                                          _loadErrors.containsKey('Customers')
+                                      ? null
+                                      : () async {
+                                          final customer =
+                                              await showDialog<CustomerModel>(
+                                                context: context,
+                                                builder: (_) =>
+                                                    CustomerSearchDialog(
+                                                      customers: _customers,
+                                                      selectedCustomerId:
+                                                          _customer?.id,
+                                                      onCreateCustomer: () =>
+                                                          Navigator.of(
+                                                            context,
+                                                          ).push<CustomerModel>(
+                                                            MaterialPageRoute(
+                                                              builder: (_) =>
+                                                                  const CreateDeliveryCustomerScreen(),
+                                                            ),
+                                                          ),
+                                                    ),
+                                              );
+                                          if (!mounted || customer == null)
+                                            return;
+                                          setState(() {
+                                            if (!_customers.any(
+                                              (c) => c.id == customer.id,
+                                            )) {
+                                              _customers = [
+                                                ..._customers,
+                                                customer,
+                                              ];
+                                            }
+                                            _customer = customer;
+                                          });
+                                          field.didChange(customer);
+                                        },
+                                  child: InputDecorator(
+                                    decoration:
+                                        _decoration(
+                                          '',
+                                          icon: Icons.storefront_outlined,
+                                        ).copyWith(
+                                          errorText: field.errorText,
+                                          suffixIcon: const Icon(
+                                            Icons.keyboard_arrow_down,
                                           ),
-                                        );
-                                    if (!mounted || customer == null) return;
-                                    setState(() {
-                                      if (!_customers.any(
-                                        (c) => c.id == customer.id,
-                                      )) {
-                                        _customers = [..._customers, customer];
-                                      }
-                                      _customer = customer;
-                                    });
-                                    field.didChange(customer);
-                                  },
-                            child: InputDecorator(
-                              decoration:
-                                  _decoration(
-                                    '',
-                                    icon: Icons.storefront_outlined,
-                                  ).copyWith(
-                                    errorText: field.errorText,
-                                    suffixIcon: const Icon(
-                                      Icons.keyboard_arrow_down,
-                                    ),
-                                  ),
-                              child: Text(
-                                _customer?.name ?? 'Select customer',
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ),
-                        ),
-                        if (selectedCustomer != null)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Icon(
-                                  Icons.location_on_outlined,
-                                  size: 16,
-                                  color: _green,
-                                ),
-                                const SizedBox(width: 6),
-                                Expanded(
-                                  child: Text(
-                                    selectedCustomer.deliveryAddress ??
-                                        selectedCustomer.address ??
-                                        selectedCustomer.billingAddress ??
-                                        'No address available',
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      color: AppColors.textLightMuted,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        _heading('Order Details'),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _dateField(
-                                'Order Date',
-                                _orderDate,
-                                false,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _dateField(
-                                'Delivery Date *',
-                                _deliveryDate,
-                                true,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        _label('Warehouse *'),
-                        DropdownButtonFormField<String>(
-                          key: ObjectKey(_warehouses),
-                          isExpanded: true,
-                          initialValue: _selectedWarehouseId,
-                          decoration: _decoration(
-                            !_loaded.contains('Warehouses') && _loading
-                                ? 'Loading warehouses...'
-                                : _loadErrors.containsKey('Warehouses')
-                                ? 'Could not load warehouses'
-                                : _warehouses.isEmpty
-                                ? 'No warehouses available'
-                                : 'Select warehouse',
-                          ).copyWith(errorText: _loadErrors['Warehouses']),
-                          items: [
-                            const DropdownMenuItem(
-                              value: _allWarehousesId,
-                              child: Text(
-                                'All warehouses',
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            ..._warehouses.map(
-                              (w) => DropdownMenuItem(
-                                value: _text(w, ['id', 'warehouse_id']),
-                                child: Text(
-                                  _warehouseLabel(w),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ),
-                          ],
-                          onChanged: _warehouses.isEmpty
-                              ? null
-                              : (v) {
-                                  setState(() => _selectedWarehouseId = v);
-                                  _loadStockForWarehouse();
-                                },
-                          validator: (v) =>
-                              v == null ? 'Select a warehouse' : null,
-                        ),
-                        if (_loadErrors.containsKey('Warehouses'))
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton(
-                              onPressed: _loading ? null : _load,
-                              child: const Text('Retry warehouses'),
-                            ),
-                          ),
-                        if (_stockError != null)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 6),
-                            child: Text(
-                              _stockError!,
-                              style: const TextStyle(
-                                color: AppColors.red,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        _heading('Add products'),
-                        TextField(
-                          decoration: _decoration(
-                            'Search products by name or SKU',
-                            icon: Icons.search,
-                          ),
-                          onChanged: (v) =>
-                              setState(() => _query = v.toLowerCase().trim()),
-                        ),
-                        const SizedBox(height: 10),
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children:
-                                [
-                                      'All',
-                                      ..._products
-                                          .map((p) => p.category)
-                                          .where(
-                                            (c) => c.isNotEmpty && c != 'All',
-                                          )
-                                          .toSet(),
-                                    ]
-                                    .map(
-                                      (c) => Padding(
-                                        padding: const EdgeInsets.only(
-                                          right: 8,
                                         ),
-                                        child: ChoiceChip(
-                                          label: Text(c),
-                                          selected: _category == c,
-                                          showCheckmark: false,
-                                          selectedColor: _green,
-                                          side: BorderSide(
-                                            color: _category == c
-                                                ? _green
-                                                : AppColors.border,
-                                            width: 0.7,
+                                    child: Text(
+                                      _customer?.name ?? 'Select customer',
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              if (selectedCustomer != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 8),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Icon(
+                                        Icons.location_on_outlined,
+                                        size: 16,
+                                        color: _green,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                        child: Text(
+                                          selectedCustomer.deliveryAddress ??
+                                              selectedCustomer.address ??
+                                              selectedCustomer.billingAddress ??
+                                              'No address available',
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            color: AppColors.textLightMuted,
                                           ),
-                                          labelStyle: TextStyle(
-                                            color: _category == c
-                                                ? Colors.white
-                                                : AppColors.textLightMuted,
-                                          ),
-                                          onSelected: (_) =>
-                                              setState(() => _category = c),
                                         ),
                                       ),
-                                    )
-                                    .toList(),
+                                    ],
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        ..._productList(),
-                        _heading('Delivery Method'),
-                        IntrinsicHeight(
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                        const SizedBox(height: 12),
+                        _sectionSurface(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Expanded(
-                                child: _choice(
-                                  'Takeaway / Self Pickup',
-                                  'Customer will collect the order.',
-                                  Icons.storefront_outlined,
-                                  !_homeDelivery,
-                                  () => _setHomeDelivery(false),
+                              _heading('Order Details'),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _dateField(
+                                      'Order Date',
+                                      _orderDate,
+                                      false,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: _dateField(
+                                      'Delivery Date *',
+                                      _deliveryDate,
+                                      true,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              _label('Warehouse *'),
+                              DropdownButtonFormField<String>(
+                                key: ObjectKey(_warehouses),
+                                isExpanded: true,
+                                initialValue: _selectedWarehouseId,
+                                decoration:
+                                    _decoration(
+                                      !_loaded.contains('Warehouses') &&
+                                              _loading
+                                          ? 'Loading warehouses...'
+                                          : _loadErrors.containsKey(
+                                              'Warehouses',
+                                            )
+                                          ? 'Could not load warehouses'
+                                          : _warehouses.isEmpty
+                                          ? 'No warehouses available'
+                                          : 'Select warehouse',
+                                    ).copyWith(
+                                      errorText: _loadErrors['Warehouses'],
+                                    ),
+                                items: [
+                                  const DropdownMenuItem(
+                                    value: _allWarehousesId,
+                                    child: Text(
+                                      'All warehouses',
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  ..._warehouses.map(
+                                    (w) => DropdownMenuItem(
+                                      value: _text(w, ['id', 'warehouse_id']),
+                                      child: Text(
+                                        _warehouseLabel(w),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                                onChanged: _warehouses.isEmpty
+                                    ? null
+                                    : (v) {
+                                        setState(
+                                          () => _selectedWarehouseId = v,
+                                        );
+                                        _loadStockForWarehouse();
+                                      },
+                                validator: (v) =>
+                                    v == null ? 'Select a warehouse' : null,
+                              ),
+                              if (_loadErrors.containsKey('Warehouses'))
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: TextButton(
+                                    onPressed: _loading ? null : _load,
+                                    child: const Text('Retry warehouses'),
+                                  ),
+                                ),
+                              if (_stockError != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 6),
+                                  child: Text(
+                                    _stockError!,
+                                    style: const TextStyle(
+                                      color: AppColors.red,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        _sectionSurface(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _heading('Add products'),
+                              TextField(
+                                decoration: _decoration(
+                                  'Search products by name or SKU',
+                                  icon: Icons.search,
+                                ),
+                                onChanged: (v) => setState(
+                                  () => _query = v.toLowerCase().trim(),
                                 ),
                               ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: _choice(
-                                  'Home Delivery',
-                                  'Deliver the order to the customer address.',
-                                  Icons.local_shipping_outlined,
-                                  _homeDelivery,
-                                  () => _setHomeDelivery(true),
+                              const SizedBox(height: 10),
+                              SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Row(
+                                  children:
+                                      [
+                                            'All',
+                                            ..._products
+                                                .map((p) => p.category)
+                                                .where(
+                                                  (c) =>
+                                                      c.isNotEmpty &&
+                                                      c != 'All',
+                                                )
+                                                .toSet(),
+                                          ]
+                                          .map(
+                                            (c) => Padding(
+                                              padding: const EdgeInsets.only(
+                                                right: 8,
+                                              ),
+                                              child: ChoiceChip(
+                                                label: Text(c),
+                                                selected: _category == c,
+                                                showCheckmark: false,
+                                                selectedColor: _green,
+                                                side: BorderSide(
+                                                  color: _category == c
+                                                      ? _green
+                                                      : AppColors.border,
+                                                  width: 0.7,
+                                                ),
+                                                labelStyle: TextStyle(
+                                                  color: _category == c
+                                                      ? Colors.white
+                                                      : AppColors
+                                                            .textLightMuted,
+                                                ),
+                                                onSelected: (_) => setState(
+                                                  () => _category = c,
+                                                ),
+                                              ),
+                                            ),
+                                          )
+                                          .toList(),
                                 ),
+                              ),
+                              const SizedBox(height: 8),
+                              ..._productList(),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        _sectionSurface(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _heading('Delivery Method'),
+                              IntrinsicHeight(
+                                child: Row(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    Expanded(
+                                      child: _choice(
+                                        'Takeaway / Self Pickup',
+                                        'Customer will collect the order.',
+                                        Icons.storefront_outlined,
+                                        !_homeDelivery,
+                                        () => _setHomeDelivery(false),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: _choice(
+                                        'Home Delivery',
+                                        'Deliver the order to the customer address.',
+                                        Icons.local_shipping_outlined,
+                                        _homeDelivery,
+                                        () => _setHomeDelivery(true),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (_homeDelivery) ...[
+                                const SizedBox(height: 12),
+                                _label('Delivery Partner *'),
+                                FormField<String>(
+                                  key: ValueKey(
+                                    _selectedPartnerId ?? 'no-partner',
+                                  ),
+                                  initialValue: _selectedPartnerId,
+                                  validator: (value) => value == null
+                                      ? 'Select a delivery partner'
+                                      : null,
+                                  builder: (field) {
+                                    final selectedPartner = _deliveryPartners
+                                        .where(
+                                          (partner) =>
+                                              partner.id == _selectedPartnerId,
+                                        )
+                                        .firstOrNull;
+                                    final disabled =
+                                        _partnersLoading ||
+                                        _deliveryPartners.isEmpty ||
+                                        _partnersError != null;
+                                    final label = _partnersLoading
+                                        ? 'Loading delivery partners...'
+                                        : _partnersError != null
+                                        ? 'Could not load delivery partners'
+                                        : _deliveryPartners.isEmpty
+                                        ? 'No delivery partners available'
+                                        : selectedPartner?.name ??
+                                              'Select delivery partner';
+
+                                    return InkWell(
+                                      borderRadius: BorderRadius.circular(12),
+                                      onTap: disabled
+                                          ? null
+                                          : () async {
+                                              final partner =
+                                                  await showDialog<AppUser>(
+                                                    context: context,
+                                                    builder: (_) =>
+                                                        DeliveryPartnerSearchDialog(
+                                                          partners:
+                                                              _deliveryPartners,
+                                                          selectedPartnerId:
+                                                              _selectedPartnerId,
+                                                        ),
+                                                  );
+                                              if (!mounted || partner == null)
+                                                return;
+                                              setState(
+                                                () => _selectedPartnerId =
+                                                    partner.id,
+                                              );
+                                              field.didChange(partner.id);
+                                            },
+                                      child: InputDecorator(
+                                        decoration:
+                                            _decoration(
+                                              '',
+                                              icon: Icons
+                                                  .delivery_dining_outlined,
+                                            ).copyWith(
+                                              errorText: field.errorText,
+                                              suffixIcon: const Icon(
+                                                Icons.keyboard_arrow_down,
+                                              ),
+                                            ),
+                                        child: Text(
+                                          label,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            color:
+                                                selectedPartner == null &&
+                                                    !_partnersLoading
+                                                ? AppColors.textLightMuted
+                                                : AppColors.textPrimary,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                if (_partnersError != null)
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          _partnersError!,
+                                          style: const TextStyle(
+                                            color: AppColors.deliveryRed,
+                                          ),
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: _partnersLoading
+                                            ? null
+                                            : () => _loadDeliveryPartners(
+                                                preserveSelectedPartner: !widget
+                                                    .assignDeliveryPartner,
+                                              ),
+                                        child: const Text('Retry'),
+                                      ),
+                                    ],
+                                  ),
+                              ],
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        _sectionSurface(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _heading('Payment Type *'),
+                              LayoutBuilder(
+                                builder: (context, constraints) {
+                                  const spacing = 8.0;
+                                  final itemWidth =
+                                      (constraints.maxWidth - spacing) / 2;
+
+                                  return Wrap(
+                                    spacing: spacing,
+                                    runSpacing: spacing,
+                                    children:
+                                        [
+                                              'Cash',
+                                              'Phone Pe',
+                                              'Other',
+                                              'Google Pay',
+                                            ]
+                                            .map(
+                                              (p) => SizedBox(
+                                                width: itemWidth,
+                                                child: ChoiceChip(
+                                                  avatar: Icon(
+                                                    _payment == p
+                                                        ? Icons
+                                                              .radio_button_checked
+                                                        : Icons
+                                                              .radio_button_off,
+                                                    color: _green,
+                                                    size: 18,
+                                                  ),
+                                                  label: Text(p),
+                                                  labelStyle: TextStyle(
+                                                    color: _payment == p
+                                                        ? AppColors.primary
+                                                        : AppColors.textPrimary,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                  selected: _payment == p,
+                                                  showCheckmark: false,
+                                                  selectedColor: _green
+                                                      .withValues(alpha: 0.12),
+                                                  side: BorderSide(
+                                                    color: _payment == p
+                                                        ? _green
+                                                        : AppColors.border,
+                                                    width: 0.7,
+                                                  ),
+                                                  onSelected: (_) => setState(
+                                                    () => _payment = p,
+                                                  ),
+                                                ),
+                                              ),
+                                            )
+                                            .toList(),
+                                  );
+                                },
                               ),
                             ],
                           ),
                         ),
-                        if (_homeDelivery) ...[
-                          const SizedBox(height: 12),
-                          _label('Delivery Partner *'),
-                          FormField<String>(
-                            key: ValueKey(_selectedPartnerId ?? 'no-partner'),
-                            initialValue: _selectedPartnerId,
-                            validator: (value) => value == null
-                                ? 'Select a delivery partner'
-                                : null,
-                            builder: (field) {
-                              final selectedPartner = _deliveryPartners
-                                  .where(
-                                    (partner) =>
-                                        partner.id == _selectedPartnerId,
-                                  )
-                                  .firstOrNull;
-                              final disabled =
-                                  _partnersLoading ||
-                                  _deliveryPartners.isEmpty ||
-                                  _partnersError != null;
-                              final label = _partnersLoading
-                                  ? 'Loading delivery partners...'
-                                  : _partnersError != null
-                                  ? 'Could not load delivery partners'
-                                  : _deliveryPartners.isEmpty
-                                  ? 'No delivery partners available'
-                                  : selectedPartner?.name ??
-                                        'Select delivery partner';
-
-                              return InkWell(
-                                borderRadius: BorderRadius.circular(12),
-                                onTap: disabled
-                                    ? null
-                                    : () async {
-                                        final partner =
-                                            await showDialog<AppUser>(
-                                              context: context,
-                                              builder: (_) =>
-                                                  DeliveryPartnerSearchDialog(
-                                                    partners: _deliveryPartners,
-                                                    selectedPartnerId:
-                                                        _selectedPartnerId,
-                                                  ),
-                                            );
-                                        if (!mounted || partner == null) return;
-                                        setState(
-                                          () => _selectedPartnerId = partner.id,
-                                        );
-                                        field.didChange(partner.id);
-                                      },
-                                child: InputDecorator(
-                                  decoration:
-                                      _decoration(
-                                        '',
-                                        icon: Icons.delivery_dining_outlined,
-                                      ).copyWith(
-                                        errorText: field.errorText,
-                                        suffixIcon: const Icon(
-                                          Icons.keyboard_arrow_down,
-                                        ),
-                                      ),
-                                  child: Text(
-                                    label,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      color:
-                                          selectedPartner == null &&
-                                              !_partnersLoading
-                                          ? AppColors.textLightMuted
-                                          : AppColors.textPrimary,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                          if (_partnersError != null)
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    _partnersError!,
-                                    style: const TextStyle(
-                                      color: AppColors.deliveryRed,
-                                    ),
-                                  ),
-                                ),
-                                TextButton(
-                                  onPressed: _partnersLoading
-                                      ? null
-                                      : () => _loadDeliveryPartners(
-                                          preserveSelectedPartner:
-                                              !widget.assignDeliveryPartner,
-                                        ),
-                                  child: const Text('Retry'),
-                                ),
-                              ],
-                            ),
-                        ],
-                        _heading('Payment Type *'),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: ['Cash', 'Phone Pe', 'Other', 'Google Pay']
-                              .map(
-                                (p) => ChoiceChip(
-                                  avatar: Icon(
-                                    _payment == p
-                                        ? Icons.radio_button_checked
-                                        : Icons.radio_button_off,
-                                    color: _green,
-                                    size: 18,
-                                  ),
-                                  label: Text(p),
-                                  labelStyle: TextStyle(
-                                    color: _payment == p
-                                        ? AppColors.primary
-                                        : AppColors.textPrimary,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  selected: _payment == p,
-                                  showCheckmark: false,
-                                  selectedColor: _green.withValues(alpha: 0.12),
-                                  side: BorderSide(
-                                    color: _payment == p
-                                        ? _green
-                                        : AppColors.border,
-                                    width: 0.7,
-                                  ),
-                                  onSelected: (_) =>
-                                      setState(() => _payment = p),
-                                ),
-                              )
-                              .toList(),
-                        ),
-                        _heading('Order Summary'),
-                        Container(
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: AppColors.surface,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: AppColors.border),
-                          ),
+                        const SizedBox(height: 12),
+                        _sectionSurface(
                           child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              _heading('Order Summary'),
                               _summary(),
                               const SizedBox(height: 12),
-                              TextFormField(
-                                controller: _discount,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                      decimal: true,
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Expanded(
+                                    child: Padding(
+                                      padding: EdgeInsets.only(top: 12),
+                                      child: Text(
+                                        'Discount',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.textSecondary,
+                                        ),
+                                      ),
                                     ),
-                                decoration: _decoration(
-                                  '0',
-                                ).copyWith(labelText: 'Discount amount (₹)'),
-                                onChanged: (_) => setState(() {}),
-                                validator: (v) {
-                                  final amount = double.tryParse(v ?? '');
-                                  return amount == null ||
-                                          !amount.isFinite ||
-                                          amount < 0 ||
-                                          amount > _subtotal
-                                      ? 'Enter a discount between 0 and ${_subtotal.toStringAsFixed(2)}'
-                                      : null;
-                                },
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: TextFormField(
+                                      controller: _discount,
+                                      keyboardType:
+                                          const TextInputType.numberWithOptions(
+                                            decimal: true,
+                                          ),
+                                      textAlign: TextAlign.right,
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      decoration: _decoration('0').copyWith(
+                                        prefixText: '₹ ',
+                                        prefixStyle: const TextStyle(
+                                          color: _green,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                      onChanged: (_) => setState(() {}),
+                                      validator: (v) {
+                                        final amount = double.tryParse(v ?? '');
+                                        return amount == null ||
+                                                !amount.isFinite ||
+                                                amount < 0 ||
+                                                amount > _subtotal
+                                            ? 'Enter 0–${_subtotal.toStringAsFixed(2)}'
+                                            : null;
+                                      },
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -1116,6 +1227,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
           border: Border.all(color: quantity > 0 ? _green : AppColors.border),
         ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             SizedBox(
               width: 72,
@@ -1157,8 +1269,8 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                   Text(
                     _availabilityLabel(displayStock),
                     style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
                       color: _availabilityColor(displayStock),
                     ),
                   ),
@@ -1208,8 +1320,6 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                       ),
                       decoration: const InputDecoration(
                         prefixText: '\u20b9 ',
-                        labelText: 'Unit price',
-                        labelStyle: TextStyle(fontSize: 11),
                         isDense: true,
                         filled: true,
                         fillColor: AppColors.surface,
@@ -1290,11 +1400,20 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
           child: Text('Add products to see your order summary.'),
         ),
       _totalRow('Subtotal', _money(_subtotal)),
-      _totalRow('Tax', _money(_tax)),
-      _totalRow('Discount', '− ${_money(_discountValue)}'),
+      _totalRow('Tax', _taxPercentageLabel),
       _totalRow('Total', _money(_total), bold: true),
     ],
   );
+
+  String get _taxPercentageLabel {
+    if (_customer?.taxExempt == true || _subtotal <= 0) return '0%';
+    final taxableAmount = _subtotal - _discountValue;
+    if (taxableAmount <= 0) return '0%';
+    final percentage = _tax / taxableAmount * 100;
+    return percentage == percentage.roundToDouble()
+        ? '${percentage.toStringAsFixed(0)}%'
+        : '${percentage.toStringAsFixed(2)}%';
+  }
 
   Widget _totalRow(String title, String value, {bool bold = false}) => Padding(
     padding: const EdgeInsets.symmetric(vertical: 5),
@@ -1321,8 +1440,26 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
       ],
     ),
   );
+  Widget _sectionSurface({required Widget child}) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: AppColors.border.withValues(alpha: 0.8)),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.06),
+          blurRadius: 12,
+          offset: const Offset(0, 3),
+        ),
+      ],
+    ),
+    child: child,
+  );
+
   Widget _heading(String text) => Padding(
-    padding: const EdgeInsets.only(top: 18, bottom: 10),
+    padding: const EdgeInsets.only(bottom: 10),
     child: Text(
       text,
       style: const TextStyle(
@@ -2143,13 +2280,11 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
     ),
   );
 
-  Widget _detailRow(
-    String label,
-    String value, {
-    Color? color,
-    bool strong = false,
-  }) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 7),
+  Widget _detailRow(String label, String value, {Color? color}) => Container(
+    padding: const EdgeInsets.symmetric(vertical: 10),
+    decoration: const BoxDecoration(
+      border: Border(bottom: BorderSide(color: AppColors.border, width: 0.7)),
+    ),
     child: Row(
       children: [
         Expanded(
@@ -2158,7 +2293,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
             style: TextStyle(
               color: color ?? AppColors.textPrimary,
               fontSize: 12,
-              fontWeight: strong ? FontWeight.w800 : FontWeight.w600,
+              fontWeight: FontWeight.w300,
             ),
           ),
         ),
@@ -2169,7 +2304,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
             textAlign: TextAlign.right,
             style: TextStyle(
               color: color ?? AppColors.textPrimary,
-              fontWeight: strong ? FontWeight.w800 : FontWeight.w500,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ),
@@ -2366,111 +2501,138 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
           child: Text('No products selected. Go back to add products.'),
         ),
       for (final item in _items) ...[
-        const Divider(height: 16, color: AppColors.border),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 64,
-              height: 64,
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceSoft,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: item.product.image.isEmpty
-                  ? const Icon(Icons.inventory_2_outlined, color: _green)
-                  : Image.network(
-                      item.product.image,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, error, stack) =>
-                          const Icon(Icons.inventory_2_outlined, color: _green),
-                    ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Column(
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: Column(
+            children: [
+              Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    item.product.name,
-                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  Container(
+                    width: 48,
+                    height: 48,
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceSoft,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: item.product.image.isEmpty
+                        ? const Icon(
+                            Icons.inventory_2_outlined,
+                            size: 22,
+                            color: _green,
+                          )
+                        : Image.network(
+                            item.product.image,
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, error, stack) => const Icon(
+                              Icons.inventory_2_outlined,
+                              size: 22,
+                              color: _green,
+                            ),
+                          ),
                   ),
-                  if (item.product.sku.isNotEmpty)
-                    Text(
-                      'SKU: ${item.product.sku}',
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.product.name,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            height: 1.2,
+                          ),
+                        ),
+                        if (item.product.sku.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            'SKU: ${item.product.sku}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: AppColors.textMuted,
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 2),
+                        Text(
+                          '${_money(item.unitPrice)} / ${item.product.unit}',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _money(item.unitPrice * item.quantity),
                       style: const TextStyle(
-                        fontSize: 14,
-                        color: AppColors.textMuted,
+                        color: _green,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            IconButton.filledTonal(
-              tooltip: 'Remove one ${item.product.name}',
-              style: IconButton.styleFrom(
-                backgroundColor: AppColors.surfaceSoft,
-                foregroundColor: AppColors.primary,
-              ),
-              visualDensity: VisualDensity.compact,
-              constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
-              onPressed: _createdOrderId == null
-                  ? () => _setQuantity(item, item.quantity - 1)
-                  : null,
-              icon: const Icon(Icons.remove, size: 17),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6),
-              child: Text(
-                '${item.quantity}',
-                style: const TextStyle(fontWeight: FontWeight.w800),
-              ),
-            ),
-            IconButton.filledTonal(
-              tooltip: 'Add one ${item.product.name}',
-              style: IconButton.styleFrom(
-                backgroundColor: AppColors.surfaceSoft,
-                foregroundColor: AppColors.primary,
-              ),
-              visualDensity: VisualDensity.compact,
-              constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
-              onPressed: _createdOrderId == null
-                  ? () => _setQuantity(item, item.quantity + 1)
-                  : null,
-              icon: const Icon(Icons.add, size: 17, color: _green),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    '${_money(item.unitPrice)} / ${item.product.unit}',
-                    textAlign: TextAlign.right,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: AppColors.textSecondary,
+                  ),
+                  IconButton.filledTonal(
+                    tooltip: 'Remove one ${item.product.name}',
+                    style: IconButton.styleFrom(
+                      backgroundColor: AppColors.surfaceSoft,
+                      foregroundColor: AppColors.primary,
+                    ),
+                    visualDensity: VisualDensity.compact,
+                    constraints: const BoxConstraints(
+                      minWidth: 36,
+                      minHeight: 36,
+                    ),
+                    onPressed: _createdOrderId == null
+                        ? () => _setQuantity(item, item.quantity - 1)
+                        : null,
+                    icon: const Icon(Icons.remove, size: 16),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Text(
+                      '${item.quantity}',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ),
-                  Text(
-                    _money(item.unitPrice * item.quantity),
-                    textAlign: TextAlign.right,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w800,
-                      color: _header,
+                  IconButton.filledTonal(
+                    tooltip: 'Add one ${item.product.name}',
+                    style: IconButton.styleFrom(
+                      backgroundColor: AppColors.deliveryGreenSoft,
+                      foregroundColor: _green,
                     ),
+                    visualDensity: VisualDensity.compact,
+                    constraints: const BoxConstraints(
+                      minWidth: 36,
+                      minHeight: 36,
+                    ),
+                    onPressed: _createdOrderId == null
+                        ? () => _setQuantity(item, item.quantity + 1)
+                        : null,
+                    icon: const Icon(Icons.add, size: 16),
                   ),
                 ],
               ),
-            ),
-          ],
+            ],
+          ),
         ),
+        const Divider(height: 1, color: AppColors.border),
       ],
     ],
   );

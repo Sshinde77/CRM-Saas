@@ -173,8 +173,7 @@ class _DeliveryPartnerSearchDialogState
                       itemCount: partners.length,
                       separatorBuilder: (_, index) =>
                           const SizedBox(height: 10),
-                      itemBuilder: (_, index) =>
-                          _partnerCard(partners[index]),
+                      itemBuilder: (_, index) => _partnerCard(partners[index]),
                     ),
             ),
           ],

@@ -102,13 +102,7 @@ class VoiceFieldExtractor {
       'mobile ka number',
       'phone ka number',
     ],
-    'gstin': [
-      'gstin',
-      'gst number',
-      'gst no',
-      'gst',
-      'gstin number',
-    ],
+    'gstin': ['gstin', 'gst number', 'gst no', 'gst', 'gstin number'],
     'customerType': [
       'customer type',
       'customer category',
@@ -126,14 +120,7 @@ class VoiceFieldExtractor {
       'location address',
       'area',
     ],
-    'city': [
-      'city',
-      'shehar',
-      'shahar',
-      'town',
-      'nagar',
-      'district',
-    ],
+    'city': ['city', 'shehar', 'shahar', 'town', 'nagar', 'district'],
     'pincode': [
       'pin code',
       'pincode',
@@ -258,10 +245,7 @@ class VoiceFieldExtractor {
 
   String _stripLeadingConnectors(String value) {
     return value
-        .replaceFirst(
-          RegExp(r'^(is|hai|he|hain|ka|ki|ke|:|,|-|=|\s)+'),
-          '',
-        )
+        .replaceFirst(RegExp(r'^(is|hai|he|hain|ka|ki|ke|:|,|-|=|\s)+'), '')
         .trim();
   }
 
@@ -273,8 +257,10 @@ class VoiceFieldExtractor {
       'pincode' => _cleanPincode(trimmed),
       'gstin' => _cleanGstin(trimmed),
       'customerType' => _cleanCustomerType(trimmed),
-      'shopName' || 'contactPerson' || 'address' || 'city' =>
-        _titleCase(_capLength(_trimTrailingFillers(trimmed), field)),
+      'shopName' ||
+      'contactPerson' ||
+      'address' ||
+      'city' => _titleCase(_capLength(_trimTrailingFillers(trimmed), field)),
       _ => trimmed,
     };
   }
@@ -296,8 +282,8 @@ class VoiceFieldExtractor {
   String? _cleanGstin(String value) {
     final gstin = value.toUpperCase().replaceAll(RegExp(r'[^A-Z0-9]'), '');
     return RegExp(
-      r'^\d{2}[A-Z]{5}\d{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$',
-    ).hasMatch(gstin)
+          r'^\d{2}[A-Z]{5}\d{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$',
+        ).hasMatch(gstin)
         ? gstin
         : null;
   }
@@ -330,12 +316,12 @@ class VoiceFieldExtractor {
       return null;
     }
 
-    return findOption(['retail', 'retailer', 'dukaan', 'dukan', 'shop'])
-        ?? findOption(['whole', 'wholesale', 'wholesaler'])
-        ?? findOption(['distrib', 'stockist'])
-        ?? findOption(['business', 'company'])
-        ?? findOption(['individual', 'person'])
-        ?? findOption(['general', 'trade']);
+    return findOption(['retail', 'retailer', 'dukaan', 'dukan', 'shop']) ??
+        findOption(['whole', 'wholesale', 'wholesaler']) ??
+        findOption(['distrib', 'stockist']) ??
+        findOption(['business', 'company']) ??
+        findOption(['individual', 'person']) ??
+        findOption(['general', 'trade']);
   }
 
   String _wordsToDigits(String value) {

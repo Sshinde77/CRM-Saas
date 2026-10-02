@@ -527,7 +527,11 @@ class _CheckpointTime extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(Icons.schedule_rounded, size: 12, color: AppColors.textMuted),
+        const Icon(
+          Icons.schedule_rounded,
+          size: 12,
+          color: AppColors.textMuted,
+        ),
         const SizedBox(width: 4),
         Text(
           time,

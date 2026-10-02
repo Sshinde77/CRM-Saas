@@ -39,9 +39,9 @@ void main() {
     }
 
     TextEditingController controllerAt(int index) {
-      return tester.widget<TextFormField>(
-        find.byType(TextFormField).at(index),
-      ).controller!;
+      return tester
+          .widget<TextFormField>(find.byType(TextFormField).at(index))
+          .controller!;
     }
 
     await useVoice();

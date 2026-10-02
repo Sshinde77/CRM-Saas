@@ -42,9 +42,7 @@ class _CustomerLocationPickerScreenState
   google_maps.GoogleMapController? _mapController;
   Timer? _searchDebounce;
   int _lookupToken = 0;
-  late google_maps.LatLng? _selected = _toGoogleLatLng(
-    widget.initialLocation,
-  );
+  late google_maps.LatLng? _selected = _toGoogleLatLng(widget.initialLocation);
   late String? _selectedPlaceName = _cleanPlaceName(widget.initialPlaceName);
   List<LocationSearchResult> _results = const [];
   bool _searching = false;
@@ -227,9 +225,9 @@ class _CustomerLocationPickerScreenState
 
   void _showSnack(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   String _selectedLabel(google_maps.LatLng? selected) {

@@ -539,7 +539,9 @@ class _DemoNotice extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.deliveryBlueSoft,
         borderRadius: BorderRadius.circular(AppSizes.cardRadius),
-        border: Border.all(color: AppColors.deliveryBlue.withValues(alpha: 0.16)),
+        border: Border.all(
+          color: AppColors.deliveryBlue.withValues(alpha: 0.16),
+        ),
       ),
       child: const Row(
         children: [
@@ -624,7 +626,9 @@ class _LeavesPanel extends StatelessWidget {
                         leave: leave,
                         isBusy: busyLeaveIds.contains(leave.id),
                         onDetails: () => onDetails(leave),
-                        onCancel: leave.canCancel ? () => onCancel(leave) : null,
+                        onCancel: leave.canCancel
+                            ? () => onCancel(leave)
+                            : null,
                       ),
                       if (leave != leaves.last)
                         const SizedBox(height: AppSpacing.sm),
@@ -888,7 +892,8 @@ class _ApplyLeaveSheet extends StatefulWidget {
     required DateTime startDate,
     required DateTime endDate,
     required String reason,
-  }) onSubmit;
+  })
+  onSubmit;
 
   @override
   State<_ApplyLeaveSheet> createState() => _ApplyLeaveSheetState();
@@ -1097,8 +1102,9 @@ class _ApplyLeaveSheetState extends State<_ApplyLeaveSheet> {
                               ? null
                               : () => Navigator.of(context).pop(),
                           style: OutlinedButton.styleFrom(
-                            minimumSize:
-                                const Size.fromHeight(AppSizes.buttonHeight),
+                            minimumSize: const Size.fromHeight(
+                              AppSizes.buttonHeight,
+                            ),
                           ),
                           child: const Text('Cancel'),
                         ),
@@ -1108,8 +1114,9 @@ class _ApplyLeaveSheetState extends State<_ApplyLeaveSheet> {
                         child: FilledButton.icon(
                           onPressed: _isSubmitting ? null : _submit,
                           style: FilledButton.styleFrom(
-                            minimumSize:
-                                const Size.fromHeight(AppSizes.buttonHeight),
+                            minimumSize: const Size.fromHeight(
+                              AppSizes.buttonHeight,
+                            ),
                             backgroundColor: AppColors.deliveryGreen,
                             foregroundColor: AppColors.surface,
                           ),
@@ -1182,7 +1189,9 @@ class _DayPreview extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: hasOverlap ? AppColors.deliveryOrangeSoft : const Color(0xFFEAF7EE),
+        color: hasOverlap
+            ? AppColors.deliveryOrangeSoft
+            : const Color(0xFFEAF7EE),
         borderRadius: BorderRadius.circular(AppSizes.cardRadius),
         border: Border.all(
           color: hasOverlap
@@ -1196,7 +1205,9 @@ class _DayPreview extends StatelessWidget {
             hasOverlap
                 ? Icons.warning_amber_rounded
                 : Icons.date_range_outlined,
-            color: hasOverlap ? AppColors.deliveryOrange : AppColors.deliveryGreen,
+            color: hasOverlap
+                ? AppColors.deliveryOrange
+                : AppColors.deliveryGreen,
             size: 20,
           ),
           const SizedBox(width: 10),
@@ -1237,13 +1248,19 @@ class _LeaveDetailsDialog extends StatelessWidget {
           children: [
             _DetailRow(label: 'Leave Type', value: leave.leaveTypeLabel),
             _DetailRow(label: 'Status', value: leave.statusLabel),
-            _DetailRow(label: 'Start Date', value: _formatDate(leave.startDate)),
+            _DetailRow(
+              label: 'Start Date',
+              value: _formatDate(leave.startDate),
+            ),
             _DetailRow(label: 'End Date', value: _formatDate(leave.endDate)),
             _DetailRow(label: 'Number of Days', value: '${leave.daysCount}'),
             _DetailRow(label: 'Requested At', value: leave.requestedAtLabel),
             _DetailRow(label: 'Reason', value: leave.reason),
             if (leave.status != 'pending') ...[
-              _DetailRow(label: 'Reviewed By', value: reviewedBy ?? 'Not available'),
+              _DetailRow(
+                label: 'Reviewed By',
+                value: reviewedBy ?? 'Not available',
+              ),
               _DetailRow(label: 'Reviewed At', value: leave.reviewedAtLabel),
             ],
             if (leave.status == 'rejected' &&
@@ -1676,18 +1693,30 @@ class _LeaveRequest {
         'reject_reason',
         'rejection_reason',
       ]),
-      createdAt: _readDate(json, const ['createdAt', 'created_at', 'requested_at']),
-      updatedAt: _readDate(json, const ['updatedAt', 'updated_at', 'reviewed_at']),
+      createdAt: _readDate(json, const [
+        'createdAt',
+        'created_at',
+        'requested_at',
+      ]),
+      updatedAt: _readDate(json, const [
+        'updatedAt',
+        'updated_at',
+        'reviewed_at',
+      ]),
     );
   }
 
   bool get canCancel => status == 'pending';
   String get leaveTypeLabel => _leaveTypeLabel(leaveType);
   String get statusLabel => _statusLabel(status);
-  String get dateRangeLabel => '${_formatDate(startDate)} - ${_formatDate(endDate)}';
-  String get requestedOnLabel => createdAt == null ? 'Not available' : _formatDate(createdAt!);
-  String get requestedAtLabel => createdAt == null ? 'Not available' : _formatDateTime(createdAt!);
-  String get reviewedAtLabel => updatedAt == null ? 'Not available' : _formatDateTime(updatedAt!);
+  String get dateRangeLabel =>
+      '${_formatDate(startDate)} - ${_formatDate(endDate)}';
+  String get requestedOnLabel =>
+      createdAt == null ? 'Not available' : _formatDate(createdAt!);
+  String get requestedAtLabel =>
+      createdAt == null ? 'Not available' : _formatDateTime(createdAt!);
+  String get reviewedAtLabel =>
+      updatedAt == null ? 'Not available' : _formatDateTime(updatedAt!);
 
   _LeaveRequest copyWith({String? status}) {
     return _LeaveRequest(
@@ -1860,7 +1889,8 @@ List<_LeaveRequest> _seedDemoLeaves() {
   ];
 }
 
-DateTime _dateOnly(DateTime value) => DateTime(value.year, value.month, value.day);
+DateTime _dateOnly(DateTime value) =>
+    DateTime(value.year, value.month, value.day);
 
 int _calculateDaysCount(DateTime start, DateTime end) {
   return _dateOnly(end).difference(_dateOnly(start)).inDays + 1;

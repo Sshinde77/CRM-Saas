@@ -158,13 +158,14 @@ class _CreateDeliveryCustomerScreenState
 
   Future<void> _startVoiceEntry() async {
     if (_saving || _extractingVoice) return;
-    final transcript = await (widget.voiceTranscriptPicker?.call(context) ??
-        showModalBottomSheet<String>(
-          context: context,
-          isScrollControlled: true,
-          useSafeArea: true,
-          builder: (_) => const VoiceInputSheet(),
-        ));
+    final transcript =
+        await (widget.voiceTranscriptPicker?.call(context) ??
+            showModalBottomSheet<String>(
+              context: context,
+              isScrollControlled: true,
+              useSafeArea: true,
+              builder: (_) => const VoiceInputSheet(),
+            ));
     if (!mounted || transcript == null) return;
     if (transcript.trim().length < 8) {
       _showSnack("Didn't catch that, please try again.");
@@ -230,11 +231,7 @@ class _CreateDeliveryCustomerScreenState
       updated.add(key);
     }
 
-    fillText(
-      key: 'shopName',
-      controller: _shop,
-      field: result.shopName,
-    );
+    fillText(key: 'shopName', controller: _shop, field: result.shopName);
     fillText(
       key: 'contactPerson',
       controller: _contact,
@@ -258,16 +255,8 @@ class _CreateDeliveryCustomerScreenState
       validator: _validGstin,
       invalidMessage: 'Please enter a valid GSTIN',
     );
-    fillText(
-      key: 'address',
-      controller: _address,
-      field: result.address,
-    );
-    fillText(
-      key: 'city',
-      controller: _city,
-      field: result.city,
-    );
+    fillText(key: 'address', controller: _address, field: result.address);
+    fillText(key: 'city', controller: _city, field: result.city);
     fillText(
       key: 'pincode',
       controller: _pincode,
@@ -641,13 +630,13 @@ class _CreateDeliveryCustomerScreenState
                             ),
                             isExpanded: true,
                             items: _customerTypes
-                                    .map(
-                                      (type) => DropdownMenuItem(
-                                        value: type,
-                                        child: Text(type),
-                                      ),
-                                    )
-                                    .toList(),
+                                .map(
+                                  (type) => DropdownMenuItem(
+                                    value: type,
+                                    child: Text(type),
+                                  ),
+                                )
+                                .toList(),
                             onChanged: _saving
                                 ? null
                                 : (value) => setState(() {
@@ -838,8 +827,7 @@ class _CreateDeliveryCustomerScreenState
 
   InputDecoration _decoration(String? hint, {String? fieldKey}) {
     final hasWarning = fieldKey != null && _voiceWarnings.containsKey(fieldKey);
-    final autoFilled =
-        fieldKey != null && _autoFilledFields.contains(fieldKey);
+    final autoFilled = fieldKey != null && _autoFilledFields.contains(fieldKey);
     final borderColor = hasWarning
         ? AppColors.deliveryOrange
         : autoFilled
@@ -848,10 +836,7 @@ class _CreateDeliveryCustomerScreenState
 
     return InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(
-        color: AppColors.textLightMuted,
-        fontSize: 14,
-      ),
+      hintStyle: const TextStyle(color: AppColors.textLightMuted, fontSize: 14),
       filled: true,
       fillColor: autoFilled
           ? _green.withValues(alpha: 0.08)

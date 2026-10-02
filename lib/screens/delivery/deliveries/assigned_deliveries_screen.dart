@@ -1931,14 +1931,18 @@ class _AssignedDelivery {
                   'profileImageId',
                   'profile_image_id',
                 ]) ??
-                _readPathString(json, const ['order', 'customer'], const [
-                  'profilePhoto',
-                  'profile_photo',
-                  'profileImageUrl',
-                  'profile_image_url',
-                  'profileImageId',
-                  'profile_image_id',
-                ]),
+                _readPathString(
+                  json,
+                  const ['order', 'customer'],
+                  const [
+                    'profilePhoto',
+                    'profile_photo',
+                    'profileImageUrl',
+                    'profile_image_url',
+                    'profileImageId',
+                    'profile_image_id',
+                  ],
+                ),
           ) ??
           '',
       status: _normalizeStatus(
@@ -2079,11 +2083,7 @@ class _AssignedDelivery {
             'customer_long',
             'customer_longitude',
           ]) ??
-          _readNullableDouble(customer, const [
-            'longitude',
-            'lng',
-            'long',
-          ]) ??
+          _readNullableDouble(customer, const ['longitude', 'lng', 'long']) ??
           _readNullableDouble(customer, const [
             'map_longitude',
             'maps_longitude',
@@ -2395,10 +2395,7 @@ String _cleanError(Object error) {
   return error.toString().trim();
 }
 
-Map<String, dynamic>? _readMap(
-  Map<String, dynamic>? json,
-  List<String> keys,
-) {
+Map<String, dynamic>? _readMap(Map<String, dynamic>? json, List<String> keys) {
   if (json == null) return null;
   for (final key in keys) {
     final value = json[key];

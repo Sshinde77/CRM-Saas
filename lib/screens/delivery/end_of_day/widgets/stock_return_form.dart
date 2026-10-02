@@ -23,6 +23,7 @@ class StockReturnForm extends StatefulWidget {
   @override
   State<StockReturnForm> createState() => _StockReturnFormState();
 }
+
 class _StockReturnFormState extends State<StockReturnForm> {
   final Map<String, TextEditingController> _controllers = {};
 
@@ -221,9 +222,19 @@ class _StockReturnFormState extends State<StockReturnForm> {
           const SizedBox(height: 10),
           Row(
             children: [
-              Expanded(child: _QuantityChip(label: 'Loaded', value: item.loadedQuantity)),
+              Expanded(
+                child: _QuantityChip(
+                  label: 'Loaded',
+                  value: item.loadedQuantity,
+                ),
+              ),
               const SizedBox(width: 8),
-              Expanded(child: _QuantityChip(label: 'Delivered', value: item.deliveredQuantity)),
+              Expanded(
+                child: _QuantityChip(
+                  label: 'Delivered',
+                  value: item.deliveredQuantity,
+                ),
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: SizedBox(
@@ -277,6 +288,7 @@ class _StockReturnFormState extends State<StockReturnForm> {
     );
   }
 }
+
 class _QuantityChip extends StatelessWidget {
   final String label;
   final double value;

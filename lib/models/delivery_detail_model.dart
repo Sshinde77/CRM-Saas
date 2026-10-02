@@ -6,6 +6,7 @@ class DeliveryDetail {
   final String deliveryNumber;
   final String orderNumber;
   final String customerName;
+  final String customerContactName;
   final String customerPhone;
   final String customerEmail;
   final String customerProfileImageUrl;
@@ -35,6 +36,7 @@ class DeliveryDetail {
     required this.deliveryNumber,
     required this.orderNumber,
     required this.customerName,
+    this.customerContactName = '',
     required this.customerPhone,
     required this.customerEmail,
     required this.customerProfileImageUrl,
@@ -153,6 +155,16 @@ class DeliveryDetail {
         _text(order, const ['customer_id', 'customerId']),
         'Customer',
       ]),
+      customerContactName: _firstText([
+        _text(customer, const [
+          'contact_person',
+          'contactPerson',
+          'full_name',
+          'fullName',
+          'name',
+        ]),
+        _text(order, const ['contact_person', 'contactPerson']),
+      ]),
       customerPhone: _text(
         data,
         const [
@@ -184,14 +196,14 @@ class DeliveryDetail {
           ]),
         ]),
       ),
-      customerEmail: _text(data, const [
-        'customer_email',
-        'customerEmail',
-        'email',
-      ], fallback: _firstText([
-        _text(customer, const ['email', 'email_address', 'emailAddress']),
-        _text(order, const ['customer_email', 'customerEmail', 'email']),
-      ])),
+      customerEmail: _text(
+        data,
+        const ['customer_email', 'customerEmail', 'email'],
+        fallback: _firstText([
+          _text(customer, const ['email', 'email_address', 'emailAddress']),
+          _text(order, const ['customer_email', 'customerEmail', 'email']),
+        ]),
+      ),
       customerProfileImageUrl:
           normalizeProductImageUrl(
             _text(
@@ -348,6 +360,8 @@ class DeliveryDetailItem {
   final int loaded;
   final int delivered;
   final int pending;
+  final double unitPrice;
+  final double amount;
   final String batch;
   final String expiry;
 
@@ -362,6 +376,8 @@ class DeliveryDetailItem {
     required this.loaded,
     required this.delivered,
     required this.pending,
+    this.unitPrice = 0,
+    this.amount = 0,
     required this.batch,
     required this.expiry,
   });
@@ -373,6 +389,18 @@ class DeliveryDetailItem {
       json['planned'] ?? json['planned_quantity'] ?? json['quantity'],
     );
     final delivered = _int(json['delivered'] ?? json['delivered_quantity']);
+    final unitPrice = _number(
+      json['unit_price'] ??
+          json['unitPrice'] ??
+          json['price'] ??
+          product['price'],
+    );
+    final amount = _number(
+      json['amount'] ??
+          json['line_total'] ??
+          json['lineTotal'] ??
+          json['total'],
+    );
     return DeliveryDetailItem(
       id: _text(json, const ['id', 'delivery_item_id', '_id']),
       productId: _text(json, const [
@@ -404,6 +432,8 @@ class DeliveryDetailItem {
         json['pending'] ?? json['pending_quantity'],
         fallback: mathMax(0, planned - delivered),
       ),
+      unitPrice: unitPrice,
+      amount: amount > 0 ? amount : unitPrice * planned,
       batch: _text(json, const ['batch', 'batch_number', 'batchNumber']),
       expiry: _text(json, const ['expiry', 'expiry_date', 'expiryDate']),
     );
