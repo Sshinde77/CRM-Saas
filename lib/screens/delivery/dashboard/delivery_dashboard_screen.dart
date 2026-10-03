@@ -31,8 +31,8 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_didStartLoad) {
-      _dashboardFuture = _loadDashboard();
       _didStartLoad = true;
+      _dashboardFuture = Future<_DashboardData>.microtask(_loadDashboard);
     }
   }
 

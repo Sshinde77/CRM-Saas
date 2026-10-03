@@ -127,6 +127,11 @@ class _DeliveryAttendanceScreenState extends State<DeliveryAttendanceScreen> {
                                 onMarkNow: _markNow,
                               ),
                               const SizedBox(height: 12),
+                              _MonthlyAttendanceSummary(
+                                records: records,
+                                hasData: !isLoading && !snapshot.hasError,
+                              ),
+                              const SizedBox(height: 12),
                               _HistoryCard(
                                 records: records,
                                 isLoading: isLoading,
@@ -467,7 +472,7 @@ class _CheckpointActionButton extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 _CheckpointTime(time: time, recorded: recorded),
-                const Spacer(),
+                const SizedBox(height: 8),
                 _CheckpointMarkButton(
                   color: color,
                   softColor: softColor,
@@ -598,6 +603,166 @@ class _CheckpointMarkButton extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppSizes.pillRadius),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MonthlyAttendanceSummary extends StatelessWidget {
+  final List<DeliveryAttendanceRecord> records;
+  final bool hasData;
+
+  const _MonthlyAttendanceSummary({
+    required this.records,
+    required this.hasData,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final recordsByDay = <String, DeliveryAttendanceRecord>{};
+
+    for (final record in records) {
+      if (record.date.year == now.year && record.date.month == now.month) {
+        final dayKey =
+            '${record.date.year}-${record.date.month}-${record.date.day}';
+        recordsByDay[dayKey] = record;
+      }
+    }
+
+    final workingDays = recordsByDay.values
+        .where((record) => record.isPresent)
+        .length;
+    final offDays = recordsByDay.length - workingDays;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF4F7F5),
+        borderRadius: BorderRadius.circular(AppSizes.cardRadius),
+        border: Border.all(color: AppColors.deliverySurfaceBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'This Month Attendance',
+            style: TextStyle(
+              color: AppColors.deliveryInk,
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: _MonthlyAttendanceMetric(
+                  value: hasData ? workingDays.toString() : '—',
+                  label: 'Working Days',
+                  icon: Icons.check_rounded,
+                  color: AppColors.deliveryGreen,
+                  background: AppColors.deliveryGreenSoft,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _MonthlyAttendanceMetric(
+                  value: hasData ? offDays.toString() : '—',
+                  label: 'Off',
+                  icon: Icons.close_rounded,
+                  color: AppColors.deliveryRed,
+                  background: const Color(0xFFFFECEE),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MonthlyAttendanceMetric extends StatelessWidget {
+  final String value;
+  final String label;
+  final IconData icon;
+  final Color color;
+  final Color background;
+
+  const _MonthlyAttendanceMetric({
+    required this.value,
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.background,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: '$value $label this month',
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 68),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Colors.white, width: 2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: background,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 20),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    value,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 14,
+                      height: 1.1,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 11,
+                      height: 1.1,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

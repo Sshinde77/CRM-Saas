@@ -74,23 +74,32 @@ class _DeliveryAttendanceCalendarScreenState
                             recordsByDate: _recordsByDate,
                             onPreviousMonth: () {
                               setState(() {
-                                _visibleMonth = DateTime(
+                                final month = DateTime(
                                   _visibleMonth.year,
                                   _visibleMonth.month - 1,
                                 );
+                                _visibleMonth = month;
+                                _selectedDate = month;
                               });
                             },
                             onNextMonth: () {
                               setState(() {
-                                _visibleMonth = DateTime(
+                                final month = DateTime(
                                   _visibleMonth.year,
                                   _visibleMonth.month + 1,
                                 );
+                                _visibleMonth = month;
+                                _selectedDate = month;
                               });
                             },
                             onDateSelected: (date) {
                               setState(() => _selectedDate = date);
                             },
+                          ),
+                          const SizedBox(height: 12),
+                          _MonthlyAttendanceSummary(
+                            visibleMonth: _visibleMonth,
+                            recordsByDate: _recordsByDate,
                           ),
                           const SizedBox(height: 12),
                           _DayDetailsCard(
@@ -114,7 +123,8 @@ class _DeliveryAttendanceCalendarScreenState
 enum _DayStatus {
   present('Present', Color(0xFF15803D)),
   absent('Absent', AppColors.deliveryRed),
-  holiday('Holiday', Color(0xFFB7791F));
+  holiday('Holiday', Color(0xFFB7791F)),
+  notRecorded('Not Recorded', AppColors.textMuted);
 
   final String label;
   final Color color;
@@ -125,7 +135,10 @@ enum _DayStatus {
 _DayStatus _statusForDate(DateTime date, DeliveryAttendanceRecord? record) {
   if (date.weekday == DateTime.sunday) return _DayStatus.holiday;
   if (record?.isPresent == true) return _DayStatus.present;
-  return _DayStatus.absent;
+  if (record != null) return _DayStatus.absent;
+  final today = DateUtils.dateOnly(DateTime.now());
+  if (DateUtils.dateOnly(date).isBefore(today)) return _DayStatus.absent;
+  return _DayStatus.notRecorded;
 }
 
 class _CalendarCard extends StatelessWidget {
@@ -259,7 +272,10 @@ class _CalendarDayCell extends StatelessWidget {
   Widget build(BuildContext context) {
     final status = _statusForDate(date, record);
     final color = status.color;
-    final fillColor = color.withValues(alpha: 0.11);
+    final isNotRecorded = status == _DayStatus.notRecorded;
+    final fillColor = isNotRecorded
+        ? const Color(0xFFF8FAFC)
+        : color.withValues(alpha: 0.11);
 
     return Material(
       color: Colors.transparent,
@@ -273,7 +289,11 @@ class _CalendarDayCell extends StatelessWidget {
             color: inMonth ? fillColor : const Color(0xFFF8FAFC),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: selected ? color : color.withValues(alpha: 0.14),
+              color: selected
+                  ? color
+                  : isNotRecorded
+                  ? AppColors.deliverySurfaceBorder
+                  : color.withValues(alpha: 0.14),
               width: selected ? 1.6 : 1,
             ),
           ),
@@ -285,6 +305,160 @@ class _CalendarDayCell extends StatelessWidget {
               fontWeight: selected ? FontWeight.w900 : FontWeight.w700,
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MonthlyAttendanceSummary extends StatelessWidget {
+  final DateTime visibleMonth;
+  final Map<DateTime, DeliveryAttendanceRecord> recordsByDate;
+
+  const _MonthlyAttendanceSummary({
+    required this.visibleMonth,
+    required this.recordsByDate,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final monthRecords = recordsByDate.entries.where(
+      (entry) =>
+          entry.key.year == visibleMonth.year &&
+          entry.key.month == visibleMonth.month,
+    );
+    final workingDays = monthRecords
+        .where((entry) => entry.value.isPresent)
+        .length;
+    final offDays = monthRecords.length - workingDays;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF4F7F5),
+        borderRadius: BorderRadius.circular(AppSizes.cardRadius),
+        border: Border.all(color: AppColors.deliverySurfaceBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '${_monthTitle(visibleMonth)} Attendance',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: AppColors.deliveryInk,
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: _MonthlyMetricCard(
+                  value: workingDays,
+                  label: 'Working Days',
+                  icon: Icons.check_rounded,
+                  color: AppColors.deliveryGreen,
+                  background: AppColors.deliveryGreenSoft,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _MonthlyMetricCard(
+                  value: offDays,
+                  label: 'Off',
+                  icon: Icons.close_rounded,
+                  color: AppColors.deliveryRed,
+                  background: const Color(0xFFFFECEE),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MonthlyMetricCard extends StatelessWidget {
+  final int value;
+  final String label;
+  final IconData icon;
+  final Color color;
+  final Color background;
+
+  const _MonthlyMetricCard({
+    required this.value,
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.background,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: '$value $label',
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 68),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Colors.white, width: 2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: background,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 20),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '$value',
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 14,
+                      height: 1.1,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 11,
+                      height: 1.1,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

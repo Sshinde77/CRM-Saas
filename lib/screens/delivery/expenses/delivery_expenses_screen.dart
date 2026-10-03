@@ -2,7 +2,6 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../constants/api_constants.dart';
 import '../../../constants/app_colors.dart';
@@ -296,6 +295,13 @@ class _DeliveryExpensesScreenState extends State<DeliveryExpensesScreen> {
                                       const SizedBox(height: AppSpacing.md),
                                       _MetricsGrid(expenses: data.expenses),
                                       const SizedBox(height: AppSpacing.md),
+                                      _SectionHeader(
+                                        title: 'Expense List',
+                                        count: expenses.length,
+                                        trailingIcon:
+                                            Icons.receipt_long_outlined,
+                                      ),
+                                      const SizedBox(height: AppSpacing.sm),
                                       _FiltersCard(
                                         selectedStatus: _statusFilter,
                                         searchController: _searchController,
@@ -305,13 +311,6 @@ class _DeliveryExpensesScreenState extends State<DeliveryExpensesScreen> {
                                         onSearchChanged: (_) => setState(() {}),
                                       ),
                                       const SizedBox(height: AppSpacing.md),
-                                      _SectionHeader(
-                                        title: 'Expense List',
-                                        count: expenses.length,
-                                        trailingIcon:
-                                            Icons.receipt_long_outlined,
-                                      ),
-                                      const SizedBox(height: AppSpacing.sm),
                                       if (expenses.isEmpty)
                                         const _StateView.empty()
                                       else
@@ -575,12 +574,47 @@ class _FiltersCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _SurfaceCard(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          TextField(
+            controller: searchController,
+            onChanged: onSearchChanged,
+            style: const TextStyle(fontSize: 13, color: AppColors.textPrimary),
+            decoration: InputDecoration(
+              hintText: 'Search category, purpose, or claim id',
+              hintStyle: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 12,
+              ),
+              prefixIcon: const Icon(Icons.search_rounded, size: 20),
+              isDense: true,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 10,
+              ),
+              filled: true,
+              fillColor: const Color(0xFFF1F6EF),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(
+                  color: AppColors.deliverySurfaceBorder,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: AppColors.deliveryGreen),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
           SizedBox(
-            height: 38,
+            height: 32,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: _DeliveryExpensesScreenState._statusFilters.length,
@@ -594,11 +628,15 @@ class _FiltersCard extends StatelessWidget {
                   selected: selected,
                   onSelected: (_) => onStatusChanged(status),
                   visualDensity: VisualDensity.compact,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  showCheckmark: selected,
+                  checkmarkColor: AppColors.surface,
+                  padding: const EdgeInsets.symmetric(horizontal: 7),
                   labelStyle: TextStyle(
                     color: selected
                         ? AppColors.surface
                         : AppColors.textSecondary,
-                    fontSize: 11.5,
+                    fontSize: 10.5,
                     fontWeight: FontWeight.w800,
                   ),
                   selectedColor: AppColors.deliveryGreen,
@@ -610,41 +648,6 @@ class _FiltersCard extends StatelessWidget {
                   ),
                 );
               },
-            ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: searchController,
-            onChanged: onSearchChanged,
-            style: const TextStyle(fontSize: 13, color: AppColors.textPrimary),
-            decoration: InputDecoration(
-              hintText: 'Search category, purpose, or claim id',
-              hintStyle: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 13,
-              ),
-              prefixIcon: const Icon(Icons.search_rounded, size: 21),
-              isDense: true,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 11,
-              ),
-              filled: true,
-              fillColor: AppColors.surfaceSoft,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(
-                  color: AppColors.deliverySurfaceBorder,
-                ),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: AppColors.deliveryGreen),
-              ),
             ),
           ),
         ],
@@ -818,32 +821,25 @@ class _ExpenseCard extends StatelessWidget {
                                     ],
                                   ),
                                 ),
-                                const Icon(
-                                  Icons.chevron_right_rounded,
-                                  color: AppColors.deliveryInk,
-                                  size: 17,
+                                const SizedBox(width: 6),
+                                SizedBox(
+                                  width: compact ? 72 : 88,
+                                  child: Text(
+                                    _formatMoney(expense.amount),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.right,
+                                    style: const TextStyle(
+                                      color: AppColors.deliveryGreen,
+                                      fontSize: 13,
+                                      height: 1,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
                           ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          _formatMoney(expense.amount),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: AppColors.deliveryGreen,
-                            fontSize: 15,
-                            height: 1,
-                            fontWeight: FontWeight.w900,
-                          ),
                         ),
                       ),
                     ],
@@ -902,7 +898,7 @@ class _ExpenseDetailsDialog extends StatelessWidget {
                   _StatusBadge(status: expense.displayStatus),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 10),
               _DetailRow('Claim ID', expense.expenseId),
               _DetailRow('Amount', _formatMoney(expense.amount)),
               _DetailRow('Payment mode', expense.paymentMode),
@@ -916,15 +912,20 @@ class _ExpenseDetailsDialog extends StatelessWidget {
                 _DetailRow('Clarification note', expense.clarificationNote!),
               if ((expense.rejectReason ?? '').isNotEmpty)
                 _DetailRow('Rejection reason', expense.rejectReason!),
-              const SizedBox(height: 8),
-              OutlinedButton.icon(
-                onPressed: expense.hasReceipt
-                    ? () => _openReceipt(context, expense.receiptUrl!)
-                    : null,
-                icon: const Icon(Icons.open_in_new_rounded, size: 18),
-                label: Text(expense.hasReceipt ? 'Open receipt' : 'No receipt'),
+              const SizedBox(height: 10),
+              Center(
+                child: expense.hasReceipt
+                    ? _ReceiptPreview(
+                        receiptUrl: expense.receiptUrl!,
+                        onTap: () => _openReceipt(
+                          context,
+                          expense.receiptUrl!,
+                          expense.expenseId,
+                        ),
+                      )
+                    : const _NoReceiptPreview(),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
               Row(
                 children: [
                   Expanded(
@@ -968,14 +969,187 @@ class _ExpenseDetailsDialog extends StatelessWidget {
     );
   }
 
-  Future<void> _openReceipt(BuildContext context, String receiptUrl) async {
-    final uri = Uri.tryParse(_absoluteUrl(receiptUrl));
-    if (uri == null || !await launchUrl(uri)) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Could not open receipt.')));
-    }
+  void _openReceipt(
+    BuildContext context,
+    String receiptUrl,
+    String expenseId,
+  ) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => _FullReceiptPage(
+          receiptUrl: receiptUrl,
+          expenseId: expenseId,
+        ),
+      ),
+    );
+  }
+}
+
+class _ReceiptPreview extends StatelessWidget {
+  final String receiptUrl;
+  final VoidCallback onTap;
+
+  const _ReceiptPreview({required this.receiptUrl, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: 'Open full receipt',
+      child: Material(
+        color: const Color(0xFFF3F5F2),
+        borderRadius: BorderRadius.circular(10),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: SizedBox(
+            width: 132,
+            height: 76,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Image.network(
+                  _absoluteUrl(receiptUrl),
+                  fit: BoxFit.contain,
+                  loadingBuilder: (context, child, progress) => progress == null
+                      ? child
+                      : const Center(
+                          child: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppColors.deliveryGreen,
+                            ),
+                          ),
+                        ),
+                  errorBuilder: (_, _, _) => const Center(
+                    child: Icon(
+                      Icons.broken_image_outlined,
+                      color: AppColors.textMuted,
+                      size: 28,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  right: 6,
+                  bottom: 6,
+                  child: Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.62),
+                      borderRadius: BorderRadius.circular(7),
+                    ),
+                    child: const Icon(
+                      Icons.fullscreen_rounded,
+                      color: Colors.white,
+                      size: 17,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NoReceiptPreview extends StatelessWidget {
+  const _NoReceiptPreview();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 132,
+      height: 54,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: AppColors.surfaceSoft,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.deliverySurfaceBorder),
+      ),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.receipt_long_outlined, size: 18, color: AppColors.textMuted),
+          SizedBox(width: 6),
+          Text(
+            'No receipt',
+            style: TextStyle(
+              color: AppColors.textMuted,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FullReceiptPage extends StatelessWidget {
+  final String receiptUrl;
+  final String expenseId;
+
+  const _FullReceiptPage({
+    required this.receiptUrl,
+    required this.expenseId,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF111411),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF111411),
+        foregroundColor: Colors.white,
+        elevation: 0,
+        title: Text(
+          'Receipt · $expenseId',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+        ),
+      ),
+      body: SafeArea(
+        top: false,
+        child: InteractiveViewer(
+          minScale: 0.8,
+          maxScale: 5,
+          child: Center(
+            child: Image.network(
+              _absoluteUrl(receiptUrl),
+              fit: BoxFit.contain,
+              loadingBuilder: (context, child, progress) => progress == null
+                  ? child
+                  : const CircularProgressIndicator(color: Colors.white),
+              errorBuilder: (_, _, _) => const Padding(
+                padding: EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.broken_image_outlined,
+                      color: Colors.white70,
+                      size: 48,
+                    ),
+                    SizedBox(height: 12),
+                    Text(
+                      'Receipt preview could not be loaded.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.white70, fontSize: 14),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -1248,13 +1422,19 @@ class _DetailRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: AppColors.deliverySurfaceBorder),
+        ),
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 116,
+          Expanded(
+            flex: 4,
             child: Text(
               label,
               style: const TextStyle(
@@ -1264,9 +1444,12 @@ class _DetailRow extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(width: 12),
           Expanded(
+            flex: 6,
             child: Text(
               value,
+              textAlign: TextAlign.right,
               style: const TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 13,
