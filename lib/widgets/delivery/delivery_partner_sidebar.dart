@@ -468,14 +468,4 @@ const List<_DeliveryMenuItem> _deliveryMenuItems = [
     route: AppRoutes.deliveryExpenses,
     icon: Icons.receipt_long_outlined,
   ),
-  _DeliveryMenuItem(
-    label: 'End of Day Return',
-    route: AppRoutes.deliveryEndOfDay,
-    icon: Icons.assignment_return_rounded,
-  ),
-  _DeliveryMenuItem(
-    label: 'Vehicle Loading',
-    route: AppRoutes.deliveryVehicleLoading,
-    icon: Icons.inventory_rounded,
-  ),
 ];

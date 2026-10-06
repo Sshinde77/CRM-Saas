@@ -5,6 +5,8 @@ import '../../../providers/api_provider.dart';
 import '../../../utils/product_image_url.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
+import '../../../widgets/delivery/delivery_top_bar.dart';
+import '../../../widgets/delivery/order_progress_tracker.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
 import '../../sales_manager/attendance/sales_manager_attendance_screen.dart';
@@ -22,11 +24,15 @@ import 'new_admin_order_screen.dart';
 class OrderDetailScreen extends StatefulWidget {
   final String orderId;
   final bool useSalesManagerShell;
+  final bool useDeliveryShell;
+  final String? initialProgressStatus;
 
   const OrderDetailScreen({
     super.key,
     required this.orderId,
     this.useSalesManagerShell = false,
+    this.useDeliveryShell = false,
+    this.initialProgressStatus,
   });
 
   @override
@@ -222,7 +228,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
-      drawer: widget.useSalesManagerShell
+      drawer: widget.useDeliveryShell
+          ? null
+          : widget.useSalesManagerShell
           ? SalesManagerSidebarDrawer(
               currentPage: 'Sales Orders',
               onSelect: _handleSalesManagerSidebarSelection,
@@ -231,7 +239,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            widget.useSalesManagerShell
+            widget.useDeliveryShell
+                ? DeliveryTopBar(
+                    title: 'Order Detail',
+                    subtitle: 'Order status and summary',
+                    leadingIcon: Icons.arrow_back_rounded,
+                    onLeadingTap: () => Navigator.of(context).maybePop(),
+                  )
+                : widget.useSalesManagerShell
                 ? SalesManagerTopBar(
                     title: 'Order Detail',
                     leadingIcon: Icons.arrow_back_rounded,
@@ -307,8 +322,27 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               'total_amount',
             ]),
           ),
-          onConfirm: _isActionLoading ? null : _confirmOrder,
-          onCancel: _isActionLoading ? null : _cancelOrder,
+          onConfirm: widget.useDeliveryShell || _isActionLoading
+              ? null
+              : _confirmOrder,
+          onCancel: widget.useDeliveryShell || _isActionLoading
+              ? null
+              : _cancelOrder,
+          showActions: !widget.useDeliveryShell,
+        ),
+        const SizedBox(height: 10),
+        OrderProgressTracker(
+          status: _readString(
+            order,
+            const [
+              'fulfillment_status',
+              'fulfilment_status',
+              'delivery_status',
+            ],
+            fallback:
+                widget.initialProgressStatus ??
+                _readString(order, const ['status'], fallback: 'ordered'),
+          ),
         ),
         const SizedBox(height: 10),
         _SectionCard(
@@ -406,6 +440,7 @@ class _HeaderCard extends StatelessWidget {
   final String total;
   final VoidCallback? onConfirm;
   final VoidCallback? onCancel;
+  final bool showActions;
 
   const _HeaderCard({
     required this.number,
@@ -415,6 +450,7 @@ class _HeaderCard extends StatelessWidget {
     required this.total,
     this.onConfirm,
     this.onCancel,
+    this.showActions = true,
   });
 
   @override
@@ -474,23 +510,25 @@ class _HeaderCard extends StatelessWidget {
               fontWeight: FontWeight.w900,
             ),
           ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _HeaderAction(
-                icon: Icons.fact_check_outlined,
-                label: 'Confirm Order',
-                onTap: onConfirm,
-              ),
-              _HeaderAction(
-                icon: Icons.cancel_outlined,
-                label: 'Cancel Order',
-                onTap: onCancel,
-              ),
-            ],
-          ),
+          if (showActions) ...[
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _HeaderAction(
+                  icon: Icons.fact_check_outlined,
+                  label: 'Confirm Order',
+                  onTap: onConfirm,
+                ),
+                _HeaderAction(
+                  icon: Icons.cancel_outlined,
+                  label: 'Cancel Order',
+                  onTap: onCancel,
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );

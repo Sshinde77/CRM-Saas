@@ -1736,15 +1736,43 @@ class ApiService {
 
     final decoded = _tryDecodeBody(response.body.trim());
     final rawPayments = _extractGenericList(decoded, const [
+      'collections',
       'payments',
       'data',
       'results',
       'items',
-    ], fallbackMessage: 'Invalid customer payments response.');
+    ], fallbackMessage: 'Invalid customer collections response.');
 
     return rawPayments
         .whereType<Map<String, dynamic>>()
         .map(CustomerPaymentRecord.fromJson)
+        .toList();
+  }
+
+  Future<List<CustomerVisitRecord>> fetchCustomerVisits(
+    String customerId,
+  ) async {
+    final id = customerId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing customer id.');
+    }
+
+    final response = await _send(
+      method: 'GET',
+      endpoint: ApiEndpoints.visitsList,
+      requiresAuth: true,
+      queryParameters: {'customer_id': id},
+    );
+    final decoded = _tryDecodeBody(response.body.trim());
+    final rawVisits = _extractGenericList(decoded, const [
+      'visits',
+      'data',
+      'results',
+      'items',
+    ], fallbackMessage: 'Invalid customer visits response.');
+    return rawVisits
+        .whereType<Map<String, dynamic>>()
+        .map(CustomerVisitRecord.fromJson)
         .toList();
   }
 

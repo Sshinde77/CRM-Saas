@@ -4,13 +4,14 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../constants/app_colors.dart';
 import '../../../models/delivery_detail_model.dart';
 import '../../../providers/api_provider.dart';
 import '../../../utils/product_image_url.dart';
+import '../../../widgets/delivery/delivery_image_upload_field.dart';
+import '../../../widgets/delivery/order_progress_tracker.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
 
 class DeliveryDetailScreen extends StatefulWidget {
@@ -291,53 +292,13 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
   }
 
   Future<void> _pickConfirmation({required bool deliveryProof}) async {
-    final source = await showModalBottomSheet<ImageSource>(
+    final image = await showDeliveryImageSourcePicker(
       context: context,
-      showDragHandle: true,
-      builder: (sheetContext) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'Add confirmation image',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 12),
-              ListTile(
-                leading: const Icon(Icons.camera_alt_outlined),
-                title: const Text('Take a photo'),
-                onTap: () => Navigator.pop(sheetContext, ImageSource.camera),
-              ),
-              ListTile(
-                leading: const Icon(Icons.photo_library_outlined),
-                title: const Text('Choose from files'),
-                onTap: () => Navigator.pop(sheetContext, ImageSource.gallery),
-              ),
-            ],
-          ),
-        ),
-      ),
+      picker: _imagePicker,
+      title: 'Add confirmation image',
     );
-    if (source == null) return;
-    if (source == ImageSource.camera) {
-      final permission = await Permission.camera.request();
-      if (!permission.isGranted) {
-        _showSnack(
-          'Camera permission is required to take a photo.',
-          isError: true,
-        );
-        return;
-      }
-    }
+    if (image == null) return;
     try {
-      final image = await _imagePicker.pickImage(
-        source: source,
-        imageQuality: 82,
-        maxWidth: 1600,
-      );
-      if (image == null) return;
       final bytes = await image.readAsBytes();
       if (!mounted) return;
       setState(() {
@@ -806,6 +767,8 @@ class _Body extends StatelessWidget {
                         ],
                       ),
                     ),
+                    const SizedBox(height: 14),
+                    OrderProgressTracker(status: delivery.status),
                     const SizedBox(height: 14),
                     Container(
                       padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
@@ -1540,6 +1503,231 @@ class _AmountStrip extends StatelessWidget {
   }
 }
 
+class _OrderProgressCard extends StatelessWidget {
+  const _OrderProgressCard({required this.status});
+
+  final String status;
+
+  static const _steps = <String>[
+    'Ordered',
+    'Pending',
+    'Accepted',
+    'In Transit',
+    'Delivered',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final normalized = status.trim().toLowerCase().replaceAll(' ', '_');
+    final isCancelled = const {
+      'cancelled',
+      'canceled',
+      'rejected',
+      'failed',
+    }.contains(normalized);
+    final currentStep = _stepForStatus(normalized);
+
+    return Semantics(
+      label: isCancelled
+          ? 'Order progress. Order cancelled.'
+          : 'Order progress. Current status ${_steps[currentStep]}.',
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
+        decoration: _cardDecoration(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.route_rounded,
+                  size: 20,
+                  color: AppColors.deliveryGreen,
+                ),
+                const SizedBox(width: 8),
+                const Expanded(
+                  child: Text(
+                    'Order Progress',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
+                ),
+                if (isCancelled)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.deliveryRed.withValues(alpha: 0.09),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Text(
+                      'Cancelled',
+                      style: TextStyle(
+                        color: AppColors.deliveryRed,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: List.generate(_steps.length, (index) {
+                final isCancelledStep = isCancelled && index == currentStep;
+                final isCompleted = !isCancelled && index <= currentStep ||
+                    isCancelled && index < currentStep;
+                final connectorCompleted = isCancelled
+                    ? index < currentStep
+                    : index <= currentStep;
+
+                return Expanded(
+                  child: _ProgressStep(
+                    number: index + 1,
+                    label: isCancelledStep ? 'Cancelled' : _steps[index],
+                    completed: isCompleted,
+                    cancelled: isCancelledStep,
+                    leftConnected: index > 0 && connectorCompleted,
+                    rightConnected:
+                        index < _steps.length - 1 && index < currentStep,
+                  ),
+                );
+              }),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  int _stepForStatus(String value) => switch (value) {
+        'ordered' || 'draft' => 0,
+        'pending' || 'planned' || 'assigned' => 1,
+        'accepted' || 'ready' || 'loaded' => 2,
+        'in_transit' || 'failed' => 3,
+        'delivered' || 'completed' || 'partially_delivered' => 4,
+        'cancelled' || 'canceled' || 'rejected' => 1,
+        _ => 0,
+      };
+}
+
+class _ProgressStep extends StatelessWidget {
+  const _ProgressStep({
+    required this.number,
+    required this.label,
+    required this.completed,
+    required this.cancelled,
+    required this.leftConnected,
+    required this.rightConnected,
+  });
+
+  final int number;
+  final String label;
+  final bool completed;
+  final bool cancelled;
+  final bool leftConnected;
+  final bool rightConnected;
+
+  @override
+  Widget build(BuildContext context) {
+    final stateColor = cancelled
+        ? AppColors.deliveryRed
+        : AppColors.deliveryGreen;
+    const pendingColor = Color(0xFFD8E4DC);
+
+    return Column(
+      children: [
+        SizedBox(
+          height: 24,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Positioned(
+                left: 0,
+                right: 0,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        height: 2,
+                        color: number == 1
+                            ? Colors.transparent
+                            : leftConnected
+                                ? AppColors.deliveryGreen
+                                : pendingColor,
+                      ),
+                    ),
+                    const SizedBox(width: 24),
+                    Expanded(
+                      child: Container(
+                        height: 2,
+                        color: number == 5
+                            ? Colors.transparent
+                            : rightConnected
+                                ? AppColors.deliveryGreen
+                                : pendingColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 220),
+                width: 24,
+                height: 24,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: completed ? stateColor : Colors.white,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: stateColor, width: 1.5),
+                  boxShadow: completed
+                      ? [
+                          BoxShadow(
+                            color: stateColor.withValues(alpha: 0.18),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Text(
+                  '$number',
+                  style: TextStyle(
+                    color: completed ? Colors.white : stateColor,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          label,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: cancelled
+                ? AppColors.deliveryRed
+                : completed
+                    ? AppColors.deliveryInk
+                    : AppColors.textMuted,
+            fontSize: 10,
+            height: 1.15,
+            fontWeight: completed || cancelled
+                ? FontWeight.w700
+                : FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _StatusPill extends StatelessWidget {
   final String status;
   const _StatusPill({required this.status});
@@ -1590,62 +1778,10 @@ class _ConfirmationImageBox extends StatelessWidget {
       children: [
         Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
         const SizedBox(height: 8),
-        AspectRatio(
+        DeliveryImageUploadField(
+          bytes: bytes,
+          onTap: onTap,
           aspectRatio: 1.2,
-          child: Material(
-            color: AppColors.deliveryCardSoft,
-            shape: RoundedRectangleBorder(
-              side: const BorderSide(color: AppColors.borderStrong),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              onTap: onTap,
-              child: bytes == null
-                  ? const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.add_a_photo_outlined,
-                          size: 28,
-                          color: AppColors.primary,
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          'Camera or file',
-                          style: TextStyle(
-                            color: AppColors.textMuted,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    )
-                  : Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        Image.memory(bytes!, fit: BoxFit.cover),
-                        Positioned(
-                          right: 8,
-                          top: 8,
-                          child: Container(
-                            width: 32,
-                            height: 32,
-                            decoration: const BoxDecoration(
-                              color: Colors.black54,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.edit_outlined,
-                              color: Colors.white,
-                              size: 18,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-            ),
-          ),
         ),
       ],
     );
@@ -1813,7 +1949,7 @@ class _ItemRow extends StatelessWidget {
               onChanged: onQuantityChanged,
             ),
             pending: Text(
-              _formatMoney(unitPrice * quantity),
+              _formatMoney(unitPrice),
               style: const TextStyle(color: AppColors.deliveryRed),
             ),
           ),
@@ -1831,64 +1967,42 @@ class _QuantityStepper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _QuantityButton(
-          icon: Icons.remove_rounded,
-          enabled: value > 0,
-          onTap: () => onChanged(value - 1),
-        ),
-        Container(
-          width: 32,
-          height: 32,
-          alignment: Alignment.center,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            border: Border.symmetric(
-              horizontal: BorderSide(color: AppColors.borderStrong),
-            ),
-          ),
-          child: Text('$value'),
-        ),
-        _QuantityButton(
-          icon: Icons.add_rounded,
-          enabled: true,
-          onTap: () => onChanged(value + 1),
-        ),
-      ],
-    );
-  }
-}
-
-class _QuantityButton extends StatelessWidget {
-  final IconData icon;
-  final bool enabled;
-  final VoidCallback onTap;
-
-  const _QuantityButton({
-    required this.icon,
-    required this.enabled,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
     return SizedBox(
-      width: 32,
-      height: 32,
-      child: IconButton(
-        padding: EdgeInsets.zero,
-        iconSize: 16,
-        visualDensity: VisualDensity.compact,
-        onPressed: enabled ? onTap : null,
-        icon: Icon(icon),
-        style: IconButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            side: const BorderSide(color: AppColors.borderStrong),
-            borderRadius: BorderRadius.circular(4),
+      width: 64,
+      height: 40,
+      child: TextFormField(
+        initialValue: '$value',
+        keyboardType: TextInputType.number,
+        textInputAction: TextInputAction.done,
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          color: AppColors.deliveryInk,
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+        ),
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        decoration: InputDecoration(
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 8,
+            vertical: 10,
+          ),
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: AppColors.borderStrong),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: AppColors.borderStrong),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
           ),
         ),
+        onChanged: (text) => onChanged(int.tryParse(text) ?? 0),
       ),
     );
   }

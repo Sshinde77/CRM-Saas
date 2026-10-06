@@ -12,6 +12,7 @@ import '../../../providers/api_provider.dart';
 import '../../../routes/app_router.dart';
 import '../../../services/api_service.dart';
 import '../../../widgets/delivery/delivery_bottom_navigation.dart';
+import '../../../widgets/delivery/delivery_image_upload_field.dart';
 import '../../../widgets/delivery/delivery_partner_sidebar.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
 
@@ -108,12 +109,14 @@ class _DeliveryExpensesScreenState extends State<DeliveryExpensesScreen> {
       return;
     }
 
-    final result = await Navigator.of(context).push<_ExpenseFormResult>(
-      MaterialPageRoute(
-        builder: (context) => _ExpenseFormPage(
-          categories: data.categories,
-          initialExpense: expense,
-        ),
+    final result = await showModalBottomSheet<_ExpenseFormResult>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _ExpenseFormSheet(
+        categories: data.categories,
+        initialExpense: expense,
       ),
     );
     if (result == null || !mounted) return;
@@ -969,17 +972,11 @@ class _ExpenseDetailsDialog extends StatelessWidget {
     );
   }
 
-  void _openReceipt(
-    BuildContext context,
-    String receiptUrl,
-    String expenseId,
-  ) {
+  void _openReceipt(BuildContext context, String receiptUrl, String expenseId) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => _FullReceiptPage(
-          receiptUrl: receiptUrl,
-          expenseId: expenseId,
-        ),
+        builder: (_) =>
+            _FullReceiptPage(receiptUrl: receiptUrl, expenseId: expenseId),
       ),
     );
   }
@@ -1074,7 +1071,11 @@ class _NoReceiptPreview extends StatelessWidget {
       child: const Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.receipt_long_outlined, size: 18, color: AppColors.textMuted),
+          Icon(
+            Icons.receipt_long_outlined,
+            size: 18,
+            color: AppColors.textMuted,
+          ),
           SizedBox(width: 6),
           Text(
             'No receipt',
@@ -1094,10 +1095,7 @@ class _FullReceiptPage extends StatelessWidget {
   final String receiptUrl;
   final String expenseId;
 
-  const _FullReceiptPage({
-    required this.receiptUrl,
-    required this.expenseId,
-  });
+  const _FullReceiptPage({required this.receiptUrl, required this.expenseId});
 
   @override
   Widget build(BuildContext context) {
@@ -1153,20 +1151,20 @@ class _FullReceiptPage extends StatelessWidget {
   }
 }
 
-class _ExpenseFormPage extends StatefulWidget {
+class _ExpenseFormSheet extends StatefulWidget {
   final List<String> categories;
   final DeliveryExpense? initialExpense;
 
-  const _ExpenseFormPage({
+  const _ExpenseFormSheet({
     required this.categories,
     required this.initialExpense,
   });
 
   @override
-  State<_ExpenseFormPage> createState() => _ExpenseFormPageState();
+  State<_ExpenseFormSheet> createState() => _ExpenseFormSheetState();
 }
 
-class _ExpenseFormPageState extends State<_ExpenseFormPage> {
+class _ExpenseFormSheetState extends State<_ExpenseFormSheet> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -1201,9 +1199,10 @@ class _ExpenseFormPageState extends State<_ExpenseFormPage> {
   }
 
   Future<void> _pickReceipt() async {
-    final file = await _picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 82,
+    final file = await showDeliveryImageSourcePicker(
+      context: context,
+      picker: _picker,
+      title: 'Add receipt image',
     );
     if (file == null) return;
     final bytes = await file.readAsBytes();
@@ -1244,38 +1243,61 @@ class _ExpenseFormPageState extends State<_ExpenseFormPage> {
   @override
   Widget build(BuildContext context) {
     final editing = widget.initialExpense != null;
+    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
     final textScaler = MediaQuery.textScalerOf(
       context,
     ).clamp(minScaleFactor: 0.9, maxScaleFactor: 1.2);
 
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: textScaler),
-      child: Scaffold(
-        backgroundColor: AppColors.deliveryBackground,
-        body: SafeArea(
-          child: Column(
-            children: [
-              DeliveryTopBar(
-                title: editing ? 'Update Expense' : 'Add Expense',
-                subtitle: 'Submit receipt and claim details',
-                leadingIcon: Icons.arrow_back_rounded,
-                onLeadingTap: () => Navigator.of(context).pop(),
-                showNotification: false,
-                showProfile: false,
+      child: Padding(
+        padding: EdgeInsets.only(bottom: bottomInset),
+        child: DraggableScrollableSheet(
+          initialChildSize: 0.88,
+          minChildSize: 0.62,
+          maxChildSize: 0.96,
+          builder: (context, scrollController) {
+            return Container(
+              decoration: const BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
               ),
-              Expanded(
+              child: Form(
+                key: _formKey,
                 child: ListView(
+                  controller: scrollController,
                   physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
                   children: [
                     Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 520),
-                        child: _SurfaceCard(
-                          child: Form(
-                            key: _formKey,
-                            child: Column(
-                              children: [
+                      child: Container(
+                        width: 42,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: AppColors.deliverySurfaceBorder,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      editing ? 'Update Expense' : 'Add Expense',
+                      style: const TextStyle(
+                        color: AppColors.deliveryInk,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Submit receipt and claim details',
+                      style: TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
                                 DropdownButtonFormField<String>(
                                   initialValue: _category,
                                   decoration: _inputDecoration(
@@ -1294,7 +1316,7 @@ class _ExpenseFormPageState extends State<_ExpenseFormPage> {
                                     }
                                   },
                                 ),
-                                const SizedBox(height: 12),
+                                const SizedBox(height: 16),
                                 TextFormField(
                                   controller: _amountController,
                                   keyboardType: TextInputType.number,
@@ -1309,7 +1331,7 @@ class _ExpenseFormPageState extends State<_ExpenseFormPage> {
                                     return null;
                                   },
                                 ),
-                                const SizedBox(height: 12),
+                                const SizedBox(height: 16),
                                 InkWell(
                                   onTap: _pickDate,
                                   borderRadius: BorderRadius.circular(12),
@@ -1332,7 +1354,7 @@ class _ExpenseFormPageState extends State<_ExpenseFormPage> {
                                     ),
                                   ),
                                 ),
-                                const SizedBox(height: 12),
+                                const SizedBox(height: 16),
                                 DropdownButtonFormField<String>(
                                   initialValue: _paymentMode,
                                   decoration: _inputDecoration('Payment Mode'),
@@ -1349,7 +1371,7 @@ class _ExpenseFormPageState extends State<_ExpenseFormPage> {
                                     }
                                   },
                                 ),
-                                const SizedBox(height: 12),
+                                const SizedBox(height: 16),
                                 TextFormField(
                                   controller: _descriptionController,
                                   maxLines: 3,
@@ -1363,51 +1385,48 @@ class _ExpenseFormPageState extends State<_ExpenseFormPage> {
                                     return null;
                                   },
                                 ),
-                                const SizedBox(height: 12),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: OutlinedButton.icon(
-                                    onPressed: _pickReceipt,
-                                    icon: const Icon(
-                                      Icons.upload_file_rounded,
-                                      size: 18,
-                                    ),
-                                    label: Text(
-                                      _receiptName ?? 'Attach receipt image',
-                                    ),
-                                  ),
+                                const SizedBox(height: 16),
+                                DeliveryImageUploadField(
+                                  bytes: _receiptBytes,
+                                  onTap: _pickReceipt,
+                                  aspectRatio: 1.8,
                                 ),
-                                const SizedBox(height: 18),
-                                SizedBox(
-                                  width: double.infinity,
-                                  height: 48,
-                                  child: FilledButton(
-                                    onPressed: _submit,
-                                    style: FilledButton.styleFrom(
-                                      backgroundColor: AppColors.deliveryGreen,
-                                      foregroundColor: AppColors.surface,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                    child: Text(
-                                      editing
-                                          ? 'Update Expense'
-                                          : 'Submit Expense',
-                                    ),
-                                  ),
-                                ),
-                              ],
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            style: OutlinedButton.styleFrom(
+                              minimumSize: const Size.fromHeight(48),
+                            ),
+                            child: const Text('Cancel'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: FilledButton(
+                            onPressed: _submit,
+                            style: FilledButton.styleFrom(
+                              minimumSize: const Size.fromHeight(48),
+                              backgroundColor: AppColors.deliveryGreen,
+                              foregroundColor: AppColors.surface,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Text(
+                              editing ? 'Update Expense' : 'Submit Expense',
                             ),
                           ),
                         ),
-                      ),
+                      ],
                     ),
                   ],
                 ),
               ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );

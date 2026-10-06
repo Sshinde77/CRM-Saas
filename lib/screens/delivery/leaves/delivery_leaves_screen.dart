@@ -388,11 +388,7 @@ class _SummaryTile extends StatelessWidget {
               ],
             ),
           ),
-          Icon(
-            Icons.chevron_right_rounded,
-            size: 14,
-            color: info.color,
-          ),
+          Icon(Icons.chevron_right_rounded, size: 14, color: info.color),
         ],
       ),
     );
@@ -544,7 +540,9 @@ class _LeavesPanel extends StatelessWidget {
         if (isLoading)
           const _SurfaceCard(child: _LoadingState())
         else if (error != null)
-          _SurfaceCard(child: _ErrorState(message: error!, onRetry: onRetry))
+          _SurfaceCard(
+            child: _ErrorState(message: error!, onRetry: onRetry),
+          )
         else if (leaves.isEmpty)
           _SurfaceCard(
             child: _EmptyState(hasFilters: hasFilters, onReset: onResetFilters),
@@ -570,9 +568,7 @@ class _LeavesPanel extends StatelessWidget {
                       leave: leave,
                       isBusy: busyLeaveIds.contains(leave.id),
                       onDetails: () => onDetails(leave),
-                      onCancel: leave.canCancel
-                          ? () => onCancel(leave)
-                          : null,
+                      onCancel: leave.canCancel ? () => onCancel(leave) : null,
                     ),
                     if (leave != leaves.last)
                       const SizedBox(height: AppSpacing.sm),
@@ -696,16 +692,17 @@ class _LeaveCard extends StatelessWidget {
             ],
           ),
           foregroundDecoration: BoxDecoration(
-            border: Border(
-              left: BorderSide(color: tone.foreground, width: 3),
-            ),
+            border: Border(left: BorderSide(color: tone.foreground, width: 3)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
                 margin: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: tone.background.withValues(alpha: 0.55),
                   borderRadius: BorderRadius.circular(10),
@@ -1104,7 +1101,7 @@ class _ApplyLeaveSheetState extends State<_ApplyLeaveSheet> {
               key: _formKey,
               child: ListView(
                 controller: scrollController,
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 20),
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
                 children: [
                   Center(
                     child: Container(
@@ -1116,7 +1113,7 @@ class _ApplyLeaveSheetState extends State<_ApplyLeaveSheet> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 16),
                   const Text(
                     'Apply Leave',
                     style: TextStyle(
@@ -1125,7 +1122,7 @@ class _ApplyLeaveSheetState extends State<_ApplyLeaveSheet> {
                       fontWeight: FontWeight.w900,
                     ),
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 20),
                   DropdownButtonFormField<String>(
                     initialValue: _leaveType,
                     decoration: const InputDecoration(
@@ -1147,7 +1144,7 @@ class _ApplyLeaveSheetState extends State<_ApplyLeaveSheet> {
                             }
                           },
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 20),
                   Row(
                     children: [
                       Expanded(
@@ -1157,7 +1154,7 @@ class _ApplyLeaveSheetState extends State<_ApplyLeaveSheet> {
                           onTap: () => _pickDate(isStart: true),
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 12),
                       Expanded(
                         child: _DateField(
                           label: 'End Date',
@@ -1167,9 +1164,9 @@ class _ApplyLeaveSheetState extends State<_ApplyLeaveSheet> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                   _DayPreview(daysCount: _daysCount, hasOverlap: _hasOverlap),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 20),
                   TextFormField(
                     controller: _reasonController,
                     minLines: 4,
@@ -1187,7 +1184,7 @@ class _ApplyLeaveSheetState extends State<_ApplyLeaveSheet> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 16),
                   Row(
                     children: [
                       Expanded(
@@ -1203,7 +1200,7 @@ class _ApplyLeaveSheetState extends State<_ApplyLeaveSheet> {
                           child: const Text('Cancel'),
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 12),
                       Expanded(
                         child: FilledButton.icon(
                           onPressed: _isSubmitting ? null : _submit,
@@ -1333,42 +1330,116 @@ class _LeaveDetailsDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final reviewedBy = leave.approverName ?? leave.approvedBy;
-    return AlertDialog(
-      title: const Text('Leave Details'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _DetailRow(label: 'Leave Type', value: leave.leaveTypeLabel),
-            _DetailRow(label: 'Status', value: leave.statusLabel),
-            _DetailRow(
-              label: 'Start Date',
-              value: _formatDate(leave.startDate),
+    final maxHeight = MediaQuery.sizeOf(context).height * 0.82;
+
+    return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      backgroundColor: Colors.transparent,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: 520, maxHeight: maxHeight),
+        child: Material(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(20),
+          clipBehavior: Clip.antiAlias,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'Leave Details',
+                        style: TextStyle(
+                          color: AppColors.deliveryInk,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    _StatusBadge(status: leave.status),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _DetailRow(
+                          label: 'Leave Type',
+                          value: leave.leaveTypeLabel,
+                        ),
+                        _DetailRow(
+                          label: 'Start Date',
+                          value: _formatDate(leave.startDate),
+                        ),
+                        _DetailRow(
+                          label: 'End Date',
+                          value: _formatDate(leave.endDate),
+                        ),
+                        _DetailRow(
+                          label: 'Number of Days',
+                          value: '${leave.daysCount}',
+                        ),
+                        _DetailRow(
+                          label: 'Requested At',
+                          value: leave.requestedAtLabel,
+                        ),
+                        _DetailRow(label: 'Reason', value: leave.reason),
+                        if (leave.status != 'pending') ...[
+                          _DetailRow(
+                            label: 'Reviewed By',
+                            value: reviewedBy ?? 'Not available',
+                          ),
+                          _DetailRow(
+                            label: 'Reviewed At',
+                            value: leave.reviewedAtLabel,
+                          ),
+                        ],
+                        if (leave.status == 'rejected' &&
+                            (leave.rejectReason ?? '').trim().isNotEmpty)
+                          _DetailRow(
+                            label: 'Rejection Reason',
+                            value: leave.rejectReason!,
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  height: AppSizes.buttonHeight,
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.deliveryGreen,
+                      side: const BorderSide(
+                        color: AppColors.deliveryGreen,
+                        width: 1.2,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          AppSizes.controlRadius,
+                        ),
+                      ),
+                      textStyle: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    child: const Text('Close'),
+                  ),
+                ),
+              ],
             ),
-            _DetailRow(label: 'End Date', value: _formatDate(leave.endDate)),
-            _DetailRow(label: 'Number of Days', value: '${leave.daysCount}'),
-            _DetailRow(label: 'Requested At', value: leave.requestedAtLabel),
-            _DetailRow(label: 'Reason', value: leave.reason),
-            if (leave.status != 'pending') ...[
-              _DetailRow(
-                label: 'Reviewed By',
-                value: reviewedBy ?? 'Not available',
-              ),
-              _DetailRow(label: 'Reviewed At', value: leave.reviewedAtLabel),
-            ],
-            if (leave.status == 'rejected' &&
-                (leave.rejectReason ?? '').trim().isNotEmpty)
-              _DetailRow(label: 'Rejection Reason', value: leave.rejectReason!),
-          ],
+          ),
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Close'),
-        ),
-      ],
     );
   }
 }
@@ -1411,26 +1482,36 @@ class _DetailRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Column(
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: Color(0xFFE5EAF1))),
+      ),
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: AppColors.textMuted,
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
+          SizedBox(
+            width: 112,
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: Color(0xFF536074),
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
-          const SizedBox(height: 3),
-          Text(
-            value,
-            style: const TextStyle(
-              color: AppColors.deliveryInk,
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: const TextStyle(
+                color: AppColors.deliveryInk,
+                fontSize: 13,
+                height: 1.35,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../constants/app_colors.dart';
 import '../../../core/theme/app_sizes.dart';
@@ -9,7 +10,8 @@ import '../../../routes/app_router.dart';
 import '../../../widgets/delivery/delivery_bottom_navigation.dart';
 import '../../../widgets/delivery/delivery_partner_sidebar.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
-import '../../admin/customers/customer_details_screen.dart';
+import '../../shared/map_location_view_screen.dart';
+import 'delivery_customer_detail_screen.dart';
 import 'create_delivery_customer_screen.dart';
 
 class DeliveryCustomersScreen extends StatefulWidget {
@@ -71,9 +73,32 @@ class _DeliveryCustomersScreenState extends State<DeliveryCustomersScreen> {
   void _openCustomerDetail(CustomerModel customer) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => CustomerDetailsScreen(
+        builder: (_) => DeliveryCustomerDetailScreen(
           customerId: customer.id,
           initialCustomer: customer,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _callCustomer(CustomerModel customer) async {
+    final phone = customer.phone?.trim();
+    if (phone == null || phone.isEmpty) return;
+    await launchUrl(Uri(scheme: 'tel', path: phone));
+  }
+
+  void _openCustomerMap(CustomerModel customer) {
+    final latitude = customer.mapLatitude;
+    final longitude = customer.mapLongitude;
+    if (latitude == null || longitude == null) return;
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => MapLocationViewScreen(
+          latitude: latitude,
+          longitude: longitude,
+          title: customer.businessName ?? customer.name,
+          subtitle: customer.deliveryAddress ?? customer.billingAddress,
         ),
       ),
     );
@@ -197,6 +222,10 @@ class _DeliveryCustomersScreenState extends State<DeliveryCustomersScreen> {
                                             customer: customer,
                                             onTap: () =>
                                                 _openCustomerDetail(customer),
+                                            onCall: () =>
+                                                _callCustomer(customer),
+                                            onMap: () =>
+                                                _openCustomerMap(customer),
                                           ),
                                         ),
                                       ),
@@ -505,19 +534,37 @@ class _SearchCard extends StatelessWidget {
 class _CustomerCard extends StatelessWidget {
   final CustomerModel customer;
   final VoidCallback onTap;
+  final VoidCallback onCall;
+  final VoidCallback onMap;
 
-  const _CustomerCard({required this.customer, required this.onTap});
+  const _CustomerCard({
+    required this.customer,
+    required this.onTap,
+    required this.onCall,
+    required this.onMap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final address = _customerAddress(customer);
     final statusColor = customer.isActive == false
         ? AppColors.deliveryRed
         : AppColors.deliveryGreen;
     final outstanding = customer.outstanding ?? 0;
+    final businessName = _firstNonEmpty([
+      customer.businessName,
+      customer.name,
+      'Customer',
+    ]);
+    final contactName = _firstNonEmpty([
+      customer.contactPerson,
+      customer.name,
+      'Not set',
+    ]);
 
     return Material(
       color: Colors.transparent,
+      borderRadius: BorderRadius.circular(AppSizes.cardRadius),
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppSizes.cardRadius),
@@ -535,7 +582,7 @@ class _CustomerCard extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+                padding: const EdgeInsets.fromLTRB(12, 12, 10, 12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -543,24 +590,28 @@ class _CustomerCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          width: 36,
-                          height: 36,
+                          width: 52,
+                          height: 52,
                           decoration: BoxDecoration(
                             color: AppColors.deliveryGreenSoft,
                             shape: BoxShape.circle,
-                            border: Border.all(color: AppColors.surface),
+                            border: Border.all(
+                              color: AppColors.deliveryGreen.withValues(
+                                alpha: 0.08,
+                              ),
+                            ),
                           ),
                           alignment: Alignment.center,
                           child: Text(
                             customer.initials,
                             style: const TextStyle(
-                              color: AppColors.deliveryGreen,
-                              fontSize: 12,
+                              color: AppColors.deliveryInk,
+                              fontSize: 18,
                               fontWeight: FontWeight.w900,
                             ),
                           ),
                         ),
-                        const SizedBox(width: 9),
+                        const SizedBox(width: 10),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -569,7 +620,7 @@ class _CustomerCard extends StatelessWidget {
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      customer.name,
+                                      businessName,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style: const TextStyle(
@@ -579,7 +630,20 @@ class _CustomerCard extends StatelessWidget {
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(width: 5),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    outstanding > 0
+                                        ? 'Order Pending'
+                                        : 'No Pending Order',
+                                    style: TextStyle(
+                                      color: outstanding > 0
+                                          ? AppColors.deliveryOrange
+                                          : AppColors.textMuted,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
                                   _StatusBadge(
                                     label: customer.statusLabel,
                                     color: statusColor,
@@ -595,10 +659,8 @@ class _CustomerCard extends StatelessWidget {
                               const SizedBox(height: 4),
                               Text(
                                 _firstNonEmpty([
-                                  customer.businessName,
                                   customer.customerId,
-                                  customer.category,
-                                  'Customer',
+                                  'Customer ID not set',
                                 ]),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -608,27 +670,16 @@ class _CustomerCard extends StatelessWidget {
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              const SizedBox(height: 9),
+                              const SizedBox(height: 8),
                               Row(
                                 children: [
                                   Expanded(
                                     child: _CustomerCardDetail(
-                                      label: 'Phone',
-                                      value: _firstNonEmpty([
-                                        customer.phone,
-                                        customer.alternatePhone,
-                                        'Not available',
-                                      ]),
+                                      label: 'Contact Person',
+                                      value: contactName,
                                     ),
                                   ),
-                                  Container(
-                                    width: 1,
-                                    height: 25,
-                                    margin: const EdgeInsets.symmetric(
-                                      horizontal: 9,
-                                    ),
-                                    color: AppColors.deliverySurfaceBorder,
-                                  ),
+                                  const SizedBox(width: 8),
                                   Expanded(
                                     child: _CustomerCardDetail(
                                       label: 'Area',
@@ -640,6 +691,15 @@ class _CustomerCard extends StatelessWidget {
                                       ]),
                                     ),
                                   ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: _CustomerCardDetail(
+                                      label: 'Amount',
+                                      value: outstanding > 0
+                                          ? _formatMoney(outstanding)
+                                          : 'No due',
+                                    ),
+                                  ),
                                 ],
                               ),
                             ],
@@ -647,42 +707,46 @@ class _CustomerCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                    if (address.isNotEmpty) ...[
-                      const SizedBox(height: 9),
-                      _InlineInfo(
-                        icon: Icons.location_on_outlined,
-                        text: address,
-                        color: AppColors.deliveryBlue,
-                      ),
-                    ],
+                    const SizedBox(height: 10),
+                    const Divider(
+                      height: 1,
+                      color: AppColors.deliverySurfaceBorder,
+                    ),
                     const SizedBox(height: 9),
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Expanded(
-                          child: _InlineInfo(
-                            icon: Icons.badge_outlined,
-                            text: _firstNonEmpty([
-                              customer.customerId,
-                              customer.category,
-                              'Customer profile',
+                          child: _CustomerCardDetail(
+                            label: 'Case Officer',
+                            value: _firstNonEmpty([
+                              customer.assignedSalesOfficerName,
+                              'Not assigned',
                             ]),
-                            color: AppColors.deliveryGreen,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _CustomerCardDetail(
+                            label: 'Last Visited',
+                            value: _formatCustomerDate(customer.lastVisitDate),
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Text(
-                          outstanding > 0
-                              ? _formatMoney(outstanding)
-                              : 'No due',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: outstanding > 0
-                                ? AppColors.deliveryRed
-                                : AppColors.textMuted,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w800,
-                          ),
+                        _CustomerActionIcon(
+                          icon: Icons.phone_rounded,
+                          enabled: customer.phone?.trim().isNotEmpty == true,
+                          tooltip: 'Call customer',
+                          onTap: onCall,
+                        ),
+                        const SizedBox(width: 4),
+                        _CustomerActionIcon(
+                          icon: Icons.location_on_outlined,
+                          enabled:
+                              customer.mapLatitude != null &&
+                              customer.mapLongitude != null,
+                          tooltip: 'View customer location',
+                          onTap: onMap,
                         ),
                       ],
                     ),
@@ -730,6 +794,34 @@ class _CustomerCardDetail extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _CustomerActionIcon extends StatelessWidget {
+  final IconData icon;
+  final bool enabled;
+  final String tooltip;
+  final VoidCallback onTap;
+
+  const _CustomerActionIcon({
+    required this.icon,
+    required this.enabled,
+    required this.tooltip,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: enabled ? onTap : null,
+      tooltip: tooltip,
+      constraints: const BoxConstraints.tightFor(width: 48, height: 48),
+      padding: EdgeInsets.zero,
+      splashRadius: 22,
+      icon: Icon(icon, size: 20),
+      color: AppColors.deliveryGreen,
+      disabledColor: AppColors.textLightMuted,
     );
   }
 }
@@ -1035,4 +1127,24 @@ String _formatMoney(int value) {
     }
   }
   return '${value < 0 ? '-' : ''}Rs ${buffer.toString()} due';
+}
+
+String _formatCustomerDate(DateTime? value) {
+  if (value == null) return 'Not visited';
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+  final date = value.toLocal();
+  return '${date.day} ${months[date.month - 1]} ${date.year}';
 }

@@ -70,15 +70,18 @@ class CustomerPaymentRecord {
 
   factory CustomerPaymentRecord.fromJson(Map<String, dynamic> json) {
     return CustomerPaymentRecord(
-      id: _readString(json, const ['id', 'payment_id']) ?? '',
+      id: _readString(json, const ['id', 'collection_id', 'payment_id']) ?? '',
       amount: _readDouble(json, const [
         'amount',
+        'collected_amount',
         'paid_amount',
         'received_amount',
         'payment_amount',
       ]),
       date: _readDate(json, const [
         'date',
+        'collection_date',
+        'collected_at',
         'payment_date',
         'paid_at',
         'created_at',
@@ -87,6 +90,8 @@ class CustomerPaymentRecord {
       referenceNumber:
           _readString(json, const [
             'reference_number',
+            'transaction_reference',
+            'collection_number',
             'invoice_number',
             'receipt_number',
             'reference',
@@ -96,12 +101,52 @@ class CustomerPaymentRecord {
       method:
           _readString(json, const [
             'payment_method',
+            'collection_mode',
             'method',
             'payment_mode',
             'mode',
           ]) ??
           '-',
       status: _readString(json, const ['status']) ?? '-',
+    );
+  }
+}
+
+class CustomerVisitRecord {
+  final String id;
+  final DateTime? date;
+  final String purpose;
+  final String outcome;
+  final String status;
+  final String? notes;
+
+  const CustomerVisitRecord({
+    required this.id,
+    required this.date,
+    required this.purpose,
+    required this.outcome,
+    required this.status,
+    this.notes,
+  });
+
+  factory CustomerVisitRecord.fromJson(Map<String, dynamic> json) {
+    return CustomerVisitRecord(
+      id: _readString(json, const ['id', 'visit_id']) ?? '',
+      date: _readDate(json, const [
+        'visit_date',
+        'scheduled_at',
+        'check_in_time',
+        'created_at',
+        'date',
+      ]),
+      purpose:
+          _readString(json, const ['purpose', 'visit_purpose', 'type']) ??
+          'Customer visit',
+      outcome:
+          _readString(json, const ['outcome', 'result', 'visit_outcome']) ??
+          '-',
+      status: _readString(json, const ['status', 'visit_status']) ?? '-',
+      notes: _readString(json, const ['notes', 'remarks', 'description']),
     );
   }
 }

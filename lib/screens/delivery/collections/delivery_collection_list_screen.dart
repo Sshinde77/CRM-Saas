@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../widgets/delivery/delivery_bottom_navigation.dart';
 
@@ -25,6 +26,7 @@ class _DeliveryCollectionListScreenState
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late Future<_CollectionDashboardData> _collectionFuture;
   bool _didStartLoad = false;
+  bool _showPending = true;
 
   @override
   void didChangeDependencies() {
@@ -96,17 +98,6 @@ class _DeliveryCollectionListScreenState
           currentIndex: 4,
           onCollectionCreated: _refresh,
         ),
-        floatingActionButton: FloatingActionButton.extended(
-          heroTag: 'delivery-collection-create',
-          onPressed: _openPaymentCollection,
-          backgroundColor: AppColors.deliveryBlue,
-          foregroundColor: AppColors.surface,
-          icon: const Icon(Icons.add_card_rounded, size: 22),
-          label: const Text(
-            'Create Collection',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
-          ),
-        ),
         body: SafeArea(
           bottom: false,
           child: Column(
@@ -168,6 +159,10 @@ class _DeliveryCollectionListScreenState
                                           const _CollectionDashboardData(
                                             deliveries: [],
                                           ),
+                                      showPending: _showPending,
+                                      onTabChanged: (value) =>
+                                          setState(() => _showPending = value),
+                                      onCollect: _openPaymentCollection,
                                     ),
                             ),
                           ),
@@ -186,31 +181,74 @@ class _DeliveryCollectionListScreenState
 }
 
 class _CollectionContent extends StatelessWidget {
-  const _CollectionContent({required this.data});
+  const _CollectionContent({
+    required this.data,
+    required this.showPending,
+    required this.onTabChanged,
+    required this.onCollect,
+  });
 
   final _CollectionDashboardData data;
+  final bool showPending;
+  final ValueChanged<bool> onTabChanged;
+  final VoidCallback onCollect;
 
   @override
   Widget build(BuildContext context) {
-    final collectionRows = data.collectionRows;
+    final collectionRows = showPending ? data.pendingRows : data.collectedRows;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _CollectionsCard(data: data),
         const SizedBox(height: AppSpacing.md),
-        const _SectionHeader(
-          title: 'Collection List',
-          trailingIcon: Icons.receipt_long_outlined,
+        _SurfaceCard(
+          padding: const EdgeInsets.all(8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.fromLTRB(4, 2, 4, 8),
+                child: Text(
+                  'Collection List',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+                ),
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: _CollectionTab(
+                      label: 'Pending List',
+                      selected: showPending,
+                      color: AppColors.deliveryRed,
+                      onTap: () => onTabChanged(true),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _CollectionTab(
+                      label: 'Collected List',
+                      selected: !showPending,
+                      color: AppColors.deliveryGreen,
+                      onTap: () => onTabChanged(false),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
-        const SizedBox(height: AppSpacing.sm),
+        const SizedBox(height: 8),
         if (collectionRows.isEmpty)
           const _EmptyCollectionList()
         else
           ...collectionRows.map(
             (delivery) => Padding(
               padding: const EdgeInsets.only(bottom: 10),
-              child: _CollectionListTile(delivery: delivery),
+              child: _CollectionListTile(
+                delivery: delivery,
+                onCollect: onCollect,
+              ),
             ),
           ),
       ],
@@ -270,17 +308,17 @@ class _CollectionsCard extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.deliveryVioletSoft,
+              color: const Color(0xFFF0F7EC),
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: AppColors.deliveryViolet.withValues(alpha: 0.14),
+                color: AppColors.deliveryGreen.withValues(alpha: 0.14),
               ),
             ),
             child: Row(
               children: [
                 const _MiniIcon(
                   icon: Icons.currency_rupee_rounded,
-                  color: AppColors.deliveryViolet,
+                  color: AppColors.deliveryGreen,
                   background: AppColors.surface,
                 ),
                 const SizedBox(width: 10),
@@ -396,19 +434,15 @@ class _CollectionMetricTile extends StatelessWidget {
 }
 
 class _CollectionListTile extends StatelessWidget {
-  const _CollectionListTile({required this.delivery});
+  const _CollectionListTile({required this.delivery, required this.onCollect});
 
   final _CollectionDelivery delivery;
+  final VoidCallback onCollect;
 
   @override
   Widget build(BuildContext context) {
     final hasDue = delivery.amountDue > 0;
     final accent = hasDue ? AppColors.deliveryRed : AppColors.deliveryGreen;
-    final statusColor = switch (delivery.status) {
-      'accepted' || 'delivered' => AppColors.deliveryGreen,
-      'failed' => AppColors.deliveryRed,
-      _ => AppColors.deliveryOrange,
-    };
 
     return Container(
       clipBehavior: Clip.antiAlias,
@@ -433,125 +467,128 @@ class _CollectionListTile extends StatelessWidget {
             child: ColoredBox(color: accent, child: const SizedBox(width: 3)),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            padding: const EdgeInsets.fromLTRB(12, 12, 10, 12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: hasDue
-                            ? AppColors.deliveryRedSoft
-                            : AppColors.deliveryGreenSoft,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        hasDue
-                            ? Icons.pending_actions_outlined
-                            : Icons.check_circle_outline_rounded,
-                        color: accent,
-                        size: 20,
-                      ),
+                Container(
+                  width: 56,
+                  height: 56,
+                  alignment: Alignment.center,
+                  decoration: const BoxDecoration(
+                    color: AppColors.deliveryGreenSoft,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                    delivery.initials,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.deliveryInk,
                     ),
-                    const SizedBox(width: 9),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  delivery.orderNumber,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.deliveryInk,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 5),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 7,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: statusColor.withValues(alpha: 0.10),
-                                  borderRadius: BorderRadius.circular(999),
-                                ),
-                                child: Text(
-                                  delivery.statusLabel,
-                                  style: TextStyle(
-                                    color: statusColor,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 9),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _CollectionCardDetail(
-                                  label: 'Customer',
-                                  value: delivery.customerName,
-                                ),
-                              ),
-                              Container(
-                                width: 1,
-                                height: 25,
-                                margin: const EdgeInsets.symmetric(
-                                  horizontal: 9,
-                                ),
-                                color: AppColors.deliverySurfaceBorder,
-                              ),
-                              Expanded(
-                                child: _CollectionCardDetail(
-                                  label: 'Payment',
-                                  value: delivery.paymentModeLabel,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-                const SizedBox(height: 9),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        delivery.formattedDue,
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        delivery.customerName,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: accent,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w900,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Collected ${delivery.formattedCollected}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.textMuted,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
+                      const SizedBox(height: 4),
+                      Text(
+                        delivery.orderNumber,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 10,
+                          color: AppColors.textMuted,
+                        ),
                       ),
+                      const SizedBox(height: 8),
+                      Text(
+                        delivery.contactName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      hasDue
+                          ? delivery.formattedDue
+                          : delivery.formattedCollected,
+                      style: TextStyle(
+                        color: accent,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _SmallAction(
+                          icon: Icons.phone_rounded,
+                          tooltip: 'Call customer',
+                          onTap: delivery.phone == null
+                              ? null
+                              : () => launchUrl(
+                                  Uri(scheme: 'tel', path: delivery.phone),
+                                ),
+                        ),
+                        _SmallAction(
+                          icon: Icons.location_on_outlined,
+                          tooltip: 'Open location',
+                          onTap: delivery.mapUrl == null
+                              ? null
+                              : () => launchUrl(
+                                  Uri.parse(delivery.mapUrl!),
+                                  mode: LaunchMode.externalApplication,
+                                ),
+                        ),
+                        if (hasDue) ...[
+                          const SizedBox(width: 4),
+                          SizedBox(
+                            height: 32,
+                            child: FilledButton(
+                              onPressed: onCollect,
+                              style: FilledButton.styleFrom(
+                                backgroundColor: AppColors.deliveryRed,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: const Text(
+                                'Collect',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ],
                 ),
@@ -559,6 +596,74 @@ class _CollectionListTile extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _CollectionTab extends StatelessWidget {
+  const _CollectionTab({
+    required this.label,
+    required this.selected,
+    required this.color,
+    required this.onTap,
+  });
+  final String label;
+  final bool selected;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        height: 40,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: selected
+              ? color.withValues(alpha: 0.07)
+              : AppColors.deliveryGreenSoft,
+          borderRadius: BorderRadius.circular(14),
+          border: selected ? Border.all(color: color, width: 2) : null,
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected ? color : AppColors.deliveryGreen,
+            fontSize: 13,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SmallAction extends StatelessWidget {
+  const _SmallAction({
+    required this.icon,
+    required this.tooltip,
+    required this.onTap,
+  });
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      tooltip: tooltip,
+      visualDensity: VisualDensity.compact,
+      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+      padding: const EdgeInsets.all(8),
+      onPressed: onTap,
+      icon: Icon(
+        icon,
+        size: 20,
+        color: onTap == null ? AppColors.textMuted : AppColors.deliveryGreen,
       ),
     );
   }
@@ -803,6 +908,12 @@ class _CollectionDashboardData {
     }).toList();
   }
 
+  List<_CollectionDelivery> get pendingRows =>
+      collectionRows.where((delivery) => delivery.amountDue > 0).toList();
+
+  List<_CollectionDelivery> get collectedRows =>
+      collectionRows.where((delivery) => delivery.amountCollected > 0).toList();
+
   double get totalAmountToCollect {
     return deliveries.fold<double>(
       0,
@@ -852,6 +963,10 @@ class _CollectionDelivery {
     required this.amountDue,
     required this.amountCollected,
     required this.paymentMode,
+    required this.contactName,
+    required this.phone,
+    required this.latitude,
+    required this.longitude,
   });
 
   final String id;
@@ -861,6 +976,10 @@ class _CollectionDelivery {
   final double amountDue;
   final double amountCollected;
   final String paymentMode;
+  final String contactName;
+  final String? phone;
+  final double? latitude;
+  final double? longitude;
 
   factory _CollectionDelivery.fromJson(Map<String, dynamic> json) {
     final id = _readString(json, const ['id', 'delivery_id']) ?? '';
@@ -896,6 +1015,36 @@ class _CollectionDelivery {
             ]) ??
             '',
       ),
+      contactName:
+          _readString(json, const ['contact_person', 'contactPerson']) ??
+          _readNestedString(json, 'customer', const [
+            'contact_person',
+            'contactPerson',
+          ]) ??
+          'Customer contact',
+      phone:
+          _readString(json, const ['customer_phone', 'phone', 'mobile']) ??
+          _readNestedString(json, 'customer', const ['phone', 'mobile']),
+      latitude:
+          _readNullableDouble(json, const [
+            'customer_latitude',
+            'latitude',
+            'map_latitude',
+          ]) ??
+          _readNestedDouble(json, 'customer', const [
+            'latitude',
+            'map_latitude',
+          ]),
+      longitude:
+          _readNullableDouble(json, const [
+            'customer_longitude',
+            'longitude',
+            'map_longitude',
+          ]) ??
+          _readNestedDouble(json, 'customer', const [
+            'longitude',
+            'map_longitude',
+          ]),
     );
   }
 
@@ -925,6 +1074,25 @@ class _CollectionDelivery {
 
   String get formattedDue => _formatMoney(amountDue);
   String get formattedCollected => _formatMoney(amountCollected);
+
+  String get initials {
+    final words = customerName
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((word) => word.isNotEmpty)
+        .toList();
+    if (words.isEmpty) return 'C';
+    if (words.length == 1) {
+      final end = words.first.length >= 2 ? 2 : 1;
+      return words.first.substring(0, end).toUpperCase();
+    }
+    return '${words.first[0]}${words.last[0]}'.toUpperCase();
+  }
+
+  String? get mapUrl {
+    if (latitude == null || longitude == null) return null;
+    return 'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude';
+  }
 }
 
 class _CollectionInfo {
@@ -980,6 +1148,26 @@ double _readDouble(Map<String, dynamic> json, List<String> keys) {
     if (parsed != null) return parsed;
   }
   return 0;
+}
+
+double? _readNullableDouble(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value is num) return value.toDouble();
+    final parsed = double.tryParse(value?.toString() ?? '');
+    if (parsed != null) return parsed;
+  }
+  return null;
+}
+
+double? _readNestedDouble(
+  Map<String, dynamic> json,
+  String parentKey,
+  List<String> keys,
+) {
+  final parent = json[parentKey];
+  if (parent is! Map<String, dynamic>) return null;
+  return _readNullableDouble(parent, keys);
 }
 
 String _normalizeStatus(String value) {

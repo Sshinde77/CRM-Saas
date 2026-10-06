@@ -85,4 +85,12 @@ class AppColors {
   static const Color deliveryProfileAvatarBorder = Color(0xFFFFFFFF);
   static const Color deliveryCheckInButton = primary;
   static const Color deliveryCheckInButtonShadow = primary950;
+  static const Color deliveryCustomerLocation = Color(0xFF1479E8);
+  static const Color deliveryCustomerLocationSoft = Color(0xFFEDF6FF);
+  static const Color deliveryCustomerSales = Color(0xFF0BA866);
+  static const Color deliveryCustomerSalesSoft = Color(0xFFEAF9F2);
+  static const Color deliveryCustomerPending = Color(0xFFF49326);
+  static const Color deliveryCustomerPendingSoft = Color(0xFFFFF7EC);
+  static const Color deliveryCustomerOrders = Color(0xFF1479E8);
+  static const Color deliveryCustomerOrdersSoft = Color(0xFFEDF6FF);
 }

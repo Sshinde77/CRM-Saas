@@ -1,3 +1,5 @@
+import '../utils/customer_photo_url.dart';
+
 class CustomerDocument {
   final String name;
   final String? url;
@@ -111,6 +113,7 @@ class CustomerModel {
   final String? customerId;
   final String name;
   final String? businessName;
+  final String? profilePhotoUrl;
   final String? industry;
   final String? category;
   final String? email;
@@ -160,6 +163,7 @@ class CustomerModel {
     required this.customerId,
     required this.name,
     required this.businessName,
+    required this.profilePhotoUrl,
     required this.industry,
     required this.category,
     required this.email,
@@ -262,6 +266,7 @@ class CustomerModel {
         'legal_business_name',
         'display_name',
       ]),
+      profilePhotoUrl: customerPhotoUrlFromJson(json),
       industry: _nullableStringValueFromSources(stringSources, const [
         'industry',
       ]),
@@ -469,6 +474,7 @@ class CustomerModel {
       'customer_id': customerId,
       'name': name,
       'business_name': businessName,
+      'profile_photo_url': profilePhotoUrl,
       'industry': industry,
       'category': category,
       'email': email,

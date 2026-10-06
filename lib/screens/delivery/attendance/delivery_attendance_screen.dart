@@ -439,9 +439,16 @@ class _CheckpointActionButton extends StatelessWidget {
       constraints: BoxConstraints(minHeight: compact ? 86 : 52),
       padding: EdgeInsets.all(compact ? 8 : 10),
       decoration: BoxDecoration(
-        color: softColor.withValues(alpha: 0.62),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withValues(alpha: 0.18)),
+        border: Border.all(color: Colors.white, width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: compact
           ? Column(
@@ -621,6 +628,20 @@ class _MonthlyAttendanceSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
+    final currentMonth = const [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ][now.month - 1];
     final recordsByDay = <String, DeliveryAttendanceRecord>{};
 
     for (final record in records) {
@@ -640,16 +661,16 @@ class _MonthlyAttendanceSummary extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: const Color(0xFFF4F7F5),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(AppSizes.cardRadius),
         border: Border.all(color: AppColors.deliverySurfaceBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'This Month Attendance',
-            style: TextStyle(
+          Text(
+            '$currentMonth Month Attendance',
+            style: const TextStyle(
               color: AppColors.deliveryInk,
               fontSize: 14,
               fontWeight: FontWeight.w800,
@@ -897,7 +918,6 @@ class _HistoryHeaderRow extends StatelessWidget {
           Expanded(flex: 3, child: _HeaderText('Status')),
           Expanded(flex: 3, child: _HeaderText('Check In')),
           Expanded(flex: 3, child: _HeaderText('Check Out')),
-          SizedBox(width: 12),
         ],
       ),
     );
@@ -953,14 +973,6 @@ class _HistoryRow extends StatelessWidget {
           Expanded(
             flex: 3,
             child: _TimeText(formatAttendanceTime(record.checkOut)),
-          ),
-          const SizedBox(
-            width: 12,
-            child: Icon(
-              Icons.chevron_right_rounded,
-              size: 14,
-              color: AppColors.deliveryInk,
-            ),
           ),
         ],
       ),

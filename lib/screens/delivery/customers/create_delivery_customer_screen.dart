@@ -8,6 +8,7 @@ import '../../../models/customer_model.dart';
 import '../../../providers/api_provider.dart';
 import '../../../services/api_service.dart';
 import '../../../services/voice_customer_extraction_service.dart';
+import '../../../widgets/delivery/delivery_image_upload_field.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
 import '../../../widgets/delivery/voice_input_sheet.dart';
 import 'customer_location_picker_screen.dart';
@@ -121,8 +122,10 @@ class _CreateDeliveryCustomerScreenState
     if (_saving || _pickingPhoto) return;
     setState(() => _pickingPhoto = true);
     try {
-      final image = await _imagePicker.pickImage(
-        source: ImageSource.gallery,
+      final image = await showDeliveryImageSourcePicker(
+        context: context,
+        picker: _imagePicker,
+        title: 'Add profile image',
         maxWidth: 1200,
         maxHeight: 1200,
         imageQuality: 85,
@@ -453,106 +456,19 @@ class _CreateDeliveryCustomerScreenState
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Center(
-                            child: Column(
-                              children: [
-                                const Text(
-                                  'Profile Image (Optional)',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.deliveryDashboardHeaderEnd,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                Stack(
-                                  children: [
-                                    SizedBox(
-                                      width: 100,
-                                      height: 100,
-                                      child: ClipOval(
-                                        child: ColoredBox(
-                                          color: _green.withValues(alpha: 0.1),
-                                          child: _photoBytes == null
-                                              ? const Icon(
-                                                  Icons.person_outline_rounded,
-                                                  size: 52,
-                                                  color: _green,
-                                                )
-                                              : Image.memory(
-                                                  _photoBytes!,
-                                                  fit: BoxFit.cover,
-                                                  errorBuilder:
-                                                      (
-                                                        _,
-                                                        error,
-                                                        stack,
-                                                      ) => const Icon(
-                                                        Icons
-                                                            .broken_image_outlined,
-                                                        color: _green,
-                                                      ),
-                                                ),
-                                        ),
-                                      ),
-                                    ),
-                                    Positioned(
-                                      right: 0,
-                                      bottom: 0,
-                                      child: IconButton.filled(
-                                        tooltip: 'Choose profile image',
-                                        onPressed: _saving || _pickingPhoto
-                                            ? null
-                                            : _pickPhoto,
-                                        style: IconButton.styleFrom(
-                                          backgroundColor: _green,
-                                          foregroundColor: Colors.white,
-                                        ),
-                                        icon: const Icon(
-                                          Icons.add_a_photo_outlined,
-                                          size: 20,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    TextButton(
-                                      onPressed: _saving || _pickingPhoto
-                                          ? null
-                                          : _pickPhoto,
-                                      style: TextButton.styleFrom(
-                                        foregroundColor: _green,
-                                      ),
-                                      child: Text(
-                                        _pickingPhoto
-                                            ? 'Opening photos…'
-                                            : _photoBytes == null
-                                            ? 'Add Photo'
-                                            : 'Change Photo',
-                                      ),
-                                    ),
-                                    if (_photoBytes != null)
-                                      TextButton(
-                                        onPressed: _saving || _pickingPhoto
-                                            ? null
-                                            : () => setState(() {
-                                                _photoBytes = null;
-                                                _photoName = null;
-                                                _uploadedPhoto = null;
-                                              }),
-                                        child: const Text(
-                                          'Remove',
-                                          style: TextStyle(
-                                            color: AppColors.deliveryRed,
-                                          ),
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                              ],
+                          const Text(
+                            'Profile Image (Optional)',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.deliveryDashboardHeaderEnd,
                             ),
+                          ),
+                          const SizedBox(height: 12),
+                          DeliveryImageUploadField(
+                            bytes: _photoBytes,
+                            onTap: _pickPhoto,
+                            aspectRatio: 1.8,
+                            enabled: !_saving && !_pickingPhoto,
                           ),
                           const SizedBox(height: 16),
                           if (_error != null)

@@ -27,11 +27,20 @@ class VehicleStockScreen extends StatefulWidget {
 
 class _VehicleStockScreenState extends State<VehicleStockScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final TextEditingController _historySearchController =
+      TextEditingController();
   Future<List<_VehicleStockSession>>? _future;
   bool _didStartLoad = false;
   String _selectedPartner = 'All Delivery Partners';
+  String _historyStatus = 'All';
 
   bool get _isDelivery => widget.mode == VehicleStockMode.delivery;
+
+  @override
+  void dispose() {
+    _historySearchController.dispose();
+    super.dispose();
+  }
 
   @override
   void didChangeDependencies() {
@@ -51,11 +60,38 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
       if (deliveryPartnerId == null || deliveryPartnerId.isEmpty) {
         throw const _VehicleStockException('Delivery partner id is missing.');
       }
-      final current = await provider.fetchCurrentVehicleStock(
+      final currentJson = await provider.fetchCurrentVehicleStock(
         deliveryPartnerId,
       );
-      if (current == null) return const [];
-      return [_VehicleStockSession.fromJson(current)];
+      List<Map<String, dynamic>> historyRows;
+      try {
+        historyRows = await provider.fetchVehicleStockSessions();
+      } catch (_) {
+        historyRows = const [];
+      }
+      final current = currentJson == null
+          ? null
+          : _VehicleStockSession.fromJson(currentJson, isCurrent: true);
+      final history = historyRows
+          .map(_VehicleStockSession.fromJson)
+          .where(
+            (session) =>
+                session.partnerId == deliveryPartnerId ||
+                (session.partnerId.isEmpty &&
+                    (current == null ||
+                        current.partnerName.isEmpty ||
+                        session.partnerName.isEmpty ||
+                        session.partnerName == current.partnerName)),
+          )
+          .where(
+            (session) =>
+                current == null ||
+                session.id.isEmpty ||
+                session.id != current.id,
+          )
+          .toList()
+        ..sort((a, b) => _sessionTime(b).compareTo(_sessionTime(a)));
+      return [if (current != null) current, ...history];
     }
 
     final rows = await provider.fetchVehicleStockSessions();
@@ -108,6 +144,36 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
         .toList();
   }
 
+  List<_VehicleStockSession> _deliveryHistory(
+    List<_VehicleStockSession> sessions,
+    _VehicleStockSession? current,
+  ) {
+    final query = _historySearchController.text.trim().toLowerCase();
+    return sessions.where((session) {
+      if (identical(session, current)) return false;
+      final matchesStatus = _historyStatus == 'All' ||
+          _stockStatusGroup(session.status) == _historyStatus;
+      final searchable = [
+        session.vehicleNumber,
+        session.vehicleType,
+        session.partnerName,
+        _formatDate(session.sessionDate ?? session.startedAt),
+      ].join(' ').toLowerCase();
+      return matchesStatus && (query.isEmpty || searchable.contains(query));
+    }).toList();
+  }
+
+  _VehicleStockSession? _currentStockSession(
+    List<_VehicleStockSession> sessions,
+  ) {
+    for (final session in sessions) {
+      if (session.isCurrent || _isActiveStockStatus(session.status)) {
+        return session;
+      }
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -154,6 +220,12 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
                   final sessions =
                       snapshot.data ?? const <_VehicleStockSession>[];
                   final filtered = _filtered(sessions);
+                  final current = _isDelivery
+                      ? _currentStockSession(filtered)
+                      : null;
+                  final history = _isDelivery
+                      ? _deliveryHistory(filtered, current)
+                      : const <_VehicleStockSession>[];
                   final isLoading =
                       snapshot.connectionState == ConnectionState.waiting &&
                       !snapshot.hasData;
@@ -187,11 +259,30 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
                                     }
                                   },
                                 ),
-                              if (_isDelivery && filtered.isNotEmpty)
+                              if (_isDelivery && current != null)
                                 _DeliveryStockOverview(
-                                  session: filtered.first,
+                                  session: current,
                                   onLoadStock: _openVehicleLoading,
                                 ),
+                              if (_isDelivery) ...[
+                                const SizedBox(height: 16),
+                                const Text(
+                                  'History',
+                                  style: TextStyle(
+                                    color: AppColors.deliveryInk,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                _DeliveryHistoryToolbar(
+                                  controller: _historySearchController,
+                                  selectedStatus: _historyStatus,
+                                  onSearchChanged: (_) => setState(() {}),
+                                  onStatusChanged: (value) =>
+                                      setState(() => _historyStatus = value),
+                                ),
+                              ],
                               const SizedBox(height: 12),
                               if (isLoading)
                                 const _LoadingState()
@@ -200,15 +291,20 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
                                   message: _cleanError(snapshot.error),
                                   onRetry: _refresh,
                                 )
+                              else if (_isDelivery && history.isEmpty)
+                                const _InlineEmpty(
+                                  message: 'No previous stock sessions found.',
+                                )
                               else if (filtered.isEmpty)
                                 _EmptyState(isDelivery: _isDelivery)
                               else
-                                ...filtered.map(
+                                ...(_isDelivery ? history : filtered).map(
                                   (session) => Padding(
                                     padding: const EdgeInsets.only(bottom: 12),
                                     child: _VehicleListCard(
                                       session: session,
                                       showPartner: !_isDelivery,
+                                      historyStyle: _isDelivery,
                                       onTap: () => _openDetails(session),
                                     ),
                                   ),
@@ -316,6 +412,101 @@ class _PartnerFilter extends StatelessWidget {
   }
 }
 
+class _DeliveryHistoryToolbar extends StatelessWidget {
+  const _DeliveryHistoryToolbar({
+    required this.controller,
+    required this.selectedStatus,
+    required this.onSearchChanged,
+    required this.onStatusChanged,
+  });
+
+  final TextEditingController controller;
+  final String selectedStatus;
+  final ValueChanged<String> onSearchChanged;
+  final ValueChanged<String> onStatusChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: SizedBox(
+            height: 44,
+            child: TextField(
+              controller: controller,
+              onChanged: onSearchChanged,
+              textInputAction: TextInputAction.search,
+              style: const TextStyle(fontSize: 13),
+              decoration: InputDecoration(
+                hintText: 'Search history',
+                hintStyle: const TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 13,
+                ),
+                prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                suffixIcon: controller.text.isEmpty
+                    ? null
+                    : IconButton(
+                        tooltip: 'Clear search',
+                        icon: const Icon(Icons.close_rounded, size: 18),
+                        onPressed: () {
+                          controller.clear();
+                          onSearchChanged('');
+                        },
+                      ),
+                filled: true,
+                fillColor: Colors.white,
+                contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(
+                    color: AppColors.deliverySurfaceBorder,
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(
+                    color: AppColors.deliverySurfaceBorder,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        PopupMenuButton<String>(
+          tooltip: 'Filter stock history',
+          initialValue: selectedStatus,
+          onSelected: onStatusChanged,
+          itemBuilder: (context) => const [
+            PopupMenuItem(value: 'All', child: Text('All sessions')),
+            PopupMenuItem(value: 'Active', child: Text('Active')),
+            PopupMenuItem(value: 'Closed', child: Text('Closed')),
+          ],
+          child: Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: selectedStatus == 'All'
+                  ? Colors.white
+                  : AppColors.deliveryGreenSoft,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: AppColors.deliverySurfaceBorder),
+            ),
+            child: Icon(
+              Icons.tune_rounded,
+              size: 20,
+              color: selectedStatus == 'All'
+                  ? AppColors.deliveryInk
+                  : AppColors.deliveryGreen,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _DeliveryStockOverview extends StatelessWidget {
   final _VehicleStockSession session;
   final VoidCallback onLoadStock;
@@ -343,13 +534,11 @@ class _DeliveryStockOverview extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      session.vehicleNumber.isEmpty
-                          ? 'Vehicle Stock'
-                          : session.vehicleNumber,
+                    const Text(
+                      "Today's Loading",
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.deliveryInk,
                         fontSize: 16,
                         height: 1.15,
@@ -358,7 +547,9 @@ class _DeliveryStockOverview extends StatelessWidget {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      '${session.items.length} products loaded',
+                      session.vehicleNumber.isEmpty
+                          ? '${session.items.length} products loaded'
+                          : '${session.vehicleNumber}  •  ${session.items.length} products',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -386,6 +577,21 @@ class _DeliveryStockOverview extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              _StatusPill(session.status.isEmpty ? 'active' : session.status),
+              const Spacer(),
+              Text(
+                'Current stock',
+                style: TextStyle(
+                  color: AppColors.deliveryGreen.withValues(alpha: 0.9),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],
@@ -484,11 +690,13 @@ class _VehicleListCard extends StatelessWidget {
   final _VehicleStockSession session;
   final bool showPartner;
   final VoidCallback onTap;
+  final bool historyStyle;
 
   const _VehicleListCard({
     required this.session,
     required this.showPartner,
     required this.onTap,
+    this.historyStyle = false,
   });
 
   @override
@@ -533,7 +741,11 @@ class _VehicleListCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          session.vehicleNumber.isEmpty
+                          historyStyle
+                              ? _formatDate(
+                                  session.sessionDate ?? session.startedAt,
+                                )
+                              : session.vehicleNumber.isEmpty
                               ? 'Vehicle not assigned'
                               : session.vehicleNumber,
                           maxLines: 1,
@@ -547,7 +759,13 @@ class _VehicleListCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          subtitle.isEmpty ? 'Stock session' : subtitle,
+                          historyStyle
+                              ? session.vehicleNumber.isEmpty
+                                    ? 'Stock session'
+                                    : session.vehicleNumber
+                              : subtitle.isEmpty
+                              ? 'Stock session'
+                              : subtitle,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
@@ -590,8 +808,12 @@ class _VehicleListCard extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: _MiniStockStat(
-                      label: 'Remaining',
-                      value: _qty(session.totalRemaining),
+                      label: historyStyle ? 'Returned' : 'Remaining',
+                      value: _qty(
+                        historyStyle
+                            ? session.totalReturned
+                            : session.totalRemaining,
+                      ),
                       color: AppColors.deliveryGreen,
                     ),
                   ),
@@ -1449,6 +1671,7 @@ class _SurfaceCard extends StatelessWidget {
 
 class _VehicleStockSession {
   final String id;
+  final String partnerId;
   final String vehicleNumber;
   final String vehicleType;
   final String partnerName;
@@ -1457,9 +1680,11 @@ class _VehicleStockSession {
   final DateTime? startedAt;
   final DateTime? updatedAt;
   final List<_VehicleStockItem> items;
+  final bool isCurrent;
 
   const _VehicleStockSession({
     required this.id,
+    required this.partnerId,
     required this.vehicleNumber,
     required this.vehicleType,
     required this.partnerName,
@@ -1468,9 +1693,13 @@ class _VehicleStockSession {
     required this.startedAt,
     required this.updatedAt,
     required this.items,
+    this.isCurrent = false,
   });
 
-  factory _VehicleStockSession.fromJson(Map<String, dynamic> json) {
+  factory _VehicleStockSession.fromJson(
+    Map<String, dynamic> json, {
+    bool isCurrent = false,
+  }) {
     final nested = _readMap(json, const [
       'session',
       'vehicle_stock',
@@ -1498,6 +1727,17 @@ class _VehicleStockSession {
 
     return _VehicleStockSession(
       id: _readString(source, const ['id', '_id', 'session_id', 'sessionId']),
+      partnerId: _firstNonEmpty([
+        _readString(source, const [
+          'delivery_partner_id',
+          'deliveryPartnerId',
+          'partner_id',
+          'partnerId',
+          'driver_id',
+          'driverId',
+        ]),
+        _readString(partner, const ['id', '_id']),
+      ]),
       vehicleNumber: _firstNonEmpty([
         _readString(source, const ['vehicle_number', 'vehicleNumber']),
         _readString(vehicle, const [
@@ -1552,6 +1792,7 @@ class _VehicleStockSession {
         ]),
       ),
       items: itemRows.map(_VehicleStockItem.fromJson).toList(),
+      isCurrent: isCurrent,
     );
   }
 
@@ -1753,6 +1994,40 @@ String _titleCase(String value) {
         return '${text[0].toUpperCase()}${text.substring(1)}';
       })
       .join(' ');
+}
+
+DateTime _sessionTime(_VehicleStockSession session) {
+  return session.sessionDate ??
+      session.startedAt ??
+      session.updatedAt ??
+      DateTime.fromMillisecondsSinceEpoch(0);
+}
+
+String _normalizedStatus(String value) {
+  return value.trim().toLowerCase().replaceAll(' ', '_');
+}
+
+bool _isActiveStockStatus(String value) {
+  return const {
+    'active',
+    'open',
+    'in_progress',
+    'loaded',
+  }.contains(_normalizedStatus(value));
+}
+
+String _stockStatusGroup(String value) {
+  final normalized = _normalizedStatus(value);
+  if (_isActiveStockStatus(normalized)) return 'Active';
+  if (const {
+    'closed',
+    'completed',
+    'reconciled',
+    'returned',
+  }.contains(normalized)) {
+    return 'Closed';
+  }
+  return _titleCase(value);
 }
 
 String _cleanError(Object? error) {

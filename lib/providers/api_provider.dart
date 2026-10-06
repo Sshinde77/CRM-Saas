@@ -679,6 +679,10 @@ class ApiProvider extends ChangeNotifier {
     }
   }
 
+  Future<List<CustomerVisitRecord>> fetchCustomerVisits(String customerId) {
+    return _apiService.fetchCustomerVisits(customerId);
+  }
+
   Future<CustomerModel> createCustomer({
     required CustomerCreateRequest request,
   }) async {
