@@ -739,6 +739,43 @@ class ApiService {
     );
   }
 
+  Future<DeliveryCapacity> fetchDeliveryCapacity(String deliveryId) async {
+    final id = deliveryId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing delivery id.');
+    }
+    final response = await _send(
+      method: 'GET',
+      endpoint: ApiEndpoints.deliveriesAppCapacity(id),
+      requiresAuth: true,
+    );
+    final payload = _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid delivery capacity response.',
+    );
+    return DeliveryCapacity.fromJson(payload);
+  }
+
+  Future<Map<String, dynamic>> confirmAppDelivery({
+    required String deliveryId,
+    required Map<String, dynamic> payload,
+  }) async {
+    final id = deliveryId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing delivery id.');
+    }
+    final response = await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.deliveriesAppConfirm(id),
+      requiresAuth: true,
+      body: payload,
+    );
+    return _extractDeliveryPayload(
+      response.body.trim(),
+      fallbackMessage: 'Invalid app delivery confirmation response.',
+    );
+  }
+
   Future<List<Map<String, dynamic>>> fetchOrders({
     String? status,
     String? fulfilmentStatus,

@@ -277,6 +277,15 @@ class ApiProvider extends ChangeNotifier {
     );
   }
 
+  Future<DeliveryCapacity> fetchDeliveryCapacity(String deliveryId) =>
+      _apiService.fetchDeliveryCapacity(deliveryId);
+
+  Future<Map<String, dynamic>> confirmAppDelivery({
+    required String deliveryId,
+    required Map<String, dynamic> payload,
+  }) =>
+      _apiService.confirmAppDelivery(deliveryId: deliveryId, payload: payload);
+
   Future<List<Map<String, dynamic>>> fetchOrders({
     String? status,
     String? fulfilmentStatus,

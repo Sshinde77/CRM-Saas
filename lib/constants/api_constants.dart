@@ -103,6 +103,10 @@ class ApiEndpoints {
       '/deliveries/{delivery_id}/reject';
   static const String deliveriesConfirmTemplate =
       '/deliveries/{delivery_id}/confirm';
+  static const String deliveriesAppCapacityTemplate =
+      '/deliveries/{delivery_id}/app/delivery-capacity';
+  static const String deliveriesAppConfirmTemplate =
+      '/deliveries/{delivery_id}/app/confirm';
   static const String vehicleStock = '/vehicle-stock';
   static const String inventoryList = '/inventory';
   static const String vehicleStockLoading = '/vehicle-stock/loading';
@@ -222,6 +226,12 @@ class ApiEndpoints {
 
   static String deliveriesConfirm(String deliveryId) =>
       deliveriesConfirmTemplate.replaceFirst('{delivery_id}', deliveryId);
+
+  static String deliveriesAppCapacity(String deliveryId) =>
+      deliveriesAppCapacityTemplate.replaceFirst('{delivery_id}', deliveryId);
+
+  static String deliveriesAppConfirm(String deliveryId) =>
+      deliveriesAppConfirmTemplate.replaceFirst('{delivery_id}', deliveryId);
 
   static String expenseDetail(String expenseId) =>
       expenseDetailTemplate.replaceFirst('{expense_id}', expenseId);

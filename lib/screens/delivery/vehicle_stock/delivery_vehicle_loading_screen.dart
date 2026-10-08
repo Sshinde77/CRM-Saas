@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../constants/api_constants.dart';
 import '../../../providers/api_provider.dart';
-import '../../../routes/app_router.dart';
 import '../../../services/api_service.dart';
+import '../../../utils/product_image_url.dart';
 import '../../../widgets/app_calendar_date_picker.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
 
@@ -31,8 +32,13 @@ class _DeliveryVehicleLoadingScreenState
   String? _error;
   bool _didStartLoad = false;
   bool _isSubmitting = false;
+  _StockSession? _session;
+  String _selectedCategory = 'All';
+  String _vehicleNumber = '';
 
   int get _totalUnits => _items.fold(0, (sum, item) => sum + item.quantity);
+  int get _orderUnits =>
+      _products.fold(0, (sum, product) => sum + product.ordered.round());
 
   @override
   void didChangeDependencies() {
@@ -58,6 +64,41 @@ class _DeliveryVehicleLoadingScreenState
     final authMe = await provider.fetchAuthMe();
     final productRows = await provider.fetchProducts(isActive: true);
     final currentUser = provider.currentUser ?? authMe?.user;
+    final deliveryPartnerId = currentUser?.id?.trim() ?? '';
+    final currentStock = deliveryPartnerId.isEmpty
+        ? null
+        : await provider.fetchCurrentVehicleStock(deliveryPartnerId);
+    var vehicleNumber = currentStock == null
+        ? ''
+        : _stockVehicleNumber(currentStock);
+    if (vehicleNumber.isEmpty && deliveryPartnerId.isNotEmpty) {
+      try {
+        final sessions = await provider.fetchVehicleStockSessions();
+        for (final row in sessions) {
+          final source = _stockSource(row);
+          final partner = _readMap(source, const [
+            'delivery_partner',
+            'deliveryPartner',
+            'partner',
+            'driver',
+          ]);
+          final partnerId = _firstNonEmpty([
+            _readString(source, const [
+              'delivery_partner_id',
+              'deliveryPartnerId',
+              'partner_id',
+              'partnerId',
+            ]),
+            _readString(partner, const ['id', '_id']),
+          ]);
+          if (partnerId.isNotEmpty && partnerId != deliveryPartnerId) continue;
+          vehicleNumber = _stockVehicleNumber(row);
+          if (vehicleNumber.isNotEmpty) break;
+        }
+      } catch (_) {
+        // Vehicle history is optional; loading can continue without it.
+      }
+    }
     final products =
         productRows
             .map(_LoadingProduct.fromJson)
@@ -79,16 +120,53 @@ class _DeliveryVehicleLoadingScreenState
       );
       _products = products;
       _selectedProduct = products.isEmpty ? null : products.first;
+      _session = currentStock == null
+          ? null
+          : _StockSession.fromJson(currentStock, products);
+      _vehicleNumber = _session?.vehicleNumber.isNotEmpty == true
+          ? _session!.vehicleNumber
+          : vehicleNumber;
+      if (_session?.date != null) _loadingDate = _session!.date!;
+      if (_session == null && _items.isEmpty) {
+        _items = products
+            .where((product) => product.ordered > 0)
+            .map(
+              (product) => _LoadingItem(
+                product: product,
+                quantity: product.ordered.round(),
+              ),
+            )
+            .toList();
+        for (final item in _items) {
+          _controllerFor(item);
+        }
+      }
     });
   }
 
   List<_LoadingProduct> get _filteredProducts {
     final query = _searchController.text.trim().toLowerCase();
-    if (query.isEmpty) return _products;
-    return _products.where((product) {
+    final categoryFiltered = _selectedCategory == 'All'
+        ? _products
+        : _products
+              .where((product) => product.category == _selectedCategory)
+              .toList();
+    if (query.isEmpty) return categoryFiltered;
+    return categoryFiltered.where((product) {
       return product.name.toLowerCase().contains(query) ||
           product.sku.toLowerCase().contains(query);
     }).toList();
+  }
+
+  List<String> get _categories {
+    final values =
+        _products
+            .map((product) => product.category)
+            .where((category) => category.isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
+    return ['All', ...values];
   }
 
   void _handleSearchChanged(String value) {
@@ -177,6 +255,41 @@ class _DeliveryVehicleLoadingScreenState
     });
   }
 
+  TextEditingController _controllerForProduct(_LoadingProduct product) {
+    final existing = _items.where((item) => item.product.id == product.id);
+    final quantity = existing.isEmpty ? 0 : existing.first.quantity;
+    return _itemControllers.putIfAbsent(
+      product.id,
+      () => TextEditingController(text: quantity > 0 ? '$quantity' : ''),
+    );
+  }
+
+  void _updateProductLoad(_LoadingProduct product, String value) {
+    final quantity = (double.tryParse(value.trim()) ?? 0).round();
+    final existingIndex = _items.indexWhere(
+      (item) => item.product.id == product.id,
+    );
+    setState(() {
+      if (existingIndex >= 0) {
+        if (quantity <= 0) {
+          _items = [..._items]..removeAt(existingIndex);
+        } else {
+          _items = [..._items]
+            ..[existingIndex] = _LoadingItem(
+              product: product,
+              quantity: quantity,
+            );
+        }
+      } else if (quantity > 0) {
+        _items = [
+          ..._items,
+          _LoadingItem(product: product, quantity: quantity),
+        ];
+      }
+      _error = null;
+    });
+  }
+
   Future<void> _pickDate() async {
     final picked = await showAppCalendarDatePicker(
       context: context,
@@ -221,6 +334,13 @@ class _DeliveryVehicleLoadingScreenState
             .toList(),
       );
       if (!mounted) return;
+      for (final controller in _itemControllers.values) {
+        controller.dispose();
+      }
+      _itemControllers.clear();
+      _items = [];
+      await _loadInitialData();
+      if (!mounted) return;
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
@@ -229,13 +349,7 @@ class _DeliveryVehicleLoadingScreenState
             content: Text('Opening load recorded successfully.'),
           ),
         );
-      if (Navigator.of(context).canPop()) {
-        Navigator.of(context).pop(true);
-      } else {
-        Navigator.of(
-          context,
-        ).pushReplacementNamed(AppRoutes.deliveryVehicleStock);
-      }
+      setState(() => _isSubmitting = false);
     } on ApiException catch (error) {
       if (!mounted) return;
       setState(() {
@@ -248,6 +362,89 @@ class _DeliveryVehicleLoadingScreenState
         _error = 'Unable to load vehicle stock. Please try again.';
         _isSubmitting = false;
       });
+    }
+  }
+
+  Future<void> _showAddLoadDialog() async {
+    final quantities = await showModalBottomSheet<Map<String, int>>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => _StockAdjustmentSheet(
+        title: 'Add products',
+        actionLabel: 'Submit',
+        products: _products,
+        stockItems: _session?.items ?? const [],
+        mode: _AdjustmentMode.add,
+      ),
+    );
+    if (quantities == null || quantities.values.every((value) => value <= 0)) {
+      return;
+    }
+    setState(() => _isSubmitting = true);
+    try {
+      await ApiProviderScope.of(context).loadVehicleStock(
+        deliveryPartnerId: _user.id,
+        date: _loadingDate,
+        items: quantities.entries
+            .where((entry) => entry.value > 0)
+            .map(
+              (entry) => {'product_id': entry.key, 'loaded_qty': entry.value},
+            )
+            .toList(),
+      );
+      await _loadInitialData();
+      if (mounted) _showMessage('New load added successfully.');
+    } on ApiException catch (error) {
+      if (mounted) _showMessage(error.message);
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  Future<void> _showCloseTodayDialog() async {
+    final session = _session;
+    if (session == null || session.id.isEmpty) {
+      _showMessage('Vehicle stock session is unavailable.');
+      return;
+    }
+    final quantities = await showModalBottomSheet<Map<String, int>>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => _StockAdjustmentSheet(
+        title: 'Return Products',
+        actionLabel: 'Submit',
+        products: session.items.map((item) => item.product).toList(),
+        stockItems: session.items,
+        mode: _AdjustmentMode.close,
+      ),
+    );
+    if (quantities == null) return;
+    setState(() => _isSubmitting = true);
+    try {
+      await ApiProviderScope.of(context).submitEndOfDayReturn(
+        sessionId: session.id,
+        items: session.items
+            .map(
+              (item) => {
+                'product_id': item.product.id,
+                'returned_qty': quantities[item.product.id] ?? 0,
+              },
+            )
+            .toList(),
+      );
+      if (!mounted) return;
+      setState(() {
+        _session = session.closedWithReturns(quantities);
+        _isSubmitting = false;
+      });
+      _showMessage('Vehicle stock closed successfully.');
+    } on ApiException catch (error) {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+        _showMessage(error.message);
+      }
     }
   }
 
@@ -298,8 +495,10 @@ class _DeliveryVehicleLoadingScreenState
                         child: Column(
                           children: [
                             _KpiPanel(
-                              itemCount: _items.length,
-                              totalUnits: _totalUnits,
+                              orderUnits:
+                                  _session?.totalOrdered.round() ?? _orderUnits,
+                              loadedUnits: _session?.totalLoaded.round() ?? 0,
+                              session: _session,
                             ),
                             const SizedBox(height: 14),
                             if (isLoading)
@@ -316,25 +515,38 @@ class _DeliveryVehicleLoadingScreenState
                               _DetailsCard(
                                 loadingDate: _loadingDate,
                                 deliveryPartner: _user.name,
+                                vehicleNumber:
+                                    _session?.vehicleNumber ?? _vehicleNumber,
+                                status: _session?.status,
                                 onPickDate: _pickDate,
                               ),
                               const SizedBox(height: 14),
-                              _ProductsCard(
-                                searchController: _searchController,
-                                quantityController: _quantityController,
-                                products: _filteredProducts,
-                                selectedProduct: _selectedProduct,
-                                items: _items,
-                                itemControllers: _itemControllers,
-                                onSearchChanged: _handleSearchChanged,
-                                onProductChanged: (product) {
-                                  setState(() => _selectedProduct = product);
-                                },
-                                onAdd: _addProduct,
-                                onClear: _clearItems,
-                                onRemove: _removeItem,
-                                onQuantityChanged: _updateItemQuantity,
-                              ),
+                              if (_session == null)
+                                _ProductsCard(
+                                  searchController: _searchController,
+                                  quantityController: _quantityController,
+                                  products: _filteredProducts,
+                                  selectedProduct: _selectedProduct,
+                                  items: _items,
+                                  itemControllers: _itemControllers,
+                                  controllerForProduct: _controllerForProduct,
+                                  onProductQuantityChanged: _updateProductLoad,
+                                  categories: _categories,
+                                  selectedCategory: _selectedCategory,
+                                  onCategoryChanged: (category) => setState(
+                                    () => _selectedCategory = category,
+                                  ),
+                                  onSearchChanged: _handleSearchChanged,
+                                  onProductChanged: (product) {
+                                    setState(() => _selectedProduct = product);
+                                  },
+                                  onAdd: _addProduct,
+                                  onClear: _clearItems,
+                                  onRemove: _removeItem,
+                                  onQuantityChanged: _updateItemQuantity,
+                                )
+                              else
+                                _SessionProductsCard(session: _session!),
                               if (_error != null) ...[
                                 const SizedBox(height: 12),
                                 _InlineError(message: _error!),
@@ -347,12 +559,19 @@ class _DeliveryVehicleLoadingScreenState
                   ),
                 ),
               ),
-              _BottomSummary(
-                totalUnits: _totalUnits,
-                productLines: _items.length,
-                isSubmitting: _isSubmitting,
-                onSave: _isSubmitting ? null : _submit,
-              ),
+              if (_session == null)
+                _BottomSummary(
+                  totalUnits: _totalUnits,
+                  productLines: _items.length,
+                  isSubmitting: _isSubmitting,
+                  onSave: _isSubmitting ? null : _submit,
+                )
+              else if (!_session!.isClosed)
+                _ActiveBottomActions(
+                  busy: _isSubmitting,
+                  onAddLoad: _showAddLoadDialog,
+                  onCloseToday: _showCloseTodayDialog,
+                ),
             ],
           );
         },
@@ -362,10 +581,15 @@ class _DeliveryVehicleLoadingScreenState
 }
 
 class _KpiPanel extends StatelessWidget {
-  final int itemCount;
-  final int totalUnits;
+  final int orderUnits;
+  final int loadedUnits;
+  final _StockSession? session;
 
-  const _KpiPanel({required this.itemCount, required this.totalUnits});
+  const _KpiPanel({
+    required this.orderUnits,
+    required this.loadedUnits,
+    required this.session,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -384,32 +608,67 @@ class _KpiPanel extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
+      child: Column(
         children: [
-          Expanded(
-            child: _Metric(
-              icon: Icons.inventory_2_outlined,
-              value: itemCount.toString(),
-              label: 'Product Lines',
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: _Metric(
+                  icon: Icons.receipt_long_outlined,
+                  value: orderUnits.toString(),
+                  label: 'Order Units',
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _Metric(
+                  icon: Icons.layers_rounded,
+                  value: loadedUnits.toString(),
+                  label: 'Loaded Units',
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _Metric(
+                  icon: Icons.radio_button_unchecked_rounded,
+                  value: session == null ? 'Draft' : 'Confirmed',
+                  label: 'Status',
+                  accent: const Color(0xFFFFB020),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: _Metric(
-              icon: Icons.layers_rounded,
-              value: totalUnits.toString(),
-              label: 'Units Loaded',
+          if (session != null) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: _Metric(
+                    icon: Icons.local_shipping_outlined,
+                    value: session!.totalDelivered.round().toString(),
+                    label: 'Delivered',
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _Metric(
+                    icon: Icons.inventory_2_outlined,
+                    value: session!.totalRemaining.round().toString(),
+                    label: 'Remaining',
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _Metric(
+                    icon: Icons.assignment_return_outlined,
+                    value: session!.totalReturned.round().toString(),
+                    label: 'Returned',
+                    accent: const Color(0xFFFFB020),
+                  ),
+                ),
+              ],
             ),
-          ),
-          const SizedBox(width: 8),
-          const Expanded(
-            child: _Metric(
-              icon: Icons.radio_button_unchecked_rounded,
-              value: 'Draft',
-              label: 'Status',
-              accent: Color(0xFFFFB020),
-            ),
-          ),
+          ],
         ],
       ),
     );
@@ -481,11 +740,15 @@ class _Metric extends StatelessWidget {
 class _DetailsCard extends StatelessWidget {
   final DateTime loadingDate;
   final String deliveryPartner;
+  final String vehicleNumber;
+  final String? status;
   final VoidCallback onPickDate;
 
   const _DetailsCard({
     required this.loadingDate,
     required this.deliveryPartner,
+    required this.vehicleNumber,
+    required this.status,
     required this.onPickDate,
   });
 
@@ -495,9 +758,12 @@ class _DetailsCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _SectionHeader(
+          _SectionHeader(
             icon: Icons.calendar_month_outlined,
             title: 'Loading Details',
+            trailing: status == null
+                ? null
+                : _CompactStatusPill(status: status!),
           ),
           const SizedBox(height: 18),
           _FieldRow(
@@ -507,6 +773,14 @@ class _DetailsCard extends StatelessWidget {
               text: _formatDate(loadingDate),
               trailing: Icons.keyboard_arrow_down_rounded,
               onTap: onPickDate,
+            ),
+          ),
+          const SizedBox(height: 12),
+          _FieldRow(
+            label: 'Vehicle Number',
+            child: _SelectField(
+              icon: Icons.local_shipping_outlined,
+              text: vehicleNumber.isEmpty ? 'Not assigned' : vehicleNumber,
             ),
           ),
           const SizedBox(height: 12),
@@ -530,6 +804,12 @@ class _ProductsCard extends StatelessWidget {
   final _LoadingProduct? selectedProduct;
   final List<_LoadingItem> items;
   final Map<String, TextEditingController> itemControllers;
+  final TextEditingController Function(_LoadingProduct) controllerForProduct;
+  final void Function(_LoadingProduct product, String value)
+  onProductQuantityChanged;
+  final List<String> categories;
+  final String selectedCategory;
+  final ValueChanged<String> onCategoryChanged;
   final ValueChanged<String> onSearchChanged;
   final ValueChanged<_LoadingProduct?> onProductChanged;
   final VoidCallback onAdd;
@@ -544,6 +824,11 @@ class _ProductsCard extends StatelessWidget {
     required this.selectedProduct,
     required this.items,
     required this.itemControllers,
+    required this.controllerForProduct,
+    required this.onProductQuantityChanged,
+    required this.categories,
+    required this.selectedCategory,
+    required this.onCategoryChanged,
     required this.onSearchChanged,
     required this.onProductChanged,
     required this.onAdd,
@@ -554,14 +839,6 @@ class _ProductsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final selected =
-        selectedProduct != null &&
-            products.any((product) => product.id == selectedProduct!.id)
-        ? selectedProduct
-        : products.isEmpty
-        ? null
-        : products.first;
-
     return _SurfaceCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -580,103 +857,47 @@ class _ProductsCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          DropdownButtonFormField<_LoadingProduct>(
-            initialValue: selected,
-            isExpanded: true,
-            icon: const Icon(Icons.keyboard_arrow_down_rounded),
-            decoration: _inputDecoration(hint: 'Select a product'),
-            items: products
-                .map(
-                  (product) => DropdownMenuItem(
-                    value: product,
-                    child: Text(
-                      product.dropdownLabel,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                )
-                .toList(),
-            onChanged: products.isEmpty ? null : onProductChanged,
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: quantityController,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-            ],
-            decoration: _inputDecoration(
-              hint: 'Quantity to load',
-              icon: Icons.numbers_rounded,
-            ),
-          ),
-          const SizedBox(height: 12),
           SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: ElevatedButton.icon(
-              onPressed: onAdd,
-              icon: const Icon(Icons.add_box_outlined, size: 22),
-              label: const Text('Add Product'),
-              style: ElevatedButton.styleFrom(
-                elevation: 0,
-                backgroundColor: const Color(0xFFEAF7ED),
-                foregroundColor: const Color(0xFF14783A),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                textStyle: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
+            height: 34,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: categories.length,
+              separatorBuilder: (_, _) => const SizedBox(width: 8),
+              itemBuilder: (context, index) {
+                final category = categories[index];
+                final selected = category == selectedCategory;
+                return ChoiceChip(
+                  label: Text(category),
+                  selected: selected,
+                  onSelected: (_) => onCategoryChanged(category),
+                  visualDensity: VisualDensity.compact,
+                  labelStyle: TextStyle(
+                    color: selected ? Colors.white : AppColors.textMuted,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  selectedColor: AppColors.deliveryGreen,
+                  backgroundColor: const Color(0xFFF4F7F5),
+                  side: BorderSide.none,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                );
+              },
             ),
-          ),
-          const SizedBox(height: 18),
-          const Divider(height: 1, color: Color(0xFFE8EDF2)),
-          const SizedBox(height: 18),
-          Row(
-            children: [
-              const Icon(
-                Icons.inventory_2_outlined,
-                color: Color(0xFF087333),
-                size: 24,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  'Products to Load (${items.length})',
-                  style: const TextStyle(
-                    color: AppColors.deliveryInk,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-              TextButton(
-                onPressed: items.isEmpty ? null : onClear,
-                child: const Text(
-                  'Clear All',
-                  style: TextStyle(
-                    color: AppColors.deliveryRed,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-            ],
           ),
           const SizedBox(height: 10),
-          if (items.isEmpty)
+          if (products.isEmpty)
             const _EmptyItems()
           else
-            ...items.map(
-              (item) => Padding(
+            ...products.map(
+              (product) => Padding(
                 padding: const EdgeInsets.only(bottom: 10),
-                child: _LoadingItemRow(
-                  item: item,
-                  controller: itemControllers[item.product.id]!,
-                  onChanged: (value) => onQuantityChanged(item, value),
-                  onRemove: () => onRemove(item),
+                child: _DraftProductRow(
+                  product: product,
+                  controller: controllerForProduct(product),
+                  onChanged: (value) =>
+                      onProductQuantityChanged(product, value),
                 ),
               ),
             ),
@@ -684,6 +905,351 @@ class _ProductsCard extends StatelessWidget {
       ),
     );
   }
+}
+
+class _DraftProductRow extends StatelessWidget {
+  const _DraftProductRow({
+    required this.product,
+    required this.controller,
+    required this.onChanged,
+  });
+
+  final _LoadingProduct product;
+  final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final availabilityColor = product.available <= 0
+        ? AppColors.deliveryRed
+        : product.ordered > 0 && product.available < product.ordered
+        ? AppColors.deliveryOrange
+        : AppColors.deliveryGreen;
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.deliverySurfaceBorder),
+      ),
+      child: Row(
+        children: [
+          _ProductAvatar(product: product),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        product.name,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.deliveryInk,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: availabilityColor,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  product.meta,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 10,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _TinyProductMetric(
+                        label: 'Ordered',
+                        value: _quantity(product.ordered),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    SizedBox(
+                      width: 74,
+                      child: TextField(
+                        controller: controller,
+                        onChanged: onChanged,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        decoration: InputDecoration(
+                          labelText: 'Loading',
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 8,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SessionProductsCard extends StatefulWidget {
+  const _SessionProductsCard({required this.session});
+  final _StockSession session;
+
+  @override
+  State<_SessionProductsCard> createState() => _SessionProductsCardState();
+}
+
+class _SessionProductsCardState extends State<_SessionProductsCard> {
+  final TextEditingController _search = TextEditingController();
+  String _category = 'All';
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final categories =
+        widget.session.items
+            .map((item) => item.product.category)
+            .where((category) => category.isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
+    final query = _search.text.trim().toLowerCase();
+    final items = widget.session.items.where((item) {
+      final matchesCategory =
+          _category == 'All' || item.product.category == _category;
+      final matchesSearch =
+          query.isEmpty ||
+          item.product.name.toLowerCase().contains(query) ||
+          item.product.sku.toLowerCase().contains(query);
+      return matchesCategory && matchesSearch;
+    }).toList();
+    return _SurfaceCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const _SectionHeader(
+            icon: Icons.inventory_2_outlined,
+            title: 'Add products',
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _search,
+            onChanged: (_) => setState(() {}),
+            style: const TextStyle(fontSize: 13),
+            decoration: _inputDecoration(
+              hint: 'Search products by name or SKU',
+              icon: Icons.search_rounded,
+            ),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 34,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: categories.length + 1,
+              separatorBuilder: (_, _) => const SizedBox(width: 8),
+              itemBuilder: (context, index) {
+                final category = index == 0 ? 'All' : categories[index - 1];
+                final selected = category == _category;
+                return ChoiceChip(
+                  label: Text(category),
+                  selected: selected,
+                  onSelected: (_) => setState(() => _category = category),
+                  visualDensity: VisualDensity.compact,
+                  selectedColor: AppColors.deliveryGreen,
+                  backgroundColor: const Color(0xFFF4F7F5),
+                  side: BorderSide.none,
+                  labelStyle: TextStyle(
+                    color: selected ? Colors.white : AppColors.textMuted,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 10),
+          if (items.isEmpty)
+            const _EmptyItems()
+          else
+            for (final item in items)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: _SessionProductRow(
+                  item: item,
+                  closed: widget.session.isClosed,
+                ),
+              ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SessionProductRow extends StatelessWidget {
+  const _SessionProductRow({required this.item, required this.closed});
+  final _StockItem item;
+  final bool closed;
+
+  @override
+  Widget build(BuildContext context) {
+    final availabilityColor = item.remaining <= 0
+        ? AppColors.deliveryRed
+        : item.delivered > 0
+        ? AppColors.deliveryOrange
+        : AppColors.deliveryGreen;
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.deliverySurfaceBorder),
+      ),
+      child: Row(
+        children: [
+          _ProductAvatar(product: item.product),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        item.product.name,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.deliveryInk,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: availabilityColor,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  item.product.meta,
+                  style: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 10,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _TinyProductMetric(
+                        label: 'Ordered',
+                        value: _quantity(item.ordered),
+                      ),
+                    ),
+                    Expanded(
+                      child: _TinyProductMetric(
+                        label: 'Loaded',
+                        value: _quantity(item.loaded),
+                      ),
+                    ),
+                    Expanded(
+                      child: _TinyProductMetric(
+                        label: 'Delivered',
+                        value: _quantity(item.delivered),
+                      ),
+                    ),
+                    if (closed)
+                      Expanded(
+                        child: _TinyProductMetric(
+                          label: 'Returned',
+                          value: _quantity(item.returned),
+                          color: AppColors.deliveryRed,
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TinyProductMetric extends StatelessWidget {
+  const _TinyProductMetric({
+    required this.label,
+    required this.value,
+    this.color = AppColors.deliveryGreen,
+  });
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        label,
+        style: const TextStyle(color: AppColors.textMuted, fontSize: 9),
+      ),
+      const SizedBox(height: 2),
+      Text(
+        value,
+        style: TextStyle(
+          color: color,
+          fontSize: 12,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    ],
+  );
 }
 
 class _LoadingItemRow extends StatelessWidget {
@@ -814,6 +1380,287 @@ class _LoadingItemRow extends StatelessWidget {
   }
 }
 
+class _ActiveBottomActions extends StatelessWidget {
+  const _ActiveBottomActions({
+    required this.busy,
+    required this.onAddLoad,
+    required this.onCloseToday,
+  });
+  final bool busy;
+  final VoidCallback onAddLoad;
+  final VoidCallback onCloseToday;
+
+  @override
+  Widget build(BuildContext context) => SafeArea(
+    top: false,
+    child: Container(
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: AppColors.deliverySurfaceBorder)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: OutlinedButton(
+              onPressed: busy ? null : onAddLoad,
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size(0, 48),
+                foregroundColor: AppColors.deliveryGreen,
+                side: const BorderSide(color: AppColors.deliveryGreen),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: const Text('Add New Load'),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: FilledButton(
+              onPressed: busy ? null : onCloseToday,
+              style: FilledButton.styleFrom(
+                minimumSize: const Size(0, 48),
+                backgroundColor: AppColors.deliveryRed,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: Text(busy ? 'Please wait...' : 'Close Today'),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+enum _AdjustmentMode { add, close }
+
+class _StockAdjustmentSheet extends StatefulWidget {
+  const _StockAdjustmentSheet({
+    required this.title,
+    required this.actionLabel,
+    required this.products,
+    required this.mode,
+    this.stockItems = const [],
+  });
+  final String title;
+  final String actionLabel;
+  final List<_LoadingProduct> products;
+  final List<_StockItem> stockItems;
+  final _AdjustmentMode mode;
+
+  @override
+  State<_StockAdjustmentSheet> createState() => _StockAdjustmentSheetState();
+}
+
+class _StockAdjustmentSheetState extends State<_StockAdjustmentSheet> {
+  final _search = TextEditingController();
+  final Map<String, TextEditingController> _controllers = {};
+  String _category = 'All';
+
+  @override
+  void dispose() {
+    _search.dispose();
+    for (final controller in _controllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final query = _search.text.trim().toLowerCase();
+    final categories =
+        widget.products
+            .map((product) => product.category)
+            .where((category) => category.isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
+    final products = widget.products.where((product) {
+      final matchesCategory =
+          _category == 'All' || product.category == _category;
+      final matchesSearch =
+          query.isEmpty ||
+          product.name.toLowerCase().contains(query) ||
+          product.sku.toLowerCase().contains(query);
+      return matchesCategory && matchesSearch;
+    }).toList();
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          16,
+          0,
+          16,
+          16 + MediaQuery.viewInsetsOf(context).bottom,
+        ),
+        child: SizedBox(
+          height: MediaQuery.sizeOf(context).height * 0.72,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                widget.title,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.deliveryInk,
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _search,
+                onChanged: (_) => setState(() {}),
+                style: const TextStyle(fontSize: 13),
+                decoration: _inputDecoration(
+                  hint: 'Search products by name or SKU',
+                  icon: Icons.search_rounded,
+                ),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                height: 34,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: categories.length + 1,
+                  separatorBuilder: (_, _) => const SizedBox(width: 8),
+                  itemBuilder: (context, index) {
+                    final category = index == 0 ? 'All' : categories[index - 1];
+                    final selected = category == _category;
+                    return ChoiceChip(
+                      label: Text(category),
+                      selected: selected,
+                      onSelected: (_) => setState(() => _category = category),
+                      visualDensity: VisualDensity.compact,
+                      selectedColor: AppColors.deliveryGreen,
+                      backgroundColor: const Color(0xFFF4F7F5),
+                      side: BorderSide.none,
+                      labelStyle: TextStyle(
+                        color: selected ? Colors.white : AppColors.textMuted,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 12),
+              Expanded(
+                child: ListView.separated(
+                  itemCount: products.length,
+                  separatorBuilder: (_, _) => const SizedBox(height: 8),
+                  itemBuilder: (context, index) {
+                    final product = products[index];
+                    final stock = widget.stockItems.where(
+                      (item) => item.product.id == product.id,
+                    );
+                    final stockItem = stock.isEmpty ? null : stock.first;
+                    final controller = _controllers.putIfAbsent(
+                      product.id,
+                      () => TextEditingController(),
+                    );
+                    return Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: AppColors.deliverySurfaceBorder,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        children: [
+                          _ProductAvatar(product: product),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  product.name,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                if (stockItem != null)
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: _TinyProductMetric(
+                                          label: 'Ordered',
+                                          value: _quantity(stockItem.ordered),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: _TinyProductMetric(
+                                          label: 'Loaded',
+                                          value: _quantity(stockItem.loaded),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: _TinyProductMetric(
+                                          label: 'Delivered',
+                                          value: _quantity(stockItem.delivered),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          SizedBox(
+                            width: 64,
+                            child: TextField(
+                              controller: controller,
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                              ],
+                              textAlign: TextAlign.center,
+                              decoration: InputDecoration(
+                                labelText: widget.mode == _AdjustmentMode.close
+                                    ? 'Returned'
+                                    : 'Add',
+                                isDense: true,
+                                border: const OutlineInputBorder(),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: FilledButton(
+                  onPressed: () => Navigator.of(context).pop({
+                    for (final entry in _controllers.entries)
+                      entry.key: int.tryParse(entry.value.text.trim()) ?? 0,
+                  }),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.deliveryGreen,
+                  ),
+                  child: Text(widget.actionLabel),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _BottomSummary extends StatelessWidget {
   final int totalUnits;
   final int productLines;
@@ -867,17 +1714,6 @@ class _BottomSummary extends StatelessWidget {
                       value: totalUnits.toString(),
                     ),
                   ),
-                  Container(
-                    width: 1,
-                    height: 44,
-                    color: const Color(0xFFDDE7E1),
-                  ),
-                  Expanded(
-                    child: _SummaryStat(
-                      label: 'Product Lines',
-                      value: productLines.toString(),
-                    ),
-                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     flex: 2,
@@ -896,7 +1732,7 @@ class _BottomSummary extends StatelessWidget {
                               )
                             : const Icon(Icons.save_outlined, size: 22),
                         label: Text(
-                          isSubmitting ? 'Saving...' : 'Save Opening Load',
+                          isSubmitting ? 'Submitting...' : 'Submit',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -1080,8 +1916,13 @@ class _SelectField extends StatelessWidget {
 class _SectionHeader extends StatelessWidget {
   final IconData icon;
   final String title;
+  final Widget? trailing;
 
-  const _SectionHeader({required this.icon, required this.title});
+  const _SectionHeader({
+    required this.icon,
+    required this.title,
+    this.trailing,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1109,6 +1950,7 @@ class _SectionHeader extends StatelessWidget {
             ),
           ),
         ),
+        if (trailing != null) trailing!,
       ],
     );
   }
@@ -1122,6 +1964,12 @@ class _ProductAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final imageUrl = product.imageUrl.trim();
+    final imageBytes = productImageBytes(imageUrl);
+    final fallback = Icon(
+      product.fallbackIcon,
+      color: const Color(0xFF39A04D),
+      size: 30,
+    );
     return Container(
       width: 64,
       height: 64,
@@ -1132,20 +1980,38 @@ class _ProductAvatar extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: imageUrl.isEmpty
-          ? Icon(product.fallbackIcon, color: const Color(0xFF39A04D), size: 30)
+          ? fallback
+          : imageBytes != null
+          ? Image.memory(
+              imageBytes,
+              fit: BoxFit.contain,
+              errorBuilder: (_, _, _) => fallback,
+            )
           : Image.network(
               imageUrl,
+              headers: _productImageHeaders(imageUrl),
               fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) {
-                return Icon(
-                  product.fallbackIcon,
-                  color: const Color(0xFF39A04D),
-                  size: 30,
-                );
-              },
+              errorBuilder: (_, _, _) => fallback,
             ),
     );
   }
+}
+
+Map<String, String>? _productImageHeaders(String imageUrl) {
+  final imageUri = Uri.tryParse(imageUrl);
+  final apiUri = Uri.tryParse(ApiConstants.baseUrl);
+  final token = ApiService.accessToken?.trim() ?? '';
+  if (imageUri == null ||
+      apiUri == null ||
+      token.isEmpty ||
+      imageUri.scheme != apiUri.scheme ||
+      imageUri.host != apiUri.host ||
+      imageUri.port != apiUri.port) {
+    return null;
+  }
+  return {
+    ApiConstants.authorizationHeader: '${ApiConstants.bearerPrefix} $token',
+  };
 }
 
 class _EmptyItems extends StatelessWidget {
@@ -1342,6 +2208,221 @@ String _cleanError(Object? error) {
   return text.replaceFirst('ApiException: ', '');
 }
 
+class _CompactStatusPill extends StatelessWidget {
+  const _CompactStatusPill({required this.status});
+  final String status;
+
+  @override
+  Widget build(BuildContext context) {
+    final closed = const {
+      'closed',
+      'completed',
+      'reconciled',
+    }.contains(status.toLowerCase());
+    final color = closed ? AppColors.deliveryRed : AppColors.deliveryGreen;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        closed ? 'Closed' : 'Active',
+        style: TextStyle(
+          color: color,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+class _StockSession {
+  const _StockSession({
+    required this.id,
+    required this.vehicleNumber,
+    required this.status,
+    required this.date,
+    required this.items,
+    required this.orderUnits,
+  });
+  final String id;
+  final String vehicleNumber;
+  final String status;
+  final DateTime? date;
+  final List<_StockItem> items;
+  final double orderUnits;
+
+  factory _StockSession.fromJson(
+    Map<String, dynamic> json,
+    List<_LoadingProduct> products,
+  ) {
+    final nested = _readMap(json, const [
+      'session',
+      'vehicle_stock',
+      'vehicleStock',
+      'data',
+    ]);
+    final source = nested.isEmpty
+        ? json
+        : <String, dynamic>{...json, ...nested};
+    final vehicle = _readMap(source, const ['vehicle']);
+    final rows = _readList(source, const [
+      'items',
+      'stock_items',
+      'stockItems',
+      'loaded_items',
+      'loadedItems',
+      'products',
+    ]);
+    final items = rows
+        .map((row) => _StockItem.fromJson(row, products))
+        .toList();
+    final explicitOrderUnits = _readDouble(source, const [
+      'order_units',
+      'orderUnits',
+      'ordered_quantity',
+      'orderedQuantity',
+      'total_ordered',
+      'totalOrdered',
+    ]);
+    return _StockSession(
+      id: _readString(source, const ['id', '_id', 'session_id', 'sessionId']),
+      vehicleNumber: _firstNonEmpty([
+        _readString(source, const ['vehicle_number', 'vehicleNumber']),
+        _readString(vehicle, const [
+          'number',
+          'vehicle_number',
+          'vehicleNumber',
+        ]),
+      ]),
+      status: _readString(source, const [
+        'status',
+        'session_status',
+        'sessionStatus',
+      ], fallback: 'active'),
+      date: DateTime.tryParse(
+        _readString(source, const [
+          'date',
+          'session_date',
+          'sessionDate',
+          'loading_date',
+          'loadingDate',
+        ]),
+      ),
+      items: items,
+      orderUnits: explicitOrderUnits > 0
+          ? explicitOrderUnits
+          : items.fold(0, (sum, item) => sum + item.ordered),
+    );
+  }
+
+  bool get isClosed => const {
+    'closed',
+    'completed',
+    'reconciled',
+  }.contains(status.toLowerCase());
+  double get totalOrdered => orderUnits;
+  double get totalLoaded => items.fold(0, (sum, item) => sum + item.loaded);
+  double get totalDelivered =>
+      items.fold(0, (sum, item) => sum + item.delivered);
+  double get totalReturned => items.fold(0, (sum, item) => sum + item.returned);
+  double get totalRemaining =>
+      items.fold(0, (sum, item) => sum + item.remaining);
+
+  _StockSession closedWithReturns(Map<String, int> returns) => _StockSession(
+    id: id,
+    vehicleNumber: vehicleNumber,
+    status: 'closed',
+    date: date,
+    orderUnits: orderUnits,
+    items: items
+        .map(
+          (item) => item.copyWith(
+            returned: (returns[item.product.id] ?? 0).toDouble(),
+          ),
+        )
+        .toList(),
+  );
+}
+
+class _StockItem {
+  const _StockItem({
+    required this.product,
+    required this.ordered,
+    required this.loaded,
+    required this.delivered,
+    required this.returned,
+    required this.remaining,
+  });
+  final _LoadingProduct product;
+  final double ordered;
+  final double loaded;
+  final double delivered;
+  final double returned;
+  final double remaining;
+
+  factory _StockItem.fromJson(
+    Map<String, dynamic> json,
+    List<_LoadingProduct> products,
+  ) {
+    final embedded = _LoadingProduct.fromJson(json);
+    final matching = products.where((product) => product.id == embedded.id);
+    final product = matching.isEmpty ? embedded : matching.first;
+    final loaded = _readDouble(json, const [
+      'loaded_quantity',
+      'loadedQuantity',
+      'loaded_qty',
+      'loaded',
+      'quantity',
+    ]);
+    final delivered = _readDouble(json, const [
+      'delivered_quantity',
+      'deliveredQuantity',
+      'delivered_qty',
+      'delivered',
+      'sold_quantity',
+    ]);
+    final returned = _readDouble(json, const [
+      'returned_quantity',
+      'returnedQuantity',
+      'returned_qty',
+      'returned',
+    ]);
+    final remainingValue = _readNullableDouble(json, const [
+      'remaining_quantity',
+      'remainingQuantity',
+      'remaining_qty',
+      'remaining',
+      'balance_quantity',
+    ]);
+    return _StockItem(
+      product: product,
+      ordered: _readDouble(json, const [
+        'ordered_quantity',
+        'orderedQuantity',
+        'ordered_qty',
+        'order_qty',
+        'ordered',
+      ]),
+      loaded: loaded,
+      delivered: delivered,
+      returned: returned,
+      remaining: remainingValue ?? (loaded - delivered - returned),
+    );
+  }
+
+  _StockItem copyWith({double? returned}) => _StockItem(
+    product: product,
+    ordered: ordered,
+    loaded: loaded,
+    delivered: delivered,
+    returned: returned ?? this.returned,
+    remaining: loaded - delivered - (returned ?? this.returned),
+  );
+}
+
 class _LoadingUser {
   final String id;
   final String name;
@@ -1367,6 +2448,9 @@ class _LoadingProduct {
   final String unit;
   final String packageSize;
   final String imageUrl;
+  final String category;
+  final double ordered;
+  final double available;
 
   const _LoadingProduct({
     required this.id,
@@ -1375,6 +2459,9 @@ class _LoadingProduct {
     required this.unit,
     required this.packageSize,
     required this.imageUrl,
+    required this.category,
+    required this.ordered,
+    required this.available,
   });
 
   factory _LoadingProduct.fromJson(Map<String, dynamic> json) {
@@ -1401,9 +2488,25 @@ class _LoadingProduct {
         _readString(source, const ['package_size', 'packageSize', 'size']),
         _readString(source, const ['variant', 'variant_name', 'variantName']),
       ]),
-      imageUrl: _firstNonEmpty([
-        _readString(source, const ['image_url', 'imageUrl', 'image', 'photo']),
-        _readString(source, const ['thumbnail', 'thumbnail_url']),
+      imageUrl: productImageUrlFromJson(source) ?? '',
+      category: _firstNonEmpty([
+        _readString(source, const ['category_name', 'categoryName']),
+        _readString(_readMap(source, const ['category']), const ['name']),
+      ]),
+      ordered: _readDouble(json, const [
+        'ordered_quantity',
+        'orderedQuantity',
+        'ordered_qty',
+        'order_qty',
+        'ordered',
+      ]),
+      available: _readDouble(source, const [
+        'available_quantity',
+        'availableQuantity',
+        'available_qty',
+        'stock_quantity',
+        'stock',
+        'quantity',
       ]),
     );
   }
@@ -1443,6 +2546,31 @@ Map<String, dynamic> _readMap(Map<String, dynamic> json, List<String> keys) {
   return const {};
 }
 
+Map<String, dynamic> _stockSource(Map<String, dynamic> json) {
+  final nested = _readMap(json, const [
+    'session',
+    'vehicle_stock',
+    'vehicleStock',
+    'data',
+  ]);
+  return nested.isEmpty ? json : <String, dynamic>{...json, ...nested};
+}
+
+String _stockVehicleNumber(Map<String, dynamic> json) {
+  final source = _stockSource(json);
+  final vehicle = _readMap(source, const ['vehicle']);
+  return _firstNonEmpty([
+    _readString(source, const ['vehicle_number', 'vehicleNumber']),
+    _readString(vehicle, const [
+      'number',
+      'vehicle_number',
+      'vehicleNumber',
+      'registration_number',
+      'registrationNumber',
+    ]),
+  ]);
+}
+
 String _readString(
   Map<String, dynamic> json,
   List<String> keys, {
@@ -1463,4 +2591,41 @@ String _firstNonEmpty(List<String> values) {
     if (text.isNotEmpty) return text;
   }
   return '';
+}
+
+List<Map<String, dynamic>> _readList(
+  Map<String, dynamic> json,
+  List<String> keys,
+) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value is List) {
+      return value
+          .whereType<Map>()
+          .map((item) => Map<String, dynamic>.from(item))
+          .toList();
+    }
+  }
+  return const [];
+}
+
+double _readDouble(Map<String, dynamic> json, List<String> keys) {
+  return _readNullableDouble(json, keys) ?? 0;
+}
+
+double? _readNullableDouble(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value is num) return value.toDouble();
+    if (value is String) {
+      final parsed = double.tryParse(value.replaceAll(',', '').trim());
+      if (parsed != null) return parsed;
+    }
+  }
+  return null;
+}
+
+String _quantity(double value) {
+  if (value == value.roundToDouble()) return value.round().toString();
+  return value.toStringAsFixed(1);
 }

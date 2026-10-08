@@ -1298,99 +1298,81 @@ class _ExpenseFormSheetState extends State<_ExpenseFormSheet> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                                DropdownButtonFormField<String>(
-                                  initialValue: _category,
-                                  decoration: _inputDecoration(
-                                    'Expense Category',
-                                  ),
-                                  items: [
-                                    for (final category in widget.categories)
-                                      DropdownMenuItem(
-                                        value: category,
-                                        child: Text(category),
-                                      ),
-                                  ],
-                                  onChanged: (value) {
-                                    if (value != null) {
-                                      setState(() => _category = value);
-                                    }
-                                  },
-                                ),
-                                const SizedBox(height: 16),
-                                TextFormField(
-                                  controller: _amountController,
-                                  keyboardType: TextInputType.number,
-                                  decoration: _inputDecoration('Amount in INR'),
-                                  validator: (value) {
-                                    final amount = double.tryParse(
-                                      value?.trim() ?? '',
-                                    );
-                                    if (amount == null || amount <= 0) {
-                                      return 'Enter an amount greater than zero.';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                                const SizedBox(height: 16),
-                                InkWell(
-                                  onTap: _pickDate,
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: InputDecorator(
-                                    decoration: _inputDecoration(
-                                      'Expense Date',
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            _formatDate(_expenseDate),
-                                          ),
-                                        ),
-                                        const Icon(
-                                          Icons.calendar_today_rounded,
-                                          size: 18,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                DropdownButtonFormField<String>(
-                                  initialValue: _paymentMode,
-                                  decoration: _inputDecoration('Payment Mode'),
-                                  items: [
-                                    for (final mode in _paymentModes)
-                                      DropdownMenuItem(
-                                        value: mode,
-                                        child: Text(mode),
-                                      ),
-                                  ],
-                                  onChanged: (value) {
-                                    if (value != null) {
-                                      setState(() => _paymentMode = value);
-                                    }
-                                  },
-                                ),
-                                const SizedBox(height: 16),
-                                TextFormField(
-                                  controller: _descriptionController,
-                                  maxLines: 3,
-                                  decoration: _inputDecoration(
-                                    'Description / Purpose',
-                                  ),
-                                  validator: (value) {
-                                    if ((value ?? '').trim().isEmpty) {
-                                      return 'Describe the expense purpose.';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                                const SizedBox(height: 16),
-                                DeliveryImageUploadField(
-                                  bytes: _receiptBytes,
-                                  onTap: _pickReceipt,
-                                  aspectRatio: 1.8,
-                                ),
+                    DropdownButtonFormField<String>(
+                      initialValue: _category,
+                      decoration: _inputDecoration('Expense Category'),
+                      items: [
+                        for (final category in widget.categories)
+                          DropdownMenuItem(
+                            value: category,
+                            child: Text(category),
+                          ),
+                      ],
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() => _category = value);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _amountController,
+                      keyboardType: TextInputType.number,
+                      decoration: _inputDecoration('Amount in INR'),
+                      validator: (value) {
+                        final amount = double.tryParse(value?.trim() ?? '');
+                        if (amount == null || amount <= 0) {
+                          return 'Enter an amount greater than zero.';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    InkWell(
+                      onTap: _pickDate,
+                      borderRadius: BorderRadius.circular(12),
+                      child: InputDecorator(
+                        decoration: _inputDecoration('Expense Date'),
+                        child: Row(
+                          children: [
+                            Expanded(child: Text(_formatDate(_expenseDate))),
+                            const Icon(Icons.calendar_today_rounded, size: 18),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      initialValue: _paymentMode,
+                      decoration: _inputDecoration('Payment Mode'),
+                      items: [
+                        for (final mode in _paymentModes)
+                          DropdownMenuItem(value: mode, child: Text(mode)),
+                      ],
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() => _paymentMode = value);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _descriptionController,
+                      maxLines: 3,
+                      decoration: _inputDecoration('Description / Purpose'),
+                      validator: (value) {
+                        if ((value ?? '').trim().isEmpty) {
+                          return 'Describe the expense purpose.';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    DeliveryImageUploadField(
+                      bytes: _receiptBytes,
+                      onTap: _pickReceipt,
+                      aspectRatio: 1.8,
+                    ),
                     const SizedBox(height: 20),
                     Row(
                       children: [

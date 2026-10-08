@@ -9,7 +9,7 @@ import '../../../providers/api_provider.dart';
 import '../../../widgets/customer_avatar.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
 import '../../shared/map_location_view_screen.dart';
-import '../../admin/orders/order_detail_screen.dart';
+import '../orders/delivery_customer_order_detail_screen.dart';
 
 class DeliveryCustomerDetailScreen extends StatefulWidget {
   final String customerId;
@@ -221,14 +221,14 @@ class _DeliveryCustomerDetailScreenState
                             ? null
                             : () => Navigator.of(context).push(
                                 MaterialPageRoute(
-                                  builder: (_) => OrderDetailScreen(
-                                    orderId: order.id,
-                                    useDeliveryShell: true,
-                                    initialProgressStatus:
-                                        order.fulfillment == '-'
-                                        ? order.status
-                                        : order.fulfillment,
-                                  ),
+                                  builder: (_) =>
+                                      DeliveryCustomerOrderDetailScreen(
+                                        orderId: order.id,
+                                        initialProgressStatus:
+                                            order.fulfillment == '-'
+                                            ? order.status
+                                            : order.fulfillment,
+                                      ),
                                 ),
                               ),
                       ),
@@ -710,93 +710,93 @@ class _RecordTile extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.deliverySurfaceBorder),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: AppColors.deliveryBlueSoft,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, size: 22, color: AppColors.deliveryBlue),
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.deliverySurfaceBorder),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.cardTitle.copyWith(
-                    color: AppColors.deliveryInk,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  subtitle,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.textMuted,
-                    fontSize: 12,
-                    height: 1.3,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+          child: Row(
             children: [
-              if (amount.isNotEmpty)
-                Text(
-                  amount,
-                  style: AppTextStyles.bodyStrong.copyWith(
-                    color: AppColors.deliveryInk,
-                  ),
-                ),
-              if (amount.isNotEmpty) const SizedBox(height: 6),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
-                  color: tone.withValues(alpha: .10),
-                  borderRadius: BorderRadius.circular(99),
+                  color: AppColors.deliveryBlueSoft,
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text(
-                  _title(status),
-                  style: TextStyle(
-                    color: tone,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                  ),
+                child: Icon(icon, size: 22, color: AppColors.deliveryBlue),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.cardTitle.copyWith(
+                        color: AppColors.deliveryInk,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      subtitle,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 12,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
                 ),
               ),
+              const SizedBox(width: 8),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  if (amount.isNotEmpty)
+                    Text(
+                      amount,
+                      style: AppTextStyles.bodyStrong.copyWith(
+                        color: AppColors.deliveryInk,
+                      ),
+                    ),
+                  if (amount.isNotEmpty) const SizedBox(height: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: tone.withValues(alpha: .10),
+                      borderRadius: BorderRadius.circular(99),
+                    ),
+                    child: Text(
+                      _title(status),
+                      style: TextStyle(
+                        color: tone,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              if (onTap != null) ...[
+                const SizedBox(width: 4),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  size: 20,
+                  color: AppColors.textMuted,
+                ),
+              ],
             ],
           ),
-          if (onTap != null) ...[
-            const SizedBox(width: 4),
-            const Icon(
-              Icons.chevron_right_rounded,
-              size: 20,
-              color: AppColors.textMuted,
-            ),
-          ],
-        ],
-      ),
         ),
       ),
     );

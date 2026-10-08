@@ -87,7 +87,8 @@ class OrderProgressTracker extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: List.generate(_steps.length, (index) {
                 final isCancelledStep = isCancelled && index == currentStep;
-                final isCompleted = (!isCancelled && index <= currentStep) ||
+                final isCompleted =
+                    (!isCancelled && index <= currentStep) ||
                     (isCancelled && index < currentStep);
                 final connectorCompleted = isCancelled
                     ? index < currentStep

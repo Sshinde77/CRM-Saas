@@ -346,7 +346,8 @@ class DeliveryDetail {
     );
   }
 
-  bool get canConfirm => status == 'in_transit' || status == 'loaded';
+  bool get canConfirm =>
+      status == 'in_transit' || status == 'partially_delivered';
 }
 
 class DeliveryDetailItem {
@@ -454,6 +455,71 @@ class DeliveryTotals {
     required this.delivered,
     required this.pending,
   });
+}
+
+class DeliveryCapacity {
+  final String deliveryId;
+  final double deliveredValue;
+  final double orderDeliveredValue;
+  final double paidAmount;
+  final double appAmountDue;
+  final Map<String, DeliveryItemCapacity> itemsById;
+
+  const DeliveryCapacity({
+    required this.deliveryId,
+    required this.deliveredValue,
+    required this.orderDeliveredValue,
+    required this.paidAmount,
+    required this.appAmountDue,
+    required this.itemsById,
+  });
+
+  factory DeliveryCapacity.fromJson(Map<String, dynamic> json) {
+    final items = <String, DeliveryItemCapacity>{};
+    for (final raw in _list(json['items'])) {
+      final map = _map(raw);
+      if (map == null) continue;
+      final item = DeliveryItemCapacity.fromJson(map);
+      if (item.deliveryItemId.isNotEmpty) items[item.deliveryItemId] = item;
+    }
+    return DeliveryCapacity(
+      deliveryId: _text(json, const ['delivery_id', 'deliveryId']),
+      deliveredValue: _number(json['delivered_value']),
+      orderDeliveredValue: _number(json['order_delivered_value']),
+      paidAmount: _number(json['paid_amount']),
+      appAmountDue: _number(json['app_amount_due']),
+      itemsById: items,
+    );
+  }
+}
+
+class DeliveryItemCapacity {
+  final String deliveryItemId;
+  final int ownRemaining;
+  final int transferableSurplus;
+  final int maxAllowedDelivery;
+  final String blockedReason;
+
+  const DeliveryItemCapacity({
+    required this.deliveryItemId,
+    required this.ownRemaining,
+    required this.transferableSurplus,
+    required this.maxAllowedDelivery,
+    required this.blockedReason,
+  });
+
+  factory DeliveryItemCapacity.fromJson(Map<String, dynamic> json) {
+    return DeliveryItemCapacity(
+      deliveryItemId: _text(json, const ['delivery_item_id', 'deliveryItemId']),
+      ownRemaining: _int(json['own_remaining']),
+      transferableSurplus: _int(json['transferable_surplus']),
+      maxAllowedDelivery: _int(json['max_allowed_delivery']),
+      blockedReason: _text(json, const [
+        'redistribution_blocked_reason',
+        'redistributionBlockedReason',
+      ]),
+    );
+  }
 }
 
 Map<String, dynamic>? _map(dynamic value) {

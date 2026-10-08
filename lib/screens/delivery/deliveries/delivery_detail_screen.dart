@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -28,11 +27,14 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
   final TextEditingController _paidAmountController = TextEditingController();
   Future<DeliveryDetail>? _future;
   DeliveryDetail? _delivery;
+  DeliveryCapacity? _capacity;
   String _customerProfileImageUrl = '';
   Map<String, double> _productPrices = const {};
   String _paymentType = 'Cash';
   Uint8List? _deliveryConfirmation;
   Uint8List? _paymentConfirmation;
+  String? _deliveryConfirmationName;
+  String? _paymentConfirmationName;
   bool _isActionBusy = false;
   final Map<String, int> _deliveryQuantities = {};
 
@@ -51,6 +53,11 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
   Future<DeliveryDetail> _load() async {
     final provider = ApiProviderScope.of(context);
     final detail = await provider.fetchDeliveryById(widget.deliveryId);
+    DeliveryCapacity? capacity;
+    if (detail.status == 'in_transit' ||
+        detail.status == 'partially_delivered') {
+      capacity = await provider.fetchDeliveryCapacity(detail.id);
+    }
     final customerProfileImageUrl = detail.customerProfileImageUrl.isNotEmpty
         ? detail.customerProfileImageUrl
         : await _resolveCustomerProfileImageUrl(provider, detail);
@@ -58,10 +65,13 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
     if (mounted) {
       setState(() {
         _delivery = detail;
+        _capacity = capacity;
         _customerProfileImageUrl = customerProfileImageUrl;
         _productPrices = productPrices;
         for (final item in detail.items) {
-          _deliveryQuantities.putIfAbsent(item.id, () => item.delivered);
+          _deliveryQuantities[item.id] =
+              capacity?.itemsById[item.id]?.ownRemaining ??
+              mathMax(0, item.loaded - item.delivered);
         }
       });
     }
@@ -226,7 +236,9 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
         );
         return;
     }
-    if (delivery.status != 'in_transit') return;
+    if (delivery.status != 'in_transit' &&
+        delivery.status != 'partially_delivered')
+      return;
     if (delivery.items.isEmpty ||
         delivery.items.any((item) => item.id.isEmpty) ||
         !delivery.items.any((item) => item.loaded > 0)) {
@@ -249,24 +261,42 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
     );
     if (ok != true) return;
 
-    await _submitDeliveryAction(
-      delivery,
-      payload: {
-        'payment_type': _paymentType,
-        'paid_amount': double.tryParse(_paidAmountController.text.trim()) ?? 0,
-        'delivery_confirmation': base64Encode(_deliveryConfirmation!),
-        'payment_confirmation': base64Encode(_paymentConfirmation!),
-        'items': [
-          for (final item in delivery.items)
-            {
-              'delivery_item_id': item.id,
-              'delivered_quantity':
-                  _deliveryQuantities[item.id] ?? item.delivered,
-            },
-        ],
-      },
-      successMessage: 'Delivery confirmed.',
-    );
+    final provider = ApiProviderScope.of(context);
+    setState(() => _isActionBusy = true);
+    try {
+      final proofFiles = <String>[];
+      final deliveryProof = await provider.uploadGenericFile(
+        fileBytes: _deliveryConfirmation!,
+        fileName: _deliveryConfirmationName ?? 'delivery-proof.jpg',
+      );
+      proofFiles.add(deliveryProof.fileId);
+      final paymentProof = await provider.uploadGenericFile(
+        fileBytes: _paymentConfirmation!,
+        fileName: _paymentConfirmationName ?? 'payment-proof.jpg',
+      );
+      proofFiles.add(paymentProof.fileId);
+      await _submitDeliveryAction(
+        delivery,
+        payload: {
+          'pod_photo_file_ids': proofFiles,
+          'items': [
+            for (final item in delivery.items)
+              {
+                'delivery_item_id': item.id,
+                'delivered_quantity':
+                    _deliveryQuantities[item.id] ?? item.delivered,
+                if (_capacity?.itemsById[item.id] case final itemCapacity?)
+                  'expected_max': itemCapacity.maxAllowedDelivery,
+              },
+          ],
+        },
+        successMessage: 'Delivery confirmed.',
+      );
+    } catch (error) {
+      _showSnack(_cleanError(error), isError: true);
+    } finally {
+      if (mounted) setState(() => _isActionBusy = false);
+    }
   }
 
   Future<void> _runStatusAction({
@@ -304,8 +334,10 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
       setState(() {
         if (deliveryProof) {
           _deliveryConfirmation = bytes;
+          _deliveryConfirmationName = image.name;
         } else {
           _paymentConfirmation = bytes;
+          _paymentConfirmationName = image.name;
         }
       });
     } catch (error) {
@@ -339,19 +371,23 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
     try {
       await ApiProviderScope.of(
         context,
-      ).confirmDelivery(deliveryId: delivery.id, payload: payload);
+      ).confirmAppDelivery(deliveryId: delivery.id, payload: payload);
       if (!mounted) return;
-      final next = await ApiProviderScope.of(
-        context,
-      ).fetchDeliveryById(delivery.id);
-      if (!mounted) return;
-      setState(() {
-        _delivery = next;
-        _future = Future.value(next);
-      });
+      await _refresh();
       _showSnack(successMessage);
     } catch (error) {
-      _showSnack(_cleanError(error), isError: true);
+      if (delivery.status == 'in_transit' ||
+          delivery.status == 'partially_delivered') {
+        try {
+          await _refresh();
+        } catch (_) {
+          // Keep the original confirmation error visible to the user.
+        }
+      }
+      final message = error is ApiException && error.statusCode == 409
+          ? 'Available quantity changed. Limits were refreshed; please review and confirm again.'
+          : _cleanError(error);
+      _showSnack(message, isError: true);
     } finally {
       if (mounted) setState(() => _isActionBusy = false);
     }
@@ -411,6 +447,7 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
                             paymentConfirmation: _paymentConfirmation,
                             deliveryQuantities: _deliveryQuantities,
                             productPrices: _productPrices,
+                            capacity: _capacity,
                             onDeliveryQuantityChanged: (itemId, quantity) {
                               setState(
                                 () => _deliveryQuantities[itemId] = quantity,
@@ -519,6 +556,7 @@ class _Body extends StatelessWidget {
   final Uint8List? paymentConfirmation;
   final Map<String, int> deliveryQuantities;
   final Map<String, double> productPrices;
+  final DeliveryCapacity? capacity;
   final void Function(String itemId, int quantity) onDeliveryQuantityChanged;
   final ValueChanged<String> onPaymentTypeChanged;
   final VoidCallback onPickDeliveryConfirmation;
@@ -536,6 +574,7 @@ class _Body extends StatelessWidget {
     required this.paymentConfirmation,
     required this.deliveryQuantities,
     required this.productPrices,
+    required this.capacity,
     required this.onDeliveryQuantityChanged,
     required this.onPaymentTypeChanged,
     required this.onPickDeliveryConfirmation,
@@ -834,6 +873,7 @@ class _Body extends StatelessWidget {
                               ),
                               quantity:
                                   deliveryQuantities[item.id] ?? item.delivered,
+                              capacity: capacity?.itemsById[item.id],
                               onQuantityChanged: (quantity) =>
                                   onDeliveryQuantityChanged(item.id, quantity),
                             ),
@@ -1577,7 +1617,8 @@ class _OrderProgressCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: List.generate(_steps.length, (index) {
                 final isCancelledStep = isCancelled && index == currentStep;
-                final isCompleted = !isCancelled && index <= currentStep ||
+                final isCompleted =
+                    !isCancelled && index <= currentStep ||
                     isCancelled && index < currentStep;
                 final connectorCompleted = isCancelled
                     ? index < currentStep
@@ -1603,14 +1644,14 @@ class _OrderProgressCard extends StatelessWidget {
   }
 
   int _stepForStatus(String value) => switch (value) {
-        'ordered' || 'draft' => 0,
-        'pending' || 'planned' || 'assigned' => 1,
-        'accepted' || 'ready' || 'loaded' => 2,
-        'in_transit' || 'failed' => 3,
-        'delivered' || 'completed' || 'partially_delivered' => 4,
-        'cancelled' || 'canceled' || 'rejected' => 1,
-        _ => 0,
-      };
+    'ordered' || 'draft' => 0,
+    'pending' || 'planned' || 'assigned' => 1,
+    'accepted' || 'ready' || 'loaded' => 2,
+    'in_transit' || 'failed' => 3,
+    'delivered' || 'completed' || 'partially_delivered' => 4,
+    'cancelled' || 'canceled' || 'rejected' => 1,
+    _ => 0,
+  };
 }
 
 class _ProgressStep extends StatelessWidget {
@@ -1655,8 +1696,8 @@ class _ProgressStep extends StatelessWidget {
                         color: number == 1
                             ? Colors.transparent
                             : leftConnected
-                                ? AppColors.deliveryGreen
-                                : pendingColor,
+                            ? AppColors.deliveryGreen
+                            : pendingColor,
                       ),
                     ),
                     const SizedBox(width: 24),
@@ -1666,8 +1707,8 @@ class _ProgressStep extends StatelessWidget {
                         color: number == 5
                             ? Colors.transparent
                             : rightConnected
-                                ? AppColors.deliveryGreen
-                                : pendingColor,
+                            ? AppColors.deliveryGreen
+                            : pendingColor,
                       ),
                     ),
                   ],
@@ -1714,8 +1755,8 @@ class _ProgressStep extends StatelessWidget {
             color: cancelled
                 ? AppColors.deliveryRed
                 : completed
-                    ? AppColors.deliveryInk
-                    : AppColors.textMuted,
+                ? AppColors.deliveryInk
+                : AppColors.textMuted,
             fontSize: 10,
             height: 1.15,
             fontWeight: completed || cancelled
@@ -1778,11 +1819,7 @@ class _ConfirmationImageBox extends StatelessWidget {
       children: [
         Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
         const SizedBox(height: 8),
-        DeliveryImageUploadField(
-          bytes: bytes,
-          onTap: onTap,
-          aspectRatio: 1.2,
-        ),
+        DeliveryImageUploadField(bytes: bytes, onTap: onTap, aspectRatio: 1.2),
       ],
     );
   }
@@ -1880,12 +1917,14 @@ class _ItemRow extends StatelessWidget {
   final DeliveryDetailItem item;
   final double unitPrice;
   final int quantity;
+  final DeliveryItemCapacity? capacity;
   final ValueChanged<int> onQuantityChanged;
 
   const _ItemRow({
     required this.item,
     required this.unitPrice,
     required this.quantity,
+    required this.capacity,
     required this.onQuantityChanged,
   });
 
@@ -1946,6 +1985,7 @@ class _ItemRow extends StatelessWidget {
             ),
             delivered: _QuantityStepper(
               value: quantity,
+              maxValue: capacity?.maxAllowedDelivery,
               onChanged: onQuantityChanged,
             ),
             pending: Text(
@@ -1953,6 +1993,18 @@ class _ItemRow extends StatelessWidget {
               style: const TextStyle(color: AppColors.deliveryRed),
             ),
           ),
+          if ((capacity?.transferableSurplus ?? 0) > 0)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                'Up to ${capacity!.transferableSurplus} extra available on this run',
+                style: const TextStyle(
+                  color: AppColors.deliveryGreen,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -1961,9 +2013,14 @@ class _ItemRow extends StatelessWidget {
 
 class _QuantityStepper extends StatelessWidget {
   final int value;
+  final int? maxValue;
   final ValueChanged<int> onChanged;
 
-  const _QuantityStepper({required this.value, required this.onChanged});
+  const _QuantityStepper({
+    required this.value,
+    required this.maxValue,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1971,6 +2028,7 @@ class _QuantityStepper extends StatelessWidget {
       width: 64,
       height: 40,
       child: TextFormField(
+        key: ValueKey('$value-${maxValue ?? 'unlimited'}'),
         initialValue: '$value',
         keyboardType: TextInputType.number,
         textInputAction: TextInputAction.done,
@@ -1980,7 +2038,10 @@ class _QuantityStepper extends StatelessWidget {
           fontSize: 13,
           fontWeight: FontWeight.w600,
         ),
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        inputFormatters: [
+          FilteringTextInputFormatter.digitsOnly,
+          if (maxValue != null) _MaximumQuantityFormatter(maxValue!),
+        ],
         decoration: InputDecoration(
           isDense: true,
           contentPadding: const EdgeInsets.symmetric(
@@ -2005,6 +2066,21 @@ class _QuantityStepper extends StatelessWidget {
         onChanged: (text) => onChanged(int.tryParse(text) ?? 0),
       ),
     );
+  }
+}
+
+class _MaximumQuantityFormatter extends TextInputFormatter {
+  final int maximum;
+
+  const _MaximumQuantityFormatter(this.maximum);
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final value = int.tryParse(newValue.text);
+    return value != null && value > maximum ? oldValue : newValue;
   }
 }
 
@@ -2231,6 +2307,7 @@ bool _hasPrimaryAction(String status) => const {
   'ready',
   'loaded',
   'in_transit',
+  'partially_delivered',
 }.contains(status);
 
 String _primaryActionLabel(String status) => switch (status) {
@@ -2238,7 +2315,7 @@ String _primaryActionLabel(String status) => switch (status) {
   'accepted' => 'Ready for Delivery',
   'ready' => 'Load Delivery',
   'loaded' => 'Start Delivery',
-  'in_transit' => 'Complete Order',
+  'in_transit' || 'partially_delivered' => 'Complete Order',
   'delivered' || 'completed' => 'Order Completed',
   _ => 'No Action Available',
 };

@@ -55,92 +55,97 @@ class MapLocationViewScreen extends StatelessWidget {
             ),
           ],
         ),
-        body: Stack(
-          children: [
-            google_maps.GoogleMap(
-              initialCameraPosition: google_maps.CameraPosition(
-                target: _position,
-                zoom: 16,
-              ),
-              markers: {
-                google_maps.Marker(
-                  markerId: const google_maps.MarkerId('location'),
-                  position: _position,
-                  infoWindow: google_maps.InfoWindow(title: subtitle ?? title),
+        body: SafeArea(
+          child: Stack(
+            children: [
+              google_maps.GoogleMap(
+                initialCameraPosition: google_maps.CameraPosition(
+                  target: _position,
+                  zoom: 16,
                 ),
-              },
-              mapToolbarEnabled: false,
-              myLocationButtonEnabled: false,
-              zoomControlsEnabled: false,
-            ),
-            Positioned(
-              left: 16,
-              right: 16,
-              bottom: 16 + MediaQuery.paddingOf(context).bottom,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.10),
-                      blurRadius: 16,
-                      offset: const Offset(0, 8),
+                markers: {
+                  google_maps.Marker(
+                    markerId: const google_maps.MarkerId('location'),
+                    position: _position,
+                    infoWindow: google_maps.InfoWindow(
+                      title: subtitle ?? title,
                     ),
-                  ],
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.10),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(
-                          Icons.location_on_rounded,
-                          color: AppColors.primary,
-                          size: 22,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (subtitle != null && subtitle!.trim().isNotEmpty)
-                              Text(
-                                subtitle!,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${latitude.toStringAsFixed(6)}, ${longitude.toStringAsFixed(6)}',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
+                  ),
+                },
+                mapToolbarEnabled: false,
+                myLocationButtonEnabled: false,
+                zoomControlsEnabled: false,
+              ),
+              Positioned(
+                left: 16,
+                right: 16,
+                bottom: 16,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.10),
+                        blurRadius: 16,
+                        offset: const Offset(0, 8),
                       ),
                     ],
                   ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.10),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.location_on_rounded,
+                            color: AppColors.primary,
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (subtitle != null &&
+                                  subtitle!.trim().isNotEmpty)
+                                Text(
+                                  subtitle!,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${latitude.toStringAsFixed(6)}, ${longitude.toStringAsFixed(6)}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
