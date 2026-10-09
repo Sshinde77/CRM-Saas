@@ -31,6 +31,7 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
   List<_AssignedDelivery> _deliveries = const [];
   bool _isLoading = true;
   bool _didStartLoad = false;
+  bool _requestInProgress = false;
   String? _error;
   String _statusFilter = 'all';
   _DeliverySort _sort = _DeliverySort.scheduledDate;
@@ -57,6 +58,8 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
   }
 
   Future<void> _loadDeliveries() async {
+    if (_requestInProgress) return;
+    _requestInProgress = true;
     setState(() {
       _isLoading = true;
       _error = null;
@@ -93,6 +96,8 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
         _error = _cleanError(error);
         _isLoading = false;
       });
+    } finally {
+      _requestInProgress = false;
     }
   }
 
@@ -2370,6 +2375,10 @@ String statusLabelFor(String value) {
 }
 
 String _cleanError(Object error) {
+  if (error is ApiException &&
+      error.message.toLowerCase().contains('server is still starting')) {
+    return 'The deliveries request timed out. Check your connection and try again.';
+  }
   if (error is ApiException) {
     try {
       final decoded = jsonDecode(error.message);

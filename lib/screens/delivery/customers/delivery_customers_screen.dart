@@ -7,6 +7,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../models/customer_model.dart';
 import '../../../providers/api_provider.dart';
 import '../../../routes/app_router.dart';
+import '../../../widgets/customer_avatar.dart';
 import '../../../widgets/delivery/delivery_bottom_navigation.dart';
 import '../../../widgets/delivery/delivery_partner_sidebar.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
@@ -130,17 +131,6 @@ class _DeliveryCustomersScreenState extends State<DeliveryCustomersScreen> {
           currentRoute: AppRoutes.deliveryCustomers,
         ),
         bottomNavigationBar: const DeliveryBottomNavigation(currentIndex: -1),
-        floatingActionButton: FloatingActionButton.extended(
-          heroTag: 'delivery-create-customer',
-          onPressed: _createCustomer,
-          backgroundColor: AppColors.deliveryGreen,
-          foregroundColor: AppColors.surface,
-          icon: const Icon(Icons.person_add_alt_1_outlined, size: 22),
-          label: const Text(
-            'Create Customer',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
-          ),
-        ),
         body: SafeArea(
           bottom: false,
           child: Column(
@@ -589,27 +579,10 @@ class _CustomerCard extends StatelessWidget {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          width: 52,
-                          height: 52,
-                          decoration: BoxDecoration(
-                            color: AppColors.deliveryGreenSoft,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: AppColors.deliveryGreen.withValues(
-                                alpha: 0.08,
-                              ),
-                            ),
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            customer.initials,
-                            style: const TextStyle(
-                              color: AppColors.deliveryInk,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
+                        CustomerAvatar(
+                          name: businessName,
+                          photoUrl: customer.profilePhotoUrl,
+                          size: 52,
                         ),
                         const SizedBox(width: 10),
                         Expanded(
@@ -826,6 +799,7 @@ class _CustomerActionIcon extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _InlineInfo extends StatelessWidget {
   final IconData icon;
   final String text;

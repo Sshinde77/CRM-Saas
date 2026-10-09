@@ -81,6 +81,7 @@ class EndOfDayStockItem {
   final String productName;
   final String imageUrl;
   final double loadedQuantity;
+  final double extraQuantity;
   final double deliveredQuantity;
   final double returnedQuantity;
   final double expectedClosingQuantity;
@@ -92,6 +93,7 @@ class EndOfDayStockItem {
     required this.productName,
     required this.imageUrl,
     required this.loadedQuantity,
+    required this.extraQuantity,
     required this.deliveredQuantity,
     required this.returnedQuantity,
     required this.expectedClosingQuantity,
@@ -137,6 +139,12 @@ class EndOfDayStockItem {
       'sold_quantity',
       'soldQuantity',
     ]);
+    final extra = _readDouble(json, const [
+      'extra_quantity',
+      'extraQuantity',
+      'extra_qty',
+      'extra',
+    ]);
     final returned = _readDouble(json, const [
       'returned_quantity',
       'returnedQuantity',
@@ -152,7 +160,7 @@ class EndOfDayStockItem {
           'remainingQuantity',
           'remaining',
         ]) ??
-        (loaded - delivered - returned);
+        (loaded + extra - delivered - returned);
 
     return EndOfDayStockItem(
       id: id,
@@ -164,6 +172,7 @@ class EndOfDayStockItem {
         _readString(product, const ['image', 'image_url', 'imageUrl', 'photo']),
       ]),
       loadedQuantity: loaded,
+      extraQuantity: extra,
       deliveredQuantity: delivered,
       returnedQuantity: returned,
       expectedClosingQuantity: expected < 0 ? 0 : expected,
@@ -171,7 +180,8 @@ class EndOfDayStockItem {
   }
 
   EndOfDayStockItem copyWithReturn(double returned) {
-    final expected = loadedQuantity - deliveredQuantity - returned;
+    final expected =
+        loadedQuantity + extraQuantity - deliveredQuantity - returned;
     return EndOfDayStockItem(
       id: id,
       productId: productId,
@@ -179,6 +189,7 @@ class EndOfDayStockItem {
       productName: productName,
       imageUrl: imageUrl,
       loadedQuantity: loadedQuantity,
+      extraQuantity: extraQuantity,
       deliveredQuantity: deliveredQuantity,
       returnedQuantity: returned,
       expectedClosingQuantity: expected < 0 ? 0 : expected,

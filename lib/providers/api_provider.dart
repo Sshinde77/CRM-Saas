@@ -212,6 +212,44 @@ class ApiProvider extends ChangeNotifier {
     );
   }
 
+  Future<List<Map<String, dynamic>>> fetchDeliveryCollections() {
+    return _apiService.fetchDeliveryCollections();
+  }
+
+  Future<Map<String, dynamic>> recordCustomerCollection({
+    required String customerId,
+    required double amount,
+    required String paymentMethod,
+    required String paymentDate,
+    String? reference,
+    String? notes,
+    String? paymentProofUrl,
+  }) {
+    return _apiService.recordCustomerCollection(
+      customerId: customerId,
+      amount: amount,
+      paymentMethod: paymentMethod,
+      paymentDate: paymentDate,
+      reference: reference,
+      notes: notes,
+      paymentProofUrl: paymentProofUrl,
+    );
+  }
+
+  Future<Map<String, dynamic>> recordOrderPayment({
+    required String orderId,
+    required Map<String, dynamic> payload,
+  }) {
+    return _apiService.recordOrderPayment(orderId: orderId, payload: payload);
+  }
+
+  Future<Map<String, dynamic>> confirmOrderPickup({
+    required String orderId,
+    required Map<String, dynamic> payload,
+  }) {
+    return _apiService.confirmOrderPickup(orderId: orderId, payload: payload);
+  }
+
   Future<Map<String, dynamic>> fetchDeliveryPartnerDashboard() {
     return _apiService.fetchDeliveryPartnerDashboard();
   }
@@ -371,9 +409,31 @@ class ApiProvider extends ChangeNotifier {
     return _apiService.fetchCurrentVehicleStock(deliveryPartnerId);
   }
 
-  Future<List<Map<String, dynamic>>> fetchVehicleStockSessions() {
-    return _apiService.fetchVehicleStockSessions();
+  Future<List<Map<String, dynamic>>> fetchVehicleStockSessions({
+    String? status,
+    String? deliveryPartnerId,
+  }) {
+    return _apiService.fetchVehicleStockSessions(
+      status: status,
+      deliveryPartnerId: deliveryPartnerId,
+    );
   }
+
+  Future<Map<String, dynamic>> addExtraVehicleStock({
+    required String sessionId,
+    required List<Map<String, dynamic>> items,
+  }) => _apiService.addExtraVehicleStock(sessionId: sessionId, items: items);
+
+  Future<List<Map<String, dynamic>>> fetchVehicleStockReconciliations(
+    String sessionId,
+  ) => _apiService.fetchVehicleStockReconciliations(sessionId);
+
+  Future<List<Map<String, dynamic>>> fetchAssignedVehicles(
+    String deliveryPartnerId,
+  ) => _apiService.fetchAssignedVehicles(deliveryPartnerId);
+
+  Future<Map<String, dynamic>> loadDeliveryBatch(List<String> deliveryIds) =>
+      _apiService.loadDeliveryBatch(deliveryIds);
 
   Future<Map<String, dynamic>> loadVehicleStock({
     required String deliveryPartnerId,

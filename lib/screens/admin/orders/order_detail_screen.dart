@@ -86,7 +86,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     try {
       final response = await _apiProvider.confirmOrder(widget.orderId);
       if (!mounted) return;
-      setState(() => _order = _unwrapOrder(response));
+      await _refreshOrderAfterAction(response);
+      if (!mounted) return;
       _showSnack('Order confirmed.');
     } catch (error) {
       if (mounted) _showSnack(error.toString());
@@ -126,12 +127,32 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         reason: reason,
       );
       if (!mounted) return;
-      setState(() => _order = _unwrapOrder(response));
+      await _refreshOrderAfterAction(response);
+      if (!mounted) return;
       _showSnack('Order cancelled.');
     } catch (error) {
       if (mounted) _showSnack(error.toString());
     } finally {
       if (mounted) setState(() => _isActionLoading = false);
+    }
+  }
+
+  Future<void> _refreshOrderAfterAction(
+    Map<String, dynamic> actionResponse,
+  ) async {
+    final actionOrder = _unwrapOrder(actionResponse);
+    if (actionOrder.isNotEmpty && mounted) {
+      setState(() {
+        _order = <String, dynamic>{...?_order, ...actionOrder};
+      });
+    }
+
+    try {
+      final response = await _apiProvider.fetchOrderById(widget.orderId);
+      if (!mounted) return;
+      setState(() => _order = _unwrapOrder(response));
+    } catch (_) {
+      // Keep the successful action response visible when the follow-up refresh fails.
     }
   }
 
@@ -298,6 +319,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     final status = _titleCase(
       _readString(order, const ['status'], fallback: 'Draft'),
     );
+    final normalizedStatus = status.trim().toLowerCase();
+    final canConfirm = normalizedStatus == 'draft';
+    final canCancel =
+        normalizedStatus == 'draft' || normalizedStatus == 'confirmed';
     final fulfilment = _titleCase(
       _readString(order, const ['fulfilment_method', 'fulfillment_method']),
     );
@@ -322,13 +347,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               'total_amount',
             ]),
           ),
-          onConfirm: widget.useDeliveryShell || _isActionLoading
+          onConfirm: widget.useDeliveryShell || _isActionLoading || !canConfirm
               ? null
               : _confirmOrder,
-          onCancel: widget.useDeliveryShell || _isActionLoading
+          onCancel: widget.useDeliveryShell || _isActionLoading || !canCancel
               ? null
               : _cancelOrder,
-          showActions: !widget.useDeliveryShell,
+          showActions:
+              !widget.useDeliveryShell && (canConfirm || canCancel),
         ),
         const SizedBox(height: 10),
         OrderProgressTracker(
@@ -516,16 +542,18 @@ class _HeaderCard extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                _HeaderAction(
-                  icon: Icons.fact_check_outlined,
-                  label: 'Confirm Order',
-                  onTap: onConfirm,
-                ),
-                _HeaderAction(
-                  icon: Icons.cancel_outlined,
-                  label: 'Cancel Order',
-                  onTap: onCancel,
-                ),
+                if (onConfirm != null)
+                  _HeaderAction(
+                    icon: Icons.fact_check_outlined,
+                    label: 'Confirm Order',
+                    onTap: onConfirm,
+                  ),
+                if (onCancel != null)
+                  _HeaderAction(
+                    icon: Icons.cancel_outlined,
+                    label: 'Cancel Order',
+                    onTap: onCancel,
+                  ),
               ],
             ),
           ],

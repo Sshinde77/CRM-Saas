@@ -311,6 +311,17 @@ class _CreateDeliveryCustomerScreenState
     return null;
   }
 
+  String? get _apiCustomerType {
+    return switch (_type) {
+      'Retail' || 'General Trade' => 'retailer',
+      'Wholesale' => 'wholesaler',
+      'Distributor' => 'distributor',
+      'Business' => 'business',
+      'Individual' => 'individual',
+      _ => null,
+    };
+  }
+
   void _showSnack(String message) {
     ScaffoldMessenger.of(
       context,
@@ -390,19 +401,21 @@ class _CreateDeliveryCustomerScreenState
         request: CustomerCreateRequest(
           name: _shop.text.trim(),
           businessName: _shop.text.trim(),
+          profileImageId: _uploadedPhoto?.fileId,
+          customerType: _apiCustomerType,
+          contactPerson: _contact.text.trim(),
           phone: _phone.text.trim(),
           gstNumber: _gst.text.trim().toUpperCase(),
           category: _type,
           billingAddress: address,
           deliveryAddress: address,
+          city: _city.text.trim(),
+          country: 'India',
+          pincode: _pincode.text.trim(),
           mapLatitude: mapLocation?.latitude,
           mapLongitude: mapLocation?.longitude,
           notes:
-              'Contact person: ${_contact.text.trim()}\nGeo-tag location: $locationNote'
-              '${_uploadedPhoto == null ? '' : '\nProfile image attachment: ${_uploadedPhoto!.fileId}'}',
-          otherDocumentIds: _uploadedPhoto == null
-              ? null
-              : [_uploadedPhoto!.fileId],
+              'Contact person: ${_contact.text.trim()}\nGeo-tag location: $locationNote',
         ),
       );
       if (!mounted) return;

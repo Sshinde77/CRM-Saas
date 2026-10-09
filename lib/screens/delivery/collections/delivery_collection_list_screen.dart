@@ -3,10 +3,10 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../widgets/delivery/delivery_bottom_navigation.dart';
 
-import '../../../constants/api_constants.dart';
 import '../../../constants/app_colors.dart';
 import '../../../core/theme/app_sizes.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../models/customer_model.dart';
 import '../../../providers/api_provider.dart';
 import '../../../routes/app_router.dart';
 import '../../../widgets/delivery/delivery_partner_sidebar.dart';
@@ -39,20 +39,15 @@ class _DeliveryCollectionListScreenState
 
   Future<_CollectionDashboardData> _loadCollections() async {
     final provider = ApiProviderScope.of(context);
-    final authMe = await provider.fetchAuthMe();
-    final currentUser = provider.currentUser ?? authMe?.user;
-    final deliveryPartnerId = currentUser?.id?.trim();
-
-    if (deliveryPartnerId == null || deliveryPartnerId.isEmpty) {
-      throw const _CollectionException('Delivery partner id is missing.');
-    }
-
-    final deliveries = await provider.fetchDeliveryPartnerDeliveries(
-      deliveryPartnerId: deliveryPartnerId,
-    );
+    final collections = await provider.fetchDeliveryCollections();
+    final customers = await provider.fetchCustomers(isActive: true);
 
     return _CollectionDashboardData(
-      deliveries: deliveries.map(_CollectionDelivery.fromJson).toList(),
+      deliveries: collections.map(_CollectionDelivery.fromJson).toList(),
+      pendingCustomers: customers
+          .where((customer) => (customer.outstanding ?? 0) > 0)
+          .map(_CollectionDelivery.fromCustomer)
+          .toList(),
     );
   }
 
@@ -62,16 +57,10 @@ class _DeliveryCollectionListScreenState
     await nextFuture;
   }
 
-  Future<void> _openPaymentCollection() async {
-    final provider = ApiProviderScope.of(context);
+  Future<void> _openPaymentCollection(_CollectionDelivery customer) async {
     final result = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
-        builder: (_) => PaymentCollectionScreen(
-          customersUrl: '${ApiConstants.baseUrl}${ApiEndpoints.customersList}',
-          collectPaymentUrl:
-              '${ApiConstants.baseUrl}${ApiEndpoints.customersPaymentsTemplate}',
-          authToken: provider.session?.accessToken,
-        ),
+        builder: (_) => PaymentCollectionScreen(initialCustomerId: customer.id),
       ),
     );
 
@@ -158,6 +147,7 @@ class _DeliveryCollectionListScreenState
                                           data ??
                                           const _CollectionDashboardData(
                                             deliveries: [],
+                                            pendingCustomers: [],
                                           ),
                                       showPending: _showPending,
                                       onTabChanged: (value) =>
@@ -191,7 +181,7 @@ class _CollectionContent extends StatelessWidget {
   final _CollectionDashboardData data;
   final bool showPending;
   final ValueChanged<bool> onTabChanged;
-  final VoidCallback onCollect;
+  final ValueChanged<_CollectionDelivery> onCollect;
 
   @override
   Widget build(BuildContext context) {
@@ -247,7 +237,7 @@ class _CollectionContent extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 10),
               child: _CollectionListTile(
                 delivery: delivery,
-                onCollect: onCollect,
+                onCollect: () => onCollect(delivery),
               ),
             ),
           ),
@@ -669,6 +659,7 @@ class _SmallAction extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _CollectionCardDetail extends StatelessWidget {
   const _CollectionCardDetail({required this.label, required this.value});
 
@@ -898,50 +889,50 @@ class _ErrorPanel extends StatelessWidget {
 }
 
 class _CollectionDashboardData {
-  const _CollectionDashboardData({required this.deliveries});
+  const _CollectionDashboardData({
+    required this.deliveries,
+    required this.pendingCustomers,
+  });
 
   final List<_CollectionDelivery> deliveries;
+  final List<_CollectionDelivery> pendingCustomers;
 
   List<_CollectionDelivery> get collectionRows {
     return deliveries.where((delivery) {
-      return delivery.amountDue > 0 || delivery.amountCollected > 0;
+      return !delivery.isVoided && delivery.amountCollected > 0;
     }).toList();
   }
 
-  List<_CollectionDelivery> get pendingRows =>
-      collectionRows.where((delivery) => delivery.amountDue > 0).toList();
+  List<_CollectionDelivery> get pendingRows => pendingCustomers;
 
   List<_CollectionDelivery> get collectedRows =>
       collectionRows.where((delivery) => delivery.amountCollected > 0).toList();
 
   double get totalAmountToCollect {
-    return deliveries.fold<double>(
-      0,
-      (sum, delivery) => sum + delivery.amountToCollect,
-    );
+    return pendingAmount + totalAmountCollected;
   }
 
   double get totalAmountCollected {
-    return deliveries.fold<double>(
+    return collectionRows.fold<double>(
       0,
       (sum, delivery) => sum + delivery.amountCollected,
     );
   }
 
   double get cashInHand {
-    return deliveries
+    return collectionRows
         .where((delivery) => delivery.paymentMode == 'cash')
         .fold<double>(0, (sum, delivery) => sum + delivery.amountCollected);
   }
 
   double get bankTransfer {
-    return deliveries
+    return collectionRows
         .where((delivery) => delivery.paymentMode == 'bank_transfer')
         .fold<double>(0, (sum, delivery) => sum + delivery.amountCollected);
   }
 
   double get pendingAmount {
-    return deliveries.fold<double>(
+    return pendingRows.fold<double>(
       0,
       (sum, delivery) => sum + delivery.amountDue,
     );
@@ -963,6 +954,7 @@ class _CollectionDelivery {
     required this.amountDue,
     required this.amountCollected,
     required this.paymentMode,
+    required this.paymentProofUrl,
     required this.contactName,
     required this.phone,
     required this.latitude,
@@ -976,6 +968,7 @@ class _CollectionDelivery {
   final double amountDue;
   final double amountCollected;
   final String paymentMode;
+  final String? paymentProofUrl;
   final String contactName;
   final String? phone;
   final double? latitude;
@@ -993,10 +986,25 @@ class _CollectionDelivery {
           _readNestedString(json, 'customer', const ['name']) ??
           'Customer',
       status: _normalizeStatus(
-        _readString(json, const ['status', 'delivery_status']) ?? 'planned',
+        _readString(json, const [
+              'reconciliation_status',
+              'reconciliationStatus',
+              'status',
+              'delivery_status',
+            ]) ??
+            'recorded',
       ),
-      amountDue: _readDouble(json, const ['amountDue', 'amount_due', 'due']),
+      amountDue: _readDouble(json, const [
+        'outstanding_amount',
+        'outstandingAmount',
+        'outstanding_at_recording',
+        'outstandingAtRecording',
+        'amountDue',
+        'amount_due',
+        'due',
+      ]),
       amountCollected: _readDouble(json, const [
+        'amount',
         'amountCollected',
         'amount_collected',
         'collectedAmount',
@@ -1015,6 +1023,10 @@ class _CollectionDelivery {
             ]) ??
             '',
       ),
+      paymentProofUrl: _readString(json, const [
+        'payment_proof_url',
+        'paymentProofUrl',
+      ]),
       contactName:
           _readString(json, const ['contact_person', 'contactPerson']) ??
           _readNestedString(json, 'customer', const [
@@ -1048,7 +1060,35 @@ class _CollectionDelivery {
     );
   }
 
+  factory _CollectionDelivery.fromCustomer(CustomerModel customer) {
+    final businessName = customer.businessName?.trim();
+    final contactName = customer.contactPerson?.trim();
+    final customerCode = customer.customerId?.trim();
+    return _CollectionDelivery(
+      id: customer.id,
+      orderNumber: customerCode?.isNotEmpty == true
+          ? customerCode!
+          : 'Outstanding balance',
+      customerName: businessName?.isNotEmpty == true
+          ? businessName!
+          : customer.name,
+      status: 'pending',
+      amountDue: (customer.outstanding ?? 0).toDouble(),
+      amountCollected: 0,
+      paymentMode: '',
+      paymentProofUrl: null,
+      contactName: contactName?.isNotEmpty == true
+          ? contactName!
+          : customer.name,
+      phone: customer.phone,
+      latitude: customer.mapLatitude,
+      longitude: customer.mapLongitude,
+    );
+  }
+
   double get amountToCollect => amountDue + amountCollected;
+
+  bool get isVoided => status == 'voided';
 
   String get statusLabel {
     return status
@@ -1111,6 +1151,7 @@ class _CollectionInfo {
   final Color background;
 }
 
+// ignore: unused_element
 class _CollectionException implements Exception {
   const _CollectionException(this.message);
 

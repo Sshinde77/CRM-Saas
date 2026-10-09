@@ -31,6 +31,17 @@ class MapLocationViewScreen extends StatelessWidget {
     );
   }
 
+  Future<void> _openDirections(BuildContext context) async {
+    final uri = Uri.parse(
+      'https://www.google.com/maps/dir/?api=1&destination=$latitude,$longitude&travelmode=driving',
+    );
+    final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (launched || !context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Unable to open directions.')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final textScaler = MediaQuery.textScalerOf(
@@ -137,6 +148,21 @@ class MapLocationViewScreen extends StatelessWidget {
                                 ),
                               ),
                             ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        FilledButton.icon(
+                          onPressed: () => _openDirections(context),
+                          icon: const Icon(Icons.directions_rounded, size: 18),
+                          label: const Text('Directions'),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            minimumSize: const Size(48, 44),
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                           ),
                         ),
                       ],

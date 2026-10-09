@@ -58,6 +58,7 @@ class CustomerPaymentRecord {
   final String referenceNumber;
   final String method;
   final String status;
+  final String? paymentProofUrl;
 
   const CustomerPaymentRecord({
     required this.id,
@@ -66,6 +67,7 @@ class CustomerPaymentRecord {
     required this.referenceNumber,
     required this.method,
     required this.status,
+    this.paymentProofUrl,
   });
 
   factory CustomerPaymentRecord.fromJson(Map<String, dynamic> json) {
@@ -108,6 +110,10 @@ class CustomerPaymentRecord {
           ]) ??
           '-',
       status: _readString(json, const ['status']) ?? '-',
+      paymentProofUrl: _readString(json, const [
+        'payment_proof_url',
+        'paymentProofUrl',
+      ]),
     );
   }
 }

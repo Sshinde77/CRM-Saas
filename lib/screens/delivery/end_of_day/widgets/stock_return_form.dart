@@ -66,7 +66,7 @@ class _StockReturnFormState extends State<StockReturnForm> {
   bool _hasInvalidReturn() {
     for (final item in widget.session.items) {
       final value = _valueFor(item);
-      if (value < 0 || value > item.loadedQuantity) return true;
+      if (value < 0 || value > item.expectedClosingQuantity) return true;
     }
     return false;
   }
@@ -168,7 +168,7 @@ class _StockReturnFormState extends State<StockReturnForm> {
 
   Widget _returnRow(EndOfDayStockItem item) {
     final value = _valueFor(item);
-    final invalid = value > item.loadedQuantity || value < 0;
+    final invalid = value > item.expectedClosingQuantity || value < 0;
 
     return Container(
       padding: const EdgeInsets.all(10),

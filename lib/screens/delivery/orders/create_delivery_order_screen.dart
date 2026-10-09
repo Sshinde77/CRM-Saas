@@ -687,8 +687,9 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                                                           ),
                                                     ),
                                               );
-                                          if (!mounted || customer == null)
+                                          if (!mounted || customer == null) {
                                             return;
+                                          }
                                           setState(() {
                                             if (!_customers.any(
                                               (c) => c.id == customer.id,
@@ -996,8 +997,9 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                                                               _selectedPartnerId,
                                                         ),
                                                   );
-                                              if (!mounted || partner == null)
+                                              if (!mounted || partner == null) {
                                                 return;
+                                              }
                                               setState(
                                                 () => _selectedPartnerId =
                                                     partner.id,
@@ -1672,6 +1674,27 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
   String _apiDate(DateTime date) =>
       '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 
+  String get _apiPaymentType {
+    return switch (widget.paymentType.trim().toLowerCase()) {
+      'phone pe' || 'google pay' => 'upi',
+      'cash' => 'cash',
+      final value => value.replaceAll(' ', '_'),
+    };
+  }
+
+  String _paymentStatus(double paidAmount) {
+    if (paidAmount <= 0) return 'pending';
+    if (paidAmount >= _grandTotal) return 'paid';
+    return 'partial';
+  }
+
+  String get _deliveryAddress =>
+      (widget.customer.deliveryAddress ??
+              widget.customer.address ??
+              widget.customer.billingAddress ??
+              '')
+          .trim();
+
   @override
   void dispose() {
     _paidController.dispose();
@@ -1708,28 +1731,49 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
     try {
       final api = ApiProviderScope.of(context);
       if (_createdOrderId == null) {
+        final paymentType = _apiPaymentType;
+        final deliveryAddress = _deliveryAddress;
         final response = await api.createOrder(
           request: {
             'customer_id': widget.customer.id,
             'warehouse_id': _text(widget.warehouse, ['id', 'warehouse_id']),
             'order_date': _apiDate(widget.orderDate),
             'delivery_date': _apiDate(widget.deliveryDate),
-            'fulfilment_method': widget.homeDelivery
+            'fulfilment_method': widget.homeDelivery ? 'delivery' : 'pickup',
+            'delivery_method': widget.homeDelivery
                 ? 'home_delivery'
-                : 'self_pickup',
-            'payment_type': widget.paymentType,
+                : 'takeaway',
+            if (widget.homeDelivery && deliveryAddress.isNotEmpty)
+              'delivery_address': deliveryAddress,
+            if (widget.deliveryPartner != null)
+              'delivery_partner_id': widget.deliveryPartner!.id,
+            'payment_type': paymentType,
+            if (const {
+              'cash',
+              'credit',
+              'upi',
+              'card',
+              'bank_transfer',
+            }.contains(paymentType))
+              'payment_method': paymentType,
+            'payment_status': _paymentStatus(paid!),
+            'payment_terms_days': paymentType == 'credit' ? 30 : 0,
+            'source': 'office',
             'items': [
               for (final item in _items)
                 {
                   'product_id': item.product.id,
                   'quantity': item.quantity,
                   'unit_price': item.unitPrice,
+                  'uom': item.product.unit,
                   'tax_rate': widget.customer.taxExempt == true
                       ? 0
                       : item.product.taxRate,
+                  'discount_percent': 0,
                 },
             ],
             'discount': _discount,
+            'tax': _tax,
             'paid_amount': paid,
           },
         );

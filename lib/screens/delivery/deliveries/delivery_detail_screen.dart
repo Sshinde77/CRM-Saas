@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -8,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../constants/app_colors.dart';
 import '../../../models/delivery_detail_model.dart';
 import '../../../providers/api_provider.dart';
+import '../../../services/api_service.dart';
 import '../../../utils/product_image_url.dart';
 import '../../../widgets/delivery/delivery_image_upload_field.dart';
 import '../../../widgets/delivery/order_progress_tracker.dart';
@@ -181,6 +180,7 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
   }
 
   Future<void> _runPrimaryAction() async {
+    final provider = ApiProviderScope.of(context);
     final delivery = _delivery;
     if (delivery == null || _isActionBusy) return;
     switch (delivery.status) {
@@ -237,8 +237,9 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
         return;
     }
     if (delivery.status != 'in_transit' &&
-        delivery.status != 'partially_delivered')
+        delivery.status != 'partially_delivered') {
       return;
+    }
     if (delivery.items.isEmpty ||
         delivery.items.any((item) => item.id.isEmpty) ||
         !delivery.items.any((item) => item.loaded > 0)) {
@@ -261,24 +262,25 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
     );
     if (ok != true) return;
 
-    final provider = ApiProviderScope.of(context);
     setState(() => _isActionBusy = true);
     try {
-      final proofFiles = <String>[];
       final deliveryProof = await provider.uploadGenericFile(
         fileBytes: _deliveryConfirmation!,
         fileName: _deliveryConfirmationName ?? 'delivery-proof.jpg',
       );
-      proofFiles.add(deliveryProof.fileId);
       final paymentProof = await provider.uploadGenericFile(
         fileBytes: _paymentConfirmation!,
         fileName: _paymentConfirmationName ?? 'payment-proof.jpg',
       );
-      proofFiles.add(paymentProof.fileId);
+      final paidAmount = double.tryParse(_paidAmountController.text.trim()) ?? 0;
       await _submitDeliveryAction(
         delivery,
         payload: {
-          'pod_photo_file_ids': proofFiles,
+          'pod_photo_file_ids': [deliveryProof.fileId],
+          'delivery_proof_url': deliveryProof.url ?? deliveryProof.fileId,
+          'payment_proof_url': paymentProof.url ?? paymentProof.fileId,
+          'payment_amount': paidAmount,
+          'payment_method': _paymentType,
           'items': [
             for (final item in delivery.items)
               {
@@ -305,12 +307,13 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
     required Future<Map<String, dynamic>> Function(ApiProvider provider) action,
     required String successMessage,
   }) async {
+    final provider = ApiProviderScope.of(context);
     final delivery = _delivery;
     if (delivery == null) return;
     if (await _confirmDialog(title: title, message: message) != true) return;
     setState(() => _isActionBusy = true);
     try {
-      await action(ApiProviderScope.of(context));
+      await action(provider);
       if (!mounted) return;
       await _refresh();
       _showSnack(successMessage);
@@ -371,7 +374,7 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
     try {
       await ApiProviderScope.of(
         context,
-      ).confirmAppDelivery(deliveryId: delivery.id, payload: payload);
+      ).confirmDelivery(deliveryId: delivery.id, payload: payload);
       if (!mounted) return;
       await _refresh();
       _showSnack(successMessage);
@@ -1543,6 +1546,7 @@ class _AmountStrip extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _OrderProgressCard extends StatelessWidget {
   const _OrderProgressCard({required this.status});
 
@@ -1825,6 +1829,7 @@ class _ConfirmationImageBox extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _SectionIcon extends StatelessWidget {
   final IconData icon;
   const _SectionIcon({required this.icon});
@@ -1852,6 +1857,7 @@ BoxDecoration _cardDecoration() => BoxDecoration(
   ],
 );
 
+// ignore: unused_element
 InputDecoration _inputDecoration(String label) => InputDecoration(
   labelText: label,
   labelStyle: const TextStyle(fontSize: 13, color: AppColors.textMuted),
@@ -2171,15 +2177,11 @@ class _DetailRow extends StatelessWidget {
   final String value;
   final IconData? icon;
   final Color color;
-  final bool strong;
-  final bool outlined;
   const _DetailRow({
     required this.label,
     required this.value,
     this.icon,
     this.color = AppColors.deliveryInk,
-    this.strong = false,
-    this.outlined = false,
   });
 
   @override
@@ -2207,7 +2209,7 @@ class _DetailRow extends StatelessWidget {
               label,
               style: TextStyle(
                 color: color,
-                fontWeight: strong ? FontWeight.w700 : FontWeight.w600,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -2217,24 +2219,14 @@ class _DetailRow extends StatelessWidget {
             child: Align(
               alignment: Alignment.centerRight,
               child: Container(
-                padding: outlined
-                    ? const EdgeInsets.symmetric(horizontal: 9, vertical: 2)
-                    : EdgeInsets.zero,
-                decoration: outlined
-                    ? BoxDecoration(
-                        border: Border.all(
-                          color: AppColors.deliveryRed.withValues(alpha: 0.4),
-                        ),
-                        borderRadius: BorderRadius.circular(4),
-                      )
-                    : null,
+                padding: EdgeInsets.zero,
                 child: Text(
                   value.trim().isEmpty ? '\u2014' : value,
                   textAlign: TextAlign.right,
                   style: TextStyle(
                     color: color,
-                    fontSize: strong ? 15 : 13,
-                    fontWeight: strong ? FontWeight.w700 : FontWeight.w400,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
               ),
@@ -2342,6 +2334,7 @@ String _formatDate(DateTime? value, {bool includeTime = false}) {
   return '$date, $hour:${value.minute.toString().padLeft(2, '0')} ${value.hour >= 12 ? 'PM' : 'AM'}';
 }
 
+// ignore: unused_element
 String _formatLooseDate(String value) {
   final date = DateTime.tryParse(value);
   return date == null ? value : _formatDate(date);

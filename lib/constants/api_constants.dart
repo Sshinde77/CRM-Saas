@@ -74,10 +74,15 @@ class ApiEndpoints {
       '/customers/{customer_id}/ledger';
   static const String customersPaymentsTemplate =
       '/customers/{customer_id}/payments';
+  static const String customerPaymentCollections =
+      '/customer-payments/collections';
   static const String customersDocumentsTemplate =
       '/customers/{customer_id}/documents';
   static const String ordersList = '/orders';
   static const String ordersDetailTemplate = '/orders/{order_id}';
+  static const String ordersPaymentsTemplate = '/orders/{order_id}/payments';
+  static const String ordersPickupConfirmTemplate =
+      '/orders/{order_id}/pickup/confirm';
   static const String ordersConfirmTemplate = '/orders/{order_id}/confirm';
   static const String ordersCancelTemplate = '/orders/{order_id}/cancel';
   static const String ordersAssignDeliveryPartnerTemplate =
@@ -89,6 +94,7 @@ class ApiEndpoints {
   static const String visitsList = '/visits';
   static const String visitFollowUpsTemplate = '/visits/{visit_id}/follow-ups';
   static const String deliveriesList = '/deliveries';
+  static const String deliveryCollections = '/deliveries/collections';
   static const String deliveriesDetailTemplate =
       '/deliveries/by-id/{delivery_id}';
   static const String deliveriesChallanPdfTemplate =
@@ -99,6 +105,7 @@ class ApiEndpoints {
   static const String deliveriesReadyTemplate =
       '/deliveries/{delivery_id}/ready';
   static const String deliveriesLoadTemplate = '/deliveries/{delivery_id}/load';
+  static const String deliveriesLoadBatch = '/deliveries/load-batch';
   static const String deliveriesRejectTemplate =
       '/deliveries/{delivery_id}/reject';
   static const String deliveriesConfirmTemplate =
@@ -116,6 +123,11 @@ class ApiEndpoints {
       '/vehicle-stock/{session_id}/end-of-day';
   static const String vehicleStockReconcileTemplate =
       '/vehicle-stock/{session_id}/reconcile';
+  static const String vehicleStockExtraLoadTemplate =
+      '/vehicle-stock/{session_id}/extra-load';
+  static const String vehicleStockReconciliationsTemplate =
+      '/vehicle-stock/{session_id}/reconciliations';
+  static const String vehiclesList = '/vehicles';
   static const String attendanceMe = '/attendance/me';
   static const String attendanceCheckIn = '/attendance/check-in';
   static const String leavesList = '/leaves';
@@ -181,6 +193,12 @@ class ApiEndpoints {
 
   static String ordersDetail(String orderId) =>
       ordersDetailTemplate.replaceFirst('{order_id}', orderId);
+
+  static String ordersPayments(String orderId) =>
+      ordersPaymentsTemplate.replaceFirst('{order_id}', orderId);
+
+  static String ordersPickupConfirm(String orderId) =>
+      ordersPickupConfirmTemplate.replaceFirst('{order_id}', orderId);
 
   static String ordersConfirm(String orderId) =>
       ordersConfirmTemplate.replaceFirst('{order_id}', orderId);
@@ -253,6 +271,15 @@ class ApiEndpoints {
 
   static String vehicleStockReconcile(String sessionId) =>
       vehicleStockReconcileTemplate.replaceFirst('{session_id}', sessionId);
+
+  static String vehicleStockExtraLoad(String sessionId) =>
+      vehicleStockExtraLoadTemplate.replaceFirst('{session_id}', sessionId);
+
+  static String vehicleStockReconciliations(String sessionId) =>
+      vehicleStockReconciliationsTemplate.replaceFirst(
+        '{session_id}',
+        sessionId,
+      );
 
   static String quotationsPdf(String quotationId) =>
       quotationsPdfTemplate.replaceFirst('{quotation_id}', quotationId);

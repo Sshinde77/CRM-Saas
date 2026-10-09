@@ -355,8 +355,16 @@ class CustomerModel {
         'zip_code',
         'pin_zip_code',
       ]),
-      mapLatitude: _doubleFromMap(googleMapsLocation, 'latitude'),
-      mapLongitude: _doubleFromMap(googleMapsLocation, 'longitude'),
+      mapLatitude:
+          _doubleFromMap(googleMapsLocation, 'latitude') ??
+          _doubleFromMap(json, 'maps_latitude') ??
+          _doubleFromMap(json, 'map_latitude') ??
+          _doubleFromMap(json, 'latitude'),
+      mapLongitude:
+          _doubleFromMap(googleMapsLocation, 'longitude') ??
+          _doubleFromMap(json, 'maps_longitude') ??
+          _doubleFromMap(json, 'map_longitude') ??
+          _doubleFromMap(json, 'longitude'),
       assignedSalesOfficerId: _stringFromNested(
         salesCrmInformation ?? json,
         assignedSalesOfficer,
@@ -1142,11 +1150,18 @@ class CustomerListQuery {
 class CustomerCreateRequest {
   final String? name;
   final String? businessName;
+  final String? profileImageId;
+  final String? customerType;
+  final String? contactPerson;
   final String? phone;
   final String? email;
   final String? gstNumber;
   final String? billingAddress;
   final String? deliveryAddress;
+  final String? city;
+  final String? state;
+  final String? country;
+  final String? pincode;
   final double? mapLatitude;
   final double? mapLongitude;
   final String? assignedSalesOfficerId;
@@ -1164,11 +1179,18 @@ class CustomerCreateRequest {
   const CustomerCreateRequest({
     this.name,
     this.businessName,
+    this.profileImageId,
+    this.customerType,
+    this.contactPerson,
     this.phone,
     this.email,
     this.gstNumber,
     this.billingAddress,
     this.deliveryAddress,
+    this.city,
+    this.state,
+    this.country,
+    this.pincode,
     this.mapLatitude,
     this.mapLongitude,
     this.assignedSalesOfficerId,
@@ -1222,6 +1244,56 @@ class CustomerCreateRequest {
     put('opening_balance', openingBalance);
     put('category', category);
     put('notes', notes);
+
+    final basicInformation = <String, dynamic>{
+      if (customerType?.trim().isNotEmpty == true)
+        'customer_type': customerType!.trim(),
+      if (name?.trim().isNotEmpty == true) 'customer_name': name!.trim(),
+      if ((businessName ?? name)?.trim().isNotEmpty == true)
+        'legal_business_name': (businessName ?? name)!.trim(),
+      if (name?.trim().isNotEmpty == true) 'display_name': name!.trim(),
+      'status': 'active',
+      if (profileImageId?.trim().isNotEmpty == true)
+        'profile_image_id': profileImageId!.trim(),
+    };
+    if (basicInformation.length > 1) {
+      json['basic_information'] = basicInformation;
+    }
+
+    final contactInformation = <String, dynamic>{
+      if (contactPerson?.trim().isNotEmpty == true)
+        'primary_contact_person': contactPerson!.trim(),
+      if (phone?.trim().isNotEmpty == true)
+        'mobile_number': phone!.replaceAll(RegExp(r'[^0-9]'), ''),
+    };
+    if (contactInformation.isNotEmpty) {
+      json['contact_information'] = contactInformation;
+    }
+
+    final addressInformation = <String, dynamic>{
+      if (billingAddress?.trim().isNotEmpty == true)
+        'billing_address': billingAddress!.trim(),
+      if (deliveryAddress?.trim().isNotEmpty == true)
+        'shipping_address': deliveryAddress!.trim(),
+      if (city?.trim().isNotEmpty == true) 'city': city!.trim(),
+      if (state?.trim().isNotEmpty == true) 'state': state!.trim(),
+      if (country?.trim().isNotEmpty == true) 'country': country!.trim(),
+      if (pincode?.trim().isNotEmpty == true) 'pin_zip_code': pincode!.trim(),
+      if (mapLatitude != null && mapLongitude != null)
+        'google_maps_location': {
+          'latitude': mapLatitude,
+          'longitude': mapLongitude,
+        },
+    };
+    if (addressInformation.isNotEmpty) {
+      json['address_information'] = addressInformation;
+    }
+
+    if (gstNumber?.trim().isNotEmpty == true) {
+      json['business_tax_information'] = {
+        'gstin_tax_id': gstNumber!.trim().toUpperCase(),
+      };
+    }
     putDocument('gst_certificate_id', gstCertificateId);
     putDocument('pan_card_id', panCardId);
     putDocument(

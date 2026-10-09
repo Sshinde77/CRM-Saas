@@ -7,6 +7,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../providers/api_provider.dart';
 import '../../../routes/app_router.dart';
 import '../../../services/api_service.dart';
+import '../../delivery/vehicle_stock/delivery_vehicle_loading_screen.dart';
 import '../../../utils/product_image_url.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
@@ -112,7 +113,7 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
               )
               .toList()
             ..sort((a, b) => _sessionTime(b).compareTo(_sessionTime(a)));
-      return [if (current != null) current, ...history];
+      return [?current, ...history];
     }
 
     final rows = await provider.fetchVehicleStockSessions();
@@ -141,10 +142,18 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
     );
   }
 
-  Future<void> _openVehicleLoading() async {
-    final created = await Navigator.of(
-      context,
-    ).pushNamed(AppRoutes.deliveryVehicleLoading);
+  Future<void> _openVehicleLoading({
+    String? deliveryPartnerId,
+    String? deliveryPartnerName,
+  }) async {
+    final created = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => DeliveryVehicleLoadingScreen(
+          deliveryPartnerId: deliveryPartnerId,
+          deliveryPartnerName: deliveryPartnerName,
+        ),
+      ),
+    );
     if (created == true && mounted) {
       await _refresh();
     }
@@ -230,7 +239,7 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
                   DeliveryTopBarAction(
                     icon: Icons.add_box_outlined,
                     tooltip: 'Record opening load',
-                    onTap: _openVehicleLoading,
+                    onTap: () => _openVehicleLoading(),
                   ),
                 ],
               )
@@ -289,7 +298,10 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
                               if (_isDelivery && current != null)
                                 _DeliveryStockOverview(
                                   session: current,
-                                  onLoadStock: _openVehicleLoading,
+                                  onLoadStock: () => _openVehicleLoading(
+                                    deliveryPartnerId: current.partnerId,
+                                    deliveryPartnerName: current.partnerName,
+                                  ),
                                 ),
                               if (_isDelivery) ...[
                                 const SizedBox(height: 16),

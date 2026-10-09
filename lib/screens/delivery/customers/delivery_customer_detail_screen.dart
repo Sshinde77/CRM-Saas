@@ -159,6 +159,10 @@ class _DeliveryCustomerDetailScreenState
                                     children: [
                                       _ProfileCard(
                                         customer: customer!,
+                                        photoUrl:
+                                            customer.profilePhotoUrl ??
+                                            widget.initialCustomer
+                                                ?.profilePhotoUrl,
                                         onCall: _call,
                                         onMap: _map,
                                       ),
@@ -263,10 +267,12 @@ class _DeliveryCustomerDetailScreenState
 
 class _ProfileCard extends StatelessWidget {
   final CustomerModel customer;
+  final String? photoUrl;
   final VoidCallback onCall;
   final VoidCallback onMap;
   const _ProfileCard({
     required this.customer,
+    this.photoUrl,
     required this.onCall,
     required this.onMap,
   });
@@ -306,7 +312,7 @@ class _ProfileCard extends StatelessWidget {
             ),
             child: CustomerAvatar(
               name: business,
-              photoUrl: customer.profilePhotoUrl,
+              photoUrl: photoUrl,
               size: 112,
             ),
           ),
@@ -1084,15 +1090,18 @@ Color _statusColor(String value) {
   if (status.contains('deliver') ||
       status.contains('paid') ||
       status.contains('complete') ||
-      status.contains('success'))
+      status.contains('success')) {
     return AppColors.deliveryGreen;
+  }
   if (status.contains('progress') ||
       status.contains('confirm') ||
-      status.contains('schedule'))
+      status.contains('schedule')) {
     return AppColors.deliveryBlue;
+  }
   if (status.contains('cancel') ||
       status.contains('fail') ||
-      status.contains('overdue'))
+      status.contains('overdue')) {
     return AppColors.deliveryRed;
+  }
   return AppColors.textMuted;
 }

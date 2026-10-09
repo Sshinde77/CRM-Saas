@@ -29,6 +29,8 @@ class DeliveryDetail {
   final List<DeliveryDetailItem> items;
   final String notes;
   final List<String> podPhotos;
+  final String deliveryProofUrl;
+  final String paymentProofUrl;
   final String signatureUrl;
 
   const DeliveryDetail({
@@ -59,6 +61,8 @@ class DeliveryDetail {
     required this.items,
     required this.notes,
     required this.podPhotos,
+    required this.deliveryProofUrl,
+    required this.paymentProofUrl,
     required this.signatureUrl,
   });
 
@@ -326,8 +330,19 @@ class DeliveryDetail {
       items: items,
       notes: _text(data, const ['notes', 'delivery_notes']),
       podPhotos: _list(
-        data['pod_photos'] ?? data['podPhotos'] ?? data['proof_photos'],
+        data['pod_photo_file_ids'] ??
+            data['podPhotos'] ??
+            data['pod_photos'] ??
+            data['proof_photos'],
       ).map((e) => e.toString()).where((e) => e.trim().isNotEmpty).toList(),
+      deliveryProofUrl: _text(data, const [
+        'delivery_proof_url',
+        'deliveryProofUrl',
+      ]),
+      paymentProofUrl: _text(data, const [
+        'payment_proof_url',
+        'paymentProofUrl',
+      ]),
       signatureUrl: _text(data, const [
         'signature_url',
         'signatureUrl',

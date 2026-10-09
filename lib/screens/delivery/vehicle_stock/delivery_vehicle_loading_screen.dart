@@ -10,7 +10,14 @@ import '../../../widgets/app_calendar_date_picker.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
 
 class DeliveryVehicleLoadingScreen extends StatefulWidget {
-  const DeliveryVehicleLoadingScreen({super.key});
+  const DeliveryVehicleLoadingScreen({
+    super.key,
+    this.deliveryPartnerId,
+    this.deliveryPartnerName,
+  });
+
+  final String? deliveryPartnerId;
+  final String? deliveryPartnerName;
 
   @override
   State<DeliveryVehicleLoadingScreen> createState() =>
@@ -24,8 +31,11 @@ class _DeliveryVehicleLoadingScreenState
   final Map<String, TextEditingController> _itemControllers = {};
 
   Future<void>? _future;
+  List<_LoadingProduct> _catalogProducts = const [];
   List<_LoadingProduct> _products = const [];
   List<_LoadingItem> _items = [];
+  List<_LoadableDelivery> _loadableDeliveries = const [];
+  final Set<String> _readiedDeliveryIds = {};
   _LoadingProduct? _selectedProduct;
   _LoadingUser _user = const _LoadingUser(id: '', name: 'Delivery Partner');
   DateTime _loadingDate = DateTime.now();
@@ -62,15 +72,46 @@ class _DeliveryVehicleLoadingScreenState
   Future<void> _loadInitialData() async {
     final provider = ApiProviderScope.of(context);
     final authMe = await provider.fetchAuthMe();
-    final productRows = await provider.fetchProducts(isActive: true);
     final currentUser = provider.currentUser ?? authMe?.user;
-    final deliveryPartnerId = currentUser?.id?.trim() ?? '';
-    final currentStock = deliveryPartnerId.isEmpty
-        ? null
-        : await provider.fetchCurrentVehicleStock(deliveryPartnerId);
+    final requestedPartnerId = widget.deliveryPartnerId?.trim() ?? '';
+    final deliveryPartnerId = requestedPartnerId.isNotEmpty
+        ? requestedPartnerId
+        : currentUser?.id?.trim() ?? '';
+    if (deliveryPartnerId.isEmpty) {
+      throw const ApiException(message: 'Delivery partner id is missing.');
+    }
+    final results = await Future.wait<Object?>([
+      provider.fetchDeliveryPartnerDeliveries(
+        deliveryPartnerId: deliveryPartnerId,
+      ),
+      provider.fetchProducts(isActive: true),
+      provider.fetchAssignedVehicles(deliveryPartnerId),
+      provider.fetchCurrentVehicleStock(deliveryPartnerId),
+    ]);
+    final deliveryRows = results[0] as List<Map<String, dynamic>>;
+    final productRows = results[1] as List<Map<String, dynamic>>;
+    final vehicleRows = results[2] as List<Map<String, dynamic>>;
+    final currentStock = results[3] as Map<String, dynamic>?;
+    final loadableDeliveries = deliveryRows
+        .map(_LoadableDelivery.fromJson)
+        .where((delivery) => delivery.id.isNotEmpty && delivery.items.isNotEmpty)
+        .toList();
+    final plannedQuantities = <String, double>{};
+    for (final delivery in loadableDeliveries) {
+      for (final item in delivery.items) {
+        plannedQuantities.update(
+          item.productId,
+          (quantity) => quantity + item.remaining,
+          ifAbsent: () => item.remaining,
+        );
+      }
+    }
     var vehicleNumber = currentStock == null
         ? ''
         : _stockVehicleNumber(currentStock);
+    if (vehicleNumber.isEmpty && vehicleRows.isNotEmpty) {
+      vehicleNumber = _stockVehicleNumber(vehicleRows.first);
+    }
     if (vehicleNumber.isEmpty && deliveryPartnerId.isNotEmpty) {
       try {
         final sessions = await provider.fetchVehicleStockSessions();
@@ -99,7 +140,7 @@ class _DeliveryVehicleLoadingScreenState
         // Vehicle history is optional; loading can continue without it.
       }
     }
-    final products =
+    final allProducts =
         productRows
             .map(_LoadingProduct.fromJson)
             .where(
@@ -109,37 +150,52 @@ class _DeliveryVehicleLoadingScreenState
           ..sort(
             (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
           );
+    final products = allProducts
+        .where((product) => plannedQuantities.containsKey(product.id))
+        .map(
+          (product) => product.copyWith(
+            ordered: plannedQuantities[product.id] ?? 0,
+          ),
+        )
+        .toList();
 
     if (!mounted) return;
     setState(() {
       _user = _LoadingUser(
-        id: currentUser?.id?.trim() ?? '',
-        name: (currentUser?.name.trim().isNotEmpty ?? false)
+        id: deliveryPartnerId,
+        name: (widget.deliveryPartnerName?.trim().isNotEmpty ?? false)
+            ? widget.deliveryPartnerName!.trim()
+            : (currentUser?.name.trim().isNotEmpty ?? false)
             ? currentUser!.name.trim()
             : 'Delivery Partner',
       );
+      _catalogProducts = allProducts;
       _products = products;
+      _loadableDeliveries = loadableDeliveries;
+      _readiedDeliveryIds.clear();
       _selectedProduct = products.isEmpty ? null : products.first;
       _session = currentStock == null
           ? null
-          : _StockSession.fromJson(currentStock, products);
+          : _StockSession.fromJson(currentStock, allProducts);
       _vehicleNumber = _session?.vehicleNumber.isNotEmpty == true
           ? _session!.vehicleNumber
           : vehicleNumber;
       if (_session?.date != null) _loadingDate = _session!.date!;
-      if (_session == null && _items.isEmpty) {
-        _items = products
-            .where((product) => product.ordered > 0)
-            .map(
-              (product) => _LoadingItem(
-                product: product,
-                quantity: product.ordered.round(),
-              ),
-            )
-            .toList();
-        for (final item in _items) {
-          _controllerFor(item);
-        }
+      for (final controller in _itemControllers.values) {
+        controller.dispose();
+      }
+      _itemControllers.clear();
+      _items = products
+          .where((product) => product.ordered > 0)
+          .map(
+            (product) => _LoadingItem(
+              product: product,
+              quantity: product.ordered.round(),
+            ),
+          )
+          .toList();
+      for (final item in _items) {
+        _controllerFor(item);
       }
     });
   }
@@ -311,7 +367,11 @@ class _DeliveryVehicleLoadingScreenState
       return;
     }
     if (validItems.isEmpty) {
-      setState(() => _error = 'Add at least one product to load.');
+      setState(() => _error = 'No picked delivery stock is ready to load.');
+      return;
+    }
+    if (_loadableDeliveries.isEmpty) {
+      setState(() => _error = 'No planned deliveries are ready to load.');
       return;
     }
 
@@ -321,17 +381,16 @@ class _DeliveryVehicleLoadingScreenState
     });
 
     try {
-      await ApiProviderScope.of(context).loadVehicleStock(
-        deliveryPartnerId: deliveryPartnerId,
-        date: _loadingDate,
-        items: validItems
-            .map(
-              (item) => {
-                'product_id': item.product.id,
-                'loaded_qty': item.quantity,
-              },
-            )
-            .toList(),
+      final provider = ApiProviderScope.of(context);
+      for (final delivery in _loadableDeliveries) {
+        if (delivery.needsReady &&
+            !_readiedDeliveryIds.contains(delivery.id)) {
+          await provider.markDeliveryReady(delivery.id);
+          _readiedDeliveryIds.add(delivery.id);
+        }
+      }
+      await provider.loadDeliveryBatch(
+        _loadableDeliveries.map((delivery) => delivery.id).toList(),
       );
       if (!mounted) return;
       for (final controller in _itemControllers.values) {
@@ -346,7 +405,7 @@ class _DeliveryVehicleLoadingScreenState
         ..showSnackBar(
           const SnackBar(
             behavior: SnackBarBehavior.floating,
-            content: Text('Opening load recorded successfully.'),
+            content: Text('Planned deliveries loaded successfully.'),
           ),
         );
       setState(() => _isSubmitting = false);
@@ -366,14 +425,19 @@ class _DeliveryVehicleLoadingScreenState
   }
 
   Future<void> _showAddLoadDialog() async {
+    if (_catalogProducts.isEmpty) {
+      _showMessage('No active products are available to add.');
+      return;
+    }
+    final provider = ApiProviderScope.of(context);
     final quantities = await showModalBottomSheet<Map<String, int>>(
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
       builder: (_) => _StockAdjustmentSheet(
-        title: 'Add products',
-        actionLabel: 'Submit',
-        products: _products,
+        title: 'Add More Stock',
+        actionLabel: 'Add Stock',
+        products: _catalogProducts,
         stockItems: _session?.items ?? const [],
         mode: _AdjustmentMode.add,
       ),
@@ -383,14 +447,29 @@ class _DeliveryVehicleLoadingScreenState
     }
     setState(() => _isSubmitting = true);
     try {
-      await ApiProviderScope.of(context).loadVehicleStock(
-        deliveryPartnerId: _user.id,
-        date: _loadingDate,
+      final session = _session;
+      if (session == null || session.id.isEmpty) {
+        throw const ApiException(
+          message: 'Vehicle stock session is unavailable.',
+        );
+      }
+      await provider.addExtraVehicleStock(
+        sessionId: session.id,
         items: quantities.entries
             .where((entry) => entry.value > 0)
-            .map(
-              (entry) => {'product_id': entry.key, 'loaded_qty': entry.value},
-            )
+            .map((entry) {
+              final matches = _catalogProducts.where(
+                (product) => product.id == entry.key,
+              );
+              final variantId = matches.isEmpty
+                  ? ''
+                  : matches.first.variantId;
+              return {
+                'product_id': entry.key,
+                if (variantId.isNotEmpty) 'variant_id': variantId,
+                'quantity': entry.value,
+              };
+            })
             .toList(),
       );
       await _loadInitialData();
@@ -403,6 +482,7 @@ class _DeliveryVehicleLoadingScreenState
   }
 
   Future<void> _showCloseTodayDialog() async {
+    final provider = ApiProviderScope.of(context);
     final session = _session;
     if (session == null || session.id.isEmpty) {
       _showMessage('Vehicle stock session is unavailable.');
@@ -423,7 +503,7 @@ class _DeliveryVehicleLoadingScreenState
     if (quantities == null) return;
     setState(() => _isSubmitting = true);
     try {
-      await ApiProviderScope.of(context).submitEndOfDayReturn(
+      await provider.submitEndOfDayReturn(
         sessionId: session.id,
         items: session.items
             .map(
@@ -460,19 +540,20 @@ class _DeliveryVehicleLoadingScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF7FAF8),
-      body: FutureBuilder<void>(
-        future: _future,
-        builder: (context, snapshot) {
+      body: SafeArea(
+        child: FutureBuilder<void>(
+          future: _future,
+          builder: (context, snapshot) {
           final isLoading =
               snapshot.connectionState == ConnectionState.waiting &&
               _products.isEmpty;
           final error = snapshot.hasError ? _cleanError(snapshot.error) : null;
 
-          return Column(
-            children: [
+            return Column(
+              children: [
               DeliveryTopBar(
                 title: 'Vehicle Loading',
-                subtitle: 'Record opening stock for your vehicle',
+                subtitle: 'Load picked deliveries onto your vehicle',
                 leadingIcon: Icons.arrow_back_rounded,
                 onLeadingTap: () => Navigator.of(context).maybePop(),
               ),
@@ -496,7 +577,9 @@ class _DeliveryVehicleLoadingScreenState
                           children: [
                             _KpiPanel(
                               orderUnits:
-                                  _session?.totalOrdered.round() ?? _orderUnits,
+                                  _loadableDeliveries.isNotEmpty
+                                  ? _orderUnits
+                                  : _session?.totalOrdered.round() ?? 0,
                               loadedUnits: _session?.totalLoaded.round() ?? 0,
                               session: _session,
                             ),
@@ -521,7 +604,14 @@ class _DeliveryVehicleLoadingScreenState
                                 onPickDate: _pickDate,
                               ),
                               const SizedBox(height: 14),
-                              if (_session == null)
+                              if (_session != null) ...[
+                                _LoadedSessionBanner(session: _session!),
+                                const SizedBox(height: 14),
+                                _SessionProductsCard(session: _session!),
+                                if (_loadableDeliveries.isNotEmpty)
+                                  const SizedBox(height: 14),
+                              ],
+                              if (_loadableDeliveries.isNotEmpty)
                                 _ProductsCard(
                                   searchController: _searchController,
                                   quantityController: _quantityController,
@@ -545,8 +635,8 @@ class _DeliveryVehicleLoadingScreenState
                                   onRemove: _removeItem,
                                   onQuantityChanged: _updateItemQuantity,
                                 )
-                              else
-                                _SessionProductsCard(session: _session!),
+                              else if (_session == null)
+                                const _NoPlannedDeliveries(),
                               if (_error != null) ...[
                                 const SizedBox(height: 12),
                                 _InlineError(message: _error!),
@@ -559,22 +649,23 @@ class _DeliveryVehicleLoadingScreenState
                   ),
                 ),
               ),
-              if (_session == null)
+              if (_loadableDeliveries.isNotEmpty)
                 _BottomSummary(
                   totalUnits: _totalUnits,
                   productLines: _items.length,
                   isSubmitting: _isSubmitting,
                   onSave: _isSubmitting ? null : _submit,
                 )
-              else if (!_session!.isClosed)
+              else if (_session != null && !_session!.isClosed)
                 _ActiveBottomActions(
                   busy: _isSubmitting,
                   onAddLoad: _showAddLoadDialog,
                   onCloseToday: _showCloseTodayDialog,
                 ),
-            ],
-          );
-        },
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -845,7 +936,7 @@ class _ProductsCard extends StatelessWidget {
         children: [
           const _SectionHeader(
             icon: Icons.add_box_outlined,
-            title: 'Add Products',
+            title: 'Planned Products',
           ),
           const SizedBox(height: 16),
           TextField(
@@ -988,18 +1079,14 @@ class _DraftProductRow extends StatelessWidget {
                       width: 74,
                       child: TextField(
                         controller: controller,
-                        onChanged: onChanged,
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                        ],
+                        readOnly: true,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                         ),
                         decoration: InputDecoration(
-                          labelText: 'Loading',
+                          labelText: 'To Load',
                           isDense: true,
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 8,
@@ -1016,6 +1103,85 @@ class _DraftProductRow extends StatelessWidget {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LoadedSessionBanner extends StatelessWidget {
+  const _LoadedSessionBanner({required this.session});
+
+  final _StockSession session;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.deliveryGreenSoft,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.deliveryGreen.withValues(alpha: 0.24),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: const BoxDecoration(
+              color: AppColors.deliveryGreen,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.check_rounded,
+              color: Colors.white,
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Vehicle Already Loaded',
+                  style: TextStyle(
+                    color: AppColors.deliveryInk,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  session.vehicleNumber.isEmpty
+                      ? 'An active stock session is open for today.'
+                      : '${session.vehicleNumber} has an active stock session for today.',
+                  style: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 12,
+                    height: 1.35,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '${_quantity(session.totalLoaded)} loaded  |  '
+                  '${_quantity(session.totalDelivered)} delivered  |  '
+                  '${_quantity(session.totalRemaining)} remaining',
+                  style: const TextStyle(
+                    color: AppColors.deliveryGreen,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          _CompactStatusPill(status: session.status),
         ],
       ),
     );
@@ -1065,7 +1231,7 @@ class _SessionProductsCardState extends State<_SessionProductsCard> {
         children: [
           const _SectionHeader(
             icon: Icons.inventory_2_outlined,
-            title: 'Add products',
+            title: 'Currently Loaded Stock',
           ),
           const SizedBox(height: 12),
           TextField(
@@ -1113,7 +1279,6 @@ class _SessionProductsCardState extends State<_SessionProductsCard> {
                 padding: const EdgeInsets.only(bottom: 10),
                 child: _SessionProductRow(
                   item: item,
-                  closed: widget.session.isClosed,
                 ),
               ),
         ],
@@ -1123,9 +1288,8 @@ class _SessionProductsCardState extends State<_SessionProductsCard> {
 }
 
 class _SessionProductRow extends StatelessWidget {
-  const _SessionProductRow({required this.item, required this.closed});
+  const _SessionProductRow({required this.item});
   final _StockItem item;
-  final bool closed;
 
   @override
   Widget build(BuildContext context) {
@@ -1186,14 +1350,15 @@ class _SessionProductRow extends StatelessWidget {
                   children: [
                     Expanded(
                       child: _TinyProductMetric(
-                        label: 'Ordered',
-                        value: _quantity(item.ordered),
+                        label: 'Loaded',
+                        value: _quantity(item.loaded),
                       ),
                     ),
                     Expanded(
                       child: _TinyProductMetric(
-                        label: 'Loaded',
-                        value: _quantity(item.loaded),
+                        label: 'Extra',
+                        value: _quantity(item.extra),
+                        color: AppColors.deliveryBlue,
                       ),
                     ),
                     Expanded(
@@ -1202,14 +1367,15 @@ class _SessionProductRow extends StatelessWidget {
                         value: _quantity(item.delivered),
                       ),
                     ),
-                    if (closed)
-                      Expanded(
-                        child: _TinyProductMetric(
-                          label: 'Returned',
-                          value: _quantity(item.returned),
-                          color: AppColors.deliveryRed,
-                        ),
+                    Expanded(
+                      child: _TinyProductMetric(
+                        label: 'Remaining',
+                        value: _quantity(item.remaining),
+                        color: item.remaining <= 0
+                            ? AppColors.deliveryRed
+                            : AppColors.deliveryGreen,
                       ),
+                    ),
                   ],
                 ),
               ],
@@ -1252,6 +1418,7 @@ class _TinyProductMetric extends StatelessWidget {
   );
 }
 
+// ignore: unused_element
 class _LoadingItemRow extends StatelessWidget {
   final _LoadingItem item;
   final TextEditingController controller;
@@ -1730,9 +1897,14 @@ class _BottomSummary extends StatelessWidget {
                                   color: Colors.white,
                                 ),
                               )
-                            : const Icon(Icons.save_outlined, size: 22),
+                            : const Icon(
+                                Icons.local_shipping_outlined,
+                                size: 22,
+                              ),
                         label: Text(
-                          isSubmitting ? 'Submitting...' : 'Submit',
+                          isSubmitting
+                              ? 'Submitting...'
+                              : 'Submit Loaded Stock',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -1950,7 +2122,7 @@ class _SectionHeader extends StatelessWidget {
             ),
           ),
         ),
-        if (trailing != null) trailing!,
+        ?trailing,
       ],
     );
   }
@@ -2034,6 +2206,38 @@ class _EmptyItems extends StatelessWidget {
           color: AppColors.textMuted,
           fontSize: 14,
           fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+class _NoPlannedDeliveries extends StatelessWidget {
+  const _NoPlannedDeliveries();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _SurfaceCard(
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 24),
+        child: Column(
+          children: [
+            Icon(
+              Icons.local_shipping_outlined,
+              size: 48,
+              color: AppColors.textMuted,
+            ),
+            SizedBox(height: 12),
+            Text(
+              'No picked deliveries are ready to load.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: AppColors.deliveryInk,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -2324,7 +2528,8 @@ class _StockSession {
     'reconciled',
   }.contains(status.toLowerCase());
   double get totalOrdered => orderUnits;
-  double get totalLoaded => items.fold(0, (sum, item) => sum + item.loaded);
+  double get totalLoaded =>
+      items.fold(0, (sum, item) => sum + item.loaded + item.extra);
   double get totalDelivered =>
       items.fold(0, (sum, item) => sum + item.delivered);
   double get totalReturned => items.fold(0, (sum, item) => sum + item.returned);
@@ -2352,6 +2557,7 @@ class _StockItem {
     required this.product,
     required this.ordered,
     required this.loaded,
+    required this.extra,
     required this.delivered,
     required this.returned,
     required this.remaining,
@@ -2359,6 +2565,7 @@ class _StockItem {
   final _LoadingProduct product;
   final double ordered;
   final double loaded;
+  final double extra;
   final double delivered;
   final double returned;
   final double remaining;
@@ -2384,6 +2591,12 @@ class _StockItem {
       'delivered',
       'sold_quantity',
     ]);
+    final extra = _readDouble(json, const [
+      'extra_quantity',
+      'extraQuantity',
+      'extra_qty',
+      'extra',
+    ]);
     final returned = _readDouble(json, const [
       'returned_quantity',
       'returnedQuantity',
@@ -2391,6 +2604,9 @@ class _StockItem {
       'returned',
     ]);
     final remainingValue = _readNullableDouble(json, const [
+      'expected_closing_quantity',
+      'expectedClosingQuantity',
+      'expected_closing_qty',
       'remaining_quantity',
       'remainingQuantity',
       'remaining_qty',
@@ -2407,9 +2623,10 @@ class _StockItem {
         'ordered',
       ]),
       loaded: loaded,
+      extra: extra,
       delivered: delivered,
       returned: returned,
-      remaining: remainingValue ?? (loaded - delivered - returned),
+      remaining: remainingValue ?? (loaded + extra - delivered - returned),
     );
   }
 
@@ -2417,10 +2634,91 @@ class _StockItem {
     product: product,
     ordered: ordered,
     loaded: loaded,
+    extra: extra,
     delivered: delivered,
     returned: returned ?? this.returned,
-    remaining: loaded - delivered - (returned ?? this.returned),
+    remaining: loaded + extra - delivered - (returned ?? this.returned),
   );
+}
+
+class _LoadableDelivery {
+  const _LoadableDelivery({
+    required this.id,
+    required this.status,
+    required this.items,
+  });
+
+  final String id;
+  final String status;
+  final List<_LoadableDeliveryItem> items;
+
+  factory _LoadableDelivery.fromJson(Map<String, dynamic> json) {
+    final status = _readString(json, const [
+      'internal_status',
+      'internalStatus',
+      'status',
+    ]).toLowerCase();
+    const completedStatuses = {
+      'cancelled',
+      'canceled',
+      'rejected',
+      'delivered',
+      'completed',
+      'closed',
+    };
+    final items = completedStatuses.contains(status)
+        ? const <_LoadableDeliveryItem>[]
+        : _readList(json, const ['items', 'delivery_items', 'deliveryItems'])
+              .map(_LoadableDeliveryItem.fromJson)
+              .where(
+                (item) => item.productId.isNotEmpty && item.remaining > 0,
+              )
+              .toList();
+    return _LoadableDelivery(
+      id: _readString(json, const ['id', '_id', 'delivery_id', 'deliveryId']),
+      status: status,
+      items: items,
+    );
+  }
+
+  bool get needsReady => !const {
+    'ready',
+    'loaded',
+    'in_transit',
+  }.contains(status);
+}
+
+class _LoadableDeliveryItem {
+  const _LoadableDeliveryItem({
+    required this.productId,
+    required this.remaining,
+  });
+
+  final String productId;
+  final double remaining;
+
+  factory _LoadableDeliveryItem.fromJson(Map<String, dynamic> json) {
+    final product = _readMap(json, const ['product']);
+    final productId = _firstNonEmpty([
+      _readString(json, const ['product_id', 'productId']),
+      _readString(product, const ['id', '_id', 'product_id', 'productId']),
+    ]);
+    final picked = _readDouble(json, const [
+      'picked_quantity',
+      'pickedQuantity',
+      'picked_qty',
+    ]);
+    final loaded = _readDouble(json, const [
+      'loaded_quantity',
+      'loadedQuantity',
+      'loaded_qty',
+    ]);
+    final remaining = picked - loaded;
+    return _LoadableDeliveryItem(
+      productId: productId,
+      remaining: remaining > 0 ? remaining : 0,
+    );
+  }
 }
 
 class _LoadingUser {
@@ -2443,6 +2741,7 @@ class _LoadingItem {
 
 class _LoadingProduct {
   final String id;
+  final String variantId;
   final String name;
   final String sku;
   final String unit;
@@ -2454,6 +2753,7 @@ class _LoadingProduct {
 
   const _LoadingProduct({
     required this.id,
+    required this.variantId,
     required this.name,
     required this.sku,
     required this.unit,
@@ -2471,6 +2771,14 @@ class _LoadingProduct {
         : <String, dynamic>{...json, ...product};
     return _LoadingProduct(
       id: _readString(source, const ['id', '_id', 'product_id', 'productId']),
+      variantId: _firstNonEmpty([
+        _readString(json, const ['variant_id', 'variantId']),
+        _readString(source, const ['variant_id', 'variantId']),
+        _readString(
+          _readMap(json, const ['variant']),
+          const ['id', '_id'],
+        ),
+      ]),
       name: _readString(source, const [
         'name',
         'product_name',
@@ -2510,6 +2818,19 @@ class _LoadingProduct {
       ]),
     );
   }
+
+  _LoadingProduct copyWith({double? ordered}) => _LoadingProduct(
+    id: id,
+    variantId: variantId,
+    name: name,
+    sku: sku,
+    unit: unit,
+    packageSize: packageSize,
+    imageUrl: imageUrl,
+    category: category,
+    ordered: ordered ?? this.ordered,
+    available: available,
+  );
 
   String get unitLabel => unit.trim().isEmpty ? 'units' : unit.trim();
 

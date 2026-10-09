@@ -10,11 +10,17 @@ class CustomerSearchDialog extends StatefulWidget {
     required this.customers,
     required this.onCreateCustomer,
     this.selectedCustomerId,
+    this.onViewLocation,
+    this.showOutstandingAmount = false,
+    this.emptyMessage,
   });
 
   final List<CustomerModel> customers;
   final String? selectedCustomerId;
   final Future<CustomerModel?> Function() onCreateCustomer;
+  final ValueChanged<CustomerModel>? onViewLocation;
+  final bool showOutstandingAmount;
+  final String? emptyMessage;
 
   @override
   State<CustomerSearchDialog> createState() => _CustomerSearchDialogState();
@@ -165,7 +171,8 @@ class _CustomerSearchDialogState extends State<CustomerSearchDialog> {
                       padding: const EdgeInsets.all(32),
                       child: Text(
                         widget.customers.isEmpty
-                            ? 'No customers yet. Create a customer to get started.'
+                            ? widget.emptyMessage ??
+                                  'No customers yet. Create a customer to get started.'
                             : 'No customers found. Try another search.',
                         textAlign: TextAlign.center,
                         style: const TextStyle(color: _muted),
@@ -282,7 +289,41 @@ class _CustomerSearchDialogState extends State<CustomerSearchDialog> {
                               ? customer.customerId!
                               : customer.id,
                         ),
-                        _detail(Icons.location_on_outlined, address),
+                        if (widget.showOutstandingAmount)
+                          _detail(
+                            Icons.account_balance_wallet_outlined,
+                            'Pending: ${_formatOutstanding(customer.outstanding ?? 0)}',
+                            color: const Color(0xFFD93838),
+                          ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: _detail(
+                                Icons.location_on_outlined,
+                                address,
+                              ),
+                            ),
+                            if (widget.onViewLocation != null &&
+                                customer.mapLatitude != null &&
+                                customer.mapLongitude != null)
+                              IconButton(
+                                tooltip: 'View location and directions',
+                                onPressed: () =>
+                                    widget.onViewLocation!(customer),
+                                visualDensity: VisualDensity.compact,
+                                constraints: const BoxConstraints(
+                                  minWidth: 44,
+                                  minHeight: 44,
+                                ),
+                                icon: const Icon(
+                                  Icons.directions_rounded,
+                                  color: _accent,
+                                  size: 20,
+                                ),
+                              ),
+                          ],
+                        ),
                         if (!wide) phone,
                       ],
                     ),
@@ -325,4 +366,16 @@ class _CustomerSearchDialogState extends State<CustomerSearchDialog> {
           ],
         ),
       );
+}
+
+String _formatOutstanding(num amount) {
+  final value = amount.round();
+  final source = value.abs().toString();
+  final buffer = StringBuffer();
+  for (var index = 0; index < source.length; index++) {
+    final remaining = source.length - index;
+    buffer.write(source[index]);
+    if (remaining > 1 && remaining % 3 == 1) buffer.write(',');
+  }
+  return '${value < 0 ? '-' : ''}Rs ${buffer.toString()}';
 }

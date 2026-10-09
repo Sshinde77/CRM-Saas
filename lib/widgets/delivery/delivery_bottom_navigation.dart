@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../constants/api_constants.dart';
 import '../../constants/app_colors.dart';
 import '../../models/customer_model.dart';
-import '../../providers/api_provider.dart';
 import '../../routes/app_router.dart';
 import '../../screens/delivery/customers/create_delivery_customer_screen.dart';
 import '../../screens/delivery/orders/create_delivery_order_screen.dart';
@@ -129,16 +127,9 @@ class DeliveryBottomNavigation extends StatelessWidget {
     );
     if (!context.mounted || action == null) return;
     if (action == 'collection') {
-      final provider = ApiProviderScope.of(context);
       final result = await Navigator.of(context).push<bool>(
         MaterialPageRoute(
-          builder: (_) => PaymentCollectionScreen(
-            customersUrl:
-                '${ApiConstants.baseUrl}${ApiEndpoints.customersList}',
-            collectPaymentUrl:
-                '${ApiConstants.baseUrl}${ApiEndpoints.customersPaymentsTemplate}',
-            authToken: provider.session?.accessToken,
-          ),
+          builder: (_) => const PaymentCollectionScreen(),
         ),
       );
       if (result == true && context.mounted) {

@@ -27,11 +27,13 @@ class _EndOfDayReturnScreenState extends State<EndOfDayReturnScreen> {
   Future<EndOfDaySession?>? _future;
   EndOfDaySession? _session;
   _EndOfDayStep _step = _EndOfDayStep.returnStock;
-  bool _isSavingReturn = false;
+  final bool _isSavingReturn = false;
   bool _isSavingReconciliation = false;
   String? _returnError;
   String? _reconciliationError;
   List<ReconciliationLine> _summaryLines = const [];
+  Map<String, double> _pendingReturns = const {};
+  bool _reconciliationCompleted = false;
   bool _didStartLoad = false;
 
   @override
@@ -72,44 +74,12 @@ class _EndOfDayReturnScreenState extends State<EndOfDayReturnScreen> {
   Future<void> _saveReturn(Map<String, double> returns) async {
     final session = _session;
     if (session == null) return;
-
     setState(() {
       _returnError = null;
-      _isSavingReturn = true;
+      _pendingReturns = Map<String, double>.from(returns);
+      _reconciliationCompleted = false;
+      _step = _EndOfDayStep.reconcile;
     });
-
-    try {
-      final payloadItems = session.items.map((item) {
-        return {
-          'product_id': item.productId,
-          'returned_qty': returns[item.id] ?? 0,
-        };
-      }).toList();
-      final response = await ApiProviderScope.of(
-        context,
-      ).submitEndOfDayReturn(sessionId: session.id, items: payloadItems);
-      final nextSession =
-          _sessionFromResponse(response) ??
-          session.copyWithItems(
-            session.items
-                .map((item) => item.copyWithReturn(returns[item.id] ?? 0))
-                .toList(),
-          );
-
-      if (!mounted) return;
-      setState(() {
-        _session = nextSession;
-        _step = _EndOfDayStep.reconcile;
-      });
-      _showSnack('End of day return recorded successfully.');
-    } catch (_) {
-      if (!mounted) return;
-      setState(() => _returnError = 'Failed to save return. Please try again.');
-    } finally {
-      if (mounted) {
-        setState(() => _isSavingReturn = false);
-      }
-    }
   }
 
   Future<void> _saveReconciliation({
@@ -133,10 +103,37 @@ class _EndOfDayReturnScreenState extends State<EndOfDayReturnScreen> {
           'physical_qty': physicalCounts[item.id] ?? 0,
         };
       }).toList();
-      await ApiProviderScope.of(context).reconcileVehicleStock(
+      final provider = ApiProviderScope.of(context);
+      if (!_reconciliationCompleted) {
+        await provider.reconcileVehicleStock(
+          sessionId: session.id,
+          payload: {'notes': notes.trim(), 'items': payloadItems},
+        );
+        _reconciliationCompleted = true;
+      }
+
+      final returnItems = session.items.map((item) {
+        return {
+          'product_id': item.productId,
+          if (item.variantId.isNotEmpty) 'variant_id': item.variantId,
+          'returned_qty': _pendingReturns[item.id] ?? 0,
+        };
+      }).toList();
+      final response = await provider.submitEndOfDayReturn(
         sessionId: session.id,
-        payload: {'notes': notes.trim(), 'items': payloadItems},
+        items: returnItems,
       );
+      final nextSession =
+          _sessionFromResponse(response) ??
+          session.copyWithItems(
+            session.items
+                .map(
+                  (item) => item.copyWithReturn(
+                    _pendingReturns[item.id] ?? 0,
+                  ),
+                )
+                .toList(),
+          );
 
       final lines = session.items.map((item) {
         return ReconciliationLine(
@@ -148,10 +145,11 @@ class _EndOfDayReturnScreenState extends State<EndOfDayReturnScreen> {
 
       if (!mounted) return;
       setState(() {
+        _session = nextSession;
         _summaryLines = lines;
         _step = _EndOfDayStep.summary;
       });
-      _showSnack('Physical stock count has been saved.');
+      _showSnack('Reconciliation saved and vehicle stock closed.');
     } catch (_) {
       if (!mounted) return;
       setState(() {

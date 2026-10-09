@@ -528,12 +528,16 @@ class ApiService {
     Map<String, String>? queryParameters,
     List<String> candidateKeys = const ['data', 'items', 'results'],
     String fallbackMessage = 'Invalid list response.',
+    Duration? timeout,
+    bool retryOnTimeout = false,
   }) async {
     final response = await _send(
       method: 'GET',
       endpoint: endpoint,
       requiresAuth: true,
       queryParameters: queryParameters,
+      timeout: timeout,
+      retryOnTimeout: retryOnTimeout,
     );
     final decoded = _tryDecodeBody(response.body.trim());
     final rawItems = _extractGenericList(
@@ -641,6 +645,92 @@ class ApiService {
       queryParameters: _cleanQuery({'delivery_partner_id': deliveryPartnerId}),
       candidateKeys: const ['deliveries', 'data', 'items', 'results'],
       fallbackMessage: 'Invalid deliveries response.',
+      timeout: const Duration(seconds: 60),
+      retryOnTimeout: true,
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> fetchDeliveryCollections() {
+    return fetchRawList(
+      endpoint: ApiEndpoints.deliveryCollections,
+      candidateKeys: const ['collections', 'data', 'items', 'results'],
+      fallbackMessage: 'Invalid delivery collections response.',
+      timeout: const Duration(seconds: 60),
+      retryOnTimeout: true,
+    );
+  }
+
+  Future<Map<String, dynamic>> recordCustomerCollection({
+    required String customerId,
+    required double amount,
+    required String paymentMethod,
+    required String paymentDate,
+    String? reference,
+    String? notes,
+    String? paymentProofUrl,
+  }) async {
+    final trimmedReference = reference?.trim() ?? '';
+    final trimmedNotes = notes?.trim() ?? '';
+    final trimmedPaymentProofUrl = paymentProofUrl?.trim() ?? '';
+    final response = await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.customerPaymentCollections,
+      requiresAuth: true,
+      body: {
+        'customer_id': customerId,
+        'amount': amount,
+        'payment_method': paymentMethod,
+        'payment_date': paymentDate,
+        'source': 'delivery_partner',
+        if (trimmedReference.isNotEmpty) 'reference': trimmedReference,
+        if (trimmedNotes.isNotEmpty) 'notes': trimmedNotes,
+        if (trimmedPaymentProofUrl.isNotEmpty)
+          'payment_proof_url': trimmedPaymentProofUrl,
+      },
+    );
+    return _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid customer collection response.',
+    );
+  }
+
+  Future<Map<String, dynamic>> recordOrderPayment({
+    required String orderId,
+    required Map<String, dynamic> payload,
+  }) async {
+    final id = orderId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing order id.');
+    }
+    final response = await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.ordersPayments(id),
+      requiresAuth: true,
+      body: payload,
+    );
+    return _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid order payment response.',
+    );
+  }
+
+  Future<Map<String, dynamic>> confirmOrderPickup({
+    required String orderId,
+    required Map<String, dynamic> payload,
+  }) async {
+    final id = orderId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing order id.');
+    }
+    final response = await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.ordersPickupConfirm(id),
+      requiresAuth: true,
+      body: payload,
+    );
+    return _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid pickup confirmation response.',
     );
   }
 
@@ -1013,11 +1103,18 @@ class ApiService {
     throw const ApiException(message: 'Invalid vehicle stock response.');
   }
 
-  Future<List<Map<String, dynamic>>> fetchVehicleStockSessions() async {
+  Future<List<Map<String, dynamic>>> fetchVehicleStockSessions({
+    String? status,
+    String? deliveryPartnerId,
+  }) async {
     final response = await _send(
       method: 'GET',
       endpoint: ApiEndpoints.vehicleStock,
       requiresAuth: true,
+      queryParameters: _cleanQuery({
+        'status': status,
+        'delivery_partner_id': deliveryPartnerId,
+      }),
     );
     final decoded = _tryDecodeBody(response.body.trim());
     if (decoded is List) {
@@ -1040,6 +1137,87 @@ class ApiService {
       return [decoded];
     }
     throw const ApiException(message: 'Invalid vehicle stock response.');
+  }
+
+  Future<Map<String, dynamic>> addExtraVehicleStock({
+    required String sessionId,
+    required List<Map<String, dynamic>> items,
+  }) async {
+    final id = sessionId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing vehicle stock session id.');
+    }
+    if (items.isEmpty) {
+      throw const ApiException(message: 'Add at least one product to load.');
+    }
+    final response = await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.vehicleStockExtraLoad(id),
+      requiresAuth: true,
+      body: {
+        'items': items.map((item) => {
+          'product_id': item['product_id'] ?? item['productId'],
+          if ((item['variant_id'] ?? item['variantId']) != null)
+            'variant_id': item['variant_id'] ?? item['variantId'],
+          'quantity': item['quantity'] ?? item['loaded_qty'] ?? 0,
+        }).toList(),
+      },
+    );
+    return _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid extra vehicle load response.',
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> fetchVehicleStockReconciliations(
+    String sessionId,
+  ) async {
+    final id = sessionId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing vehicle stock session id.');
+    }
+    return fetchRawList(
+      endpoint: ApiEndpoints.vehicleStockReconciliations(id),
+      candidateKeys: const ['reconciliations', 'data', 'items', 'results'],
+      fallbackMessage: 'Invalid vehicle stock reconciliations response.',
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> fetchAssignedVehicles(
+    String deliveryPartnerId,
+  ) {
+    final id = deliveryPartnerId.trim();
+    if (id.isEmpty) {
+      throw const ApiException(message: 'Missing delivery partner id.');
+    }
+    return fetchRawList(
+      endpoint: ApiEndpoints.vehiclesList,
+      queryParameters: {'default_driver_id': id, 'status': 'active'},
+      candidateKeys: const ['vehicles', 'data', 'items', 'results'],
+      fallbackMessage: 'Invalid vehicles response.',
+    );
+  }
+
+  Future<Map<String, dynamic>> loadDeliveryBatch(
+    List<String> deliveryIds,
+  ) async {
+    final ids = deliveryIds
+        .map((id) => id.trim())
+        .where((id) => id.isNotEmpty)
+        .toList();
+    if (ids.isEmpty) {
+      throw const ApiException(message: 'Select at least one delivery to load.');
+    }
+    final response = await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.deliveriesLoadBatch,
+      requiresAuth: true,
+      body: {'delivery_ids': ids},
+    );
+    return _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid batch loading response.',
+    );
   }
 
   Future<Map<String, dynamic>> loadVehicleStock({
@@ -1972,6 +2150,7 @@ class ApiService {
       method: 'POST',
       endpoint: ApiEndpoints.deliveriesReady(id),
       requiresAuth: true,
+      body: const {},
     );
     return _extractDeliveryPayload(
       response.body.trim(),

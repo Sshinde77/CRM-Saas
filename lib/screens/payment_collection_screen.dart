@@ -1,32 +1,23 @@
-import 'dart:convert';
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import '../constants/api_constants.dart';
 import '../constants/app_colors.dart';
 import '../models/customer_model.dart';
 import '../providers/api_provider.dart';
 import '../widgets/delivery/delivery_top_bar.dart';
 import '../widgets/delivery/customer_search_dialog.dart';
 import 'delivery/customers/create_delivery_customer_screen.dart';
+import 'shared/map_location_view_screen.dart';
 
 class PaymentCollectionScreen extends StatefulWidget {
   const PaymentCollectionScreen({
     super.key,
-    this.customersUrl,
-    this.customerDetailUrlTemplate,
-    this.collectPaymentUrl,
-    this.authToken,
+    this.initialCustomerId,
   });
 
-  final String? customersUrl;
-  final String? customerDetailUrlTemplate;
-  final String? collectPaymentUrl;
-  final String? authToken;
+  final String? initialCustomerId;
 
   @override
   State<PaymentCollectionScreen> createState() =>
@@ -47,13 +38,10 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
   bool _loadingDetail = false;
   bool _submitting = false;
   bool _pickingProof = false;
+  bool _didApplyInitialCustomer = false;
   Uint8List? _proofBytes;
   String? _proofName;
   String? _error;
-
-  String get _paymentUrlTemplate =>
-      widget.collectPaymentUrl ??
-      ApiConstants.baseUrl + ApiEndpoints.customersPaymentsTemplate;
 
   double get _amountCollected =>
       double.tryParse(_amountController.text.trim()) ?? 0;
@@ -92,6 +80,22 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
         _customers = customers;
         _loadingCustomers = false;
       });
+      final initialCustomerId = widget.initialCustomerId?.trim();
+      if (!_didApplyInitialCustomer &&
+          initialCustomerId != null &&
+          initialCustomerId.isNotEmpty) {
+        _didApplyInitialCustomer = true;
+        CustomerModel? initialCustomer;
+        for (final customer in customers) {
+          if (customer.id == initialCustomerId) {
+            initialCustomer = customer;
+            break;
+          }
+        }
+        if (initialCustomer != null) {
+          await _selectCustomer(_PaymentCustomer.fromModel(initialCustomer));
+        }
+      }
     } catch (_) {
       if (!mounted) return;
       setState(() {
@@ -112,7 +116,7 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
       final detail = await ApiProviderScope.of(
         context,
       ).fetchCustomerById(customer.id.toString());
-      final next = _PaymentCustomer.fromModel(detail);
+      final next = _PaymentCustomer.fromModel(detail, fallback: customer);
       if (!mounted) return;
       setState(() {
         _selectedCustomer = next;
@@ -130,35 +134,68 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
     }
   }
 
+  void _openCustomerMap() {
+    final customer = _selectedCustomer;
+    if (customer == null || !customer.hasLocation) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => MapLocationViewScreen(
+          latitude: customer.latitude!,
+          longitude: customer.longitude!,
+          title: customer.name,
+          subtitle: customer.address,
+        ),
+      ),
+    );
+  }
+
+  void _openCustomerModelMap(CustomerModel customer) {
+    final latitude = customer.mapLatitude;
+    final longitude = customer.mapLongitude;
+    if (latitude == null || longitude == null) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => MapLocationViewScreen(
+          latitude: latitude,
+          longitude: longitude,
+          title: customer.businessName?.trim().isNotEmpty == true
+              ? customer.businessName!
+              : customer.name,
+          subtitle: _customerAddress(customer),
+        ),
+      ),
+    );
+  }
+
   Future<void> _recordCollection() async {
     if (!_formKey.currentState!.validate() || _selectedCustomer == null) return;
     setState(() => _submitting = true);
     try {
-      final url = _paymentUrlTemplate.replaceAll(
-        '{customer_id}',
-        _selectedCustomer!.id.toString(),
-      );
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {
-          ..._headers,
-          ApiConstants.contentTypeHeader: ApiConstants.jsonMimeType,
-        },
-        body: jsonEncode({
-          'customer_id': _selectedCustomer!.id,
-          'amount': _amountCollected,
-          'payment_amount': _amountCollected,
-          'payment_mode': _paymentMode,
-          'payment_method': _paymentMode,
-          'reference': _referenceController.text.trim(),
-          'notes': _notesController.text.trim(),
-          'remaining_amount': _remainingAmount,
-        }),
+      final provider = ApiProviderScope.of(context);
+      String? paymentProofUrl;
+      final proofBytes = _proofBytes;
+      if (proofBytes != null) {
+        final uploadedProof = await provider.uploadGenericFile(
+          fileBytes: proofBytes,
+          fileName: _proofName ?? 'payment-proof.jpg',
+        );
+        paymentProofUrl = uploadedProof.url ?? uploadedProof.fileId;
+      }
+
+      await provider.recordCustomerCollection(
+        customerId: _selectedCustomer!.id.toString(),
+        amount: _amountCollected,
+        paymentMethod: _paymentMode,
+        paymentDate: _apiDate(DateTime.now()),
+        reference: _referenceController.text,
+        notes: _notesController.text,
+        paymentProofUrl: paymentProofUrl,
       );
       if (!mounted) return;
-      if (!_isSuccess(response.statusCode)) throw Exception();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Collection recorded successfully.')),
+        const SnackBar(
+          content: Text('Collection recorded - awaiting reconciliation.'),
+        ),
       );
       Navigator.of(context).pop(true);
     } catch (_) {
@@ -296,15 +333,6 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
     );
   }
 
-  Map<String, String> get _headers {
-    final token = widget.authToken;
-    return {
-      ApiConstants.acceptHeader: ApiConstants.jsonMimeType,
-      if (token != null && token.isNotEmpty)
-        ApiConstants.authorizationHeader: '${ApiConstants.bearerPrefix} $token',
-    };
-  }
-
   @override
   Widget build(BuildContext context) {
     final textScaler = MediaQuery.textScalerOf(
@@ -391,9 +419,17 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
                           final customer = await showDialog<CustomerModel>(
                             context: context,
                             builder: (_) => CustomerSearchDialog(
-                              customers: _customers,
+                              customers: _customers
+                                  .where(
+                                    (customer) =>
+                                        (customer.outstanding ?? 0) > 0,
+                                  )
+                                  .toList(),
                               selectedCustomerId: _selectedCustomer?.id
                                   .toString(),
+                              showOutstandingAmount: true,
+                              emptyMessage:
+                                  'No customers have pending payments.',
                               onCreateCustomer: () =>
                                   Navigator.of(context).push<CustomerModel>(
                                     MaterialPageRoute(
@@ -401,6 +437,7 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
                                           const CreateDeliveryCustomerScreen(),
                                     ),
                                   ),
+                              onViewLocation: _openCustomerModelMap,
                             ),
                           );
                           if (!mounted || customer == null) return;
@@ -439,12 +476,26 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(
-                      Icons.location_on_outlined,
-                      size: 18,
-                      color: AppColors.deliveryGreen,
+                    IconButton(
+                      tooltip: _selectedCustomer!.hasLocation
+                          ? 'View location and directions'
+                          : 'Location coordinates unavailable',
+                      onPressed: _selectedCustomer!.hasLocation
+                          ? _openCustomerMap
+                          : null,
+                      visualDensity: VisualDensity.compact,
+                      constraints: const BoxConstraints(
+                        minWidth: 44,
+                        minHeight: 44,
+                      ),
+                      padding: EdgeInsets.zero,
+                      icon: const Icon(
+                        Icons.location_on_outlined,
+                        size: 20,
+                        color: AppColors.deliveryGreen,
+                      ),
                     ),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 4),
                     Expanded(
                       child: Text(
                         _selectedCustomer!.address!,
@@ -518,11 +569,15 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
                 decoration: _decoration(hintText: '0'),
                 validator: (value) {
                   final amount = double.tryParse((value ?? '').trim());
-                  if (_selectedCustomer == null)
+                  if (_selectedCustomer == null) {
                     return 'Please select customer';
-                  if (amount == null || amount <= 0) return 'Enter amount';
-                  if (amount > _amountDue)
+                  }
+                  if (amount == null || amount <= 0) {
+                    return 'Enter amount';
+                  }
+                  if (amount > _amountDue) {
                     return 'Amount cannot be more than pending amount';
+                  }
                   return null;
                 },
               ),
@@ -533,6 +588,13 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
                 TextFormField(
                   controller: _referenceController,
                   decoration: _decoration(hintText: 'Transaction reference'),
+                  validator: (value) {
+                    if (_paymentMode != 'cash' &&
+                        (value == null || value.trim().isEmpty)) {
+                      return 'Transaction reference is required';
+                    }
+                    return null;
+                  },
                 ),
               ],
             ],
@@ -567,6 +629,7 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
                 controller: _notesController,
                 minLines: 3,
                 maxLines: 4,
+                inputFormatters: [LengthLimitingTextInputFormatter(500)],
                 decoration: _decoration(hintText: 'Add a note (optional)'),
               ),
             ],
@@ -989,13 +1052,19 @@ class _PaymentCustomer {
     required this.name,
     required this.pendingAmount,
     required this.address,
+    required this.latitude,
+    required this.longitude,
     required this.raw,
   });
   final dynamic id;
   final String name;
   final double pendingAmount;
   final String? address;
+  final double? latitude;
+  final double? longitude;
   final Map<String, dynamic> raw;
+
+  bool get hasLocation => latitude != null && longitude != null;
 
   @override
   bool operator ==(Object other) {
@@ -1005,7 +1074,10 @@ class _PaymentCustomer {
   @override
   int get hashCode => id.toString().hashCode;
 
-  factory _PaymentCustomer.fromModel(CustomerModel customer) {
+  factory _PaymentCustomer.fromModel(
+    CustomerModel customer, {
+    _PaymentCustomer? fallback,
+  }) {
     return _PaymentCustomer(
       id: customer.id,
       name: customer.name.trim().isNotEmpty
@@ -1013,6 +1085,8 @@ class _PaymentCustomer {
           : 'Unnamed Customer',
       pendingAmount: (customer.outstanding ?? 0).toDouble(),
       address: _customerAddress(customer),
+      latitude: customer.mapLatitude ?? fallback?.latitude,
+      longitude: customer.mapLongitude ?? fallback?.longitude,
       raw: const {},
     );
   }
@@ -1031,7 +1105,12 @@ String? _customerAddress(CustomerModel customer) {
   return parts.isEmpty ? null : parts.join(', ');
 }
 
-bool _isSuccess(int statusCode) => statusCode >= 200 && statusCode < 300;
+String _apiDate(DateTime value) {
+  return '${value.year.toString().padLeft(4, '0')}-'
+      '${value.month.toString().padLeft(2, '0')}-'
+      '${value.day.toString().padLeft(2, '0')}';
+}
+
 String _plainAmount(double value) {
   if (value == value.roundToDouble()) return value.round().toString();
   return value.toStringAsFixed(2);

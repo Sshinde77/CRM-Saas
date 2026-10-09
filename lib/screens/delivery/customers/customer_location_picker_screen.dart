@@ -76,6 +76,7 @@ class _CustomerLocationPickerScreenState
   static String? _cleanPlaceName(String? value) {
     final text = value?.trim();
     if (text == null || text.isEmpty) return null;
+    if (text.toLowerCase() == 'current location') return null;
     if (RegExp(r'^-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?$').hasMatch(text)) {
       return null;
     }
@@ -214,7 +215,6 @@ class _CustomerLocationPickerScreenState
       );
       await _selectLocation(
         google_maps.LatLng(position.latitude, position.longitude),
-        placeName: 'Current location',
       );
     } catch (_) {
       if (!silent) _showSnack('Could not get current location.');

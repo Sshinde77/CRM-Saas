@@ -1554,6 +1554,7 @@ class _StatusBadge extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _InlineMetric extends StatelessWidget {
   const _InlineMetric({required this.label, required this.value});
 
@@ -1589,7 +1590,9 @@ class _InlineMetric extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _SectionHeader extends StatelessWidget {
+  // ignore: unused_element_parameter
   const _SectionHeader({required this.title, this.trailingIcon});
 
   final String title;
