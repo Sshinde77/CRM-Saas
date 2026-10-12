@@ -349,7 +349,7 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
                                   icon: const Icon(Icons.add, size: 18),
                                   label: const Text('Create Role'),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF0B4A06),
+                                    backgroundColor: const Color(0xFF00092A),
                                     foregroundColor: Colors.white,
                                     elevation: 0,
                                     padding: const EdgeInsets.symmetric(
@@ -509,7 +509,7 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: const BorderSide(
-                color: Color(0xFF0B4A06),
+                color: Color(0xFF00092A),
                 width: 1.2,
               ),
             ),
@@ -553,7 +553,7 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: const BorderSide(
-                color: Color(0xFF0B4A06),
+                color: Color(0xFF00092A),
                 width: 1.2,
               ),
             ),
@@ -681,7 +681,7 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
                 value: _allSelectionValue(module),
                 tristate: true,
                 onChanged: (value) => _toggleAll(module, value),
-                activeColor: const Color(0xFF0B4A06),
+                activeColor: const Color(0xFF00092A),
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 visualDensity: VisualDensity.compact,
               ),
@@ -696,7 +696,7 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
                       _modulePermissions[module]?.contains(permission) ?? false,
                   onChanged: (value) =>
                       _togglePermission(module, permission, value),
-                  activeColor: const Color(0xFF0B4A06),
+                  activeColor: const Color(0xFF00092A),
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   visualDensity: VisualDensity.compact,
                 ),

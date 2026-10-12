@@ -128,9 +128,7 @@ class _EndOfDayReturnScreenState extends State<EndOfDayReturnScreen> {
           session.copyWithItems(
             session.items
                 .map(
-                  (item) => item.copyWithReturn(
-                    _pendingReturns[item.id] ?? 0,
-                  ),
+                  (item) => item.copyWithReturn(_pendingReturns[item.id] ?? 0),
                 )
                 .toList(),
           );

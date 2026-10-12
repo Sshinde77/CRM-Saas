@@ -13,7 +13,7 @@ import '../../../widgets/admin/admin_top_bar.dart';
 
 const Color kDocumentsTitleColor = Color(0xFF0F172A);
 const Color kDocumentsMutedColor = Color(0xFF64748B);
-const Color kDocumentsAccentColor = Color(0xFF0B4D08);
+const Color kDocumentsAccentColor = Color(0xFF00092A);
 
 class DocumentsScreen extends StatefulWidget {
   const DocumentsScreen({super.key});

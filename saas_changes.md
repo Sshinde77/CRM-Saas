@@ -56,6 +56,7 @@ The following fields expose recorded collections awaiting accountant review with
 
 ---
 
+
 ## 2. Payment Proof Upload
 
 ### A. Upload Workflow

@@ -17,7 +17,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   static const Color _mutedColor = Color(0xFF64748B);
   static const Color _borderColor = Color(0xFFDDE3EA);
   static const Color _fieldBg = Colors.white;
-  static const Color _accent = Color(0xFF0B4D08);
+  static const Color _accent = Color(0xFF00092A);
 
   final ApiService _apiService = ApiService();
   final TextEditingController _currentPasswordController =

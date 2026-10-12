@@ -5,13 +5,13 @@ import '../../../models/customer_model.dart';
 import '../../../providers/api_provider.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
-import '../../admin/customers/customers_screen.dart';
 import '../../admin/leads/admin_leads_screen.dart';
 import '../../admin/orders/admin_orders_screen.dart';
 import '../../admin/orders/new_admin_order_screen.dart';
 import '../../admin/quotations/admin_quotations_screen.dart';
 import '../../admin/quotations/create_quotation_screen.dart';
-import '../attendance/sales_manager_attendance_screen.dart';
+import '../../delivery/attendance/delivery_attendance_screen.dart';
+import '../../delivery/customers/delivery_customers_screen.dart';
 import '../follow_ups/sales_manager_follow_ups_screen.dart';
 import '../performance/sales_manager_performance_screen.dart';
 import '../stock/sales_manager_stock_screen.dart';
@@ -68,10 +68,11 @@ class _SalesManagerDashboardScreenState
 
   Future<_DashboardData> _loadDashboard() async {
     final provider = ApiProviderScope.of(context);
-    final mainResults = await Future.wait([
+    final mainResults = await Future.wait<dynamic>([
       provider.fetchCustomers(),
       provider.fetchOrders(),
       provider.fetchQuotations(),
+      _loadTodayAttendance(provider),
     ]);
 
     final customers = mainResults[0] as List<CustomerModel>;
@@ -82,18 +83,7 @@ class _SalesManagerDashboardScreenState
         .map(_DashboardQuotation.fromJson)
         .toList();
 
-    _AttendanceRecord? attendance;
-    try {
-      final attendanceRows = await provider.fetchMyAttendance();
-      attendance = _firstTodayAttendance(
-        attendanceRows
-            .map(_AttendanceRecord.fromJson)
-            .where((record) => _isSameDay(record.date, DateTime.now()))
-            .where((record) => record.checkIn != null),
-      );
-    } catch (_) {
-      attendance = null;
-    }
+    final attendance = mainResults[3] as _AttendanceRecord?;
 
     final user = provider.currentUser;
 
@@ -107,6 +97,20 @@ class _SalesManagerDashboardScreenState
       attendance: attendance,
       visits: _mockVisits,
     );
+  }
+
+  Future<_AttendanceRecord?> _loadTodayAttendance(ApiProvider provider) async {
+    try {
+      final attendanceRows = await provider.fetchMyAttendance();
+      return _firstTodayAttendance(
+        attendanceRows
+            .map(_AttendanceRecord.fromJson)
+            .where((record) => _isSameDay(record.date, DateTime.now()))
+            .where((record) => record.checkIn != null),
+      );
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<void> _refresh() async {
@@ -267,9 +271,7 @@ class _SalesManagerDashboardScreenState
 
   void _openCustomers() {
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const CustomersScreen(useSalesManagerShell: true),
-      ),
+      MaterialPageRoute(builder: (_) => const DeliveryCustomersScreen()),
     );
   }
 
@@ -339,7 +341,7 @@ class _SalesManagerDashboardScreenState
 
   void _openAttendance() {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const SalesManagerAttendanceScreen()),
+      MaterialPageRoute(builder: (_) => const DeliveryAttendanceScreen()),
     );
   }
 }

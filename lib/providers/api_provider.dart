@@ -18,14 +18,14 @@ class ApiProvider extends ChangeNotifier {
 
   final ApiService _apiService;
 
-  bool _isLoading = false;
+  int _activeRequestCount = 0;
   String? _errorMessage;
   AuthSession? _session;
   CurrentUserProfile? _currentUser;
   AuthMeResponse? _authMe;
   List<RoleModel>? _roles;
 
-  bool get isLoading => _isLoading;
+  bool get isLoading => _activeRequestCount > 0;
   String? get errorMessage => _errorMessage;
   AuthSession? get session => _session;
   CurrentUserProfile? get currentUser => _currentUser;
@@ -984,11 +984,13 @@ class ApiProvider extends ChangeNotifier {
   }
 
   void _setLoading(bool value) {
-    if (_isLoading == value) {
-      return;
+    final wasLoading = isLoading;
+    if (value) {
+      _activeRequestCount++;
+    } else if (_activeRequestCount > 0) {
+      _activeRequestCount--;
     }
-    _isLoading = value;
-    notifyListeners();
+    if (wasLoading != isLoading) notifyListeners();
   }
 
   @override

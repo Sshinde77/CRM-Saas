@@ -59,7 +59,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       checkInBadge: 'On time',
       checkOut: '06:33 PM',
       workHours: '9h 04m',
-      accentColor: Color(0xFF0B4A06),
+      accentColor: Color(0xFF00092A),
     ),
     _AttendanceRecord(
       initials: 'VS',
@@ -73,7 +73,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       checkInBadge: 'Late',
       checkOut: '07:20 PM',
       workHours: '9h 42m',
-      accentColor: Color(0xFF0B4A06),
+      accentColor: Color(0xFF00092A),
     ),
     _AttendanceRecord(
       initials: 'SK',
@@ -87,7 +87,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       checkInBadge: 'On time',
       checkOut: '08:20 PM',
       workHours: '12h 22m',
-      accentColor: Color(0xFF0B4A06),
+      accentColor: Color(0xFF00092A),
     ),
     _AttendanceRecord(
       initials: 'PN',
@@ -101,7 +101,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       checkInBadge: 'On time',
       checkOut: '06:30 PM',
       workHours: '9h 03m',
-      accentColor: Color(0xFF0B4A06),
+      accentColor: Color(0xFF00092A),
     ),
   ];
 
@@ -281,7 +281,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                           width: 38,
                                           height: 38,
                                           decoration: const BoxDecoration(
-                                            color: Color(0xFF0B4A06),
+                                            color: Color(0xFF00092A),
                                             shape: BoxShape.circle,
                                           ),
                                           alignment: Alignment.center,
@@ -327,7 +327,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         value: '4',
         subtitle: 'All roles',
         icon: Icons.group_outlined,
-        iconColor: const Color(0xFF0B4A06),
+        iconColor: const Color(0xFF00092A),
         iconBg: const Color(0xFFEAF5EA),
       ),
       _StatCardData(
@@ -351,7 +351,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         value: '0',
         subtitle: '0.00% of total',
         icon: Icons.work_outline_rounded,
-        iconColor: const Color(0xFF1E5A1A),
+        iconColor: const Color(0xFF00092A),
         iconBg: const Color(0xFFEFF6EE),
       ),
       _StatCardData(
@@ -623,7 +623,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       width: 30,
       height: 30,
       decoration: BoxDecoration(
-        color: active ? const Color(0xFF0B4A06) : const Color(0xFFF8FAFC),
+        color: active ? const Color(0xFF00092A) : const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(999),
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
@@ -703,7 +703,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   child: Text(
                     record.initials,
                     style: const TextStyle(
-                      color: Color(0xFF0B4A06),
+                      color: Color(0xFF00092A),
                       fontWeight: FontWeight.w800,
                       fontSize: 14,
                     ),
@@ -808,7 +808,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             child: Text(
               record.workHours,
               style: const TextStyle(
-                color: Color(0xFF0B4A06),
+                color: Color(0xFF00092A),
                 fontSize: 14,
                 fontWeight: FontWeight.w800,
               ),
@@ -869,7 +869,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                       child: Text(
                         record.initials,
                         style: const TextStyle(
-                          color: Color(0xFF0B4A06),
+                          color: Color(0xFF00092A),
                           fontWeight: FontWeight.w800,
                           fontSize: 14,
                         ),
@@ -1083,7 +1083,7 @@ class _StatusPill extends StatelessWidget {
     final lower = label.toLowerCase();
     final isGood = lower == 'present' || lower == 'on time';
     final bg = isGood ? const Color(0xFFEAF7ED) : const Color(0xFFFFF4E5);
-    final fg = isGood ? const Color(0xFF0B4A06) : const Color(0xFFB45309);
+    final fg = isGood ? const Color(0xFF00092A) : const Color(0xFFB45309);
     final dot = isGood ? const Color(0xFF22C55E) : const Color(0xFFF59E0B);
 
     return Container(
@@ -1128,7 +1128,7 @@ class _MiniTag extends StatelessWidget {
       child: Text(
         label,
         style: TextStyle(
-          color: isGood ? const Color(0xFF0B4A06) : const Color(0xFFB45309),
+          color: isGood ? const Color(0xFF00092A) : const Color(0xFFB45309),
           fontSize: 14,
           fontWeight: FontWeight.w700,
         ),

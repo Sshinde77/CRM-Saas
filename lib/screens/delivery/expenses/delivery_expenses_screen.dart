@@ -15,6 +15,7 @@ import '../../../widgets/delivery/delivery_bottom_navigation.dart';
 import '../../../widgets/delivery/delivery_image_upload_field.dart';
 import '../../../widgets/delivery/delivery_partner_sidebar.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
+import '../../../widgets/sales_manager/sales_manager_shared_shell.dart';
 
 class DeliveryExpensesScreen extends StatefulWidget {
   const DeliveryExpensesScreen({super.key});
@@ -217,6 +218,7 @@ class _DeliveryExpensesScreenState extends State<DeliveryExpensesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final useSalesManagerShell = isSalesManagerSession(context);
     final textScaler = MediaQuery.textScalerOf(
       context,
     ).clamp(minScaleFactor: 0.9, maxScaleFactor: 1.2);
@@ -226,10 +228,17 @@ class _DeliveryExpensesScreenState extends State<DeliveryExpensesScreen> {
       child: Scaffold(
         key: _scaffoldKey,
         backgroundColor: AppColors.deliveryBackground,
-        drawer: const DeliveryPartnerSidebar(
-          currentRoute: AppRoutes.deliveryExpenses,
-        ),
-        bottomNavigationBar: const DeliveryBottomNavigation(currentIndex: -1),
+        drawer: useSalesManagerShell
+            ? buildSalesManagerDrawer(
+                context: context,
+                currentPage: 'Expenses',
+              )
+            : const DeliveryPartnerSidebar(
+                currentRoute: AppRoutes.deliveryExpenses,
+              ),
+        bottomNavigationBar: useSalesManagerShell
+            ? null
+            : const DeliveryBottomNavigation(currentIndex: -1),
         body: SafeArea(
           bottom: false,
           child: Column(

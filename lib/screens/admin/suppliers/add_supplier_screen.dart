@@ -242,7 +242,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
                             ElevatedButton(
                               onPressed: _saveSupplier,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF0B4A06),
+                                backgroundColor: const Color(0xFF00092A),
                                 foregroundColor: Colors.white,
                                 elevation: 0,
                                 padding: const EdgeInsets.symmetric(
@@ -276,7 +276,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
           width: 28,
           height: 28,
           decoration: const BoxDecoration(
-            color: Color(0xFF0B4A06),
+            color: Color(0xFF00092A),
             shape: BoxShape.circle,
           ),
           alignment: Alignment.center,
@@ -343,7 +343,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF0B4A06)),
+              borderSide: const BorderSide(color: Color(0xFF00092A)),
             ),
           ),
         ),
@@ -393,7 +393,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF0B4A06)),
+              borderSide: const BorderSide(color: Color(0xFF00092A)),
             ),
           ),
           items: items

@@ -52,6 +52,7 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
       ),
       provider.fetchCurrentVehicleStock(deliveryPartnerId),
       provider.fetchMyAttendance(),
+      _loadDashboardSummary(provider),
     ]);
 
     final deliveries = (results[0] as List<Map<String, dynamic>>)
@@ -63,7 +64,7 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
     final attendanceRecords = (results[2] as List<Map<String, dynamic>>)
         .map(_AttendanceRecord.fromJson)
         .toList();
-    final summary = await _loadDashboardSummary(provider);
+    final summary = results[3] as _DeliveryDashboardSummary;
 
     return _DashboardData(
       userName: currentUser?.name ?? 'Partner',

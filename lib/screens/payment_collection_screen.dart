@@ -12,10 +12,7 @@ import 'delivery/customers/create_delivery_customer_screen.dart';
 import 'shared/map_location_view_screen.dart';
 
 class PaymentCollectionScreen extends StatefulWidget {
-  const PaymentCollectionScreen({
-    super.key,
-    this.initialCustomerId,
-  });
+  const PaymentCollectionScreen({super.key, this.initialCustomerId});
 
   final String? initialCustomerId;
 
@@ -791,7 +788,7 @@ class _Footer extends StatelessWidget {
             style: FilledButton.styleFrom(
               minimumSize: const Size(132, 48),
               padding: const EdgeInsets.symmetric(horizontal: 12),
-              backgroundColor: const Color(0xFF064B08),
+              backgroundColor: const Color(0xFF00092A),
               foregroundColor: Colors.white,
               disabledBackgroundColor: const Color(0xFF9AB99B),
               shape: RoundedRectangleBorder(

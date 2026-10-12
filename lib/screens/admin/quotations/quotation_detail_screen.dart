@@ -463,13 +463,13 @@ class _HeroPanel extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
         gradient: const LinearGradient(
-          colors: [Color(0xFF082F0A), Color(0xFF0B4A06), Color(0xFF0F766E)],
+          colors: [Color(0xFF00092A), Color(0xFF00092A), Color(0xFF0F766E)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0B4A06).withValues(alpha: 0.22),
+            color: const Color(0xFF00092A).withValues(alpha: 0.22),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),

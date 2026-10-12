@@ -353,8 +353,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           onCancel: widget.useDeliveryShell || _isActionLoading || !canCancel
               ? null
               : _cancelOrder,
-          showActions:
-              !widget.useDeliveryShell && (canConfirm || canCancel),
+          showActions: !widget.useDeliveryShell && (canConfirm || canCancel),
         ),
         const SizedBox(height: 10),
         OrderProgressTracker(
@@ -485,7 +484,7 @@ class _HeaderCard extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF064E1B), Color(0xFF0F766E)],
+          colors: [Color(0xFF00092A), Color(0xFF0F766E)],
         ),
         borderRadius: BorderRadius.circular(16),
       ),

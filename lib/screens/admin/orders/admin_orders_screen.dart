@@ -75,7 +75,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
       'Total Orders',
       '21',
       Icons.shopping_cart_outlined,
-      Color(0xFF0B4A06),
+      Color(0xFF00092A),
     ),
     _OrderMetric(
       'Pending Orders',
@@ -221,7 +221,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
         'Total Orders',
         orders.length.toString(),
         Icons.shopping_cart_outlined,
-        const Color(0xFF0B4A06),
+        const Color(0xFF00092A),
       ),
       _OrderMetric(
         'Pending Orders',
@@ -683,10 +683,10 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                 icon: const Icon(Icons.add_rounded, size: 15),
                 label: const Text('New Order'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0B4A06),
+                  backgroundColor: const Color(0xFF00092A),
                   foregroundColor: Colors.white,
                   elevation: 6,
-                  shadowColor: const Color(0xFF0B4A06).withValues(alpha: 0.28),
+                  shadowColor: const Color(0xFF00092A).withValues(alpha: 0.28),
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(999),
@@ -724,10 +724,10 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
               icon: const Icon(Icons.add_rounded, size: 15),
               label: const Text('New Order'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0B4A06),
+                backgroundColor: const Color(0xFF00092A),
                 foregroundColor: Colors.white,
                 elevation: 6,
-                shadowColor: const Color(0xFF0B4A06).withValues(alpha: 0.28),
+                shadowColor: const Color(0xFF00092A).withValues(alpha: 0.28),
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(999),
@@ -1046,7 +1046,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                     _tabs[index],
                     style: TextStyle(
                       color: selected
-                          ? const Color(0xFF0B4A06)
+                          ? const Color(0xFF00092A)
                           : AppColors.textSecondary,
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -1058,7 +1058,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                   width: selected ? 16 : 0,
                   height: 2,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF0B4A06),
+                    color: const Color(0xFF00092A),
                     borderRadius: BorderRadius.circular(999),
                   ),
                 ),
@@ -1154,7 +1154,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
           _loadOrders();
         },
         style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
-        cursorColor: const Color(0xFF0B4A06),
+        cursorColor: const Color(0xFF00092A),
         decoration: InputDecoration(
           filled: true,
           fillColor: Colors.white,
@@ -1175,7 +1175,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFF0B4A06), width: 1),
+            borderSide: const BorderSide(color: Color(0xFF00092A), width: 1),
           ),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 12,
@@ -1260,7 +1260,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                 option,
                 style: TextStyle(
                   color: value == option
-                      ? const Color(0xFF0B4A06)
+                      ? const Color(0xFF00092A)
                       : AppColors.textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
@@ -1288,7 +1288,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
             'All payments',
             style: TextStyle(
               color: _selectedPayment == 'All payments'
-                  ? const Color(0xFF0B4A06)
+                  ? const Color(0xFF00092A)
                   : AppColors.textPrimary,
               fontWeight: FontWeight.w600,
             ),
@@ -1301,7 +1301,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
               payment,
               style: TextStyle(
                 color: _selectedPayment == payment
-                    ? const Color(0xFF0B4A06)
+                    ? const Color(0xFF00092A)
                     : AppColors.textPrimary,
                 fontWeight: FontWeight.w600,
               ),

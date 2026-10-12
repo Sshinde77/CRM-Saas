@@ -24,7 +24,7 @@ class _AccountScreenState extends State<AccountScreen> {
   static const Color _titleColor = Color(0xFF0F172A);
   static const Color _mutedColor = Color(0xFF64748B);
   static const Color _cardBg = Colors.white;
-  static const Color _accent = Color(0xFF0B4D08);
+  static const Color _accent = Color(0xFF00092A);
   final ApiService _apiService = ApiService();
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -1634,7 +1634,7 @@ class _SectionCard extends StatelessWidget {
                     width: 30,
                     height: 30,
                     decoration: const BoxDecoration(
-                      color: Color(0xFF0B4D08),
+                      color: Color(0xFF00092A),
                       shape: BoxShape.circle,
                     ),
                     alignment: Alignment.center,

@@ -451,7 +451,7 @@ class _AppDrawerState extends State<AppDrawer> {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFF0D3B07),
+        color: const Color(0xFF00092A),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(

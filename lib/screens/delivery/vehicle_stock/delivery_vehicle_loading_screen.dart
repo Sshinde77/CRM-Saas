@@ -94,7 +94,9 @@ class _DeliveryVehicleLoadingScreenState
     final currentStock = results[3] as Map<String, dynamic>?;
     final loadableDeliveries = deliveryRows
         .map(_LoadableDelivery.fromJson)
-        .where((delivery) => delivery.id.isNotEmpty && delivery.items.isNotEmpty)
+        .where(
+          (delivery) => delivery.id.isNotEmpty && delivery.items.isNotEmpty,
+        )
         .toList();
     final plannedQuantities = <String, double>{};
     for (final delivery in loadableDeliveries) {
@@ -153,9 +155,8 @@ class _DeliveryVehicleLoadingScreenState
     final products = allProducts
         .where((product) => plannedQuantities.containsKey(product.id))
         .map(
-          (product) => product.copyWith(
-            ordered: plannedQuantities[product.id] ?? 0,
-          ),
+          (product) =>
+              product.copyWith(ordered: plannedQuantities[product.id] ?? 0),
         )
         .toList();
 
@@ -383,8 +384,7 @@ class _DeliveryVehicleLoadingScreenState
     try {
       final provider = ApiProviderScope.of(context);
       for (final delivery in _loadableDeliveries) {
-        if (delivery.needsReady &&
-            !_readiedDeliveryIds.contains(delivery.id)) {
+        if (delivery.needsReady && !_readiedDeliveryIds.contains(delivery.id)) {
           await provider.markDeliveryReady(delivery.id);
           _readiedDeliveryIds.add(delivery.id);
         }
@@ -455,22 +455,19 @@ class _DeliveryVehicleLoadingScreenState
       }
       await provider.addExtraVehicleStock(
         sessionId: session.id,
-        items: quantities.entries
-            .where((entry) => entry.value > 0)
-            .map((entry) {
-              final matches = _catalogProducts.where(
-                (product) => product.id == entry.key,
-              );
-              final variantId = matches.isEmpty
-                  ? ''
-                  : matches.first.variantId;
-              return {
-                'product_id': entry.key,
-                if (variantId.isNotEmpty) 'variant_id': variantId,
-                'quantity': entry.value,
-              };
-            })
-            .toList(),
+        items: quantities.entries.where((entry) => entry.value > 0).map((
+          entry,
+        ) {
+          final matches = _catalogProducts.where(
+            (product) => product.id == entry.key,
+          );
+          final variantId = matches.isEmpty ? '' : matches.first.variantId;
+          return {
+            'product_id': entry.key,
+            if (variantId.isNotEmpty) 'variant_id': variantId,
+            'quantity': entry.value,
+          };
+        }).toList(),
       );
       await _loadInitialData();
       if (mounted) _showMessage('New load added successfully.');
@@ -544,124 +541,128 @@ class _DeliveryVehicleLoadingScreenState
         child: FutureBuilder<void>(
           future: _future,
           builder: (context, snapshot) {
-          final isLoading =
-              snapshot.connectionState == ConnectionState.waiting &&
-              _products.isEmpty;
-          final error = snapshot.hasError ? _cleanError(snapshot.error) : null;
+            final isLoading =
+                snapshot.connectionState == ConnectionState.waiting &&
+                _products.isEmpty;
+            final error = snapshot.hasError
+                ? _cleanError(snapshot.error)
+                : null;
 
             return Column(
               children: [
-              DeliveryTopBar(
-                title: 'Vehicle Loading',
-                subtitle: 'Load picked deliveries onto your vehicle',
-                leadingIcon: Icons.arrow_back_rounded,
-                onLeadingTap: () => Navigator.of(context).maybePop(),
-              ),
-              Expanded(
-                child: RefreshIndicator(
-                  color: AppColors.deliveryGreen,
-                  onRefresh: () async {
-                    final request = _loadInitialData();
-                    setState(() => _future = request);
-                    await request;
-                  },
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(
-                      parent: BouncingScrollPhysics(),
-                    ),
-                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 18),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 760),
-                        child: Column(
-                          children: [
-                            _KpiPanel(
-                              orderUnits:
-                                  _loadableDeliveries.isNotEmpty
-                                  ? _orderUnits
-                                  : _session?.totalOrdered.round() ?? 0,
-                              loadedUnits: _session?.totalLoaded.round() ?? 0,
-                              session: _session,
-                            ),
-                            const SizedBox(height: 14),
-                            if (isLoading)
-                              const _LoadingPanel()
-                            else if (error != null)
-                              _ErrorPanel(
-                                message: error,
-                                onRetry: () {
-                                  final request = _loadInitialData();
-                                  setState(() => _future = request);
-                                },
-                              )
-                            else ...[
-                              _DetailsCard(
-                                loadingDate: _loadingDate,
-                                deliveryPartner: _user.name,
-                                vehicleNumber:
-                                    _session?.vehicleNumber ?? _vehicleNumber,
-                                status: _session?.status,
-                                onPickDate: _pickDate,
+                DeliveryTopBar(
+                  title: 'Vehicle Loading',
+                  subtitle: 'Load picked deliveries onto your vehicle',
+                  leadingIcon: Icons.arrow_back_rounded,
+                  onLeadingTap: () => Navigator.of(context).maybePop(),
+                ),
+                Expanded(
+                  child: RefreshIndicator(
+                    color: AppColors.deliveryGreen,
+                    onRefresh: () async {
+                      final request = _loadInitialData();
+                      setState(() => _future = request);
+                      await request;
+                    },
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(
+                        parent: BouncingScrollPhysics(),
+                      ),
+                      padding: const EdgeInsets.fromLTRB(12, 12, 12, 18),
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 760),
+                          child: Column(
+                            children: [
+                              _KpiPanel(
+                                orderUnits: _loadableDeliveries.isNotEmpty
+                                    ? _orderUnits
+                                    : _session?.totalOrdered.round() ?? 0,
+                                loadedUnits: _session?.totalLoaded.round() ?? 0,
+                                session: _session,
                               ),
                               const SizedBox(height: 14),
-                              if (_session != null) ...[
-                                _LoadedSessionBanner(session: _session!),
-                                const SizedBox(height: 14),
-                                _SessionProductsCard(session: _session!),
-                                if (_loadableDeliveries.isNotEmpty)
-                                  const SizedBox(height: 14),
-                              ],
-                              if (_loadableDeliveries.isNotEmpty)
-                                _ProductsCard(
-                                  searchController: _searchController,
-                                  quantityController: _quantityController,
-                                  products: _filteredProducts,
-                                  selectedProduct: _selectedProduct,
-                                  items: _items,
-                                  itemControllers: _itemControllers,
-                                  controllerForProduct: _controllerForProduct,
-                                  onProductQuantityChanged: _updateProductLoad,
-                                  categories: _categories,
-                                  selectedCategory: _selectedCategory,
-                                  onCategoryChanged: (category) => setState(
-                                    () => _selectedCategory = category,
-                                  ),
-                                  onSearchChanged: _handleSearchChanged,
-                                  onProductChanged: (product) {
-                                    setState(() => _selectedProduct = product);
+                              if (isLoading)
+                                const _LoadingPanel()
+                              else if (error != null)
+                                _ErrorPanel(
+                                  message: error,
+                                  onRetry: () {
+                                    final request = _loadInitialData();
+                                    setState(() => _future = request);
                                   },
-                                  onAdd: _addProduct,
-                                  onClear: _clearItems,
-                                  onRemove: _removeItem,
-                                  onQuantityChanged: _updateItemQuantity,
                                 )
-                              else if (_session == null)
-                                const _NoPlannedDeliveries(),
-                              if (_error != null) ...[
-                                const SizedBox(height: 12),
-                                _InlineError(message: _error!),
+                              else ...[
+                                _DetailsCard(
+                                  loadingDate: _loadingDate,
+                                  deliveryPartner: _user.name,
+                                  vehicleNumber:
+                                      _session?.vehicleNumber ?? _vehicleNumber,
+                                  status: _session?.status,
+                                  onPickDate: _pickDate,
+                                ),
+                                const SizedBox(height: 14),
+                                if (_session != null) ...[
+                                  _LoadedSessionBanner(session: _session!),
+                                  const SizedBox(height: 14),
+                                  _SessionProductsCard(session: _session!),
+                                  if (_loadableDeliveries.isNotEmpty)
+                                    const SizedBox(height: 14),
+                                ],
+                                if (_loadableDeliveries.isNotEmpty)
+                                  _ProductsCard(
+                                    searchController: _searchController,
+                                    quantityController: _quantityController,
+                                    products: _filteredProducts,
+                                    selectedProduct: _selectedProduct,
+                                    items: _items,
+                                    itemControllers: _itemControllers,
+                                    controllerForProduct: _controllerForProduct,
+                                    onProductQuantityChanged:
+                                        _updateProductLoad,
+                                    categories: _categories,
+                                    selectedCategory: _selectedCategory,
+                                    onCategoryChanged: (category) => setState(
+                                      () => _selectedCategory = category,
+                                    ),
+                                    onSearchChanged: _handleSearchChanged,
+                                    onProductChanged: (product) {
+                                      setState(
+                                        () => _selectedProduct = product,
+                                      );
+                                    },
+                                    onAdd: _addProduct,
+                                    onClear: _clearItems,
+                                    onRemove: _removeItem,
+                                    onQuantityChanged: _updateItemQuantity,
+                                  )
+                                else if (_session == null)
+                                  const _NoPlannedDeliveries(),
+                                if (_error != null) ...[
+                                  const SizedBox(height: 12),
+                                  _InlineError(message: _error!),
+                                ],
                               ],
                             ],
-                          ],
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              if (_loadableDeliveries.isNotEmpty)
-                _BottomSummary(
-                  totalUnits: _totalUnits,
-                  productLines: _items.length,
-                  isSubmitting: _isSubmitting,
-                  onSave: _isSubmitting ? null : _submit,
-                )
-              else if (_session != null && !_session!.isClosed)
-                _ActiveBottomActions(
-                  busy: _isSubmitting,
-                  onAddLoad: _showAddLoadDialog,
-                  onCloseToday: _showCloseTodayDialog,
-                ),
+                if (_loadableDeliveries.isNotEmpty)
+                  _BottomSummary(
+                    totalUnits: _totalUnits,
+                    productLines: _items.length,
+                    isSubmitting: _isSubmitting,
+                    onSave: _isSubmitting ? null : _submit,
+                  )
+                else if (_session != null && !_session!.isClosed)
+                  _ActiveBottomActions(
+                    busy: _isSubmitting,
+                    onAddLoad: _showAddLoadDialog,
+                    onCloseToday: _showCloseTodayDialog,
+                  ),
               ],
             );
           },
@@ -1277,9 +1278,7 @@ class _SessionProductsCardState extends State<_SessionProductsCard> {
             for (final item in items)
               Padding(
                 padding: const EdgeInsets.only(bottom: 10),
-                child: _SessionProductRow(
-                  item: item,
-                ),
+                child: _SessionProductRow(item: item),
               ),
         ],
       ),
@@ -2670,9 +2669,7 @@ class _LoadableDelivery {
         ? const <_LoadableDeliveryItem>[]
         : _readList(json, const ['items', 'delivery_items', 'deliveryItems'])
               .map(_LoadableDeliveryItem.fromJson)
-              .where(
-                (item) => item.productId.isNotEmpty && item.remaining > 0,
-              )
+              .where((item) => item.productId.isNotEmpty && item.remaining > 0)
               .toList();
     return _LoadableDelivery(
       id: _readString(json, const ['id', '_id', 'delivery_id', 'deliveryId']),
@@ -2681,11 +2678,8 @@ class _LoadableDelivery {
     );
   }
 
-  bool get needsReady => !const {
-    'ready',
-    'loaded',
-    'in_transit',
-  }.contains(status);
+  bool get needsReady =>
+      !const {'ready', 'loaded', 'in_transit'}.contains(status);
 }
 
 class _LoadableDeliveryItem {
@@ -2774,10 +2768,7 @@ class _LoadingProduct {
       variantId: _firstNonEmpty([
         _readString(json, const ['variant_id', 'variantId']),
         _readString(source, const ['variant_id', 'variantId']),
-        _readString(
-          _readMap(json, const ['variant']),
-          const ['id', '_id'],
-        ),
+        _readString(_readMap(json, const ['variant']), const ['id', '_id']),
       ]),
       name: _readString(source, const [
         'name',

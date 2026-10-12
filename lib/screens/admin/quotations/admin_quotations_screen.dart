@@ -408,7 +408,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
                 icon: const Icon(Icons.add, size: 18),
                 label: const Text('New Quotation'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0B4A06),
+                  backgroundColor: const Color(0xFF00092A),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 18,
@@ -463,7 +463,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
   Widget _loadingState() {
     return const Padding(
       padding: EdgeInsets.symmetric(vertical: 80),
-      child: Center(child: CircularProgressIndicator(color: Color(0xFF0B4A06))),
+      child: Center(child: CircularProgressIndicator(color: Color(0xFF00092A))),
     );
   }
 
@@ -508,7 +508,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
                     icon: const Icon(Icons.add, size: 18),
                     label: const Text('New Quotation'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0B4A06),
+                      backgroundColor: const Color(0xFF00092A),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
@@ -613,7 +613,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFF0B4A06)),
+          borderSide: const BorderSide(color: Color(0xFF00092A)),
         ),
       ),
     );
@@ -651,7 +651,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFF0B4A06)),
+          borderSide: const BorderSide(color: Color(0xFF00092A)),
         ),
       ),
       icon: const Icon(

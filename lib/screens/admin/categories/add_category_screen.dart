@@ -301,7 +301,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
                           icon: const Icon(Icons.upload_outlined, size: 18),
                           label: const Text('Upload'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF0B4A06),
+                            backgroundColor: const Color(0xFF00092A),
                             foregroundColor: Colors.white,
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -330,7 +330,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
                           icon: const Icon(Icons.upload_outlined, size: 18),
                           label: const Text('Upload'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF0B4A06),
+                            backgroundColor: const Color(0xFF00092A),
                             foregroundColor: Colors.white,
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -589,7 +589,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
         icon: const Icon(Icons.add, size: 16),
         label: const Text('Add Category'),
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF0B4A06),
+          backgroundColor: const Color(0xFF00092A),
           foregroundColor: Colors.white,
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -739,7 +739,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF0B4A06)),
+              borderSide: const BorderSide(color: Color(0xFF00092A)),
             ),
           ),
         ),

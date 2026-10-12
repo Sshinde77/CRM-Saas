@@ -281,7 +281,7 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
         icon: Icon(Icons.add, size: compact ? 16 : 17),
         label: const Text('New Role'),
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF0B4A06),
+          backgroundColor: const Color(0xFF00092A),
           foregroundColor: Colors.white,
           elevation: 0,
           padding: EdgeInsets.symmetric(horizontal: compact ? 14 : 16),
@@ -331,7 +331,7 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: Color(0xFF0B4A06), width: 1.2),
+            borderSide: const BorderSide(color: Color(0xFF00092A), width: 1.2),
           ),
         ),
       ),
@@ -571,7 +571,7 @@ class _DefaultPill extends StatelessWidget {
       child: const Text(
         'Default',
         style: TextStyle(
-          color: Color(0xFF0B4A06),
+          color: Color(0xFF00092A),
           fontSize: 14,
           fontWeight: FontWeight.w700,
         ),

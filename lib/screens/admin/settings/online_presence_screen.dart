@@ -9,7 +9,7 @@ import '../../../widgets/admin/admin_top_bar.dart';
 
 const Color kOnlinePresenceTitleColor = Color(0xFF0F172A);
 const Color kOnlinePresenceMutedColor = Color(0xFF64748B);
-const Color kOnlinePresenceAccentColor = Color(0xFF0B4D08);
+const Color kOnlinePresenceAccentColor = Color(0xFF00092A);
 const Color kOnlinePresenceBorderColor = Color(0xFFD8DFD8);
 const Color kOnlinePresenceFieldBg = Colors.white;
 

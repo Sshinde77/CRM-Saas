@@ -13,7 +13,7 @@ import '../../../widgets/admin/admin_top_bar.dart';
 
 const Color kBrandingTitleColor = Color(0xFF0F172A);
 const Color kBrandingMutedColor = Color(0xFF64748B);
-const Color kBrandingAccentColor = Color(0xFF0B4D08);
+const Color kBrandingAccentColor = Color(0xFF00092A);
 const Color kBrandingBorderColor = Color(0xFFD8DFD8);
 
 class BrandingIdentityScreen extends StatefulWidget {

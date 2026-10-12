@@ -11,6 +11,7 @@ import '../../../services/api_service.dart';
 import '../../../widgets/delivery/delivery_bottom_navigation.dart';
 import '../../../widgets/delivery/delivery_partner_sidebar.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
+import '../../../widgets/sales_manager/sales_manager_shared_shell.dart';
 
 class DeliveryLeavesScreen extends StatefulWidget {
   const DeliveryLeavesScreen({super.key});
@@ -175,6 +176,7 @@ class _DeliveryLeavesScreenState extends State<DeliveryLeavesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final useSalesManagerShell = isSalesManagerSession(context);
     final textScaler = MediaQuery.textScalerOf(
       context,
     ).clamp(minScaleFactor: 0.9, maxScaleFactor: 1.2);
@@ -185,10 +187,14 @@ class _DeliveryLeavesScreenState extends State<DeliveryLeavesScreen> {
       child: Scaffold(
         key: _scaffoldKey,
         backgroundColor: AppColors.deliveryBackground,
-        drawer: const DeliveryPartnerSidebar(
-          currentRoute: AppRoutes.deliveryLeaves,
-        ),
-        bottomNavigationBar: const DeliveryBottomNavigation(currentIndex: -1),
+        drawer: useSalesManagerShell
+            ? buildSalesManagerDrawer(context: context, currentPage: 'Leaves')
+            : const DeliveryPartnerSidebar(
+                currentRoute: AppRoutes.deliveryLeaves,
+              ),
+        bottomNavigationBar: useSalesManagerShell
+            ? null
+            : const DeliveryBottomNavigation(currentIndex: -1),
         floatingActionButton: SizedBox(
           height: 48,
           child: FloatingActionButton.extended(

@@ -161,7 +161,8 @@ class _DeliveryCustomerDetailScreenState
                                         customer: customer!,
                                         photoUrl:
                                             customer.profilePhotoUrl ??
-                                            widget.initialCustomer
+                                            widget
+                                                .initialCustomer
                                                 ?.profilePhotoUrl,
                                         onCall: _call,
                                         onMap: _map,

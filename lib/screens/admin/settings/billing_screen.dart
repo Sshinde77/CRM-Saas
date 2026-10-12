@@ -21,7 +21,7 @@ class BillingScreen extends StatefulWidget {
 class _BillingScreenState extends State<BillingScreen> {
   static const Color _titleColor = Color(0xFF0F172A);
   static const Color _mutedColor = Color(0xFF64748B);
-  static const Color _accent = Color(0xFF0B4D08);
+  static const Color _accent = Color(0xFF00092A);
   static const Color _borderColor = Color(0xFFD8DFD8);
   static const Color _fieldBg = Colors.white;
   final ApiService _apiService = ApiService();

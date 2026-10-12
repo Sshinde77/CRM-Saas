@@ -11,6 +11,7 @@ import '../../../widgets/customer_avatar.dart';
 import '../../../widgets/delivery/delivery_bottom_navigation.dart';
 import '../../../widgets/delivery/delivery_partner_sidebar.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
+import '../../../widgets/sales_manager/sales_manager_shared_shell.dart';
 import '../../shared/map_location_view_screen.dart';
 import 'delivery_customer_detail_screen.dart';
 import 'create_delivery_customer_screen.dart';
@@ -107,6 +108,7 @@ class _DeliveryCustomersScreenState extends State<DeliveryCustomersScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final useSalesManagerShell = isSalesManagerSession(context);
     final textScaler = MediaQuery.textScalerOf(
       context,
     ).clamp(minScaleFactor: 0.9, maxScaleFactor: 1.2);
@@ -127,10 +129,17 @@ class _DeliveryCustomersScreenState extends State<DeliveryCustomersScreen> {
       child: Scaffold(
         key: _scaffoldKey,
         backgroundColor: AppColors.deliveryBackground,
-        drawer: const DeliveryPartnerSidebar(
-          currentRoute: AppRoutes.deliveryCustomers,
-        ),
-        bottomNavigationBar: const DeliveryBottomNavigation(currentIndex: -1),
+        drawer: useSalesManagerShell
+            ? buildSalesManagerDrawer(
+                context: context,
+                currentPage: 'Customers',
+              )
+            : const DeliveryPartnerSidebar(
+                currentRoute: AppRoutes.deliveryCustomers,
+              ),
+        bottomNavigationBar: useSalesManagerShell
+            ? null
+            : const DeliveryBottomNavigation(currentIndex: -1),
         body: SafeArea(
           bottom: false,
           child: Column(

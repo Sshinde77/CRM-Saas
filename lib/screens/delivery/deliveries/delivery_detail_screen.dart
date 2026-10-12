@@ -272,7 +272,8 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
         fileBytes: _paymentConfirmation!,
         fileName: _paymentConfirmationName ?? 'payment-proof.jpg',
       );
-      final paidAmount = double.tryParse(_paidAmountController.text.trim()) ?? 0;
+      final paidAmount =
+          double.tryParse(_paidAmountController.text.trim()) ?? 0;
       await _submitDeliveryAction(
         delivery,
         payload: {
@@ -2207,10 +2208,7 @@ class _DetailRow extends StatelessWidget {
             flex: 5,
             child: Text(
               label,
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(color: color, fontWeight: FontWeight.w600),
             ),
           ),
           const SizedBox(width: 12),

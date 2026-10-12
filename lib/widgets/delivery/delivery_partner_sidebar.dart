@@ -189,7 +189,7 @@ class _SidebarHeader extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF042D0A), Color(0xFF075E19)],
+          colors: [AppColors.primary900, AppColors.primary],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -226,7 +226,7 @@ class _SidebarHeader extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: Color(0xFFE7F7EA),
+                    color: AppColors.activeMenuBg,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -255,7 +255,7 @@ class _SidebarBrandMark extends StatelessWidget {
       ),
       child: const Icon(
         Icons.delivery_dining_rounded,
-        color: Color(0xFFBDEAA5),
+        color: AppColors.activeMenuBg,
         size: AppSizes.iconLarge,
       ),
     );
@@ -275,12 +275,12 @@ class _SidebarItemTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = active ? AppColors.deliveryGreen : const Color(0xFF4F5870);
+    final color = active ? AppColors.primary : const Color(0xFF4F5870);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: Material(
-        color: active ? const Color(0xFFE5F6E7) : Colors.transparent,
+        color: active ? AppColors.activeMenuBg : Colors.transparent,
         borderRadius: BorderRadius.circular(AppSizes.cardRadius),
         child: InkWell(
           onTap: onTap,
@@ -291,7 +291,9 @@ class _SidebarItemTile extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(AppSizes.cardRadius),
               border: active
-                  ? Border.all(color: const Color(0xFFCDECCD))
+                  ? Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.18),
+                    )
                   : Border.all(color: Colors.transparent),
             ),
             child: Row(
@@ -317,7 +319,7 @@ class _SidebarItemTile extends StatelessWidget {
                     width: 7,
                     height: 7,
                     decoration: const BoxDecoration(
-                      color: AppColors.deliveryGreen,
+                      color: AppColors.primary,
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -349,7 +351,9 @@ class _AttendanceStatusCard extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppSizes.cardRadius),
             border: Border.all(
-              color: active ? const Color(0xFFCDECCD) : const Color(0xFFE2E7F0),
+              color: active
+                  ? AppColors.primary.withValues(alpha: 0.18)
+                  : const Color(0xFFE2E7F0),
             ),
             boxShadow: [
               BoxShadow(
@@ -365,12 +369,12 @@ class _AttendanceStatusCard extends StatelessWidget {
                 width: 38,
                 height: 38,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE5F6E7),
+                  color: AppColors.activeMenuBg,
                   borderRadius: BorderRadius.circular(AppSizes.cardRadius),
                 ),
                 child: const Icon(
                   Icons.fact_check_outlined,
-                  color: AppColors.deliveryGreen,
+                  color: AppColors.primary,
                   size: AppSizes.bottomNavIcon,
                 ),
               ),
@@ -405,7 +409,7 @@ class _AttendanceStatusCard extends StatelessWidget {
               ),
               const Icon(
                 Icons.chevron_right_rounded,
-                color: AppColors.deliveryGreen,
+                color: AppColors.primary,
               ),
             ],
           ),

@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../constants/app_colors.dart';
+import '../../screens/delivery/attendance/delivery_attendance_screen.dart';
+import '../../screens/delivery/customers/delivery_customers_screen.dart';
+import '../../screens/delivery/deliveries/assigned_deliveries_screen.dart';
+import '../../screens/delivery/expenses/delivery_expenses_screen.dart';
+import '../../screens/delivery/leaves/delivery_leaves_screen.dart';
 
 class SalesManagerSidebarDrawer extends StatelessWidget {
   final ValueChanged<String> onSelect;
@@ -36,6 +41,7 @@ class SalesManagerSidebar extends StatelessWidget {
     final items = <_SidebarItem>[
       const _SidebarItem('Dashboard', Icons.dashboard_outlined),
       const _SidebarItem('Customers', Icons.groups_outlined),
+      const _SidebarItem('Deliveries', Icons.local_shipping_outlined),
       const _SidebarItem('Leads', Icons.person_add_alt_1_outlined),
       const _SidebarItem('Quotations', Icons.description_outlined),
       const _SidebarItem(
@@ -48,6 +54,8 @@ class SalesManagerSidebar extends StatelessWidget {
       const _SidebarItem('Visits', Icons.place_outlined),
       const _SidebarItem('Follow-ups', Icons.notifications_active_outlined),
       const _SidebarItem('Attendance', Icons.fact_check_outlined),
+      const _SidebarItem('Leaves', Icons.event_busy_outlined),
+      const _SidebarItem('Expenses', Icons.receipt_long_outlined),
       const _SidebarItem('My Performance', Icons.bar_chart_outlined),
     ];
 
@@ -88,7 +96,10 @@ class SalesManagerSidebar extends StatelessWidget {
                     color: Colors.transparent,
                     child: InkWell(
                       borderRadius: BorderRadius.circular(18),
-                      onTap: () => onSelect(item.actionLabel ?? item.label),
+                      onTap: () => _handleTap(
+                        context,
+                        item.actionLabel ?? item.label,
+                      ),
                       child: Ink(
                         decoration: BoxDecoration(
                           color: selected
@@ -157,6 +168,27 @@ class SalesManagerSidebar extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  void _handleTap(BuildContext context, String action) {
+    final Widget? sharedDeliveryScreen = switch (action) {
+      'Customers' => const DeliveryCustomersScreen(),
+      'Deliveries' => const AssignedDeliveriesScreen(),
+      'Attendance' => const DeliveryAttendanceScreen(),
+      'Leaves' => const DeliveryLeavesScreen(),
+      'Expenses' => const DeliveryExpensesScreen(),
+      _ => null,
+    };
+
+    if (sharedDeliveryScreen == null) {
+      onSelect(action);
+      return;
+    }
+
+    Navigator.of(context).pop();
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => sharedDeliveryScreen),
     );
   }
 

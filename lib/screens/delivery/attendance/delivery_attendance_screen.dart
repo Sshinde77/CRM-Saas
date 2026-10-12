@@ -9,6 +9,7 @@ import '../../../providers/api_provider.dart';
 import '../../../routes/app_router.dart';
 import '../../../widgets/delivery/delivery_partner_sidebar.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
+import '../../../widgets/sales_manager/sales_manager_shared_shell.dart';
 import 'delivery_attendance_calendar_screen.dart';
 
 class DeliveryAttendanceScreen extends StatefulWidget {
@@ -70,16 +71,24 @@ class _DeliveryAttendanceScreenState extends State<DeliveryAttendanceScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final useSalesManagerShell = isSalesManagerSession(context);
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: const Color(0xFFF8FAF9),
-      drawer: const DeliveryPartnerSidebar(
-        currentRoute: AppRoutes.deliveryAttendance,
-      ),
-      bottomNavigationBar: DeliveryBottomNavigation(
-        currentIndex: 3,
-        onCollectionCreated: _refresh,
-      ),
+      drawer: useSalesManagerShell
+          ? buildSalesManagerDrawer(
+              context: context,
+              currentPage: 'Attendance',
+            )
+          : const DeliveryPartnerSidebar(
+              currentRoute: AppRoutes.deliveryAttendance,
+            ),
+      bottomNavigationBar: useSalesManagerShell
+          ? null
+          : DeliveryBottomNavigation(
+              currentIndex: 3,
+              onCollectionCreated: _refresh,
+            ),
       body: SafeArea(
         bottom: false,
         child: FutureBuilder<List<DeliveryAttendanceRecord>>(

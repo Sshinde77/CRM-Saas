@@ -9,7 +9,7 @@ import '../../../widgets/admin/admin_top_bar.dart';
 
 const Color kBusinessTitleColor = Color(0xFF0F172A);
 const Color kBusinessMutedColor = Color(0xFF64748B);
-const Color kBusinessAccentColor = Color(0xFF0B4D08);
+const Color kBusinessAccentColor = Color(0xFF00092A);
 const Color kBusinessBorderColor = Color(0xFFD8DFD8);
 const Color kBusinessFieldBg = Colors.white;
 

@@ -25,10 +25,7 @@ class ApiException implements Exception {
   const ApiException({this.statusCode, required this.message});
 
   @override
-  String toString() {
-    if (statusCode == null) return 'ApiException: $message';
-    return 'ApiException($statusCode): $message';
-  }
+  String toString() => message;
 }
 
 class PaginatedOrdersResult {
@@ -65,6 +62,13 @@ class ApiService {
 
   final http.Client _client;
   final String baseUrl;
+  final Map<String, _CachedApiResponse> _responseCache = {};
+  final Map<String, Future<http.Response>> _inFlightGets = {};
+  int _cacheGeneration = 0;
+
+  static const Duration _responseCacheTtl = Duration(seconds: 20);
+  static const Duration _staleResponseTtl = Duration(minutes: 10);
+  static const int _responseCacheLimit = 100;
 
   ApiService({http.Client? client, String? baseUrl})
     : _client = client ?? http.Client(),
@@ -81,6 +85,8 @@ class ApiService {
   }
 
   void close() {
+    _responseCache.clear();
+    _inFlightGets.clear();
     _client.close();
   }
 
@@ -1155,12 +1161,16 @@ class ApiService {
       endpoint: ApiEndpoints.vehicleStockExtraLoad(id),
       requiresAuth: true,
       body: {
-        'items': items.map((item) => {
-          'product_id': item['product_id'] ?? item['productId'],
-          if ((item['variant_id'] ?? item['variantId']) != null)
-            'variant_id': item['variant_id'] ?? item['variantId'],
-          'quantity': item['quantity'] ?? item['loaded_qty'] ?? 0,
-        }).toList(),
+        'items': items
+            .map(
+              (item) => {
+                'product_id': item['product_id'] ?? item['productId'],
+                if ((item['variant_id'] ?? item['variantId']) != null)
+                  'variant_id': item['variant_id'] ?? item['variantId'],
+                'quantity': item['quantity'] ?? item['loaded_qty'] ?? 0,
+              },
+            )
+            .toList(),
       },
     );
     return _requireDecodedMap(
@@ -1206,7 +1216,9 @@ class ApiService {
         .where((id) => id.isNotEmpty)
         .toList();
     if (ids.isEmpty) {
-      throw const ApiException(message: 'Select at least one delivery to load.');
+      throw const ApiException(
+        message: 'Select at least one delivery to load.',
+      );
     }
     final response = await _send(
       method: 'POST',
@@ -2805,6 +2817,76 @@ class ApiService {
     Duration? timeout,
     bool retryOnTimeout = false,
   }) async {
+    final normalizedMethod = method.toUpperCase();
+    if (normalizedMethod != 'GET') {
+      final response = await _sendUncached(
+        method: normalizedMethod,
+        endpoint: endpoint,
+        requiresAuth: requiresAuth,
+        body: body,
+        queryParameters: queryParameters,
+        timeout: timeout,
+        retryOnTimeout: retryOnTimeout,
+      );
+      _invalidateResponseCache();
+      return response;
+    }
+
+    final uri = _apiUri(endpoint, queryParameters: queryParameters);
+    final cacheKey = _getCacheKey(uri, requiresAuth: requiresAuth);
+    final now = DateTime.now();
+    final cached = _responseCache[cacheKey];
+    if (cached != null && now.difference(cached.storedAt) < _responseCacheTtl) {
+      return cached.response;
+    }
+    if (cached != null && now.difference(cached.storedAt) < _staleResponseTtl) {
+      _refreshCachedGet(
+        cacheKey: cacheKey,
+        method: normalizedMethod,
+        endpoint: endpoint,
+        requiresAuth: requiresAuth,
+        queryParameters: queryParameters,
+        timeout: timeout,
+        retryOnTimeout: retryOnTimeout,
+      );
+      return cached.response;
+    }
+    if (cached != null) _responseCache.remove(cacheKey);
+
+    final existingRequest = _inFlightGets[cacheKey];
+    if (existingRequest != null) return existingRequest;
+
+    final requestGeneration = _cacheGeneration;
+    final request = _sendUncached(
+      method: normalizedMethod,
+      endpoint: endpoint,
+      requiresAuth: requiresAuth,
+      body: body,
+      queryParameters: queryParameters,
+      timeout: timeout,
+      retryOnTimeout: retryOnTimeout,
+    );
+    _inFlightGets[cacheKey] = request;
+    try {
+      final response = await request;
+      if (requestGeneration == _cacheGeneration) {
+        _storeCachedResponse(cacheKey, response);
+      }
+      return response;
+    } finally {
+      _inFlightGets.remove(cacheKey);
+    }
+  }
+
+  Future<http.Response> _sendUncached({
+    required String method,
+    required String endpoint,
+    bool requiresAuth = false,
+    Map<String, dynamic>? body,
+    Map<String, String>? queryParameters,
+    Duration? timeout,
+    bool retryOnTimeout = false,
+  }) async {
     final uri = _apiUri(endpoint, queryParameters: queryParameters);
     final encodedBody = body == null ? null : jsonEncode(body);
 
@@ -2878,7 +2960,7 @@ class ApiService {
 
         throw const ApiException(
           message:
-              'The server is still starting. Please wait while we retry your login.',
+              'The request timed out. Check your internet connection and try again.',
         );
       } on http.ClientException catch (error) {
         _logTransportError(
@@ -2907,6 +2989,61 @@ class ApiService {
     }
 
     throw const ApiException(message: 'API request failed.');
+  }
+
+  String _getCacheKey(Uri uri, {required bool requiresAuth}) {
+    final token = requiresAuth ? (_accessToken ?? '') : '';
+    return '${requiresAuth ? token.hashCode : 'public'}|$uri';
+  }
+
+  void _storeCachedResponse(String key, http.Response response) {
+    final now = DateTime.now();
+    _responseCache.removeWhere(
+      (_, entry) => now.difference(entry.storedAt) >= _staleResponseTtl,
+    );
+    while (_responseCache.length >= _responseCacheLimit) {
+      _responseCache.remove(_responseCache.keys.first);
+    }
+    _responseCache[key] = _CachedApiResponse(response: response, storedAt: now);
+  }
+
+  void _invalidateResponseCache() {
+    _cacheGeneration++;
+    _responseCache.clear();
+  }
+
+  void _refreshCachedGet({
+    required String cacheKey,
+    required String method,
+    required String endpoint,
+    required bool requiresAuth,
+    required Map<String, String>? queryParameters,
+    required Duration? timeout,
+    required bool retryOnTimeout,
+  }) {
+    if (_inFlightGets.containsKey(cacheKey)) return;
+    final requestGeneration = _cacheGeneration;
+    final request = _sendUncached(
+      method: method,
+      endpoint: endpoint,
+      requiresAuth: requiresAuth,
+      queryParameters: queryParameters,
+      timeout: timeout,
+      retryOnTimeout: retryOnTimeout,
+    );
+    _inFlightGets[cacheKey] = request;
+    request
+        .then<void>(
+          (response) {
+            if (requestGeneration == _cacheGeneration) {
+              _storeCachedResponse(cacheKey, response);
+            }
+          },
+          onError: (Object error, StackTrace stackTrace) {
+            debugPrint('[API CACHE] Background refresh failed: $error');
+          },
+        )
+        .whenComplete(() => _inFlightGets.remove(cacheKey));
   }
 
   Future<http.Response> _sendMultipart({
@@ -2981,6 +3118,7 @@ class ApiService {
           );
         }
 
+        _invalidateResponseCache();
         return response;
       } on TimeoutException catch (error) {
         _logTransportError(
@@ -3000,7 +3138,7 @@ class ApiService {
 
         throw const ApiException(
           message:
-              'The server is still starting. Please wait while we retry your login.',
+              'The upload timed out. Check your internet connection and try again.',
         );
       } catch (error) {
         _logTransportError(
@@ -3257,6 +3395,13 @@ class ApiService {
 
     return body;
   }
+}
+
+class _CachedApiResponse {
+  final http.Response response;
+  final DateTime storedAt;
+
+  const _CachedApiResponse({required this.response, required this.storedAt});
 }
 
 Map<String, dynamic> _extractPaginationMeta(Map<String, dynamic> decoded) {

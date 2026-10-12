@@ -306,7 +306,7 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: Color(0xFF0B4A06)),
+            borderSide: const BorderSide(color: Color(0xFF00092A)),
           ),
         ),
       ),
@@ -387,7 +387,7 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
       icon: Icon(Icons.add_rounded, size: compact ? 18 : 20),
       label: const Text('New Return'),
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF0B4A06),
+        backgroundColor: const Color(0xFF00092A),
         foregroundColor: Colors.white,
         elevation: 8,
         shadowColor: const Color(0x330B4A06),

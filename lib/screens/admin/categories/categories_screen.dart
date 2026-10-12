@@ -279,7 +279,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         icon: Icon(Icons.add, size: compact ? 16 : 17),
         label: const Text('Add Category'),
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF0B4A06),
+          backgroundColor: const Color(0xFF00092A),
           foregroundColor: Colors.white,
           elevation: 0,
           padding: EdgeInsets.symmetric(horizontal: compact ? 14 : 16),
@@ -301,7 +301,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   Widget _loadingState() {
     return const Padding(
       padding: EdgeInsets.symmetric(vertical: 56),
-      child: Center(child: CircularProgressIndicator(color: Color(0xFF0B4A06))),
+      child: Center(child: CircularProgressIndicator(color: Color(0xFF00092A))),
     );
   }
 
@@ -351,7 +351,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: Color(0xFF0B4A06)),
+            borderSide: const BorderSide(color: Color(0xFF00092A)),
           ),
         ),
       ),
@@ -455,7 +455,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                   child: Text(
                     category.imageLabel,
                     style: const TextStyle(
-                      color: Color(0xFF0B4A06),
+                      color: Color(0xFF00092A),
                       fontSize: 14,
                       fontWeight: FontWeight.w800,
                     ),
@@ -535,7 +535,7 @@ class _CategoryCompactCard extends StatelessWidget {
             child: Text(
               category.imageLabel,
               style: const TextStyle(
-                color: Color(0xFF0B4A06),
+                color: Color(0xFF00092A),
                 fontSize: 14,
                 fontWeight: FontWeight.w800,
               ),

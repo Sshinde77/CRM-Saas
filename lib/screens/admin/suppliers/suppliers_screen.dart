@@ -317,7 +317,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: Color(0xFF0B4A06)),
+            borderSide: const BorderSide(color: Color(0xFF00092A)),
           ),
         ),
       ),
@@ -327,7 +327,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
   Widget _loadingState() {
     return const Padding(
       padding: EdgeInsets.symmetric(vertical: 56),
-      child: Center(child: CircularProgressIndicator(color: Color(0xFF0B4A06))),
+      child: Center(child: CircularProgressIndicator(color: Color(0xFF00092A))),
     );
   }
 
@@ -353,7 +353,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
       icon: Icon(Icons.add, size: compact ? 16 : 18),
       label: const Text('Add Supplier'),
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF0B4A06),
+        backgroundColor: const Color(0xFF00092A),
         foregroundColor: Colors.white,
         elevation: 0,
         minimumSize: Size(compact ? 0 : 44, compact ? 34 : 44),
@@ -395,7 +395,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFF0B4A06)),
+          borderSide: const BorderSide(color: Color(0xFF00092A)),
         ),
       ),
       items: _categories
@@ -808,7 +808,7 @@ class _TabChip extends StatelessWidget {
               label,
               style: TextStyle(
                 color: selected
-                    ? const Color(0xFF0B4A06)
+                    ? const Color(0xFF00092A)
                     : const Color(0xFF64748B),
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -820,7 +820,7 @@ class _TabChip extends StatelessWidget {
               width: 18,
               height: 3,
               decoration: BoxDecoration(
-                color: selected ? const Color(0xFF0B4A06) : Colors.transparent,
+                color: selected ? const Color(0xFF00092A) : Colors.transparent,
                 borderRadius: BorderRadius.circular(999),
               ),
             ),

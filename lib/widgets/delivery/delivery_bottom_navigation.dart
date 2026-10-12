@@ -128,9 +128,7 @@ class DeliveryBottomNavigation extends StatelessWidget {
     if (!context.mounted || action == null) return;
     if (action == 'collection') {
       final result = await Navigator.of(context).push<bool>(
-        MaterialPageRoute(
-          builder: (_) => const PaymentCollectionScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const PaymentCollectionScreen()),
       );
       if (result == true && context.mounted) {
         if (currentIndex == 4 && onCollectionCreated != null) {

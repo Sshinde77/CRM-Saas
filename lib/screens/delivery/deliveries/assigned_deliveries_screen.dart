@@ -15,6 +15,7 @@ import '../../../utils/product_image_url.dart';
 import '../../../widgets/delivery/delivery_bottom_navigation.dart';
 import '../../../widgets/delivery/delivery_partner_sidebar.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
+import '../../../widgets/sales_manager/sales_manager_shared_shell.dart';
 
 class AssignedDeliveriesScreen extends StatefulWidget {
   const AssignedDeliveriesScreen({super.key});
@@ -497,18 +498,26 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final useSalesManagerShell = isSalesManagerSession(context);
     final visibleDeliveries = _visibleDeliveries;
 
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: const Color(0xFFF7F9FC),
-      drawer: const DeliveryPartnerSidebar(
-        currentRoute: AppRoutes.deliveryDeliveries,
-      ),
-      bottomNavigationBar: DeliveryBottomNavigation(
-        currentIndex: 1,
-        onCollectionCreated: _loadDeliveries,
-      ),
+      drawer: useSalesManagerShell
+          ? buildSalesManagerDrawer(
+              context: context,
+              currentPage: 'Deliveries',
+            )
+          : const DeliveryPartnerSidebar(
+              currentRoute: AppRoutes.deliveryDeliveries,
+            ),
+      bottomNavigationBar: useSalesManagerShell
+          ? null
+          : DeliveryBottomNavigation(
+              currentIndex: 1,
+              onCollectionCreated: _loadDeliveries,
+            ),
       body: SafeArea(
         bottom: false,
         child: RefreshIndicator(

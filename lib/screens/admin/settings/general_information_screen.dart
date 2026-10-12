@@ -14,7 +14,7 @@ import '../../../widgets/admin/admin_top_bar.dart';
 
 const Color kGeneralInfoTitleColor = Color(0xFF0F172A);
 const Color kGeneralInfoMutedColor = Color(0xFF64748B);
-const Color kGeneralInfoAccentColor = Color(0xFF0B4D08);
+const Color kGeneralInfoAccentColor = Color(0xFF00092A);
 
 class GeneralInformationScreen extends StatefulWidget {
   const GeneralInformationScreen({super.key});
@@ -1395,7 +1395,7 @@ class _GeneralInfoSectionCard extends StatelessWidget {
                     width: 30,
                     height: 30,
                     decoration: const BoxDecoration(
-                      color: Color(0xFF0B4D08),
+                      color: Color(0xFF00092A),
                       shape: BoxShape.circle,
                     ),
                     alignment: Alignment.center,

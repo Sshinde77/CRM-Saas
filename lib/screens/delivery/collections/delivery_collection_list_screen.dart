@@ -39,8 +39,12 @@ class _DeliveryCollectionListScreenState
 
   Future<_CollectionDashboardData> _loadCollections() async {
     final provider = ApiProviderScope.of(context);
-    final collections = await provider.fetchDeliveryCollections();
-    final customers = await provider.fetchCustomers(isActive: true);
+    final results = await Future.wait<Object>([
+      provider.fetchDeliveryCollections(),
+      provider.fetchCustomers(isActive: true),
+    ]);
+    final collections = results[0] as List<Map<String, dynamic>>;
+    final customers = results[1] as List<CustomerModel>;
 
     return _CollectionDashboardData(
       deliveries: collections.map(_CollectionDelivery.fromJson).toList(),
