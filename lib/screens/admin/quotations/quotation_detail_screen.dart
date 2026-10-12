@@ -276,7 +276,7 @@ class _QuotationDetailScreenState extends State<QuotationDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.deliveryBackground,
       drawer: widget.useSalesManagerShell
           ? SalesManagerSidebarDrawer(
               currentPage: 'Quotations',
@@ -342,49 +342,62 @@ class _QuotationDetailScreenState extends State<QuotationDetailScreen> {
 
         return ListView(
           padding: EdgeInsets.fromLTRB(
-            compact ? 10 : 16,
-            10,
-            compact ? 10 : 16,
-            16,
+            compact ? 12 : 20,
+            12,
+            compact ? 12 : 20,
+            20,
           ),
           children: [
-            _HeroPanel(
-              quotation: quotation,
-              isActionLoading: _isActionLoading,
-              onDownloadPdf: _downloadPdf,
-              onMarkSent: () => _updateStatus('sent'),
-              onReject: () => _updateStatus('rejected'),
-              onAccept: () => _updateStatus('accepted'),
-              onConvert: _openConvertDialog,
-              onDelete: _deleteQuotation,
-            ),
-            const SizedBox(height: 10),
-            _StatsGrid(quotation: quotation),
-            const SizedBox(height: 10),
-            _ItemsSection(items: quotation.items, compact: compact),
-            const SizedBox(height: 10),
-            if (compact)
-              Column(
-                children: [
-                  _CustomerDeliveryCard(quotation: quotation),
-                  const SizedBox(height: 10),
-                  _QuotationInfoCard(quotation: quotation),
-                ],
-              )
-            else
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(child: _CustomerDeliveryCard(quotation: quotation)),
-                  const SizedBox(width: 10),
-                  Expanded(child: _QuotationInfoCard(quotation: quotation)),
-                ],
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 920),
+                child: Column(
+                  children: [
+                    _HeroPanel(
+                      quotation: quotation,
+                      isActionLoading: _isActionLoading,
+                      onDownloadPdf: _downloadPdf,
+                      onMarkSent: () => _updateStatus('sent'),
+                      onReject: () => _updateStatus('rejected'),
+                      onAccept: () => _updateStatus('accepted'),
+                      onConvert: _openConvertDialog,
+                      onDelete: _deleteQuotation,
+                    ),
+                    const SizedBox(height: 12),
+                    _StatsGrid(quotation: quotation),
+                    const SizedBox(height: 12),
+                    _ItemsSection(items: quotation.items, compact: compact),
+                    const SizedBox(height: 12),
+                    if (compact)
+                      Column(
+                        children: [
+                          _CustomerDeliveryCard(quotation: quotation),
+                          const SizedBox(height: 12),
+                          _QuotationInfoCard(quotation: quotation),
+                        ],
+                      )
+                    else
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: _CustomerDeliveryCard(quotation: quotation),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _QuotationInfoCard(quotation: quotation),
+                          ),
+                        ],
+                      ),
+                    if (quotation.notes.isNotEmpty ||
+                        quotation.termsConditions.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      _OptionalSections(quotation: quotation),
+                    ],
+                  ],
+                ),
               ),
-            if (quotation.notes.isNotEmpty ||
-                quotation.termsConditions.isNotEmpty) ...[
-              const SizedBox(height: 10),
-              _OptionalSections(quotation: quotation),
-            ],
+            ),
           ],
         );
       },
@@ -461,9 +474,9 @@ class _HeroPanel extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(14),
         gradient: const LinearGradient(
-          colors: [Color(0xFF00092A), Color(0xFF00092A), Color(0xFF0F766E)],
+          colors: [AppColors.primary900, AppColors.primary],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -486,7 +499,7 @@ class _HeroPanel extends StatelessWidget {
                 height: 44,
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.14),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: Colors.white.withValues(alpha: 0.22),
                   ),
@@ -785,7 +798,7 @@ class _ConvertQuotationDialogState extends State<_ConvertQuotationDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       backgroundColor: AppColors.surface,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       title: const Text(
         'Convert to Order',
         style: TextStyle(
@@ -915,8 +928,8 @@ class _SectionCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, color: AppColors.primary, size: 17),
-              const SizedBox(width: 7),
+              Icon(icon, color: AppColors.primary, size: 18),
+              const SizedBox(width: 8),
               Text(
                 title,
                 style: const TextStyle(
@@ -927,7 +940,9 @@ class _SectionCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
+          const Divider(height: 1, color: AppColors.borderLight),
+          const SizedBox(height: 8),
           child,
         ],
       ),
@@ -946,7 +961,7 @@ class _StatCard extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.borderLight),
       ),
       child: Row(
@@ -969,7 +984,7 @@ class _StatCard extends StatelessWidget {
                   stat.label,
                   style: const TextStyle(
                     color: AppColors.textSecondary,
-                    fontSize: 14,
+                    fontSize: 11,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -1020,8 +1035,9 @@ class _ActionPill extends StatelessWidget {
         disabledBackgroundColor: Colors.white.withValues(alpha: 0.55),
         disabledForegroundColor: color.withValues(alpha: 0.45),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+        minimumSize: const Size(0, 40),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
       ),
     );
   }
@@ -1062,7 +1078,7 @@ class _StatusChip extends StatelessWidget {
             label,
             style: TextStyle(
               color: foreground,
-              fontSize: 14,
+              fontSize: 11,
               fontWeight: FontWeight.w900,
             ),
           ),
@@ -1080,30 +1096,36 @@ class _DetailRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: AppColors.borderLight),
+        ),
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 112,
+          Expanded(
             child: Text(
               label,
               style: const TextStyle(
                 color: AppColors.textSecondary,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
+          const SizedBox(width: 12),
           Expanded(
             child: Text(
               value.isEmpty ? '-' : value,
+              textAlign: TextAlign.end,
               style: const TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: FontWeight.w700,
-                height: 1.25,
+                height: 1.3,
               ),
             ),
           ),
@@ -1142,8 +1164,8 @@ class _ItemMobileCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(14),
+        color: AppColors.deliveryBackground,
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.borderLight),
       ),
       child: Column(
@@ -1181,7 +1203,7 @@ class _TableHeader extends StatelessWidget {
       label.toUpperCase(),
       style: const TextStyle(
         color: AppColors.textSecondary,
-        fontSize: 14,
+        fontSize: 11,
         fontWeight: FontWeight.w900,
       ),
     );

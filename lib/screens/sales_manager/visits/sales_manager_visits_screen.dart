@@ -156,7 +156,7 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.deliveryBackground,
       drawer: SalesManagerSidebarDrawer(
         onSelect: _handleSidebarSelection,
         currentPage: 'Visits',
@@ -168,10 +168,10 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
             Expanded(
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(12, 12, 12, 18),
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
                 child: LayoutBuilder(
                   builder: (context, constraints) {
-                    final wide = constraints.maxWidth > 980;
+                    final wide = constraints.maxWidth >= 840;
                     final leftPanel = _CheckInCard(
                       customerNameController: _customerNameController,
                       notesController: _notesController,
@@ -179,27 +179,29 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
                     );
                     final rightPanel = _VisitHistoryPanel(visits: _visits);
 
-                    if (!wide) {
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          leftPanel,
-                          const SizedBox(height: 14),
-                          rightPanel,
-                        ],
-                      );
-                    }
-
-                    return Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(
-                          width: constraints.maxWidth * 0.34,
-                          child: leftPanel,
+                    return Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 920),
+                        child: Column(
+                          children: [
+                            _VisitsOverview(totalVisits: _visits.length),
+                            const SizedBox(height: 16),
+                            if (!wide) ...[
+                              leftPanel,
+                              const SizedBox(height: 20),
+                              rightPanel,
+                            ] else
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SizedBox(width: 320, child: leftPanel),
+                                  const SizedBox(width: 20),
+                                  Expanded(child: rightPanel),
+                                ],
+                              ),
+                          ],
                         ),
-                        const SizedBox(width: 20),
-                        Expanded(child: rightPanel),
-                      ],
+                      ),
                     );
                   },
                 ),
@@ -207,6 +209,104 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _VisitsOverview extends StatelessWidget {
+  final int totalVisits;
+
+  const _VisitsOverview({required this.totalVisits});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [AppColors.primary900, AppColors.primary],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.14),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.16),
+              ),
+            ),
+            child: const Icon(
+              Icons.location_on_outlined,
+              color: Colors.white,
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Customer visits',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Check in and keep every customer interaction organised.',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  '$totalVisits',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const Text(
+                  'visits',
+                  style: TextStyle(color: Colors.white70, fontSize: 11),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -258,16 +358,16 @@ class _CheckInCardState extends State<_CheckInCard> {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(26),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.border.withValues(alpha: 0.8)),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.deliverySurfaceBorder),
         boxShadow: [
           BoxShadow(
             color: AppColors.textPrimary.withValues(alpha: 0.05),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -282,12 +382,12 @@ class _CheckInCardState extends State<_CheckInCard> {
               fontWeight: FontWeight.w800,
             ),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 16),
           const Text(
             'Customer Name *',
             style: TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 14,
+              fontSize: 13,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -315,12 +415,12 @@ class _CheckInCardState extends State<_CheckInCard> {
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           const Text(
             'Notes (optional)',
             style: TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 14,
+              fontSize: 13,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -348,10 +448,10 @@ class _CheckInCardState extends State<_CheckInCard> {
               ),
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
-            height: 34,
+            height: 48,
             child: ElevatedButton.icon(
               onPressed: widget.onCheckIn,
               icon: const Icon(Icons.place_outlined, size: 16),
@@ -364,7 +464,7 @@ class _CheckInCardState extends State<_CheckInCard> {
                 foregroundColor: Colors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(999),
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
             ),
@@ -384,7 +484,7 @@ class _FieldContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -420,7 +520,7 @@ class _VisitHistoryPanel extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Padding(
-          padding: EdgeInsets.only(left: 4, bottom: 14),
+          padding: EdgeInsets.only(left: 4, bottom: 12),
           child: Text(
             'Visit History',
             style: TextStyle(
@@ -432,7 +532,7 @@ class _VisitHistoryPanel extends StatelessWidget {
         ),
         for (var i = 0; i < visits.length; i++) ...[
           _VisitHistoryCard(record: visits[i]),
-          if (i != visits.length - 1) const SizedBox(height: 14),
+          if (i != visits.length - 1) const SizedBox(height: 12),
         ],
       ],
     );
@@ -448,16 +548,16 @@ class _VisitHistoryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(28, 26, 24, 26),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.border.withValues(alpha: 0.8)),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.deliverySurfaceBorder),
         boxShadow: [
           BoxShadow(
             color: AppColors.textPrimary.withValues(alpha: 0.05),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -480,46 +580,59 @@ class _VisitHistoryCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          Row(
+          Wrap(
+            spacing: 12,
+            runSpacing: 8,
             children: [
-              const Icon(
-                Icons.schedule_outlined,
-                size: 13,
-                color: AppColors.textSecondary,
+              _VisitTime(
+                label: 'In',
+                value: record.inTime,
               ),
-              const SizedBox(width: 4),
-              Text(
-                'In: ${record.inTime}',
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Icon(
-                Icons.schedule_outlined,
-                size: 13,
-                color: AppColors.textSecondary,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                'Out: ${record.outTime}',
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 14,
-                ),
+              _VisitTime(
+                label: 'Out',
+                value: record.outTime,
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Divider(height: 1, color: AppColors.border.withValues(alpha: 0.75)),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Text(
             record.notes,
             style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _VisitTime extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _VisitTime({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Icon(
+          Icons.schedule_outlined,
+          size: 16,
+          color: AppColors.textSecondary,
+        ),
+        const SizedBox(width: 4),
+        Text(
+          '$label: $value',
+          style: const TextStyle(
+            color: AppColors.textSecondary,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -542,7 +655,7 @@ class _StatusPill extends StatelessWidget {
         label,
         style: TextStyle(
           color: color,
-          fontSize: 14,
+          fontSize: 11,
           fontWeight: FontWeight.w700,
         ),
       ),

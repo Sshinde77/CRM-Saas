@@ -248,7 +248,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.deliveryBackground,
       drawer: widget.useDeliveryShell
           ? null
           : widget.useSalesManagerShell
@@ -327,9 +327,19 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       _readString(order, const ['fulfilment_method', 'fulfillment_method']),
     );
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(10, 10, 10, 16),
-      children: [
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final horizontalPadding = constraints.maxWidth > 720
+            ? (constraints.maxWidth - 720) / 2
+            : 10.0;
+        return ListView(
+          padding: EdgeInsets.fromLTRB(
+            horizontalPadding,
+            10,
+            horizontalPadding,
+            16,
+          ),
+          children: [
         _HeaderCard(
           number: _readString(order, const [
             'order_number',
@@ -347,13 +357,21 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               'total_amount',
             ]),
           ),
-          onConfirm: widget.useDeliveryShell || _isActionLoading || !canConfirm
+          onConfirm: widget.useDeliveryShell ||
+                  widget.useSalesManagerShell ||
+                  _isActionLoading ||
+                  !canConfirm
               ? null
               : _confirmOrder,
-          onCancel: widget.useDeliveryShell || _isActionLoading || !canCancel
+          onCancel: widget.useDeliveryShell ||
+                  widget.useSalesManagerShell ||
+                  _isActionLoading ||
+                  !canCancel
               ? null
               : _cancelOrder,
-          showActions: !widget.useDeliveryShell && (canConfirm || canCancel),
+          showActions: !widget.useDeliveryShell &&
+              !widget.useSalesManagerShell &&
+              (canConfirm || canCancel),
         ),
         const SizedBox(height: 10),
         OrderProgressTracker(
@@ -452,7 +470,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   ],
                 ),
         ),
-      ],
+          ],
+        );
+      },
     );
   }
 }
@@ -483,10 +503,16 @@ class _HeaderCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF00092A), Color(0xFF0F766E)],
-        ),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.deliverySurfaceBorder),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -504,7 +530,7 @@ class _HeaderCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                         fontSize: 16,
                         fontWeight: FontWeight.w900,
                       ),
@@ -515,7 +541,7 @@ class _HeaderCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.86),
+                        color: AppColors.textSecondary,
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                       ),
@@ -530,7 +556,7 @@ class _HeaderCard extends StatelessWidget {
           Text(
             total,
             style: const TextStyle(
-              color: Colors.white,
+              color: AppColors.primary,
               fontSize: 16,
               fontWeight: FontWeight.w900,
             ),
@@ -582,9 +608,9 @@ class _CustomerAvatar extends StatelessWidget {
       height: size,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.92),
+        color: AppColors.surfaceSoft,
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
+        border: Border.all(color: AppColors.deliverySurfaceBorder),
       ),
       child: url.isEmpty
           ? fallback
@@ -635,7 +661,9 @@ class _SectionCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
+          const Divider(height: 1, color: AppColors.deliverySurfaceBorder),
+          const SizedBox(height: 8),
           child,
         ],
       ),
@@ -651,30 +679,37 @@ class _DetailRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: AppColors.deliverySurfaceBorder),
+        ),
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 112,
+          Expanded(
             child: Text(
               label,
               style: const TextStyle(
                 color: AppColors.textSecondary,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
+          const SizedBox(width: 12),
           Expanded(
             child: Text(
               value.trim().isEmpty ? '-' : value,
+              textAlign: TextAlign.right,
               style: const TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: FontWeight.w700,
-                height: 1.25,
+                height: 1.3,
               ),
             ),
           ),
@@ -703,9 +738,9 @@ class _ItemTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.borderLight),
+        color: AppColors.deliveryBackground,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.deliverySurfaceBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -813,14 +848,15 @@ class _TinyChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.92),
+        color: AppColors.surfaceSoft,
         borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: AppColors.deliverySurfaceBorder),
       ),
       child: Text(
         label,
         style: const TextStyle(
           color: AppColors.textPrimary,
-          fontSize: 14,
+          fontSize: 11,
           fontWeight: FontWeight.w900,
         ),
       ),

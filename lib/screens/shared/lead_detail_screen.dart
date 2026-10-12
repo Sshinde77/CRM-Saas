@@ -1,14 +1,15 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/services.dart';
-import 'package:latlong2/latlong.dart' as latlong;
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../constants/app_colors.dart';
+import '../../core/theme/app_sizes.dart';
+import '../../core/theme/app_text_styles.dart';
 import '../../models/app_user.dart';
 import '../../models/lead_detail_model.dart';
 import '../../providers/api_provider.dart';
+import '../../widgets/customer_avatar.dart';
 import '../../widgets/admin/admin_top_bar.dart';
 import '../../widgets/admin/app_drawer.dart';
 import '../../widgets/app_calendar_date_picker.dart';
@@ -20,7 +21,6 @@ import '../admin/leads/admin_leads_screen.dart';
 import '../admin/orders/admin_orders_screen.dart';
 import '../admin/orders/new_admin_order_screen.dart';
 import '../admin/quotations/admin_quotations_screen.dart';
-import '../delivery/customers/customer_location_picker_screen.dart';
 import '../sales_manager/leads/add_lead_screen.dart';
 import '../sales_manager/attendance/sales_manager_attendance_screen.dart';
 import '../sales_manager/dashboard/sales_manager_dashboard_screen.dart';
@@ -28,6 +28,7 @@ import '../sales_manager/follow_ups/sales_manager_follow_ups_screen.dart';
 import '../sales_manager/performance/sales_manager_performance_screen.dart';
 import '../sales_manager/stock/sales_manager_stock_screen.dart';
 import '../sales_manager/visits/sales_manager_visits_screen.dart';
+import 'map_location_view_screen.dart';
 
 class LeadDetailScreen extends StatefulWidget {
   final String leadId;
@@ -53,6 +54,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
   List<AppUser> _assignableStaff = [];
   final List<_LocalFollowUp> _localFollowUps = [];
   final List<_LocalVisit> _localVisits = [];
+  int _selectedTab = 0;
 
   @override
   void didChangeDependencies() {
@@ -61,9 +63,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
     _apiProvider = ApiProviderScope.of(context);
     _providerReady = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _loadLead();
-      }
+      if (mounted) _loadLead();
     });
   }
 
@@ -199,44 +199,93 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
     if (normalized.isEmpty || normalized == '-') return;
     await Clipboard.setData(ClipboardData(text: normalized));
     if (!mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('$label copied')));
-  }
-
-  Future<void> _launchExternal(Uri uri, String failureMessage) async {
-    final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
-    if (opened || !mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(failureMessage)));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('$label copied to clipboard')),
+    );
   }
 
   Future<void> _callLead(String phone) async {
     final sanitized = phone.replaceAll(RegExp(r'[^0-9+]'), '');
-    if (sanitized.isEmpty || sanitized == '-') return;
-    await _launchExternal(Uri.parse('tel:$sanitized'), 'Unable to place call.');
+    if (sanitized.isEmpty || sanitized == '-') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Phone number not available.')),
+      );
+      return;
+    }
+    final uri = Uri(scheme: 'tel', path: sanitized);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Unable to call $phone')),
+      );
+    }
   }
 
   Future<void> _emailLead(String email) async {
     final normalized = email.trim();
-    if (normalized.isEmpty || normalized == '-') return;
-    await _launchExternal(
-      Uri(
-        scheme: 'mailto',
-        path: normalized,
-        queryParameters: {'subject': 'Regarding your enquiry'},
-      ),
-      'Unable to open email app.',
+    if (normalized.isEmpty || normalized == '-') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Email address not available.')),
+      );
+      return;
+    }
+    final uri = Uri(
+      scheme: 'mailto',
+      path: normalized,
+      queryParameters: {'subject': 'Regarding your enquiry'},
     );
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to open email client.')),
+      );
+    }
   }
 
   Future<void> _openWhatsApp(String phone) async {
     final digits = phone.replaceAll(RegExp(r'[^0-9]'), '');
-    if (digits.isEmpty) return;
-    await _launchExternal(
-      Uri.parse('https://wa.me/$digits'),
-      'Unable to open WhatsApp.',
+    if (digits.isEmpty || digits == '-') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Phone number not available for WhatsApp.')),
+      );
+      return;
+    }
+    final uri = Uri.parse('https://wa.me/$digits');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to open WhatsApp.')),
+      );
+    }
+  }
+
+  void _openMap(LeadDetailModel lead) {
+    final address = lead.address.trim();
+    final city = lead.city.trim();
+    final fullLocation = address == '-'
+        ? city
+        : (city.isEmpty || city == '-' ? address : '$address, $city');
+    if (fullLocation.isEmpty || fullLocation == '-') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Address location not available.')),
+      );
+      return;
+    }
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => MapLocationViewScreen(
+          latitude: 28.6139,
+          longitude: 77.2090,
+          title: lead.displayName,
+          subtitle: fullLocation,
+        ),
+      ),
     );
   }
 
@@ -259,69 +308,139 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
         return StatefulBuilder(
           builder: (context, setSheetState) {
             return Container(
-              padding: const EdgeInsets.all(18),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
               decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                color: AppColors.surface,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Update Lead Status',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  DropdownButtonFormField<String>(
-                    initialValue: selectedStatus,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: AppColors.surfaceSoft,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: AppColors.border),
-                      ),
-                    ),
-                    items: const ['New', 'Contacted', 'Qualified', 'Lost']
-                        .map(
-                          (status) => DropdownMenuItem<String>(
-                            value: status,
-                            child: Text(status),
+              child: SafeArea(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: AppColors.deliveryOrangeSoft,
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                        )
-                        .toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        setSheetState(() => selectedStatus = value);
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: const Text('Cancel'),
-                      ),
-                      const SizedBox(width: 10),
-                      ElevatedButton(
-                        onPressed: () =>
-                            Navigator.of(context).pop(selectedStatus),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
+                          child: const Icon(
+                            Icons.swap_horizontal_circle_outlined,
+                            color: AppColors.deliveryOrange,
+                            size: 20,
+                          ),
                         ),
-                        child: const Text('Save Status'),
+                        const SizedBox(width: 10),
+                        const Expanded(
+                          child: Text(
+                            'Update Lead Status',
+                            style: TextStyle(
+                              color: AppColors.deliveryInk,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(
+                            Icons.close_rounded,
+                            color: AppColors.textSecondary,
+                            size: 20,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: AppColors.deliveryCardSoft,
+                        borderRadius: BorderRadius.circular(AppSizes.inputRadius),
+                        border: Border.all(color: AppColors.deliverySurfaceBorder),
                       ),
-                    ],
-                  ),
-                ],
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: selectedStatus,
+                          isExpanded: true,
+                          items: const ['New', 'Contacted', 'Qualified', 'Lost']
+                              .map(
+                                (status) => DropdownMenuItem<String>(
+                                  value: status,
+                                  child: Text(
+                                    status,
+                                    style: const TextStyle(
+                                      color: AppColors.deliveryInk,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13.5,
+                                    ),
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (value) {
+                            if (value != null) {
+                              setSheetState(() => selectedStatus = value);
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(
+                                color: AppColors.deliverySurfaceBorder,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  AppSizes.controlRadius,
+                                ),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text(
+                              'Cancel',
+                              style: TextStyle(
+                                color: AppColors.textSecondary,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.deliveryGreen,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  AppSizes.controlRadius,
+                                ),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                            onPressed: () =>
+                                Navigator.of(context).pop(selectedStatus),
+                            child: const Text(
+                              'Save Status',
+                              style: TextStyle(fontWeight: FontWeight.w800),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             );
           },
@@ -336,9 +455,9 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
         request: {'lead_status': nextStatus.toLowerCase()},
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Lead status updated')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Lead status updated successfully')),
+      );
       await _loadLead();
     } catch (error) {
       if (!mounted) return;
@@ -354,28 +473,58 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          backgroundColor: Colors.white,
+          backgroundColor: AppColors.surface,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(16),
           ),
-          title: const Text('Add Note'),
+          title: const Text(
+            'Add Follow-up Note',
+            style: TextStyle(
+              color: AppColors.deliveryInk,
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
           content: TextField(
             controller: controller,
-            maxLines: 5,
+            maxLines: 4,
+            style: const TextStyle(
+              fontSize: 13.5,
+              color: AppColors.deliveryInk,
+            ),
             decoration: InputDecoration(
-              hintText: 'Add a follow-up note or requirement...',
+              hintText: 'Enter notes, client feedback or next steps...',
+              hintStyle: const TextStyle(
+                color: AppColors.textMuted,
+                fontSize: 13,
+              ),
               filled: true,
-              fillColor: AppColors.surfaceSoft,
+              fillColor: AppColors.deliveryCardSoft,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: const BorderSide(color: AppColors.border),
+                borderRadius: BorderRadius.circular(AppSizes.inputRadius),
+                borderSide: const BorderSide(
+                  color: AppColors.deliverySurfaceBorder,
+                ),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppSizes.inputRadius),
+                borderSide: const BorderSide(
+                  color: AppColors.deliverySurfaceBorder,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppSizes.inputRadius),
+                borderSide: const BorderSide(color: AppColors.deliveryGreen),
               ),
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
             ),
             ElevatedButton(
               onPressed: () {
@@ -384,8 +533,11 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
                 Navigator.of(context).pop(value);
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
+                backgroundColor: AppColors.deliveryGreen,
                 foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               child: const Text('Save Note'),
             ),
@@ -407,7 +559,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Note added')));
+      ).showSnackBar(const SnackBar(content: Text('Note added successfully')));
       await _loadLead();
     } catch (error) {
       if (!mounted) return;
@@ -417,65 +569,14 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
     }
   }
 
-  void _showUnavailable(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
-  }
-
-  void _putIfNotBlank(Map<String, dynamic> payload, String key, String value) {
-    final trimmed = value.trim();
-    if (trimmed.isNotEmpty) payload[key] = trimmed;
-  }
-
-  String _responseVisitId(Map<String, dynamic> response) {
-    final data = response['data'];
-    final visit = response['visit'];
-    final candidates = [
-      response['visit_id'],
-      response['visitId'],
-      visit is Map<String, dynamic> ? visit['id'] : null,
-      data is Map<String, dynamic> ? data['visit_id'] : null,
-      data is Map<String, dynamic> ? data['visitId'] : null,
-      data is Map<String, dynamic> ? data['id'] : null,
-      response['id'],
-    ];
-    for (final candidate in candidates) {
-      final value = candidate?.toString().trim() ?? '';
-      if (value.isNotEmpty && value.toLowerCase() != 'null') return value;
-    }
-    return '';
-  }
-
-  String _responseCustomerId(Map<String, dynamic> response) {
-    final data = response['data'];
-    final customer = response['customer'];
-    final candidates = [
-      response['customer_id'],
-      response['customerId'],
-      customer is Map<String, dynamic> ? customer['id'] : null,
-      data is Map<String, dynamic> ? data['customer_id'] : null,
-      data is Map<String, dynamic> ? data['customerId'] : null,
-      data is Map<String, dynamic> && data['customer'] is Map<String, dynamic>
-          ? (data['customer'] as Map<String, dynamic>)['id']
-          : null,
-      data is Map<String, dynamic> ? data['id'] : null,
-      response['id'],
-    ];
-    for (final candidate in candidates) {
-      final value = candidate?.toString().trim() ?? '';
-      if (value.isNotEmpty && value.toLowerCase() != 'null') return value;
-    }
-    return '';
-  }
-
   Future<void> _openCustomer(LeadDetailModel lead) async {
     final customerId = lead.customerId.trim();
     if (customerId.isEmpty) {
-      _showUnavailable('Customer detail is unavailable for this lead.');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Customer detail is unavailable.')),
+      );
       return;
     }
-
     await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => CustomerDetailsScreen(customerId: customerId),
@@ -489,11 +590,12 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
       barrierColor: Colors.black.withValues(alpha: 0.42),
       builder: (context) => _FollowUpSheet(staff: _assignableStaff),
     );
-    if (result == null || !mounted) return;
-    setState(() => _localFollowUps.insert(0, result));
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Follow-up added')));
+    if (result != null && mounted) {
+      setState(() => _localFollowUps.insert(0, result));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Follow-up scheduled successfully')),
+      );
+    }
   }
 
   Future<void> _openVisitForm(LeadDetailModel lead) async {
@@ -502,59 +604,18 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
       barrierColor: Colors.black.withValues(alpha: 0.42),
       builder: (context) => _VisitSheet(staff: _assignableStaff),
     );
-    if (result == null) return;
-
-    try {
-      final visitPayload = <String, dynamic>{
-        'visit_date': DateTime.now().toIso8601String(),
-        'visit_type': result.visitType,
-        'status': 'completed',
-        'lead_id': lead.id,
-      };
-      _putIfNotBlank(visitPayload, 'purpose', result.purpose);
-      _putIfNotBlank(visitPayload, 'notes', result.notes);
-      _putIfNotBlank(visitPayload, 'outcome', result.outcome);
-
-      final visitResponse = await _apiProvider.createVisit(
-        request: visitPayload,
+    if (result != null && mounted) {
+      final visit = _LocalVisit(
+        visitType: result.visitTypeLabel,
+        purpose: result.purpose,
+        notes: result.notes,
+        outcome: result.outcome,
+        createdAt: DateTime.now(),
       );
-      final visitId = _responseVisitId(visitResponse);
-
-      if (result.followUp != null && visitId.isNotEmpty) {
-        await _apiProvider.createVisitFollowUp(
-          visitId: visitId,
-          request: result.followUp!.toApi(),
-        );
-      }
-
-      if (!mounted) return;
-      setState(() {
-        _localVisits.insert(
-          0,
-          _LocalVisit(
-            visitType: result.visitTypeLabel,
-            purpose: result.purpose,
-            notes: result.notes,
-            outcome: result.outcome,
-            createdAt: DateTime.now(),
-            followUpTitle: result.followUp?.title,
-          ),
-        );
-      });
+      setState(() => _localVisits.insert(0, visit));
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            result.followUp == null
-                ? 'Visit logged'
-                : 'Visit and follow-up task saved',
-          ),
-        ),
+        const SnackBar(content: Text('Visit logged successfully')),
       );
-    } catch (error) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Failed to log visit: $error')));
     }
   }
 
@@ -573,9 +634,9 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
         request: result,
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Lead converted')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Lead converted to customer successfully')),
+      );
       await _loadLead();
 
       final customerId = _responseCustomerId(response);
@@ -588,9 +649,250 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
       }
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Failed to convert lead: $error')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to convert lead: $error')),
+      );
+    }
+  }
+
+  String _responseCustomerId(Map<String, dynamic> response) {
+    final data = response['data'];
+    final customer = response['customer'];
+    final candidates = [
+      response['customer_id'],
+      response['customerId'],
+      customer is Map<String, dynamic> ? customer['id'] : null,
+      data is Map<String, dynamic> ? data['customer_id'] : null,
+      data is Map<String, dynamic> ? data['customerId'] : null,
+      data is Map<String, dynamic> ? data['id'] : null,
+      response['id'],
+    ];
+    for (final candidate in candidates) {
+      final value = candidate?.toString().trim() ?? '';
+      if (value.isNotEmpty && value.toLowerCase() != 'null') return value;
+    }
+    return '';
+  }
+
+  Color _resolveStatusColor(String status) {
+    final s = status.trim().toLowerCase();
+    if (s.contains('new')) return AppColors.deliveryGreen;
+    if (s.contains('contacted')) return AppColors.deliveryCustomerOrders;
+    if (s.contains('qualified') || s.contains('converted')) {
+      return AppColors.deliveryGreen;
+    }
+    if (s.contains('lost')) return AppColors.textMuted;
+    return AppColors.primary;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final textScaler = MediaQuery.textScalerOf(
+      context,
+    ).clamp(minScaleFactor: 0.9, maxScaleFactor: 1.2);
+    final lead = _lead;
+
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(textScaler: textScaler),
+      child: Theme(
+        data: Theme.of(context).copyWith(textTheme: AppTextStyles.textTheme),
+        child: Scaffold(
+          key: _scaffoldKey,
+          backgroundColor: AppColors.deliveryBackground,
+          drawer: widget.useSalesManagerShell
+              ? SalesManagerSidebarDrawer(
+                  currentPage: 'Leads',
+                  onSelect: _handleSalesManagerSidebarSelection,
+                )
+              : const AppDrawer(activeItem: 'Leads'),
+          bottomNavigationBar: lead == null || _isLoading || _errorMessage != null
+              ? null
+              : _buildBottomActionBar(lead),
+          body: SafeArea(
+            child: Column(
+              children: [
+                widget.useSalesManagerShell
+                    ? SalesManagerTopBar(
+                        title: 'Lead Details',
+                        leadingIcon: Icons.arrow_back_rounded,
+                        onLeadingTap: () => Navigator.of(context).maybePop(),
+                      )
+                    : AdminTopBar(
+                        title: 'Lead Details',
+                        leadingIcon: Icons.arrow_back_rounded,
+                        onLeadingTap: () => Navigator.of(context).maybePop(),
+                        actions: [
+                          if (lead != null) ...[
+                            Tooltip(
+                              message: 'Edit lead',
+                              child: InkWell(
+                                onTap: () => _openEditLead(lead),
+                                borderRadius: BorderRadius.circular(12),
+                                child: Container(
+                                  width: 36,
+                                  height: 36,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.10),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Icon(
+                                    Icons.edit_outlined,
+                                    color: Colors.white,
+                                    size: 19,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                          ],
+                          Tooltip(
+                            message: 'Refresh lead',
+                            child: InkWell(
+                              onTap: _loadLead,
+                              borderRadius: BorderRadius.circular(12),
+                              child: Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.10),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Icon(
+                                  Icons.refresh_rounded,
+                                  color: Colors.white,
+                                  size: 21,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                Expanded(
+                  child: _isLoading && lead == null
+                      ? const Center(
+                          child: CircularProgressIndicator(
+                            color: AppColors.primary,
+                          ),
+                        )
+                      : _errorMessage != null && lead == null
+                      ? _buildErrorView()
+                      : RefreshIndicator(
+                           color: AppColors.primary,
+                          onRefresh: _loadLead,
+                          child: ListView(
+                            physics: const AlwaysScrollableScrollPhysics(
+                              parent: BouncingScrollPhysics(),
+                            ),
+                             padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
+                            children: [
+                              Center(
+                                child: ConstrainedBox(
+                                  constraints: const BoxConstraints(
+                                     maxWidth: 920,
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      _ProfileCard(
+                                        lead: lead!,
+                                        onCall: () => _callLead(lead.phone),
+                                        onWhatsApp: () =>
+                                            _openWhatsApp(lead.phone),
+                                        onEmail: () => _emailLead(lead.email),
+                                        onMap: () => _openMap(lead),
+                                        onEdit: () => _openEditLead(lead),
+                                        onStatus: () =>
+                                            _updateLeadStatus(lead),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      _MetricsSection(lead: lead),
+                                      const SizedBox(height: 12),
+                                      _ActivityPanel(
+                                        selected: _selectedTab,
+                                        onSelected: (val) =>
+                                            setState(() => _selectedTab = val),
+                                        followUpsCount: _localFollowUps.length,
+                                        visitsCount: _localVisits.length,
+                                        child: _buildTabBody(lead),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorView() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.error_outline_rounded,
+              size: 40,
+              color: AppColors.deliveryRed,
+            ),
+            const SizedBox(height: 10),
+            Text(
+              _errorMessage ?? 'Unable to load lead details.',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: AppColors.deliveryInk,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 14),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.deliveryGreen,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              onPressed: _loadLead,
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTabBody(LeadDetailModel lead) {
+    switch (_selectedTab) {
+      case 0:
+        return _OverviewSection(
+          lead: lead,
+          onCopy: _copyValue,
+        );
+      case 1:
+        return _FollowUpsSection(
+          items: _localFollowUps,
+          onAdd: _openFollowUpForm,
+        );
+      case 2:
+        return _VisitsSection(
+          items: _localVisits,
+          onAdd: () => _openVisitForm(lead),
+        );
+      case 3:
+      default:
+        return _NotesSection(
+          lead: lead,
+          onAddNote: () => _addNote(lead),
+        );
     }
   }
 
@@ -603,342 +905,110 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
 
     return SafeArea(
       top: false,
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: const Border(top: BorderSide(color: AppColors.border)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 18,
-              offset: const Offset(0, -8),
+      child: SizedBox(
+        height: 66,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            border: const Border(
+              top: BorderSide(color: AppColors.deliverySurfaceBorder),
             ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: _BottomActionButton(
-                icon: Icons.playlist_add_check_rounded,
-                label: 'Add Follow-up',
-                onTap: _openFollowUpForm,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.06),
+                blurRadius: 14,
+                offset: const Offset(0, -4),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 920),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _BottomActionButton(
+                        icon: Icons.playlist_add_check_rounded,
+                        label: 'Add Follow-up',
+                        onTap: _openFollowUpForm,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _BottomActionButton(
+                        icon: Icons.location_on_outlined,
+                        label: 'Log Visit',
+                        onTap: () => _openVisitForm(lead),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _BottomActionButton(
+                        icon: hasCustomer
+                            ? Icons.visibility_outlined
+                            : Icons.person_add_alt_1_outlined,
+                        label: hasCustomer ? 'View Customer' : 'Convert',
+                        filled: true,
+                        onTap: hasCustomer
+                            ? () => _openCustomer(lead)
+                            : isLost
+                            ? null
+                            : () => _openConvertForm(lead),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _BottomActionButton(
-                icon: Icons.location_on_outlined,
-                label: 'Log Visit',
-                onTap: () => _openVisitForm(lead),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _BottomActionButton(
-                icon: hasCustomer
-                    ? Icons.visibility_outlined
-                    : Icons.person_add_alt_1_outlined,
-                label: hasCustomer ? 'View Customer' : 'Convert to Customer',
-                filled: true,
-                onTap: hasCustomer
-                    ? () => _openCustomer(lead)
-                    : isLost
-                    ? null
-                    : () => _openConvertForm(lead),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
+}
+
+class _ProfileCard extends StatelessWidget {
+  final LeadDetailModel lead;
+  final VoidCallback onCall;
+  final VoidCallback onWhatsApp;
+  final VoidCallback onEmail;
+  final VoidCallback onMap;
+  final VoidCallback onEdit;
+  final VoidCallback onStatus;
+
+  const _ProfileCard({
+    required this.lead,
+    required this.onCall,
+    required this.onWhatsApp,
+    required this.onEmail,
+    required this.onMap,
+    required this.onEdit,
+    required this.onStatus,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: AppColors.background,
-      drawer: widget.useSalesManagerShell
-          ? SalesManagerSidebarDrawer(
-              currentPage: 'Leads',
-              onSelect: _handleSalesManagerSidebarSelection,
-            )
-          : const AppDrawer(activeItem: 'Leads'),
-      bottomNavigationBar: _lead == null || _isLoading || _errorMessage != null
-          ? null
-          : _buildBottomActionBar(_lead!),
-      body: SafeArea(
-        child: Column(
-          children: [
-            widget.useSalesManagerShell
-                ? SalesManagerTopBar(
-                    title: 'Lead Details',
-                    leadingIcon: Icons.arrow_back_rounded,
-                    onLeadingTap: () => Navigator.of(context).maybePop(),
-                  )
-                : AdminTopBar(
-                    title: 'Lead Details',
-                    leadingIcon: Icons.menu_rounded,
-                    onLeadingTap: () => _scaffoldKey.currentState?.openDrawer(),
-                  ),
-            Expanded(
-              child: _isLoading
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.primary,
-                      ),
-                    )
-                  : _errorMessage != null
-                  ? _LeadDetailErrorState(
-                      message: _errorMessage!,
-                      onRetry: _loadLead,
-                    )
-                  : _lead == null
-                  ? _LeadDetailErrorState(
-                      message: 'Lead details are unavailable.',
-                      onRetry: _loadLead,
-                    )
-                  : _buildBody(context, _lead!),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+    final company = lead.companyName.isEmpty || lead.companyName == '-'
+        ? 'Independent Client'
+        : lead.companyName;
 
-  Widget _buildBody(BuildContext context, LeadDetailModel lead) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(10, 10, 10, 20),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1180),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final compact = constraints.maxWidth < 760;
-              final tileWidth = compact
-                  ? constraints.maxWidth
-                  : (constraints.maxWidth - 12) / 2;
-
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHeroCard(lead, compact),
-                  const SizedBox(height: 10),
-                  _buildJourneyCard(lead),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: [
-                      SizedBox(
-                        width: tileWidth,
-                        child: _buildSectionCard(
-                          title: 'Contact Snapshot',
-                          subtitle: 'Primary communication details',
-                          child: Column(
-                            children: [
-                              _buildInfoTile(
-                                icon: Icons.phone_outlined,
-                                label: 'Mobile',
-                                value: lead.phone,
-                                onCopy: () =>
-                                    _copyValue('Mobile number', lead.phone),
-                              ),
-                              _buildInfoTile(
-                                icon: Icons.email_outlined,
-                                label: 'Email',
-                                value: lead.email,
-                                onCopy: () => _copyValue('Email', lead.email),
-                              ),
-                              _buildInfoTile(
-                                icon: Icons.location_on_outlined,
-                                label: 'Address',
-                                value: lead.address,
-                              ),
-                              _buildInfoTile(
-                                icon: Icons.apartment_outlined,
-                                label: 'Region',
-                                value: _joinedNonEmpty([
-                                  lead.city,
-                                  lead.state,
-                                  lead.country,
-                                ]),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        width: tileWidth,
-                        child: _buildSectionCard(
-                          title: 'Lead Qualification',
-                          subtitle: 'Source, intent and deal context',
-                          child: Column(
-                            children: [
-                              _buildInfoTile(
-                                icon: Icons.campaign_outlined,
-                                label: 'Lead Source',
-                                value: lead.source,
-                              ),
-                              _buildInfoTile(
-                                icon: Icons.inventory_2_outlined,
-                                label: 'Interested Product',
-                                value: lead.interestedProduct,
-                              ),
-                              _buildInfoTile(
-                                icon: Icons.account_balance_wallet_outlined,
-                                label: 'Budget',
-                                value: lead.budget,
-                              ),
-                              _buildInfoTile(
-                                icon: Icons.flag_outlined,
-                                label: 'Priority',
-                                value: lead.priority,
-                              ),
-                              _buildInfoTile(
-                                icon: Icons.business_center_outlined,
-                                label: 'Lead Type',
-                                value: lead.leadType,
-                              ),
-                              _buildInfoTile(
-                                icon: Icons.segment_outlined,
-                                label: 'Segment',
-                                value: lead.segment,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        width: tileWidth,
-                        child: _buildSectionCard(
-                          title: 'Ownership & Timeline',
-                          subtitle: 'Sales handling and activity markers',
-                          child: Column(
-                            children: [
-                              _buildInfoTile(
-                                icon: Icons.person_outline_rounded,
-                                label: 'Assigned To',
-                                value: lead.assignedTo,
-                              ),
-                              _buildInfoTile(
-                                icon: Icons.people_outline_rounded,
-                                label: 'Existing Customer',
-                                value: lead.existingCustomer,
-                              ),
-                              _buildInfoTile(
-                                icon: Icons.event_available_outlined,
-                                label: 'Next Follow-up',
-                                value: _formatDate(lead.followUpDate),
-                              ),
-                              _buildInfoTile(
-                                icon: Icons.timelapse_rounded,
-                                label: 'Expected Closing',
-                                value: _formatDate(lead.expectedClosingDate),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        width: tileWidth,
-                        child: _buildSectionCard(
-                          title: 'System Details',
-                          subtitle: 'Identifiers and backend timestamps',
-                          child: Column(
-                            children: [
-                              _buildInfoTile(
-                                icon: Icons.badge_outlined,
-                                label: 'Lead ID',
-                                value: lead.id.isEmpty ? '-' : lead.id,
-                                onCopy: lead.id.isEmpty
-                                    ? null
-                                    : () => _copyValue('Lead ID', lead.id),
-                              ),
-                              _buildInfoTile(
-                                icon: Icons.confirmation_number_outlined,
-                                label: 'Lead Code',
-                                value: lead.leadCode,
-                                onCopy: lead.leadCode == '-'
-                                    ? null
-                                    : () => _copyValue(
-                                        'Lead code',
-                                        lead.leadCode,
-                                      ),
-                              ),
-                              _buildInfoTile(
-                                icon: Icons.schedule_rounded,
-                                label: 'Created',
-                                value: _formatDate(lead.createdAt),
-                              ),
-                              _buildInfoTile(
-                                icon: Icons.update_rounded,
-                                label: 'Updated',
-                                value: _formatDate(lead.updatedAt),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  _buildSectionCard(
-                    title: 'Lead Information',
-                    subtitle: 'Complete read-only lead profile',
-                    child: _buildLeadInformationGrid(lead, compact),
-                  ),
-                  const SizedBox(height: 12),
-                  _buildSectionCard(
-                    title: 'Notes / Requirements',
-                    subtitle:
-                        'Context captured during lead creation or follow-up',
-                    trailing: _smallActionButton(
-                      icon: Icons.add_rounded,
-                      label: 'Add Note',
-                      onTap: () => _addNote(lead),
-                    ),
-                    child: _buildNotesList(lead),
-                  ),
-                  const SizedBox(height: 12),
-                  _buildSectionCard(
-                    title: 'Activity Timeline',
-                    subtitle: 'Derived from current lead milestones',
-                    child: _buildActivityTimeline(lead),
-                  ),
-                  const SizedBox(height: 12),
-                  _buildSectionCard(
-                    title: 'Activities',
-                    subtitle: 'Follow-ups and visits linked to this lead',
-                    child: _buildActivitiesPlaceholder(),
-                  ),
-                ],
-              );
-            },
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeroCard(LeadDetailModel lead, bool compact) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(compact ? 14 : 18),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
         gradient: const LinearGradient(
-          colors: [Color(0xFFF8FCF6), Color(0xFFEEF6EB)],
+          colors: [AppColors.primary900, AppColors.primary],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.06),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+            color: AppColors.primary.withValues(alpha: 0.16),
+            blurRadius: 16,
+            offset: const Offset(0, 7),
           ),
         ],
       ),
@@ -946,684 +1016,372 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: [
-              _smallActionButton(
-                icon: Icons.arrow_back_rounded,
-                label: 'Back',
-                onTap: () => Navigator.of(context).maybePop(),
-              ),
-              const Spacer(),
-              _statusChip(lead.status),
-            ],
-          ),
-          const SizedBox(height: 14),
-          compact
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildIdentityBlock(lead),
-                    const SizedBox(height: 14),
-                    _buildActionPanel(lead, compact),
-                  ],
-                )
-              : Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(flex: 3, child: _buildIdentityBlock(lead)),
-                    const SizedBox(width: 14),
-                    Expanded(flex: 2, child: _buildActionPanel(lead, compact)),
-                  ],
-                ),
-          const SizedBox(height: 14),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _metricTile(
-                label: 'Assigned',
-                value: lead.assignedTo,
-                icon: Icons.person_outline_rounded,
-              ),
-              _metricTile(
-                label: 'Source',
-                value: lead.source,
-                icon: Icons.ads_click_outlined,
-              ),
-              _metricTile(
-                label: 'Product',
-                value: lead.interestedProduct,
-                icon: Icons.widgets_outlined,
-              ),
-              _metricTile(
-                label: 'Updated',
-                value: _relativeTime(
-                  lead.updatedAt.isEmpty ? lead.createdAt : lead.updatedAt,
-                ),
-                icon: Icons.update_rounded,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildIdentityBlock(LeadDetailModel lead) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _avatar(lead),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                lead.displayName,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.4,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                lead.companyName,
-                style: const TextStyle(
-                  color: AppColors.textMuted,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  _compactBadge(icon: Icons.phone_outlined, value: lead.phone),
-                  _compactBadge(icon: Icons.email_outlined, value: lead.email),
-                  if (lead.leadCode != '-')
-                    _compactBadge(
-                      icon: Icons.confirmation_number_outlined,
-                      value: lead.leadCode,
-                    ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionPanel(LeadDetailModel lead, bool compact) {
-    final isConverted = lead.status.trim().toLowerCase().contains('converted');
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.75),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Quick Actions',
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _smallActionButton(
-                icon: Icons.edit_outlined,
-                label: 'Edit',
-                onTap: () => _openEditLead(lead),
-              ),
-              if (!isConverted)
-                _smallActionButton(
-                  icon: Icons.swap_horizontal_circle_outlined,
-                  label: 'Status',
-                  onTap: () => _updateLeadStatus(lead),
-                ),
-              _smallActionButton(
-                icon: Icons.add_comment_outlined,
-                label: 'Note',
-                onTap: () => _addNote(lead),
-              ),
-              _smallActionButton(
-                icon: Icons.call_outlined,
-                label: 'Call',
-                onTap: lead.phone == '-' ? null : () => _callLead(lead.phone),
-              ),
-              _smallActionButton(
-                icon: Icons.mail_outline_rounded,
-                label: 'Email',
-                onTap: lead.email == '-' ? null : () => _emailLead(lead.email),
-              ),
-              _smallActionButton(
-                icon: Icons.chat_bubble_outline_rounded,
-                label: 'WhatsApp',
-                onTap: lead.phone == '-'
-                    ? null
-                    : () => _openWhatsApp(lead.phone),
-              ),
-              _smallActionButton(
-                icon: Icons.refresh_rounded,
-                label: 'Refresh',
-                onTap: _loadLead,
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Created ${_formatDate(lead.createdAt)}',
-            style: const TextStyle(
-              color: AppColors.textMuted,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          if (!compact) const SizedBox(height: 4),
-          Text(
-            'Status stays visible and actions remain reachable on small screens.',
-            style: const TextStyle(
-              color: AppColors.textLightMuted,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              height: 1.35,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildJourneyCard(LeadDetailModel lead) {
-    final stages = const ['New', 'Contacted', 'Qualified', 'Converted'];
-    final normalized = lead.status.trim().toLowerCase();
-    final isLost = normalized.contains('lost');
-    final currentIndex = isLost
-        ? -1
-        : stages.indexWhere((stage) => stage.toLowerCase() == normalized);
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(22, 18, 22, 22),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.035),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
               Container(
-                width: 34,
-                height: 34,
-                decoration: const BoxDecoration(
-                  color: AppColors.surfaceSoft,
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.14),
                   shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white24),
                 ),
-                child: const Icon(
-                  Icons.calendar_today_outlined,
-                  size: 17,
-                  color: AppColors.primary,
+                child: CustomerAvatar(
+                  name: lead.displayName,
+                  photoUrl: lead.avatarUrl,
+                  size: 64,
                 ),
               ),
               const SizedBox(width: 12),
-              const Text(
-                'Lead Journey',
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 18),
-          const Divider(height: 1, color: AppColors.border),
-          const SizedBox(height: 20),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final compact = constraints.maxWidth < 680;
-              if (compact) {
-                return Column(
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    for (var i = 0; i < stages.length; i++)
-                      _JourneyStep(
-                        label: stages[i],
-                        active: !isLost && i == currentIndex,
-                        completed: !isLost && currentIndex > i,
-                        lost: isLost && i == 0,
-                        vertical: true,
-                      ),
-                  ],
-                );
-              }
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  for (var i = 0; i < stages.length; i++) ...[
-                    Expanded(
-                      child: _JourneyStep(
-                        label: stages[i],
-                        active: !isLost && i == currentIndex,
-                        completed: !isLost && currentIndex > i,
-                        lost: isLost && i == 0,
+                    Text(
+                      lead.displayName,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
                       ),
                     ),
-                    if (i != stages.length - 1)
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 20),
-                          child: Container(
-                            height: 2,
-                            color: _journeyLineColor(i, currentIndex, isLost),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        const Icon(Icons.business_outlined, size: 14, color: Colors.white70),
+                        const SizedBox(width: 5),
+                        Expanded(
+                          child: Text(
+                            company,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(color: Colors.white70, fontSize: 12),
                           ),
                         ),
-                      ),
-                  ],
-                ],
-              );
-            },
-          ),
-          if (isLost) ...[
-            const SizedBox(height: 10),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFF1F2),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFFFFCDD2)),
-              ),
-              child: const Text(
-                'This lead was marked Lost.',
-                style: TextStyle(
-                  color: Color(0xFFB91C1C),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Color _journeyLineColor(int lineIndex, int currentIndex, bool isLost) {
-    if (isLost) return AppColors.border;
-    return currentIndex > lineIndex ? AppColors.primary900 : AppColors.border;
-  }
-
-  Widget _buildLeadInformationGrid(LeadDetailModel lead, bool compact) {
-    final products = _splitProducts(lead.interestedProduct);
-    final fields = [
-      _buildInfoTile(
-        icon: Icons.campaign_outlined,
-        label: 'Source',
-        value: lead.source,
-      ),
-      _buildInfoTile(
-        icon: Icons.person_outline_rounded,
-        label: 'Assigned Salesperson',
-        value: lead.assignedTo,
-      ),
-      _buildInfoTile(
-        icon: Icons.verified_outlined,
-        label: 'Status',
-        value: lead.status,
-      ),
-      _buildInfoTile(
-        icon: Icons.business_center_outlined,
-        label: 'Lead Type',
-        value: lead.leadType,
-      ),
-      _buildInfoTile(
-        icon: Icons.segment_outlined,
-        label: 'Segment',
-        value: lead.segment,
-      ),
-      _buildInfoTile(
-        icon: Icons.schedule_rounded,
-        label: 'Created Date',
-        value: _formatDate(lead.createdAt),
-      ),
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Wrap(
-          spacing: 12,
-          runSpacing: 0,
-          children: [
-            for (final field in fields)
-              SizedBox(width: compact ? double.infinity : 340, child: field),
-          ],
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          'Interested Products',
-          style: TextStyle(
-            color: AppColors.textMuted,
-            fontSize: 14,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        const SizedBox(height: 8),
-        products.isEmpty
-            ? const Text(
-                '-',
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
-              )
-            : Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (final product in products)
-                    Chip(
-                      label: Text(product),
-                      labelStyle: const TextStyle(
-                        color: AppColors.primary900,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                      ),
-                      backgroundColor: AppColors.activeMenuBg,
-                      side: const BorderSide(color: AppColors.border),
-                      visualDensity: VisualDensity.compact,
+                      ],
                     ),
-                ],
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        _StatusBadge(label: lead.status, color: Colors.white),
+                        if (lead.priority.isNotEmpty && lead.priority != '-')
+                          _PriorityBadge(priority: lead.priority),
+                        if (lead.leadCode.isNotEmpty && lead.leadCode != '-')
+                          _LeadCodePill(code: lead.leadCode),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-      ],
-    );
-  }
-
-  Widget _buildNotesList(LeadDetailModel lead) {
-    final notes = _parseNotes(lead.notes);
-    if (notes.isEmpty) {
-      return const _EmptyInlineState(
-        icon: Icons.sticky_note_2_outlined,
-        text: 'No notes added yet.',
-      );
-    }
-
-    return Column(
-      children: [
-        for (var i = 0; i < notes.length; i++) ...[
-          _NoteCard(note: notes[i]),
-          if (i != notes.length - 1) const SizedBox(height: 8),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildActivityTimeline(LeadDetailModel lead) {
-    final events = <_TimelineEvent>[
-      if (lead.createdAt.trim().isNotEmpty)
-        _TimelineEvent(
-          icon: Icons.add_circle_outline_rounded,
-          title: 'Lead created',
-          subtitle: lead.displayName,
-          time: _formatDate(lead.createdAt),
-        ),
-      if (lead.assignedTo.trim().isNotEmpty && lead.assignedTo != '-')
-        _TimelineEvent(
-          icon: Icons.assignment_ind_outlined,
-          title: 'Lead assigned',
-          subtitle: lead.assignedTo,
-          time: _formatDate(lead.createdAt),
-        ),
-      if (lead.status.trim().isNotEmpty)
-        _TimelineEvent(
-          icon: Icons.flag_outlined,
-          title: 'Current status: ${lead.status}',
-          subtitle: _statusSubtitle(lead.status),
-          time: _formatDate(
-            lead.updatedAt.isEmpty ? lead.createdAt : lead.updatedAt,
-          ),
-        ),
-      if (lead.followUpDate.trim().isNotEmpty)
-        _TimelineEvent(
-          icon: Icons.event_available_outlined,
-          title: 'Next follow-up planned',
-          subtitle: 'Follow-up with the prospect',
-          time: _formatDate(lead.followUpDate),
-        ),
-    ];
-
-    if (events.isEmpty) {
-      return const _EmptyInlineState(
-        icon: Icons.timeline_outlined,
-        text: 'No activity recorded yet.',
-      );
-    }
-
-    return Column(
-      children: [
-        for (var i = 0; i < events.length; i++)
-          _TimelineTile(event: events[i], isLast: i == events.length - 1),
-      ],
-    );
-  }
-
-  Widget _buildActivitiesPlaceholder() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (_localFollowUps.isEmpty && _localVisits.isEmpty)
-          const _ActivityTabsPlaceholder()
-        else ...[
-          if (_localFollowUps.isNotEmpty) ...[
-            const _ActivityGroupTitle('Follow-ups'),
-            const SizedBox(height: 8),
-            for (final item in _localFollowUps) ...[
-              _FollowUpCard(item: item),
-              const SizedBox(height: 8),
-            ],
-          ],
-          if (_localVisits.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            const _ActivityGroupTitle('Visits'),
-            const SizedBox(height: 8),
-            for (final item in _localVisits) ...[
-              _VisitCard(item: item),
-              const SizedBox(height: 8),
-            ],
-          ],
-        ],
-      ],
-    );
-  }
-
-  Widget _buildSectionCard({
-    required String title,
-    required String subtitle,
-    required Widget child,
-    Widget? trailing,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
+              const SizedBox(width: 8),
+              Material(
+                color: Colors.white.withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(10),
+                child: InkWell(
+                  onTap: onEdit,
+                  borderRadius: BorderRadius.circular(10),
+                  child: const SizedBox(
+                    width: 40,
+                    height: 40,
+                    child: Icon(Icons.edit_outlined, color: Colors.white, size: 20),
                   ),
                 ),
               ),
-              ?trailing,
             ],
           ),
-          const SizedBox(height: 3),
-          Text(
-            subtitle,
-            style: const TextStyle(
-              color: AppColors.textMuted,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
+          const SizedBox(height: 14),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Expanded(child: _DateSummary(label: 'Created', value: _formatDate(lead.createdAt), light: true)),
+                Container(width: 1, height: 30, color: Colors.white24),
+                Expanded(
+                  child: _DateSummary(
+                    label: 'Next follow-up',
+                    value: lead.followUpDate.isEmpty || lead.followUpDate == '-'
+                        ? 'Not scheduled'
+                        : _formatDate(lead.followUpDate),
+                    light: true,
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 12),
-          child,
+          Wrap(
+            spacing: 8,
+            children: [
+              _RoundAction(
+                icon: Icons.call_rounded,
+                color: Colors.white,
+                background: Colors.white.withValues(alpha: 0.14),
+                enabled: lead.phone.trim().isNotEmpty && lead.phone != '-',
+                tooltip: 'Call lead',
+                onTap: onCall,
+              ),
+              _RoundAction(
+                icon: FontAwesomeIcons.whatsapp,
+                color: Colors.white,
+                background: Colors.white.withValues(alpha: 0.14),
+                enabled: lead.phone.trim().isNotEmpty && lead.phone != '-',
+                tooltip: 'WhatsApp',
+                onTap: onWhatsApp,
+              ),
+              _RoundAction(
+                icon: Icons.email_outlined,
+                color: Colors.white,
+                background: Colors.white.withValues(alpha: 0.14),
+                enabled: lead.email.trim().isNotEmpty && lead.email != '-',
+                tooltip: 'Send email',
+                onTap: onEmail,
+              ),
+              _RoundAction(
+                icon: Icons.location_on_rounded,
+                color: Colors.white,
+                background: Colors.white.withValues(alpha: 0.14),
+                enabled: lead.address.trim().isNotEmpty && lead.address != '-',
+                tooltip: 'View on map',
+                onTap: onMap,
+              ),
+              _RoundAction(
+                icon: Icons.swap_horizontal_circle_outlined,
+                color: Colors.white,
+                background: Colors.white.withValues(alpha: 0.14),
+                enabled: true,
+                tooltip: 'Update status',
+                onTap: onStatus,
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildInfoTile({
-    required IconData icon,
-    required String label,
-    required String value,
-    VoidCallback? onCopy,
-  }) {
+class _DateSummary extends StatelessWidget {
+  final String label;
+  final String value;
+  final bool light;
+
+  const _DateSummary({
+    required this.label,
+    required this.value,
+    this.light = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: light ? Colors.white70 : AppColors.textMuted,
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: TextStyle(
+            color: light ? Colors.white : AppColors.deliveryInk,
+            fontSize: 12.5,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _RoundAction extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final Color? background;
+  final bool enabled;
+  final VoidCallback onTap;
+  final String tooltip;
+
+  const _RoundAction({
+    required this.icon,
+    required this.color,
+    this.background,
+    required this.enabled,
+    required this.onTap,
+    required this.tooltip,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: enabled
+            ? (background ?? color.withValues(alpha: .10))
+            : AppColors.deliveryCardSoft,
+        shape: CircleBorder(
+          side: BorderSide(
+            color: enabled
+                ? color.withValues(alpha: .24)
+                : AppColors.deliverySurfaceBorder,
+          ),
+        ),
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: enabled ? onTap : null,
+          child: SizedBox(
+            width: 38,
+            height: 38,
+            child: Icon(
+              icon,
+              size: 19,
+              color: enabled ? color : AppColors.textLightMuted,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MetricsSection extends StatelessWidget {
+  final LeadDetailModel lead;
+
+  const _MetricsSection({required this.lead});
+
+  @override
+  Widget build(BuildContext context) {
+    final rows = [
+      _MetricInfo(
+        'Budget',
+        lead.budget.isEmpty || lead.budget == '-' ? 'Not set' : lead.budget,
+        Icons.account_balance_wallet_outlined,
+        AppColors.deliveryGreen,
+        AppColors.deliveryGreenSoft,
+      ),
+      _MetricInfo(
+        'Product',
+        lead.interestedProduct.isEmpty || lead.interestedProduct == '-'
+            ? 'General'
+            : lead.interestedProduct,
+        Icons.inventory_2_outlined,
+        AppColors.deliveryBlue,
+        AppColors.deliveryBlueSoft,
+      ),
+      _MetricInfo(
+        'Source',
+        lead.source.isEmpty || lead.source == '-' ? 'Direct' : lead.source,
+        Icons.campaign_outlined,
+        AppColors.deliveryOrange,
+        AppColors.deliveryOrangeSoft,
+      ),
+      _MetricInfo(
+        'Assigned',
+        lead.assignedTo.isEmpty || lead.assignedTo == '-'
+            ? 'Unassigned'
+            : lead.assignedTo,
+        Icons.person_outline_rounded,
+        AppColors.primary,
+        AppColors.surfaceSoft,
+      ),
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth >= 700 ? 4 : 2;
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: rows.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columns,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            mainAxisExtent: 68,
+          ),
+          itemBuilder: (_, index) => _MetricTile(info: rows[index]),
+        );
+      },
+    );
+  }
+}
+
+class _MetricInfo {
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color color;
+  final Color background;
+
+  const _MetricInfo(
+    this.label,
+    this.value,
+    this.icon,
+    this.color,
+    this.background,
+  );
+}
+
+class _MetricTile extends StatelessWidget {
+  final _MetricInfo info;
+
+  const _MetricTile({required this.info});
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: AppColors.surfaceSoft,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+        color: AppColors.deliveryCardSoft,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.deliveryCardBorder),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 30,
-            height: 30,
+            width: 32,
+            height: 32,
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
+              color: info.background,
+              borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(icon, size: 16, color: AppColors.primary),
+            child: Icon(info.icon, color: info.color, size: 18),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  label,
+                  info.value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color: AppColors.textMuted,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  value.trim().isEmpty ? '-' : value,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    height: 1.3,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (onCopy != null)
-            InkWell(
-              onTap: onCopy,
-              borderRadius: BorderRadius.circular(10),
-              child: const Padding(
-                padding: EdgeInsets.all(4),
-                child: Icon(
-                  Icons.content_copy_rounded,
-                  size: 15,
-                  color: AppColors.textMuted,
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _metricTile({
-    required String label,
-    required String value,
-    required IconData icon,
-  }) {
-    return Container(
-      constraints: const BoxConstraints(minWidth: 148),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.78),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 15, color: AppColors.primary),
-          const SizedBox(width: 8),
-          Flexible(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    color: AppColors.textMuted,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
+                    color: AppColors.deliveryInk,
+                    fontSize: 13.5,
+                    height: 1.1,
+                    fontWeight: FontWeight.w900,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  value.trim().isEmpty ? '-' : value,
+                  info.label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 14,
+                    color: Color(0xFF586176),
+                    fontSize: 10.5,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -1634,296 +1392,709 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
       ),
     );
   }
-
-  Widget _smallActionButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback? onTap,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
-        child: Ink(
-          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
-          decoration: BoxDecoration(
-            color: onTap == null ? Colors.white54 : Colors.white,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.border),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                size: 15,
-                color: onTap == null
-                    ? AppColors.textLightMuted
-                    : AppColors.primary,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                label,
-                style: TextStyle(
-                  color: onTap == null
-                      ? AppColors.textLightMuted
-                      : AppColors.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _compactBadge({required IconData icon, required String value}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: AppColors.primary),
-          const SizedBox(width: 6),
-          Text(
-            value,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _statusChip(String status) {
-    final normalized = status.trim().toLowerCase();
-    Color background = AppColors.surfaceSoft;
-    Color foreground = AppColors.primary;
-
-    if (normalized.contains('lost')) {
-      background = const Color(0xFFFFE4E6);
-      foreground = const Color(0xFFB91C1C);
-    } else if (normalized.contains('converted')) {
-      background = AppColors.statusActiveBg;
-      foreground = AppColors.statusActiveText;
-    } else if (normalized.contains('qualified')) {
-      background = const Color(0xFFE9F5E4);
-      foreground = AppColors.primary900;
-    } else if (normalized.contains('contact') ||
-        normalized.contains('follow')) {
-      background = const Color(0xFFF2F6EE);
-      foreground = AppColors.blue;
-    } else if (normalized.contains('hot')) {
-      background = const Color(0xFFE9F5E4);
-      foreground = AppColors.primary900;
-    } else if (normalized.contains('closed') || normalized.contains('won')) {
-      background = AppColors.statusActiveBg;
-      foreground = AppColors.statusActiveText;
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        status.trim().isEmpty ? 'New' : status,
-        style: TextStyle(
-          color: foreground,
-          fontSize: 14,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
-    );
-  }
-
-  Widget _avatar(LeadDetailModel lead) {
-    Widget fallback() {
-      return Container(
-        width: 62,
-        height: 62,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: const LinearGradient(
-            colors: [AppColors.surfaceSoft, AppColors.activeMenuBg],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          lead.initials,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 16,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      );
-    }
-
-    if (lead.avatarUrl.trim().isEmpty) {
-      return fallback();
-    }
-
-    return ClipOval(
-      child: Image.network(
-        lead.avatarUrl,
-        width: 62,
-        height: 62,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => fallback(),
-      ),
-    );
-  }
 }
 
-class _LeadDetailErrorState extends StatelessWidget {
-  final String message;
-  final VoidCallback onRetry;
+class _ActivityPanel extends StatelessWidget {
+  final int selected;
+  final ValueChanged<int> onSelected;
+  final int followUpsCount;
+  final int visitsCount;
+  final Widget child;
 
-  const _LeadDetailErrorState({required this.message, required this.onRetry});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 58,
-              height: 58,
-              decoration: BoxDecoration(
-                color: AppColors.surfaceSoft,
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: const Icon(
-                Icons.error_outline_rounded,
-                color: AppColors.primary,
-                size: 28,
-              ),
-            ),
-            const SizedBox(height: 14),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                height: 1.45,
-              ),
-            ),
-            const SizedBox(height: 14),
-            ElevatedButton(
-              onPressed: onRetry,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 18,
-                  vertical: 12,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
-              child: const Text('Retry'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _JourneyStep extends StatelessWidget {
-  final String label;
-  final bool active;
-  final bool completed;
-  final bool lost;
-  final bool vertical;
-
-  const _JourneyStep({
-    required this.label,
-    required this.active,
-    required this.completed,
-    required this.lost,
-    this.vertical = false,
+  const _ActivityPanel({
+    required this.selected,
+    required this.onSelected,
+    required this.followUpsCount,
+    required this.visitsCount,
+    required this.child,
   });
 
   @override
   Widget build(BuildContext context) {
-    final color = lost
-        ? const Color(0xFFDC2626)
-        : active || completed
-        ? AppColors.primary
-        : AppColors.textLightMuted;
-    final bg = lost
-        ? const Color(0xFFFFE4E6)
-        : active || completed
-        ? AppColors.activeMenuBg
-        : AppColors.surfaceSoft;
-    final icon = lost
-        ? Icons.close_rounded
-        : completed || active
-        ? Icons.check_rounded
-        : Icons.circle_outlined;
+    final tabs = [
+      'Overview',
+      'Follow-ups ($followUpsCount)',
+      'Visits ($visitsCount)',
+      'Notes & History',
+    ];
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: _surfaceDecoration(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            child: Row(
+              children: List.generate(tabs.length, (index) {
+                final isSelected = selected == index;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: Material(
+                    color: isSelected
+                        ? AppColors.primary
+                        : AppColors.deliveryCardSoft,
+                    borderRadius: BorderRadius.circular(10),
+                    child: InkWell(
+                      onTap: () => onSelected(index),
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: isSelected
+                                ? AppColors.primary
+                                : AppColors.deliverySurfaceBorder,
+                          ),
+                        ),
+                        child: Text(
+                          tabs[index],
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : AppColors.deliveryInk,
+                            fontSize: 12,
+                            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ),
+          const SizedBox(height: 14),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+class _OverviewSection extends StatelessWidget {
+  final LeadDetailModel lead;
+  final Future<void> Function(String label, String value) onCopy;
+
+  const _OverviewSection({required this.lead, required this.onCopy});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        _DetailSectionCard(
+          title: 'Contact Information',
+          icon: Icons.contact_phone_outlined,
+          children: [
+            _InfoRow(
+              label: 'Phone',
+              value: lead.phone,
+              onCopy: () => onCopy('Phone', lead.phone),
+            ),
+            _InfoRow(
+              label: 'Email',
+              value: lead.email,
+              onCopy: () => onCopy('Email', lead.email),
+            ),
+            _InfoRow(
+              label: 'Address',
+              value: lead.address,
+              onCopy: () => onCopy('Address', lead.address),
+            ),
+            _InfoRow(
+              label: 'Region',
+              value: _joinedNonEmpty([lead.city, lead.state, lead.country]),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        _DetailSectionCard(
+          title: 'Lead Qualification',
+          icon: Icons.checklist_rounded,
+          children: [
+            _InfoRow(label: 'Source', value: lead.source),
+            _InfoRow(label: 'Interested Product', value: lead.interestedProduct),
+            _InfoRow(label: 'Budget', value: lead.budget),
+            _InfoRow(label: 'Priority', value: lead.priority),
+            _InfoRow(label: 'Lead Type', value: lead.leadType),
+            _InfoRow(label: 'Segment', value: lead.segment),
+          ],
+        ),
+        const SizedBox(height: 10),
+        _DetailSectionCard(
+          title: 'Ownership & Timeline',
+          icon: Icons.badge_outlined,
+          children: [
+            _InfoRow(label: 'Assigned To', value: lead.assignedTo),
+            _InfoRow(label: 'Existing Customer', value: lead.existingCustomer),
+            _InfoRow(label: 'Next Follow-up', value: _formatDate(lead.followUpDate)),
+            _InfoRow(
+              label: 'Expected Closing',
+              value: _formatDate(lead.expectedClosingDate),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        _DetailSectionCard(
+          title: 'System Information',
+          icon: Icons.info_outline_rounded,
+          children: [
+            _InfoRow(
+              label: 'Lead ID',
+              value: lead.id,
+              onCopy: () => onCopy('Lead ID', lead.id),
+            ),
+            _InfoRow(
+              label: 'Lead Code',
+              value: lead.leadCode,
+              onCopy: () => onCopy('Lead Code', lead.leadCode),
+            ),
+            _InfoRow(label: 'Created', value: _formatDate(lead.createdAt)),
+            _InfoRow(label: 'Updated', value: _formatDate(lead.updatedAt)),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _DetailSectionCard extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final List<Widget> children;
+
+  const _DetailSectionCard({
+    required this.title,
+    required this.icon,
+    required this.children,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.deliveryCardSoft,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.deliveryCardBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 16, color: AppColors.deliveryGreen),
+              const SizedBox(width: 6),
+              Text(
+                title,
+                style: const TextStyle(
+                  color: AppColors.deliveryInk,
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          const Divider(height: 1, color: AppColors.deliverySurfaceBorder),
+          const SizedBox(height: 6),
+          ...List.generate(children.length, (index) {
+            return Column(
+              children: [
+                children[index],
+                if (index < children.length - 1)
+                  const Divider(
+                    height: 1,
+                    thickness: 1,
+                    color: AppColors.deliverySurfaceBorder,
+                  ),
+              ],
+            );
+          }),
+        ],
+      ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  final String label;
+  final String value;
+  final VoidCallback? onCopy;
+
+  const _InfoRow({
+    required this.label,
+    required this.value,
+    this.onCopy,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final displayValue = value.trim().isEmpty || value == '-' ? 'Not set' : value;
 
     return Padding(
-      padding: EdgeInsets.only(bottom: vertical ? 10 : 0),
-      child: vertical
-          ? Row(
-              children: [
-                _journeyCircle(bg, color, icon),
-                const SizedBox(width: 10),
-                Expanded(child: _journeyLabel(color)),
-              ],
-            )
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _journeyCircle(bg, color, icon),
-                const SizedBox(height: 10),
-                _journeyLabel(color),
-              ],
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 4,
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: AppColors.textMuted,
+                fontSize: 11.5,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-    );
-  }
-
-  Widget _journeyCircle(Color bg, Color color, IconData icon) {
-    return Container(
-      width: 40,
-      height: 40,
-      decoration: BoxDecoration(
-        color: bg,
-        shape: BoxShape.circle,
-        border: Border.all(color: color),
+          ),
+          Expanded(
+            flex: 6,
+            child: Text(
+              displayValue,
+              textAlign: TextAlign.end,
+              style: const TextStyle(
+                color: AppColors.deliveryInk,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          if (onCopy != null && displayValue != 'Not set') ...[
+            const SizedBox(width: 4),
+            InkWell(
+              onTap: onCopy,
+              borderRadius: BorderRadius.circular(4),
+              child: const Padding(
+                padding: EdgeInsets.all(2),
+                child: Icon(
+                  Icons.copy_rounded,
+                  size: 14,
+                  color: AppColors.textMuted,
+                ),
+              ),
+            ),
+          ],
+        ],
       ),
-      child: Icon(icon, size: 20, color: color),
     );
   }
+}
 
-  Widget _journeyLabel(Color color) {
-    return Text(
-      label,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      style: TextStyle(color: color, fontSize: 14, fontWeight: FontWeight.w700),
+class _FollowUpsSection extends StatelessWidget {
+  final List<_LocalFollowUp> items;
+  final VoidCallback onAdd;
+
+  const _FollowUpsSection({required this.items, required this.onAdd});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Scheduled Follow-ups',
+              style: TextStyle(
+                color: AppColors.deliveryInk,
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            TextButton.icon(
+              onPressed: onAdd,
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.deliveryGreen,
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              ),
+              icon: const Icon(Icons.add_rounded, size: 16),
+              label: const Text(
+                'Add Follow-up',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        if (items.isEmpty)
+          _EmptyTabState(
+            icon: Icons.playlist_add_check_rounded,
+            label: 'No follow-ups recorded yet',
+            actionLabel: 'Schedule First Follow-up',
+            onAction: onAdd,
+          )
+        else
+          ...items.map(
+            (item) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.deliveryCardSoft,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.deliveryCardBorder),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.event_note_rounded,
+                          size: 16,
+                          color: AppColors.deliveryCustomerOrders,
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            item.title,
+                            style: const TextStyle(
+                              color: AppColors.deliveryInk,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                        _PriorityBadge(priority: item.priority),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.schedule_rounded,
+                          size: 13,
+                          color: AppColors.textMuted,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          _formatDateTime(item.dueAt),
+                          style: const TextStyle(
+                            color: AppColors.textMuted,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        if (item.assigneeName.isNotEmpty) ...[
+                          const SizedBox(width: 10),
+                          const Icon(
+                            Icons.person_outline_rounded,
+                            size: 13,
+                            color: AppColors.textMuted,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            item.assigneeName,
+                            style: const TextStyle(
+                              color: AppColors.textMuted,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    if (item.description.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        item.description,
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _VisitsSection extends StatelessWidget {
+  final List<_LocalVisit> items;
+  final VoidCallback onAdd;
+
+  const _VisitsSection({required this.items, required this.onAdd});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Recorded Visits',
+              style: TextStyle(
+                color: AppColors.deliveryInk,
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            TextButton.icon(
+              onPressed: onAdd,
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.deliveryGreen,
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              ),
+              icon: const Icon(Icons.add_rounded, size: 16),
+              label: const Text(
+                'Log Visit',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        if (items.isEmpty)
+          _EmptyTabState(
+            icon: Icons.location_on_outlined,
+            label: 'No visits logged yet',
+            actionLabel: 'Log First Client Visit',
+            onAction: onAdd,
+          )
+        else
+          ...items.map(
+            (item) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.deliveryCardSoft,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.deliveryCardBorder),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.pin_drop_rounded,
+                          size: 16,
+                          color: AppColors.deliveryGreen,
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            item.visitType,
+                            style: const TextStyle(
+                              color: AppColors.deliveryInk,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                        const _StatusBadge(
+                          label: 'Completed',
+                          color: AppColors.deliveryGreen,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.schedule_rounded,
+                          size: 13,
+                          color: AppColors.textMuted,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          _formatDateTime(item.createdAt),
+                          style: const TextStyle(
+                            color: AppColors.textMuted,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (item.purpose.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        'Purpose: ${item.purpose}',
+                        style: const TextStyle(
+                          color: AppColors.deliveryInk,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                    if (item.notes.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        item.notes,
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                    if (item.outcome.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        'Outcome: ${item.outcome}',
+                        style: const TextStyle(
+                          color: AppColors.textMuted,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _NotesSection extends StatelessWidget {
+  final LeadDetailModel lead;
+  final VoidCallback onAddNote;
+
+  const _NotesSection({required this.lead, required this.onAddNote});
+
+  @override
+  Widget build(BuildContext context) {
+    final rawNotes = lead.notes.trim();
+    final hasNotes = rawNotes.isNotEmpty && rawNotes != '-';
+
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Notes & History',
+              style: TextStyle(
+                color: AppColors.deliveryInk,
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            TextButton.icon(
+              onPressed: onAddNote,
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.deliveryGreen,
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              ),
+              icon: const Icon(Icons.add_rounded, size: 16),
+              label: const Text(
+                'Add Note',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        if (!hasNotes)
+          _EmptyTabState(
+            icon: Icons.notes_rounded,
+            label: 'No notes added yet',
+            actionLabel: 'Add First Note',
+            onAction: onAddNote,
+          )
+        else
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.deliveryCardSoft,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.deliveryCardBorder),
+            ),
+            child: Text(
+              rawNotes,
+              style: const TextStyle(
+                color: AppColors.deliveryInk,
+                fontSize: 12.5,
+                height: 1.4,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _EmptyTabState extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String actionLabel;
+  final VoidCallback onAction;
+
+  const _EmptyTabState({
+    required this.icon,
+    required this.label,
+    required this.actionLabel,
+    required this.onAction,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      child: Center(
+        child: Column(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: const BoxDecoration(
+                color: AppColors.deliveryGreenSoft,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: AppColors.deliveryGreen, size: 22),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: const TextStyle(
+                color: AppColors.deliveryInk,
+                fontSize: 12.5,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: onAction,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.deliveryGreen,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
+              ),
+              child: Text(
+                actionLabel,
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -1944,33 +2115,37 @@ class _BottomActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final enabled = onTap != null;
-    final background = filled && enabled ? AppColors.primary : Colors.white;
+    final background = filled && enabled
+        ? AppColors.deliveryGreen
+        : AppColors.surface;
     final foreground = filled && enabled
         ? Colors.white
         : enabled
-        ? AppColors.primary
+        ? AppColors.deliveryInk
         : AppColors.textLightMuted;
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
         child: Ink(
-          height: 48,
+          height: 44,
           padding: const EdgeInsets.symmetric(horizontal: 8),
           decoration: BoxDecoration(
             color: background,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: filled && enabled ? AppColors.primary : AppColors.border,
+              color: filled && enabled
+                  ? AppColors.deliveryGreen
+                  : AppColors.deliverySurfaceBorder,
             ),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 18, color: foreground),
-              const SizedBox(width: 6),
+              Icon(icon, size: 17, color: foreground),
+              const SizedBox(width: 5),
               Flexible(
                 child: Text(
                   label,
@@ -1978,12 +2153,202 @@ class _BottomActionButton extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: foreground,
-                    fontSize: 14,
+                    fontSize: 12.5,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _StatusBadge extends StatelessWidget {
+  final String label;
+  final Color color;
+
+  const _StatusBadge({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withValues(alpha: 0.24)),
+      ),
+      child: Text(
+        label.isEmpty ? 'New' : label,
+        style: TextStyle(
+          color: color,
+          fontSize: 10.5,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+}
+
+class _PriorityBadge extends StatelessWidget {
+  final String priority;
+
+  const _PriorityBadge({required this.priority});
+
+  @override
+  Widget build(BuildContext context) {
+    final p = priority.toLowerCase();
+    final color = p.contains('high') || p.contains('urgent')
+        ? AppColors.deliveryRed
+        : p.contains('med')
+        ? AppColors.deliveryOrange
+        : AppColors.deliveryBlue;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withValues(alpha: 0.24)),
+      ),
+      child: Text(
+        priority,
+        style: TextStyle(
+          color: color,
+          fontSize: 10.5,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+}
+
+class _LeadCodePill extends StatelessWidget {
+  final String code;
+
+  const _LeadCodePill({required this.code});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: AppColors.deliveryCardSoft,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: AppColors.deliveryCardBorder),
+      ),
+      child: Text(
+        code,
+        style: const TextStyle(
+          color: AppColors.textSecondary,
+          fontSize: 10.5,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+}
+
+BoxDecoration _surfaceDecoration() {
+  return BoxDecoration(
+    color: AppColors.surface,
+    borderRadius: BorderRadius.circular(AppSizes.cardRadius),
+    border: Border.all(color: AppColors.deliverySurfaceBorder),
+    boxShadow: const [
+      BoxShadow(
+        color: Color(0x080F172A),
+        blurRadius: 10,
+        offset: Offset(0, 3),
+      ),
+    ],
+  );
+}
+
+// -------------------------------------------------------------
+// Sheet & Dialog Components
+// -------------------------------------------------------------
+
+class _SheetShell extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final Widget child;
+
+  const _SheetShell({
+    required this.title,
+    required this.icon,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 540, maxHeight: 680),
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.deliverySurfaceBorder),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.16),
+                  blurRadius: 28,
+                  offset: const Offset(0, 12),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: AppColors.deliveryGreenSoft,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(icon, color: AppColors.deliveryGreen, size: 20),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          title,
+                          style: const TextStyle(
+                            color: AppColors.deliveryInk,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(
+                          Icons.close_rounded,
+                          color: AppColors.textSecondary,
+                          size: 20,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1, color: AppColors.deliverySurfaceBorder),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+                    child: child,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -2001,20 +2366,12 @@ class _FollowUpSheet extends StatefulWidget {
 }
 
 class _FollowUpSheetState extends State<_FollowUpSheet> {
-  final _titleController = TextEditingController();
+  final _titleController = TextEditingController(text: 'General Follow-up');
   final _descriptionController = TextEditingController();
-  late DateTime _dueDate;
-  late TimeOfDay _dueTime;
+  DateTime _dueDate = DateTime.now().add(const Duration(days: 1));
+  TimeOfDay _dueTime = const TimeOfDay(hour: 11, minute: 0);
   String _priority = 'medium';
   String? _assigneeId;
-  String? _error;
-
-  @override
-  void initState() {
-    super.initState();
-    _dueDate = DateTime.now();
-    _dueTime = const TimeOfDay(hour: 10, minute: 0);
-  }
 
   @override
   void dispose() {
@@ -2023,76 +2380,12 @@ class _FollowUpSheetState extends State<_FollowUpSheet> {
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return _SheetShell(
-      title: 'Add Follow-up',
-      icon: Icons.playlist_add_check_rounded,
-      child: Column(
-        children: [
-          _SheetTextField(
-            label: 'Follow-up Title *',
-            hint: 'e.g. Call to confirm quantity',
-            controller: _titleController,
-            errorText: _error,
-          ),
-          const SizedBox(height: 12),
-          _SheetTextField(
-            label: 'Description',
-            hint: 'Add action notes',
-            controller: _descriptionController,
-            maxLines: 3,
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _DatePickerTile(
-                  label: 'Due Date',
-                  value: _formatDate(_dueDate.toIso8601String()),
-                  onTap: _pickDate,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _DatePickerTile(
-                  label: 'Due Time',
-                  value: _formatTime(_dueTime),
-                  onTap: _pickTime,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          _SheetDropdown<String>(
-            label: 'Priority',
-            value: _priority,
-            items: const ['low', 'medium', 'high', 'urgent'],
-            itemLabel: _priorityLabel,
-            onChanged: (value) => setState(() => _priority = value ?? 'medium'),
-          ),
-          const SizedBox(height: 12),
-          _SheetDropdown<String>(
-            label: 'Assignee',
-            value: _assigneeId,
-            hint: 'Defaults to you if left blank',
-            items: widget.staff.map((user) => user.id).toList(),
-            itemLabel: (id) => _staffName(id, widget.staff),
-            onChanged: (value) => setState(() => _assigneeId = value),
-          ),
-          const SizedBox(height: 18),
-          _SheetActions(primaryLabel: 'Add Follow-up', onPrimary: _submit),
-        ],
-      ),
-    );
-  }
-
   Future<void> _pickDate() async {
     final picked = await showAppCalendarDatePicker(
       context: context,
       initialDate: _dueDate,
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2100),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
       title: 'Follow-up Date',
     );
     if (picked != null) setState(() => _dueDate = picked);
@@ -2106,19 +2399,112 @@ class _FollowUpSheetState extends State<_FollowUpSheet> {
     if (picked != null) setState(() => _dueTime = picked);
   }
 
-  void _submit() {
-    final title = _titleController.text.trim();
-    if (title.isEmpty) {
-      setState(() => _error = 'Enter a follow-up task title.');
-      return;
-    }
-    Navigator.of(context).pop(
-      _LocalFollowUp(
-        title: title,
-        description: _descriptionController.text.trim(),
-        dueAt: _combineDateTime(_dueDate, _dueTime),
-        priority: _priority,
-        assigneeName: _staffName(_assigneeId, widget.staff),
+  @override
+  Widget build(BuildContext context) {
+    return _SheetShell(
+      title: 'Schedule Follow-up',
+      icon: Icons.playlist_add_check_rounded,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _fieldLabel('Title *'),
+          _inputField(_titleController, hint: 'Follow-up title'),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _fieldLabel('Date *'),
+                    InkWell(
+                      onTap: _pickDate,
+                      child: _pickerBox(_apiDate(_dueDate), Icons.calendar_today_outlined),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _fieldLabel('Time *'),
+                    InkWell(
+                      onTap: _pickTime,
+                      child: _pickerBox(_formatTime(_dueTime), Icons.access_time_rounded),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _fieldLabel('Priority'),
+          _dropdownBox<String>(
+            value: _priority,
+            items: const ['low', 'medium', 'high', 'urgent'],
+            itemLabel: (v) => v[0].toUpperCase() + v.substring(1),
+            onChanged: (v) => setState(() => _priority = v ?? 'medium'),
+          ),
+          const SizedBox(height: 12),
+          _fieldLabel('Assignee'),
+          _dropdownBox<String?>(
+            value: _assigneeId,
+            items: [null, ...widget.staff.map((u) => u.id)],
+            itemLabel: (v) {
+              if (v == null) return 'Select Staff';
+              return widget.staff.where((u) => u.id == v).firstOrNull?.name ?? v;
+            },
+            onChanged: (v) => setState(() => _assigneeId = v),
+          ),
+          const SizedBox(height: 12),
+          _fieldLabel('Description / Requirements'),
+          _inputField(_descriptionController, hint: 'Optional details...', maxLines: 3),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: AppColors.deliverySurfaceBorder),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    final title = _titleController.text.trim();
+                    if (title.isEmpty) return;
+                    final dueAt = _combineDateTime(_dueDate, _dueTime);
+                    Navigator.pop(
+                      context,
+                      _LocalFollowUp(
+                        title: title,
+                        description: _descriptionController.text.trim(),
+                        dueAt: dueAt,
+                        priority: _priority,
+                        assigneeName: widget.staff.where((u) => u.id == _assigneeId).firstOrNull?.name ?? 'Assigned Staff',
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.deliveryGreen,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  child: const Text('Schedule', style: TextStyle(fontWeight: FontWeight.w800)),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -2134,185 +2520,86 @@ class _VisitSheet extends StatefulWidget {
 }
 
 class _VisitSheetState extends State<_VisitSheet> {
-  final _purposeController = TextEditingController();
+  final _purposeController = TextEditingController(text: 'Product Demo');
   final _notesController = TextEditingController();
   final _outcomeController = TextEditingController();
-  final _taskTitleController = TextEditingController();
-  final _taskDescriptionController = TextEditingController();
-  String _visitType = 'site_visit';
-  bool _createTask = false;
-  late DateTime _dueDate;
-  late TimeOfDay _dueTime;
-  String _priority = 'medium';
-  String? _assigneeId;
-  String? _taskError;
-
-  @override
-  void initState() {
-    super.initState();
-    _dueDate = DateTime.now();
-    _dueTime = const TimeOfDay(hour: 10, minute: 0);
-  }
+  String _visitType = 'lead';
 
   @override
   void dispose() {
     _purposeController.dispose();
     _notesController.dispose();
     _outcomeController.dispose();
-    _taskTitleController.dispose();
-    _taskDescriptionController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return _SheetShell(
-      title: 'Log Visit',
+      title: 'Log Client Visit',
       icon: Icons.location_on_outlined,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _SheetDropdown<String>(
-            label: 'Visit Type',
+          _fieldLabel('Visit Type'),
+          _dropdownBox<String>(
             value: _visitType,
-            items: const ['site_visit', 'meeting', 'call', 'audit'],
-            itemLabel: _visitTypeLabel,
-            onChanged: (value) =>
-                setState(() => _visitType = value ?? 'site_visit'),
+            items: const ['lead', 'customer', 'supplier'],
+            itemLabel: (v) => v[0].toUpperCase() + v.substring(1),
+            onChanged: (v) => setState(() => _visitType = v ?? 'lead'),
           ),
           const SizedBox(height: 12),
-          _SheetTextField(
-            label: 'Purpose',
-            hint: 'e.g. Requirement check',
-            controller: _purposeController,
-          ),
+          _fieldLabel('Purpose *'),
+          _inputField(_purposeController, hint: 'Visit objective'),
           const SizedBox(height: 12),
-          _SheetTextField(
-            label: 'Notes',
-            hint: 'Visit notes',
-            controller: _notesController,
-            maxLines: 3,
-          ),
+          _fieldLabel('Notes & Discussion'),
+          _inputField(_notesController, hint: 'Key discussion points...', maxLines: 3),
           const SizedBox(height: 12),
-          _SheetTextField(
-            label: 'Outcome',
-            hint: 'What happened during the visit?',
-            controller: _outcomeController,
-            maxLines: 3,
-          ),
-          const SizedBox(height: 12),
-          CheckboxListTile(
-            contentPadding: EdgeInsets.zero,
-            value: _createTask,
-            activeColor: AppColors.primary,
-            title: const Text(
-              'Create Follow-up Task',
-              style: TextStyle(fontWeight: FontWeight.w700),
-            ),
-            onChanged: (value) => setState(() => _createTask = value ?? false),
-          ),
-          if (_createTask) ...[
-            _SheetTextField(
-              label: 'Task Title *',
-              hint: 'Call to confirm quantity',
-              controller: _taskTitleController,
-              errorText: _taskError,
-            ),
-            const SizedBox(height: 12),
-            _SheetTextField(
-              label: 'Action / Notes',
-              hint: 'Discuss next action',
-              controller: _taskDescriptionController,
-              maxLines: 3,
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _DatePickerTile(
-                    label: 'Due Date',
-                    value: _formatDate(_dueDate.toIso8601String()),
-                    onTap: _pickDate,
+          _fieldLabel('Outcome'),
+          _inputField(_outcomeController, hint: 'e.g. Requested quotation'),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: AppColors.deliverySurfaceBorder),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
+                  child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _DatePickerTile(
-                    label: 'Due Time',
-                    value: _formatTime(_dueTime),
-                    onTap: _pickTime,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    final purpose = _purposeController.text.trim();
+                    if (purpose.isEmpty) return;
+                    Navigator.pop(
+                      context,
+                      _VisitFormResult(
+                        visitType: _visitType,
+                        visitTypeLabel: _visitType[0].toUpperCase() + _visitType.substring(1),
+                        purpose: purpose,
+                        notes: _notesController.text.trim(),
+                        outcome: _outcomeController.text.trim(),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.deliveryGreen,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
+                  child: const Text('Log Visit', style: TextStyle(fontWeight: FontWeight.w800)),
                 ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            _SheetDropdown<String>(
-              label: 'Priority',
-              value: _priority,
-              items: const ['low', 'medium', 'high', 'urgent'],
-              itemLabel: _priorityLabel,
-              onChanged: (value) =>
-                  setState(() => _priority = value ?? 'medium'),
-            ),
-            const SizedBox(height: 12),
-            _SheetDropdown<String>(
-              label: 'Assignee',
-              value: _assigneeId,
-              hint: 'Defaults to you if left blank',
-              items: widget.staff.map((user) => user.id).toList(),
-              itemLabel: (id) => _staffName(id, widget.staff),
-              onChanged: (value) => setState(() => _assigneeId = value),
-            ),
-          ],
-          const SizedBox(height: 18),
-          _SheetActions(primaryLabel: 'Save Visit', onPrimary: _submit),
+              ),
+            ],
+          ),
         ],
-      ),
-    );
-  }
-
-  Future<void> _pickDate() async {
-    final picked = await showAppCalendarDatePicker(
-      context: context,
-      initialDate: _dueDate,
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2100),
-      title: 'Visit Date',
-    );
-    if (picked != null) setState(() => _dueDate = picked);
-  }
-
-  Future<void> _pickTime() async {
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: _dueTime,
-    );
-    if (picked != null) setState(() => _dueTime = picked);
-  }
-
-  void _submit() {
-    _VisitFollowUpRequest? followUp;
-    if (_createTask) {
-      final title = _taskTitleController.text.trim();
-      if (title.isEmpty) {
-        setState(() => _taskError = 'Enter a follow-up task title.');
-        return;
-      }
-      followUp = _VisitFollowUpRequest(
-        title: title,
-        description: _taskDescriptionController.text.trim(),
-        dueAt: _combineDateTime(_dueDate, _dueTime),
-        priority: _priority,
-        assigneeId: _assigneeId,
-      );
-    }
-    Navigator.of(context).pop(
-      _VisitFormResult(
-        visitType: _visitType,
-        visitTypeLabel: _visitTypeLabel(_visitType),
-        purpose: _purposeController.text.trim(),
-        notes: _notesController.text.trim(),
-        outcome: _outcomeController.text.trim(),
-        followUp: followUp,
       ),
     );
   }
@@ -2334,20 +2621,9 @@ class _ConvertLeadSheetState extends State<_ConvertLeadSheet> {
   late final TextEditingController _phoneController;
   late final TextEditingController _emailController;
   late final TextEditingController _gstController;
-  late final TextEditingController _creditLimitController;
-  late final TextEditingController _openingBalanceController;
-  late final TextEditingController _mapsController;
-  late final TextEditingController _billingAddressController;
-  late final TextEditingController _deliveryAddressController;
-  late final TextEditingController _notesController;
+  late final TextEditingController _addressController;
   String _customerType = 'business';
-  String _status = 'active';
-  String? _category;
   String? _salesOfficerId;
-  late DateTime _customerSince;
-  String? _nameError;
-  String? _phoneError;
-  PickedMapLocation? _pickedMapsLocation;
 
   @override
   void initState() {
@@ -2361,20 +2637,10 @@ class _ConvertLeadSheetState extends State<_ConvertLeadSheet> {
     _phoneController = TextEditingController(text: widget.lead.phone);
     _emailController = TextEditingController(text: widget.lead.email);
     _gstController = TextEditingController();
-    _creditLimitController = TextEditingController();
-    _openingBalanceController = TextEditingController();
-    _mapsController = TextEditingController();
-    _billingAddressController = TextEditingController(
+    _addressController = TextEditingController(
       text: widget.lead.address == '-' ? '' : widget.lead.address,
     );
-    _deliveryAddressController = TextEditingController(
-      text: widget.lead.address == '-' ? '' : widget.lead.address,
-    );
-    _notesController = TextEditingController(
-      text: widget.lead.notes == '-' ? '' : widget.lead.notes,
-    );
-    _customerSince = DateTime.now();
-    _salesOfficerId = _matchingStaffId(widget.lead.assignedTo, widget.staff);
+    _salesOfficerId = widget.staff.where((u) => u.name == widget.lead.assignedTo).firstOrNull?.id;
   }
 
   @override
@@ -2384,12 +2650,7 @@ class _ConvertLeadSheetState extends State<_ConvertLeadSheet> {
     _phoneController.dispose();
     _emailController.dispose();
     _gstController.dispose();
-    _creditLimitController.dispose();
-    _openingBalanceController.dispose();
-    _mapsController.dispose();
-    _billingAddressController.dispose();
-    _deliveryAddressController.dispose();
-    _notesController.dispose();
+    _addressController.dispose();
     super.dispose();
   }
 
@@ -2399,952 +2660,218 @@ class _ConvertLeadSheetState extends State<_ConvertLeadSheet> {
       title: 'Convert to Customer',
       icon: Icons.person_add_alt_1_outlined,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _SheetTextField(
-            label: 'Business / Customer Name *',
-            hint: 'Customer name',
-            controller: _nameController,
-            errorText: _nameError,
+          _fieldLabel('Business / Shop Name *'),
+          _inputField(_nameController, hint: 'Customer business name'),
+          const SizedBox(height: 12),
+          _fieldLabel('Primary Contact Person'),
+          _inputField(_contactController, hint: 'Contact name'),
+          const SizedBox(height: 12),
+          _fieldLabel('Phone Number *'),
+          _inputField(_phoneController, hint: '10-digit mobile', keyboardType: TextInputType.phone),
+          const SizedBox(height: 12),
+          _fieldLabel('Email Address'),
+          _inputField(_emailController, hint: 'Email', keyboardType: TextInputType.emailAddress),
+          const SizedBox(height: 12),
+          _fieldLabel('Customer Type'),
+          _dropdownBox<String>(
+            value: _customerType,
+            items: const ['business', 'retail', 'wholesale', 'distributor', 'individual'],
+            itemLabel: (v) => v[0].toUpperCase() + v.substring(1),
+            onChanged: (v) => setState(() => _customerType = v ?? 'business'),
           ),
           const SizedBox(height: 12),
-          _SheetTextField(
-            label: 'Primary Contact Person',
-            hint: 'Contact person',
-            controller: _contactController,
-          ),
+          _fieldLabel('GST Number'),
+          _inputField(_gstController, hint: 'GSTIN (Optional)'),
           const SizedBox(height: 12),
-          _SheetTextField(
-            label: 'Phone *',
-            hint: 'Phone number',
-            controller: _phoneController,
-            keyboardType: TextInputType.phone,
-            errorText: _phoneError,
-          ),
+          _fieldLabel('Address'),
+          _inputField(_addressController, hint: 'Billing & Delivery Address', maxLines: 2),
           const SizedBox(height: 12),
-          _SheetTextField(
-            label: 'Email',
-            hint: 'Email address',
-            controller: _emailController,
-            keyboardType: TextInputType.emailAddress,
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _SheetDropdown<String>(
-                  label: 'Customer Type',
-                  value: _customerType,
-                  items: const [
-                    'individual',
-                    'business',
-                    'government',
-                    'dealer',
-                    'distributor',
-                    'vendor',
-                  ],
-                  itemLabel: _titleCase,
-                  onChanged: (value) =>
-                      setState(() => _customerType = value ?? 'business'),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _SheetDropdown<String>(
-                  label: 'Status',
-                  value: _status,
-                  items: const [
-                    'active',
-                    'inactive',
-                    'blacklisted',
-                    'prospect',
-                  ],
-                  itemLabel: _titleCase,
-                  onChanged: (value) =>
-                      setState(() => _status = value ?? 'active'),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _DatePickerTile(
-                  label: 'Customer Since',
-                  value: _apiDate(_customerSince),
-                  onTap: _pickCustomerSince,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _SheetDropdown<String>(
-                  label: 'Category',
-                  value: _category,
-                  hint: 'No category',
-                  items: const [
-                    'Retail',
-                    'Wholesale',
-                    'Corporate',
-                    'VIP',
-                    'Dealer',
-                    'Distributor',
-                  ],
-                  itemLabel: (value) => value,
-                  onChanged: (value) => setState(() => _category = value),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          _SheetDropdown<String>(
-            label: 'Assigned Sales Officer',
+          _fieldLabel('Assigned Sales Officer'),
+          _dropdownBox<String?>(
             value: _salesOfficerId,
-            hint: 'Defaults to current assignment',
-            items: widget.staff.map((user) => user.id).toList(),
-            itemLabel: (id) => _staffName(id, widget.staff),
-            onChanged: (value) => setState(() => _salesOfficerId = value),
+            items: [null, ...widget.staff.map((u) => u.id)],
+            itemLabel: (v) {
+              if (v == null) return 'Select Staff';
+              return widget.staff.where((u) => u.id == v).firstOrNull?.name ?? v;
+            },
+            onChanged: (v) => setState(() => _salesOfficerId = v),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 20),
           Row(
             children: [
               Expanded(
-                child: _SheetTextField(
-                  label: 'GST Number',
-                  hint: 'GST number',
-                  controller: _gstController,
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: AppColors.deliverySurfaceBorder),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: _SheetTextField(
-                  label: 'Maps Location',
-                  hint: '19.076,72.877 or Maps URL',
-                  controller: _mapsController,
-                  onChanged: (_) => _pickedMapsLocation = null,
-                  suffixIcon: IconButton(
-                    tooltip: 'Pick on Google Maps',
-                    onPressed: _pickMapsLocation,
-                    icon: const Icon(
-                      Icons.my_location_outlined,
-                      color: AppColors.primary,
-                      size: 20,
-                    ),
+                child: ElevatedButton(
+                  onPressed: () {
+                    final name = _nameController.text.trim();
+                    final phone = _phoneController.text.trim();
+                    if (name.isEmpty || phone.isEmpty) return;
+                    Navigator.pop(context, {
+                      'name': name,
+                      'contact_person': _contactController.text.trim(),
+                      'phone': phone,
+                      'email': _emailController.text.trim(),
+                      'customer_type': _customerType,
+                      'gst_number': _gstController.text.trim(),
+                      'billing_address': _addressController.text.trim(),
+                      'delivery_address': _addressController.text.trim(),
+                      if (_salesOfficerId != null) 'assigned_sales_officer_id': _salesOfficerId,
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.deliveryGreen,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
+                  child: const Text('Convert', style: TextStyle(fontWeight: FontWeight.w800)),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _SheetTextField(
-                  label: 'Credit Limit',
-                  hint: '0.00',
-                  controller: _creditLimitController,
-                  keyboardType: TextInputType.number,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _SheetTextField(
-                  label: 'Opening Balance',
-                  hint: '0.00',
-                  controller: _openingBalanceController,
-                  keyboardType: TextInputType.number,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          _SheetTextField(
-            label: 'Billing Address',
-            hint: 'Billing address',
-            controller: _billingAddressController,
-            maxLines: 2,
-          ),
-          const SizedBox(height: 12),
-          _SheetTextField(
-            label: 'Delivery Address',
-            hint: 'Delivery address',
-            controller: _deliveryAddressController,
-            maxLines: 2,
-          ),
-          const SizedBox(height: 12),
-          _SheetTextField(
-            label: 'Notes',
-            hint: 'Customer notes',
-            controller: _notesController,
-            maxLines: 3,
-          ),
-          const SizedBox(height: 18),
-          _SheetActions(primaryLabel: 'Convert', onPrimary: _submit),
         ],
       ),
     );
   }
-
-  Future<void> _pickCustomerSince() async {
-    final picked = await showAppCalendarDatePicker(
-      context: context,
-      initialDate: _customerSince,
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2100),
-      title: 'Customer Since',
-    );
-    if (picked != null) setState(() => _customerSince = picked);
-  }
-
-  Future<void> _pickMapsLocation() async {
-    FocusScope.of(context).unfocus();
-    final current = _parseCoordinates(_mapsController.text);
-    final selected = await Navigator.of(context).push<PickedMapLocation>(
-      MaterialPageRoute(
-        builder: (_) => CustomerLocationPickerScreen(
-          initialLocation:
-              _pickedMapsLocation?.location ??
-              (current == null
-                  ? null
-                  : latlong.LatLng(current.latitude, current.longitude)),
-          initialPlaceName: _pickedMapsLocation?.placeName,
-        ),
-      ),
-    );
-    if (!mounted || selected == null) return;
-    setState(() {
-      _pickedMapsLocation = selected;
-      _mapsController.text = selected.placeName;
-    });
-  }
-
-  void _submit() {
-    final name = _nameController.text.trim();
-    final phone = _phoneController.text.trim();
-    if (name.isEmpty || phone.isEmpty) {
-      setState(() {
-        _nameError = name.isEmpty
-            ? 'Business / customer name is required.'
-            : null;
-        _phoneError = phone.isEmpty ? 'Phone is required.' : null;
-      });
-      return;
-    }
-
-    final payload = <String, dynamic>{
-      'name': name,
-      'phone': phone,
-      'customer_type': _customerType,
-      'status': _status,
-      'customer_since': _apiDate(_customerSince),
-    };
-    _putPayload(payload, 'primary_contact_person', _contactController.text);
-    _putPayload(payload, 'email', _emailController.text);
-    _putPayload(payload, 'gst_number', _gstController.text);
-    _putPayload(payload, 'category', _category);
-    _putPayload(payload, 'assigned_sales_officer_id', _salesOfficerId);
-    _putPayload(payload, 'billing_address', _billingAddressController.text);
-    _putPayload(payload, 'delivery_address', _deliveryAddressController.text);
-    _putPayload(payload, 'notes', _notesController.text);
-    _putNumber(payload, 'credit_limit', _creditLimitController.text);
-    _putNumber(payload, 'opening_balance', _openingBalanceController.text);
-
-    final pickedLocation = _pickedMapsLocation?.location;
-    final coords = pickedLocation == null
-        ? _parseCoordinates(_mapsController.text)
-        : _Coordinates(
-            latitude: pickedLocation.latitude,
-            longitude: pickedLocation.longitude,
-          );
-    if (coords != null) {
-      payload['maps_latitude'] = coords.latitude;
-      payload['maps_longitude'] = coords.longitude;
-    }
-
-    Navigator.of(context).pop(payload);
-  }
 }
 
-class _SheetShell extends StatelessWidget {
-  final String title;
-  final IconData icon;
-  final Widget child;
+// -------------------------------------------------------------
+// Sheet Helper UI Widgets
+// -------------------------------------------------------------
 
-  const _SheetShell({
-    required this.title,
-    required this.icon,
-    required this.child,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final size = MediaQuery.sizeOf(context);
-    final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
-    final availableWidth = math.max(320.0, size.width - 28);
-    final availableHeight = math.max(320.0, size.height - keyboardInset - 56);
-    final side = math.min(math.min(availableWidth, availableHeight), 560.0);
-
-    return Dialog(
-      insetPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 24),
-      backgroundColor: Colors.transparent,
-      child: AnimatedPadding(
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeOutCubic,
-        padding: EdgeInsets.only(bottom: keyboardInset),
-        child: Center(
-          child: Container(
-            width: side,
-            height: side,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: AppColors.border),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.18),
-                  blurRadius: 28,
-                  offset: const Offset(0, 16),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(18, 16, 18, 12),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 38,
-                        height: 38,
-                        decoration: BoxDecoration(
-                          color: AppColors.activeMenuBg,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(icon, color: AppColors.primary, size: 20),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          title,
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        icon: const Icon(Icons.close_rounded),
-                      ),
-                    ],
-                  ),
-                ),
-                const Divider(height: 1, color: AppColors.border),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
-                    child: child,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _SheetTextField extends StatelessWidget {
-  final String label;
-  final String hint;
-  final TextEditingController controller;
-  final int maxLines;
-  final TextInputType? keyboardType;
-  final String? errorText;
-  final Widget? suffixIcon;
-  final ValueChanged<String>? onChanged;
-
-  const _SheetTextField({
-    required this.label,
-    required this.hint,
-    required this.controller,
-    this.maxLines = 1,
-    this.keyboardType,
-    this.errorText,
-    this.suffixIcon,
-    this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return _SheetFieldLabel(
-      label: label,
-      errorText: errorText,
-      child: TextField(
-        controller: controller,
-        maxLines: maxLines,
-        keyboardType: keyboardType,
-        onChanged: onChanged,
-        decoration: _sheetInputDecoration(
-          hint,
-          errorText: errorText,
-        ).copyWith(suffixIcon: suffixIcon),
-      ),
-    );
-  }
-}
-
-class _SheetDropdown<T> extends StatelessWidget {
-  final String label;
-  final T? value;
-  final String? hint;
-  final List<T> items;
-  final String Function(T value) itemLabel;
-  final ValueChanged<T?> onChanged;
-
-  const _SheetDropdown({
-    required this.label,
-    required this.value,
-    required this.items,
-    required this.itemLabel,
-    required this.onChanged,
-    this.hint,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return _SheetFieldLabel(
-      label: label,
-      child: DropdownButtonFormField<T>(
-        initialValue: value,
-        isExpanded: true,
-        decoration: _sheetInputDecoration(hint ?? 'Select'),
-        items: [
-          if (hint != null)
-            DropdownMenuItem<T>(
-              value: null,
-              child: Text(hint!, overflow: TextOverflow.ellipsis),
-            ),
-          ...items.map(
-            (item) => DropdownMenuItem<T>(
-              value: item,
-              child: Text(itemLabel(item), overflow: TextOverflow.ellipsis),
-            ),
-          ),
-        ],
-        onChanged: onChanged,
-      ),
-    );
-  }
-}
-
-class _SheetFieldLabel extends StatelessWidget {
-  final String label;
-  final Widget child;
-  final String? errorText;
-
-  const _SheetFieldLabel({
-    required this.label,
-    required this.child,
-    this.errorText,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 14,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        const SizedBox(height: 7),
-        child,
-        if (errorText != null) ...[
-          const SizedBox(height: 5),
-          Text(
-            errorText!,
-            style: const TextStyle(
-              color: Color(0xFFDC2626),
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-class _DatePickerTile extends StatelessWidget {
-  final String label;
-  final String value;
-  final VoidCallback onTap;
-
-  const _DatePickerTile({
-    required this.label,
-    required this.value,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return _SheetFieldLabel(
-      label: label,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-          decoration: BoxDecoration(
-            color: AppColors.surfaceSoft,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.border),
-          ),
-          child: Row(
-            children: [
-              const Icon(
-                Icons.calendar_today_outlined,
-                color: AppColors.primary,
-                size: 16,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  value,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _SheetActions extends StatelessWidget {
-  final String primaryLabel;
-  final VoidCallback onPrimary;
-
-  const _SheetActions({required this.primaryLabel, required this.onPrimary});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
-        ),
-        const SizedBox(width: 10),
-        ElevatedButton(
-          onPressed: onPrimary,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          child: Text(primaryLabel),
-        ),
-      ],
-    );
-  }
-}
-
-class _ActivityGroupTitle extends StatelessWidget {
-  final String text;
-
-  const _ActivityGroupTitle(this.text);
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      text,
+Widget _fieldLabel(String label) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 6),
+    child: Text(
+      label,
       style: const TextStyle(
-        color: AppColors.textPrimary,
-        fontSize: 14,
-        fontWeight: FontWeight.w800,
+        color: AppColors.deliveryInk,
+        fontSize: 12,
+        fontWeight: FontWeight.w700,
       ),
-    );
-  }
+    ),
+  );
 }
 
-class _FollowUpCard extends StatelessWidget {
-  final _LocalFollowUp item;
-
-  const _FollowUpCard({required this.item});
-
-  @override
-  Widget build(BuildContext context) {
-    return _ActivityRecordCard(
-      icon: Icons.playlist_add_check_rounded,
-      title: item.title,
-      badge: _priorityLabel(item.priority),
-      lines: [
-        _formatDateTime(item.dueAt),
-        if (item.assigneeName.isNotEmpty) item.assigneeName,
-        if (item.description.isNotEmpty) item.description,
-      ],
-    );
-  }
+Widget _inputField(
+  TextEditingController controller, {
+  required String hint,
+  int maxLines = 1,
+  TextInputType? keyboardType,
+}) {
+  return TextField(
+    controller: controller,
+    maxLines: maxLines,
+    keyboardType: keyboardType,
+    style: const TextStyle(
+      fontSize: 13,
+      color: AppColors.deliveryInk,
+      fontWeight: FontWeight.w600,
+    ),
+    decoration: InputDecoration(
+      hintText: hint,
+      hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+      filled: true,
+      fillColor: AppColors.deliveryCardSoft,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppSizes.inputRadius),
+        borderSide: const BorderSide(color: AppColors.deliverySurfaceBorder),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppSizes.inputRadius),
+        borderSide: const BorderSide(color: AppColors.deliverySurfaceBorder),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppSizes.inputRadius),
+        borderSide: const BorderSide(color: AppColors.deliveryGreen),
+      ),
+    ),
+  );
 }
 
-class _VisitCard extends StatelessWidget {
-  final _LocalVisit item;
-
-  const _VisitCard({required this.item});
-
-  @override
-  Widget build(BuildContext context) {
-    return _ActivityRecordCard(
-      icon: Icons.location_on_outlined,
-      title: item.visitType,
-      badge: 'Completed',
-      lines: [
-        _formatDateTime(item.createdAt),
-        if (item.purpose.isNotEmpty) item.purpose,
-        if (item.notes.isNotEmpty) item.notes,
-        if (item.outcome.isNotEmpty) 'Outcome: ${item.outcome}',
-        if ((item.followUpTitle ?? '').isNotEmpty)
-          'Follow-up: ${item.followUpTitle}',
-      ],
-    );
-  }
-}
-
-class _ActivityRecordCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String badge;
-  final List<String> lines;
-
-  const _ActivityRecordCard({
-    required this.icon,
-    required this.title,
-    required this.badge,
-    required this.lines,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceSoft,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 18, color: AppColors.primary),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        title,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                    _MiniBadge(badge),
-                  ],
-                ),
-                const SizedBox(height: 5),
-                for (final line in lines)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 3),
-                    child: Text(
-                      line,
-                      style: const TextStyle(
-                        color: AppColors.textMuted,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _MiniBadge extends StatelessWidget {
-  final String text;
-
-  const _MiniBadge(this.text);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: AppColors.activeMenuBg,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        text,
-        style: const TextStyle(
-          color: AppColors.primary900,
-          fontSize: 14,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
-    );
-  }
-}
-
-class _NoteCard extends StatelessWidget {
-  final _ParsedNote note;
-
-  const _NoteCard({required this.note});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceSoft,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(
-            Icons.access_time_rounded,
-            color: AppColors.primary,
-            size: 17,
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (note.timestamp.isNotEmpty) ...[
-                  Text(
-                    note.timestamp,
-                    style: const TextStyle(
-                      color: AppColors.textMuted,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                ],
-                Text(
-                  note.text,
+Widget _dropdownBox<T>({
+  required T value,
+  required List<T> items,
+  required String Function(T) itemLabel,
+  required ValueChanged<T?> onChanged,
+}) {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12),
+    decoration: BoxDecoration(
+      color: AppColors.deliveryCardSoft,
+      borderRadius: BorderRadius.circular(AppSizes.inputRadius),
+      border: Border.all(color: AppColors.deliverySurfaceBorder),
+    ),
+    child: DropdownButtonHideUnderline(
+      child: DropdownButton<T>(
+        value: value,
+        isExpanded: true,
+        items: items
+            .map(
+              (item) => DropdownMenuItem<T>(
+                value: item,
+                child: Text(
+                  itemLabel(item),
                   style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 14,
+                    fontSize: 13,
+                    color: AppColors.deliveryInk,
                     fontWeight: FontWeight.w600,
-                    height: 1.45,
                   ),
                 ),
-              ],
-            ),
-          ),
-        ],
+              ),
+            )
+            .toList(),
+        onChanged: onChanged,
       ),
-    );
-  }
+    ),
+  );
 }
 
-class _TimelineTile extends StatelessWidget {
-  final _TimelineEvent event;
-  final bool isLast;
-
-  const _TimelineTile({required this.event, required this.isLast});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+Widget _pickerBox(String text, IconData icon) {
+  return Container(
+    height: 42,
+    padding: const EdgeInsets.symmetric(horizontal: 12),
+    decoration: BoxDecoration(
+      color: AppColors.deliveryCardSoft,
+      borderRadius: BorderRadius.circular(AppSizes.inputRadius),
+      border: Border.all(color: AppColors.deliverySurfaceBorder),
+    ),
+    child: Row(
       children: [
-        Column(
-          children: [
-            Container(
-              width: 30,
-              height: 30,
-              decoration: BoxDecoration(
-                color: AppColors.activeMenuBg,
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColors.border),
-              ),
-              child: Icon(event.icon, size: 16, color: AppColors.primary),
-            ),
-            if (!isLast)
-              Container(width: 2, height: 32, color: AppColors.border),
-          ],
-        ),
-        const SizedBox(width: 10),
+        Icon(icon, size: 16, color: AppColors.deliveryGreen),
+        const SizedBox(width: 8),
         Expanded(
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        event.title,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      if (event.subtitle.isNotEmpty) ...[
-                        const SizedBox(height: 3),
-                        Text(
-                          event.subtitle,
-                          style: const TextStyle(
-                            color: AppColors.textMuted,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  event.time,
-                  style: const TextStyle(
-                    color: AppColors.textLightMuted,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
+          child: Text(
+            text,
+            style: const TextStyle(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w700,
+              color: AppColors.deliveryInk,
             ),
           ),
         ),
       ],
-    );
-  }
+    ),
+  );
 }
 
-class _ActivityTabsPlaceholder extends StatelessWidget {
-  const _ActivityTabsPlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceSoft,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: const Row(
-        children: [
-          Expanded(
-            child: _EmptyInlineState(
-              icon: Icons.playlist_add_check_rounded,
-              text: 'No follow-ups for this lead yet.',
-            ),
-          ),
-          SizedBox(width: 12),
-          Expanded(
-            child: _EmptyInlineState(
-              icon: Icons.location_on_outlined,
-              text: 'No visits recorded for this lead yet.',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _EmptyInlineState extends StatelessWidget {
-  final IconData icon;
-  final String text;
-
-  const _EmptyInlineState({required this.icon, required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 17, color: AppColors.textMuted),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(
-                color: AppColors.textMuted,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ParsedNote {
-  final String timestamp;
-  final String text;
-
-  const _ParsedNote({required this.timestamp, required this.text});
-}
-
-class _TimelineEvent {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final String time;
-
-  const _TimelineEvent({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.time,
-  });
-}
+// -------------------------------------------------------------
+// Models and Formatters
+// -------------------------------------------------------------
 
 class _LocalFollowUp {
   final String title;
@@ -3368,7 +2895,6 @@ class _LocalVisit {
   final String notes;
   final String outcome;
   final DateTime createdAt;
-  final String? followUpTitle;
 
   const _LocalVisit({
     required this.visitType,
@@ -3376,7 +2902,6 @@ class _LocalVisit {
     required this.notes,
     required this.outcome,
     required this.createdAt,
-    this.followUpTitle,
   });
 }
 
@@ -3386,7 +2911,6 @@ class _VisitFormResult {
   final String purpose;
   final String notes;
   final String outcome;
-  final _VisitFollowUpRequest? followUp;
 
   const _VisitFormResult({
     required this.visitType,
@@ -3394,35 +2918,7 @@ class _VisitFormResult {
     required this.purpose,
     required this.notes,
     required this.outcome,
-    this.followUp,
   });
-}
-
-class _VisitFollowUpRequest {
-  final String title;
-  final String description;
-  final DateTime dueAt;
-  final String priority;
-  final String? assigneeId;
-
-  const _VisitFollowUpRequest({
-    required this.title,
-    required this.description,
-    required this.dueAt,
-    required this.priority,
-    this.assigneeId,
-  });
-
-  Map<String, dynamic> toApi() {
-    final payload = <String, dynamic>{
-      'title': title,
-      'due_date': dueAt.toIso8601String(),
-      'priority': priority,
-    };
-    _putPayload(payload, 'description', description);
-    _putPayload(payload, 'assigned_to_id', assigneeId);
-    return payload;
-  }
 }
 
 String _formatDate(String rawValue) {
@@ -3430,18 +2926,8 @@ String _formatDate(String rawValue) {
   if (parsed == null) return rawValue.trim().isEmpty ? '-' : rawValue;
 
   const months = <String>[
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
   ];
 
   return '${parsed.day.toString().padLeft(2, '0')} ${months[parsed.month - 1]} ${parsed.year}';
@@ -3471,17 +2957,6 @@ String _formatDateTime(DateTime value) {
   return '${_formatDate(value.toIso8601String())}, $hour:$minute $meridiem';
 }
 
-String _relativeTime(String rawValue) {
-  final parsed = DateTime.tryParse(rawValue);
-  if (parsed == null) return '-';
-
-  final diff = DateTime.now().difference(parsed);
-  if (diff.inDays > 0) return '${diff.inDays}d ago';
-  if (diff.inHours > 0) return '${diff.inHours}h ago';
-  if (diff.inMinutes > 0) return '${diff.inMinutes}m ago';
-  return 'Just now';
-}
-
 String _joinedNonEmpty(List<String> values) {
   final items = values
       .map((value) => value.trim())
@@ -3496,143 +2971,4 @@ String _manualStatusValue(String status) {
   if (normalized == 'qualified') return 'Qualified';
   if (normalized == 'lost') return 'Lost';
   return 'New';
-}
-
-String _statusSubtitle(String status) {
-  final normalized = status.trim().toLowerCase();
-  if (normalized.contains('converted')) return 'Lead has been converted.';
-  if (normalized.contains('qualified')) return 'Lead is ready for conversion.';
-  if (normalized.contains('contact')) return 'Prospect has been contacted.';
-  if (normalized.contains('lost')) return 'Lead is no longer active.';
-  return 'Lead is newly captured.';
-}
-
-List<String> _splitProducts(String value) {
-  return value
-      .split(',')
-      .map((item) => item.trim())
-      .where((item) => item.isNotEmpty && item != '-')
-      .toList();
-}
-
-List<_ParsedNote> _parseNotes(String value) {
-  final trimmed = value.trim();
-  if (trimmed.isEmpty || trimmed == '-') return const [];
-  return trimmed
-      .split(RegExp(r'\n\s*\n'))
-      .map((entry) {
-        final text = entry.trim();
-        final match = RegExp(
-          r'^\[(.+?)\]\s*(.*)$',
-          dotAll: true,
-        ).firstMatch(text);
-        if (match == null) {
-          return _ParsedNote(timestamp: '', text: text);
-        }
-        return _ParsedNote(
-          timestamp: match.group(1)?.trim() ?? '',
-          text: match.group(2)?.trim() ?? text,
-        );
-      })
-      .where((note) => note.text.isNotEmpty)
-      .toList();
-}
-
-InputDecoration _sheetInputDecoration(String hint, {String? errorText}) {
-  return InputDecoration(
-    hintText: hint,
-    hintStyle: const TextStyle(color: AppColors.textLightMuted, fontSize: 14),
-    errorText: null,
-    filled: true,
-    fillColor: AppColors.surfaceSoft,
-    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: const BorderSide(color: AppColors.border),
-    ),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: BorderSide(
-        color: errorText == null ? AppColors.border : const Color(0xFFDC2626),
-      ),
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: const BorderSide(color: AppColors.primary, width: 1.4),
-    ),
-  );
-}
-
-String _priorityLabel(String value) => _titleCase(value);
-
-String _visitTypeLabel(String value) {
-  switch (value) {
-    case 'site_visit':
-      return 'Site Visit';
-    case 'meeting':
-      return 'Meeting';
-    case 'call':
-      return 'Call';
-    case 'audit':
-      return 'Audit';
-    default:
-      return _titleCase(value);
-  }
-}
-
-String _titleCase(String value) {
-  return value
-      .split(RegExp(r'[_\s-]+'))
-      .where((part) => part.isNotEmpty)
-      .map((part) => '${part[0].toUpperCase()}${part.substring(1)}')
-      .join(' ');
-}
-
-String _staffName(String? id, List<AppUser> staff) {
-  if (id == null || id.trim().isEmpty) return '';
-  for (final user in staff) {
-    if (user.id == id) return user.name;
-  }
-  return '';
-}
-
-String? _matchingStaffId(String name, List<AppUser> staff) {
-  final normalized = name.trim().toLowerCase();
-  if (normalized.isEmpty || normalized == '-') return null;
-  for (final user in staff) {
-    if (user.name.trim().toLowerCase() == normalized) return user.id;
-  }
-  return null;
-}
-
-void _putPayload(Map<String, dynamic> payload, String key, String? value) {
-  final trimmed = value?.trim();
-  if (trimmed != null && trimmed.isNotEmpty && trimmed != '-') {
-    payload[key] = trimmed;
-  }
-}
-
-void _putNumber(Map<String, dynamic> payload, String key, String value) {
-  final number = num.tryParse(value.trim());
-  if (number != null) payload[key] = number;
-}
-
-class _Coordinates {
-  final double latitude;
-  final double longitude;
-
-  const _Coordinates({required this.latitude, required this.longitude});
-}
-
-_Coordinates? _parseCoordinates(String value) {
-  final text = value.trim();
-  if (text.isEmpty) return null;
-  final match = RegExp(
-    r'(-?\d+(?:\.\d+)?)[,\s]+(-?\d+(?:\.\d+)?)',
-  ).firstMatch(text);
-  if (match == null) return null;
-  final lat = double.tryParse(match.group(1) ?? '');
-  final lng = double.tryParse(match.group(2) ?? '');
-  if (lat == null || lng == null) return null;
-  return _Coordinates(latitude: lat, longitude: lng);
 }

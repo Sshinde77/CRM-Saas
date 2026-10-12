@@ -552,7 +552,9 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
 
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: AppColors.background,
+      backgroundColor: widget.useSalesManagerShell
+          ? AppColors.deliveryBackground
+          : AppColors.background,
       drawer: widget.useSalesManagerShell
           ? SalesManagerSidebarDrawer(
               currentPage: 'Sales Orders',
@@ -581,7 +583,9 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                         isMobile ? 10 : 14,
                         14,
                       ),
-                      child: isMobile
+                      child: widget.useSalesManagerShell
+                          ? _buildSalesManagerOrders(orders)
+                          : isMobile
                           ? _buildMobileContent(orders)
                           : _buildDesktopContent(orders),
                     ),
@@ -590,6 +594,171 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
               ],
             );
           },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSalesManagerOrders(List<_OrderRecord> orders) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 820),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppColors.primary900, AppColors.primary],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.receipt_long_outlined,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Sales orders',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          'Review customer orders and delivery progress.',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '$_totalItems orders',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.deliverySurfaceBorder),
+              ),
+              child: Column(
+                children: [
+                  SizedBox(
+                    height: 42,
+                    child: TextField(
+                      controller: _searchController,
+                      textInputAction: TextInputAction.search,
+                      onChanged: (_) => setState(() {}),
+                      onSubmitted: (_) => _reloadFirstPage(),
+                      decoration: InputDecoration(
+                        hintText: 'Search order number or customer',
+                        hintStyle: const TextStyle(fontSize: 13),
+                        prefixIcon: const Icon(Icons.search_rounded, size: 18),
+                        suffixIcon: IconButton(
+                          onPressed: _reloadFirstPage,
+                          icon: const Icon(Icons.arrow_forward_rounded, size: 18),
+                        ),
+                        filled: true,
+                        fillColor: AppColors.surfaceSoft,
+                        contentPadding: EdgeInsets.zero,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: AppColors.deliverySurfaceBorder,
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: AppColors.deliverySurfaceBorder,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: AppColors.primary),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  _tabBar(desktop: false),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            if (_isLoading)
+              const _SalesOrderState(
+                icon: Icons.hourglass_empty_rounded,
+                title: 'Loading sales orders',
+                loading: true,
+              )
+            else if (_errorMessage != null)
+              _SalesOrderState(
+                icon: Icons.cloud_off_outlined,
+                title: 'Could not load sales orders',
+                subtitle: _errorMessage!,
+                onRetry: _reloadFirstPage,
+              )
+            else if (orders.isEmpty)
+              const _SalesOrderState(
+                icon: Icons.receipt_long_outlined,
+                title: 'No sales orders found',
+                subtitle: 'Orders matching your filters will appear here.',
+              )
+            else
+              for (var index = 0; index < orders.length; index++)
+                Padding(
+                  padding: EdgeInsets.only(
+                    bottom: index == orders.length - 1 ? 0 : 10,
+                  ),
+                  child: _SalesOrderCard(
+                    record: orders[index],
+                    onOpen: () => _openOrderDetails(orders[index]),
+                  ),
+                ),
+          ],
         ),
       ),
     );
@@ -1551,6 +1720,221 @@ class _DesktopOrderRow extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _SalesOrderCard extends StatelessWidget {
+  final _OrderRecord record;
+  final VoidCallback onOpen;
+
+  const _SalesOrderCard({required this.record, required this.onOpen});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onOpen,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.deliverySurfaceBorder),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.04),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _CustomerAvatar(imageUrl: record.customerProfileImageUrl),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          record.number,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          record.customer,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  _StatusChip(
+                    label: record.status,
+                    foreground: record.statusColor,
+                    background: record.statusBackground,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _SalesOrderMeta(Icons.inventory_2_outlined, '${record.items} items'),
+                  _SalesOrderMeta(Icons.currency_rupee_rounded, record.total),
+                  _SalesOrderMeta(Icons.payments_outlined, record.payment),
+                  _SalesOrderMeta(Icons.calendar_today_outlined, record.date),
+                ],
+              ),
+              const SizedBox(height: 12),
+              const Divider(height: 1, color: AppColors.deliverySurfaceBorder),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.local_shipping_outlined,
+                    size: 16,
+                    color: AppColors.textSecondary,
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      record.deliveryPartner == '-'
+                          ? 'Delivery partner not assigned'
+                          : record.deliveryPartner,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const Icon(
+                    Icons.chevron_right_rounded,
+                    color: AppColors.textSecondary,
+                    size: 20,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SalesOrderMeta extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _SalesOrderMeta(this.icon, this.label);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceSoft,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: AppColors.deliverySurfaceBorder),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: AppColors.textSecondary, size: 14),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SalesOrderState extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+  final bool loading;
+  final VoidCallback? onRetry;
+
+  const _SalesOrderState({
+    required this.icon,
+    required this.title,
+    this.subtitle,
+    this.loading = false,
+    this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.deliverySurfaceBorder),
+      ),
+      child: Column(
+        children: [
+          if (loading)
+            const CircularProgressIndicator(color: AppColors.primary)
+          else
+            Icon(icon, size: 48, color: AppColors.primary),
+          const SizedBox(height: 12),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+          ),
+          if (subtitle != null) ...[
+            const SizedBox(height: 6),
+            Text(
+              subtitle!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 13,
+              ),
+            ),
+          ],
+          if (onRetry != null) ...[
+            const SizedBox(height: 12),
+            OutlinedButton(onPressed: onRetry, child: const Text('Retry')),
+          ],
+        ],
       ),
     );
   }

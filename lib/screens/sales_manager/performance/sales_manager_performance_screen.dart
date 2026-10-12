@@ -29,8 +29,8 @@ class _SalesManagerPerformanceScreenState
   final List<_PerformanceMetric> _metrics = const [
     _PerformanceMetric(
       title: 'Monthly Sales',
-      target: 'Target: Rs50,000',
-      achieved: 'Rs42,000',
+      target: 'Target: INR 50,000',
+      achieved: 'INR 42,000',
       achievedLabel: 'Achieved',
       progress: 0.84,
       percentLabel: '84%',
@@ -166,9 +166,15 @@ class _SalesManagerPerformanceScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: AppColors.background,
+    final textScaler = MediaQuery.textScalerOf(
+      context,
+    ).clamp(minScaleFactor: 0.9, maxScaleFactor: 1.2);
+
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(textScaler: textScaler),
+      child: Scaffold(
+        key: _scaffoldKey,
+        backgroundColor: AppColors.deliveryBackground,
       drawer: SalesManagerSidebarDrawer(
         onSelect: _handleSidebarSelection,
         currentPage: 'My Performance',
@@ -180,13 +186,15 @@ class _SalesManagerPerformanceScreenState
             Expanded(
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(12, 12, 12, 18),
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
                 child: Center(
                   child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 1680),
+                    constraints: const BoxConstraints(maxWidth: 920),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        const _PerformanceOverview(overallScore: 0.88),
+                        const SizedBox(height: 16),
                         _buildMetricGrid(),
                         const SizedBox(height: 16),
                         _buildOverallPerformance(),
@@ -199,56 +207,31 @@ class _SalesManagerPerformanceScreenState
           ],
         ),
       ),
+      ),
     );
   }
 
   Widget _buildMetricGrid() {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final wide = constraints.maxWidth > 1180;
-        final medium = constraints.maxWidth > 760;
+        final columns = constraints.maxWidth >= 840
+            ? 3
+            : constraints.maxWidth >= 600
+            ? 2
+            : 1;
+        final cardWidth = columns == 1
+            ? constraints.maxWidth
+            : (constraints.maxWidth - ((columns - 1) * 12)) / columns;
 
-        if (!medium) {
-          return Column(
-            children: [
-              for (var i = 0; i < _metrics.length; i++) ...[
-                _MetricCard(data: _metrics[i]),
-                if (i != _metrics.length - 1) const SizedBox(height: 12),
-              ],
-            ],
-          );
-        }
-
-        final firstRow = _metrics.take(3).toList();
-        final secondRow = _metrics.skip(3).toList();
-
-        return Column(
+        return Wrap(
+          spacing: 12,
+          runSpacing: 12,
           children: [
-            Row(
-              children: [
-                for (var i = 0; i < firstRow.length; i++) ...[
-                  Expanded(child: _MetricCard(data: firstRow[i])),
-                  if (i != firstRow.length - 1) const SizedBox(width: 16),
-                ],
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: secondRow.isNotEmpty
-                      ? _MetricCard(data: secondRow.first)
-                      : const SizedBox.shrink(),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: secondRow.length > 1
-                      ? _MetricCard(data: secondRow[1])
-                      : const SizedBox.shrink(),
-                ),
-                if (wide) const Expanded(child: SizedBox.shrink()),
-              ],
-            ),
+            for (final metric in _metrics)
+              SizedBox(
+                width: cardWidth,
+                child: _MetricCard(data: metric),
+              ),
           ],
         );
       },
@@ -260,27 +243,26 @@ class _SalesManagerPerformanceScreenState
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.border.withValues(alpha: 0.8)),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.deliverySurfaceBorder),
         boxShadow: [
           BoxShadow(
             color: AppColors.textPrimary.withValues(alpha: 0.04),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
+          const Row(
+            children: [
+              Expanded(
+                child: Text(
                   'Overall Performance',
                   style: TextStyle(
                     color: AppColors.textPrimary,
@@ -288,47 +270,127 @@ class _SalesManagerPerformanceScreenState
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                const SizedBox(height: 18),
-                const Text(
-                  "This month's overall progress",
+              ),
+              Text(
+                '88%',
+                style: TextStyle(
+                  color: AppColors.primary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            "This month's combined target progress",
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: const LinearProgressIndicator(
+              value: overallScore,
+              minHeight: 8,
+              backgroundColor: AppColors.surfaceSoft,
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PerformanceOverview extends StatelessWidget {
+  final double overallScore;
+
+  const _PerformanceOverview({required this.overallScore});
+
+  @override
+  Widget build(BuildContext context) {
+    final percentage = (overallScore * 100).round();
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [AppColors.primary900, AppColors.primary],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.14),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.insights_outlined,
+              color: Colors.white,
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Performance overview',
                   style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 14,
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 10),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(999),
-                  child: LinearProgressIndicator(
-                    value: overallScore,
-                    minHeight: 12,
-                    backgroundColor: AppColors.surfaceSoft,
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                      AppColors.primary,
-                    ),
+                SizedBox(height: 4),
+                Text(
+                  'Track monthly targets and focus on the remaining gap.',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
+                    height: 1.35,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 22),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: const [
-              Text(
-                '88%',
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
+          const SizedBox(width: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  '$percentage%',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
-              ),
-              SizedBox(height: 2),
-              Text(
-                'Overall Score',
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
-              ),
-            ],
+                const Text(
+                  'overall',
+                  style: TextStyle(color: Colors.white70, fontSize: 11),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -344,17 +406,17 @@ class _MetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 192,
-      padding: const EdgeInsets.all(18),
+      constraints: const BoxConstraints(minHeight: 164),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.border.withValues(alpha: 0.8)),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.deliverySurfaceBorder),
         boxShadow: [
           BoxShadow(
             color: AppColors.textPrimary.withValues(alpha: 0.04),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -371,7 +433,7 @@ class _MetricCard extends StatelessWidget {
                       data.title,
                       style: const TextStyle(
                         color: AppColors.textPrimary,
-                        fontSize: 14,
+                        fontSize: 12,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -418,7 +480,7 @@ class _MetricCard extends StatelessWidget {
                       data.achievedLabel,
                       style: const TextStyle(
                         color: AppColors.textSecondary,
-                        fontSize: 14,
+                        fontSize: 12,
                       ),
                     ),
                   ],
@@ -440,7 +502,7 @@ class _MetricCard extends StatelessWidget {
                     'of target',
                     style: TextStyle(
                       color: AppColors.textLightMuted,
-                      fontSize: 14,
+                      fontSize: 11,
                     ),
                   ),
                 ],
@@ -452,7 +514,7 @@ class _MetricCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(999),
             child: LinearProgressIndicator(
               value: data.progress,
-              minHeight: 10,
+              minHeight: 8,
               backgroundColor: AppColors.surfaceSoft,
               valueColor: const AlwaysStoppedAnimation<Color>(
                 AppColors.primary,

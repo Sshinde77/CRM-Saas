@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../core/theme/app_sizes.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../providers/api_provider.dart';
+import '../../../widgets/customer_avatar.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
@@ -31,10 +36,7 @@ class AdminLeadsScreen extends StatefulWidget {
 class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
-  final TextEditingController _productFilterController =
-      TextEditingController();
 
-  int _selectedPageSize = 10;
   String _statusFilter = 'All Status';
   String _sourceFilter = 'All Sources';
   String _teamFilter = 'All Team';
@@ -44,7 +46,6 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
   String? _errorMessage;
 
   List<String> _statusOptions = const ['All Status', 'New', 'Follow Up', 'Hot'];
-
   List<String> _sourceOptions = const [
     'All Sources',
     'Website',
@@ -52,7 +53,6 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
     'Referral',
     'Instagram',
   ];
-
   List<String> _teamOptions = const [
     'All Team',
     'Sunil Sales',
@@ -60,93 +60,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
     'Amit Verma',
   ];
 
-  final List<int> _pageSizeOptions = const [10, 25, 50, 100];
-
-  // NOTE: avatarUrl points at placeholder photo URLs (pravatar.cc) purely so
-  // the card layout matches the photo-avatar mockup. Swap these for real
-  // lead/contact photo URLs from your backend when wiring this up.
-  List<_LeadRecord> _leads = const [
-    _LeadRecord(
-      id: '',
-      personName: 'Rahul Sharma',
-      companyName: 'Sharma Enterprises',
-      phone: '9876543210',
-      source: 'Website',
-      assignedTo: 'Sunil Sales',
-      assignedInitials: 'SS',
-      status: 'New',
-      category: 'IT Services',
-      lastActivity: '2m ago',
-      accentColor: AppColors.primary,
-      avatarStart: AppColors.surfaceSoft,
-      avatarEnd: AppColors.activeMenuBg,
-      avatarUrl: 'https://i.pravatar.cc/150?img=12',
-    ),
-    _LeadRecord(
-      id: '',
-      personName: 'Priya Mehta',
-      companyName: 'Mehta & Co.',
-      phone: '9123456780',
-      source: 'Facebook Ads',
-      assignedTo: 'Neha Sharma',
-      assignedInitials: 'NS',
-      status: 'Follow Up',
-      category: 'Consulting',
-      lastActivity: '15m ago',
-      accentColor: AppColors.blue,
-      avatarStart: AppColors.surfaceSoft,
-      avatarEnd: Color(0xFFD7E6D0),
-      avatarUrl: 'https://i.pravatar.cc/150?img=47',
-    ),
-    _LeadRecord(
-      id: '',
-      personName: 'Amit Verma',
-      companyName: 'Verma Solutions',
-      phone: '9988776655',
-      source: 'Referral',
-      assignedTo: 'Amit Verma',
-      assignedInitials: 'AV',
-      status: 'Hot',
-      category: 'Software',
-      lastActivity: '1h ago',
-      accentColor: AppColors.primary900,
-      avatarStart: Color(0xFFE7F1E2),
-      avatarEnd: Color(0xFFCFE0C7),
-      avatarUrl: 'https://i.pravatar.cc/150?img=33',
-    ),
-    _LeadRecord(
-      id: '',
-      personName: 'Neha Kapoor',
-      companyName: 'Kapoor Industries',
-      phone: '9765432109',
-      source: 'Website',
-      assignedTo: 'Sunil Sales',
-      assignedInitials: 'SS',
-      status: 'New',
-      category: 'Manufacturing',
-      lastActivity: '2h ago',
-      accentColor: AppColors.primary,
-      avatarStart: Color(0xFFEFF6EC),
-      avatarEnd: Color(0xFFDCECD4),
-      avatarUrl: 'https://i.pravatar.cc/150?img=44',
-    ),
-    _LeadRecord(
-      id: '',
-      personName: 'Sagar Patil',
-      companyName: 'Patil Traders',
-      phone: '9012345678',
-      source: 'Instagram',
-      assignedTo: 'Neha Sharma',
-      assignedInitials: 'NS',
-      status: 'Follow Up',
-      category: 'Trading',
-      lastActivity: '3h ago',
-      accentColor: AppColors.blue,
-      avatarStart: Color(0xFFE8F0E2),
-      avatarEnd: Color(0xFFD7E3CF),
-      avatarUrl: 'https://i.pravatar.cc/150?img=14',
-    ),
-  ];
+  List<_LeadRecord> _leads = const [];
 
   @override
   void didChangeDependencies() {
@@ -162,7 +76,6 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
   @override
   void dispose() {
     _searchController.dispose();
-    _productFilterController.dispose();
     super.dispose();
   }
 
@@ -258,6 +171,44 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
     );
   }
 
+  Future<void> _callLead(String phone) async {
+    final sanitized = phone.replaceAll(RegExp(r'[^0-9+]'), '');
+    if (sanitized.isEmpty || sanitized == '-') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Phone number not available.')),
+      );
+      return;
+    }
+    final uri = Uri(scheme: 'tel', path: sanitized);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Unable to call $phone')),
+      );
+    }
+  }
+
+  Future<void> _openWhatsApp(String phone) async {
+    final digits = phone.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.isEmpty || digits == '-') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Phone number not available for WhatsApp.')),
+      );
+      return;
+    }
+    final uri = Uri.parse('https://wa.me/$digits');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to open WhatsApp.')),
+      );
+    }
+  }
+
   Future<void> _handleLeadAction(_LeadRecord lead, _LeadAction action) async {
     switch (action) {
       case _LeadAction.viewDetails:
@@ -267,18 +218,12 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
         await _openEditLeadPage(lead);
         return;
       case _LeadAction.convertToCustomer:
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Convert to customer for ${lead.personName} is not wired yet.',
-            ),
-          ),
-        );
+        await _openLeadDetails(lead);
         return;
       case _LeadAction.delete:
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Delete for ${lead.personName} is not wired yet.'),
+            content: Text('Delete action for ${lead.personName} is not available.'),
           ),
         );
         return;
@@ -360,1046 +305,159 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final leads = _filteredLeads();
-    final shownLeads = leads.take(_selectedPageSize).toList();
-
-    return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: AppColors.background,
-      drawer: widget.useSalesManagerShell
-          ? SalesManagerSidebarDrawer(
-              currentPage: 'Leads',
-              onSelect: _handleSalesManagerSidebarSelection,
-            )
-          : const AppDrawer(activeItem: 'Leads'),
-      floatingActionButton: _buildFloatingAddButton(),
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final isMobile = constraints.maxWidth < 900;
-
-            return Column(
-              children: [
-                widget.useSalesManagerShell
-                    ? const SalesManagerTopBar(title: 'Leads')
-                    : AdminTopBar(
-                        title: 'Leads',
-                        leadingIcon: Icons.menu_rounded,
-                        onLeadingTap: () =>
-                            _scaffoldKey.currentState?.openDrawer(),
-                      ),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: EdgeInsets.fromLTRB(
-                      isMobile ? 6 : 12,
-                      10,
-                      isMobile ? 6 : 12,
-                      64,
-                    ),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 1180),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildSearchRow(isMobile),
-                            const SizedBox(height: 8),
-                            _buildQuickFilters(isMobile),
-                            const SizedBox(height: 8),
-                            _buildStatsSection(isMobile),
-                            const SizedBox(height: 10),
-                            if (_isLoading)
-                              const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 80),
-                                child: Center(
-                                  child: CircularProgressIndicator(
-                                    color: AppColors.primary,
-                                  ),
-                                ),
-                              )
-                            else if (_errorMessage != null)
-                              _LeadErrorState(
-                                message: _errorMessage!,
-                                onRetry: _loadLeads,
-                              )
-                            else
-                              _buildLeadList(shownLeads, isMobile),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  List<_LeadRecord> _filteredLeads() {
-    final query = _searchController.text.trim().toLowerCase();
-    final productQuery = _productFilterController.text.trim().toLowerCase();
-
-    return _leads.where((lead) {
-      final statusOk =
-          _statusFilter == 'All Status' || lead.status == _statusFilter;
-      final sourceOk =
-          _sourceFilter == 'All Sources' || lead.source == _sourceFilter;
-      final teamOk =
-          _teamFilter == 'All Team' || lead.assignedTo == _teamFilter;
-      final queryOk =
-          query.isEmpty ||
-          lead.personName.toLowerCase().contains(query) ||
-          lead.companyName.toLowerCase().contains(query) ||
-          lead.phone.toLowerCase().contains(query) ||
-          lead.source.toLowerCase().contains(query);
-      final productOk =
-          productQuery.isEmpty ||
-          lead.category.toLowerCase().contains(productQuery);
-      return statusOk && sourceOk && teamOk && queryOk && productOk;
-    }).toList();
-  }
-
-  Widget _buildSearchRow(bool isMobile) {
-    return Row(
-      children: [
-        Expanded(
-          child: Container(
-            height: 38,
-            decoration: _glassDecoration(radius: 14),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(14),
-              child: TextField(
-                controller: _searchController,
-                onChanged: (_) => setState(() {}),
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  filled: true,
-                  fillColor: Colors.white,
-                  isDense: true,
-                  prefixIcon: const Padding(
-                    padding: EdgeInsets.only(left: 10, right: 6),
-                    child: Icon(
-                      Icons.search_rounded,
-                      color: AppColors.textMuted,
-                      size: 18,
-                    ),
-                  ),
-                  prefixIconConstraints: const BoxConstraints(minWidth: 38),
-                  hintText: 'Search leads by name, mobile or source...',
-                  hintStyle: const TextStyle(
-                    color: AppColors.textLightMuted,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 6),
-        InkWell(
-          onTap: _openFilterSheet,
-          borderRadius: BorderRadius.circular(14),
-          child: Ink(
-            width: isMobile ? 38 : 42,
-            height: 38,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
-              gradient: const LinearGradient(
-                colors: [AppColors.primary, AppColors.primary900],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.22),
-                  blurRadius: 12,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                const Center(
-                  child: Icon(
-                    Icons.sort_rounded,
-                    color: Colors.white,
-                    size: 18,
-                  ),
-                ),
-                if (_activeFilterCount() > 0)
-                  Positioned(
-                    top: -4,
-                    right: -3,
-                    child: Container(
-                      width: 18,
-                      height: 18,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        '${_activeFilterCount()}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildQuickFilters(bool isMobile) {
-    final chips = [
-      _QuickFilterData(
-        label: 'All Leads',
-        icon: Icons.groups_2_outlined,
-        dotColor: AppColors.primary,
-        selected: _statusFilter == 'All Status',
-        onTap: () => setState(() => _statusFilter = 'All Status'),
-      ),
-      _QuickFilterData(
-        label: 'New',
-        dotColor: AppColors.green,
-        selected: _statusFilter == 'New',
-        onTap: () => setState(() => _statusFilter = 'New'),
-      ),
-      _QuickFilterData(
-        label: 'Follow Up',
-        dotColor: AppColors.blue,
-        selected: _statusFilter == 'Follow Up',
-        onTap: () => setState(() => _statusFilter = 'Follow Up'),
-      ),
-      _QuickFilterData(
-        label: 'Hot',
-        dotColor: AppColors.primary900,
-        selected: _statusFilter == 'Hot',
-        onTap: () => setState(() => _statusFilter = 'Hot'),
-      ),
-      _QuickFilterData(
-        label: 'More',
-        icon: Icons.add_rounded,
-        selected: false,
-        onTap: _openFilterSheet,
-      ),
-    ];
-
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          for (var i = 0; i < chips.length; i++) ...[
-            _buildQuickFilterChip(chips[i], isMobile),
-            if (i != chips.length - 1) const SizedBox(width: 5),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatsSection(bool isMobile) {
-    final cards = [
-      _StatCardData(
-        value: '${_leads.length}',
-        label: 'Total Leads',
-        icon: Icons.groups_rounded,
-        glowColor: AppColors.primary,
-        iconBackground: const [AppColors.surfaceSoft, AppColors.activeMenuBg],
-      ),
-      _StatCardData(
-        value: '${_countByStatus('New')}',
-        label: 'New Leads',
-        icon: Icons.trending_up_rounded,
-        glowColor: AppColors.green,
-        iconBackground: const [AppColors.statusActiveBg, AppColors.surfaceSoft],
-      ),
-      _StatCardData(
-        value: '${_countByStatus('Follow Up')}',
-        label: 'Follow Ups',
-        icon: Icons.access_time_rounded,
-        glowColor: AppColors.blue,
-        iconBackground: const [Color(0xFFF3F7EF), Color(0xFFE3EBDD)],
-      ),
-      _StatCardData(
-        value: '${_countByStatus('Hot')}',
-        label: 'Hot Leads',
-        icon: Icons.local_fire_department_rounded,
-        glowColor: AppColors.primary900,
-        iconBackground: const [Color(0xFFEAF3E6), Color(0xFFD9E8D2)],
-      ),
-    ];
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final width = constraints.maxWidth;
-        final gap = isMobile ? 6.0 : 10.0;
-        final cardWidth = (width - (gap * 3)) / 4;
-
-        return Row(
-          children: [
-            for (var i = 0; i < cards.length; i++) ...[
-              Expanded(
-                child: _buildStatCard(
-                  cards[i],
-                  isMobile: isMobile,
-                  cardWidth: cardWidth,
-                ),
-              ),
-              if (i != cards.length - 1) SizedBox(width: gap),
-            ],
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildLeadList(List<_LeadRecord> leads, bool isMobile) {
-    return Column(
-      children: [
-        for (var i = 0; i < leads.length; i++) ...[
-          _buildLeadCard(leads[i], isMobile),
-          if (i != leads.length - 1) const SizedBox(height: 8),
-        ],
-        if (leads.isEmpty)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: _glassDecoration(radius: 16),
-            child: const Text(
-              'No leads found.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: AppColors.textMuted,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildLeadCard(_LeadRecord lead, bool isMobile) {
-    final statusStyle = _statusStyle(lead.status);
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () => _openLeadDetails(lead),
-        borderRadius: BorderRadius.circular(16),
-        child: Ink(
-          decoration: _glassDecoration(radius: 16),
-          child: IntrinsicHeight(
-            child: Row(
-              children: [
-                Container(
-                  width: 4,
-                  decoration: BoxDecoration(
-                    color: lead.accentColor,
-                    borderRadius: const BorderRadius.horizontal(
-                      left: Radius.circular(16),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: isMobile ? 7 : 9,
-                      vertical: isMobile ? 7 : 9,
-                    ),
-                    child: _buildLeadCardBody(lead, statusStyle, isMobile),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Single-row card body used at every width (matches the phone mockup):
-  // avatar + name/company/pills on the left, a compact time/WhatsApp/source
-  // stack, a divider, the call button, and the overflow menu — all in one row.
-  Widget _buildLeadCardBody(
-    _LeadRecord lead,
-    _LeadStatusStyle statusStyle,
-    bool isMobile,
-  ) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        _buildAvatar(lead, isMobile ? 40 : 34),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                lead.personName,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.4,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                lead.companyName,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: AppColors.textMuted,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Wrap(
-                spacing: 3,
-                runSpacing: 3,
-                children: [
-                  _buildPill(
-                    lead.status,
-                    background: statusStyle.background,
-                    foreground: statusStyle.foreground,
-                  ),
-                  _buildPill(
-                    lead.category,
-                    background: AppColors.surfaceSoft,
-                    foreground: AppColors.textSecondary,
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        Container(
-          width: 1,
-          height: 46,
-          margin: const EdgeInsets.symmetric(horizontal: 6),
-          color: AppColors.border,
-        ),
-        Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              lead.lastActivity,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: AppColors.textMuted,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 6),
-            const Icon(
-              Icons.chat_bubble_outline_rounded,
-              color: AppColors.green,
-              size: 16,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              lead.source,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: AppColors.textMuted,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(width: 6),
-        _buildActionSquare(
-          icon: Icons.call_outlined,
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Call ${lead.phone} from lead details.')),
-            );
-          },
-        ),
-        const SizedBox(width: 6),
-        _buildLeadActionsMenu(lead),
-      ],
-    );
-  }
-
-  Widget _buildAvatar(_LeadRecord lead, double size) {
-    final initials = lead.personName
-        .split(' ')
-        .take(2)
-        .map((part) => part[0])
-        .join();
-
-    Widget fallback() {
-      return Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: LinearGradient(
-            colors: [lead.avatarStart, lead.avatarEnd],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          initials,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 14,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      );
-    }
-
-    if (lead.avatarUrl == null || lead.avatarUrl!.isEmpty) {
-      return fallback();
-    }
-
-    return ClipOval(
-      child: Image.network(
-        lead.avatarUrl!,
-        width: size,
-        height: size,
-        fit: BoxFit.cover,
-        loadingBuilder: (context, child, progress) {
-          if (progress == null) return child;
-          return SizedBox(width: size, height: size, child: fallback());
-        },
-        errorBuilder: (context, error, stackTrace) => fallback(),
-      ),
-    );
-  }
-
-  Widget _buildPill(
-    String label, {
-    required Color background,
-    required Color foreground,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: foreground,
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLeadActionsMenu(_LeadRecord lead) {
-    return PopupMenuButton<_LeadAction>(
-      tooltip: 'Lead actions',
-      onSelected: (action) => _handleLeadAction(lead, action),
-      color: Colors.white,
-      elevation: 10,
-      offset: const Offset(0, 10),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      itemBuilder: (context) => [
-        _buildLeadActionItem(
-          value: _LeadAction.viewDetails,
-          icon: Icons.visibility_outlined,
-          label: 'View Details',
-        ),
-        _buildLeadActionItem(
-          value: _LeadAction.edit,
-          icon: Icons.edit_outlined,
-          label: 'Edit',
-        ),
-        _buildLeadActionItem(
-          value: _LeadAction.convertToCustomer,
-          icon: Icons.arrow_circle_right_outlined,
-          label: 'Convert to Customer',
-        ),
-        _buildLeadActionItem(
-          value: _LeadAction.delete,
-          icon: Icons.delete_outline_rounded,
-          label: 'Delete',
-          foreground: AppColors.red,
-        ),
-      ],
-      child: Container(
-        width: 30,
-        height: 30,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.border),
-        ),
-        alignment: Alignment.center,
-        child: const Icon(
-          Icons.more_vert_rounded,
-          color: AppColors.textSecondary,
-          size: 18,
-        ),
-      ),
-    );
-  }
-
-  PopupMenuItem<_LeadAction> _buildLeadActionItem({
-    required _LeadAction value,
-    required IconData icon,
-    required String label,
-    Color foreground = AppColors.textPrimary,
-  }) {
-    return PopupMenuItem<_LeadAction>(
-      value: value,
-      height: 42,
-      child: Row(
-        children: [
-          Icon(icon, size: 18, color: foreground),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              label,
-              style: TextStyle(
-                color: foreground,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionSquare({required IconData icon, VoidCallback? onTap}) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(10),
-        child: Ink(
-          width: 30,
-          height: 30,
-          decoration: BoxDecoration(
-            color: AppColors.surfaceSoft,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(icon, color: AppColors.primary, size: 16),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildQuickFilterChip(_QuickFilterData data, bool isMobile) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: data.onTap,
-        borderRadius: BorderRadius.circular(14),
-        child: Ink(
-          height: 30,
-          padding: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 10),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: data.selected ? AppColors.activeMenuBg : AppColors.border,
-            ),
-            color: data.selected ? AppColors.surfaceSoft : Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.04),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (data.icon != null)
-                Icon(
-                  data.icon,
-                  color: data.selected
-                      ? AppColors.primary
-                      : AppColors.textMuted,
-                  size: 14,
-                )
-              else
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: data.dotColor,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              const SizedBox(width: 6),
-              Text(
-                data.label,
-                style: TextStyle(
-                  color: data.selected
-                      ? AppColors.primary
-                      : AppColors.textSecondary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatCard(
-    _StatCardData data, {
-    bool isMobile = false,
-    double? cardWidth,
-  }) {
-    final width = cardWidth ?? (isMobile ? 84 : 180);
-    final isCompact = width < 90;
-    final iconBubbleSize = isMobile
-        ? width.clamp(28.0, 38.0).toDouble()
-        : width.clamp(32.0, 46.0).toDouble();
-    final iconSize = isMobile
-        ? width.clamp(13.0, 18.0).toDouble()
-        : width.clamp(18.0, 22.0).toDouble();
-    final valueSize = isMobile
-        ? width.clamp(11.0, 15.0).toDouble()
-        : width.clamp(14.0, 18.0).toDouble();
-    final labelSize = isMobile
-        ? width.clamp(7.8, 10.0).toDouble()
-        : width.clamp(9.0, 11.5).toDouble();
-    final verticalPadding = isMobile ? (isCompact ? 10.0 : 12.0) : 14.0;
-    final horizontalPadding = isMobile ? (isCompact ? 6.0 : 8.0) : 10.0;
-    final valueSpacing = isMobile ? (isCompact ? 8.0 : 10.0) : 12.0;
-    final labelSpacing = isMobile ? 4.0 : 6.0;
-
-    return Container(
-      constraints: BoxConstraints(
-        minHeight: isMobile ? (isCompact ? 92 : 104) : 126,
-      ),
-      padding: EdgeInsets.symmetric(
-        horizontal: horizontalPadding,
-        vertical: verticalPadding,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(isMobile ? 18 : 16),
-        border: Border.all(
-          color: isMobile ? AppColors.borderLight : AppColors.border,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isMobile ? 0.06 : 0.04),
-            blurRadius: isMobile ? 18 : 8,
-            offset: Offset(0, isMobile ? 8 : 4),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: iconBubbleSize,
-            height: iconBubbleSize,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: data.iconBackground,
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-            child: Icon(data.icon, color: data.glowColor, size: iconSize),
-          ),
-          SizedBox(height: valueSpacing),
-          Text(
-            data.value,
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: valueSize,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.5,
-            ),
-          ),
-          SizedBox(height: labelSpacing),
-          Text(
-            data.label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: AppColors.textMuted,
-              fontSize: labelSize,
-              fontWeight: isMobile ? FontWeight.w600 : FontWeight.w500,
-              height: 1.15,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFloatingAddButton() {
-    return FloatingActionButton(
-      onPressed: _openAddLeadPage,
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      child: Ink(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: const LinearGradient(
-            colors: [AppColors.primary, AppColors.primary900],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.28),
-              blurRadius: 10,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        child: const Icon(Icons.add_rounded, size: 22, color: Colors.white),
-      ),
-    );
-  }
-
-  BoxDecoration _glassDecoration({double radius = 22}) {
-    return BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(radius),
-      border: Border.all(color: AppColors.border),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withValues(alpha: 0.05),
-          blurRadius: 8,
-          offset: const Offset(0, 4),
-        ),
-      ],
-    );
-  }
-
   int _activeFilterCount() {
     var count = 0;
     if (_statusFilter != 'All Status') count++;
     if (_sourceFilter != 'All Sources') count++;
     if (_teamFilter != 'All Team') count++;
-    if (_productFilterController.text.trim().isNotEmpty) count++;
     return count;
   }
 
-  int _countByStatus(String status) {
-    return _leads.where((lead) => lead.status == status).length;
-  }
-
-  _LeadStatusStyle _statusStyle(String status) {
-    switch (status) {
-      case 'New':
-        return const _LeadStatusStyle(
-          background: AppColors.surfaceSoft,
-          foreground: AppColors.primary,
-        );
-      case 'Follow Up':
-        return const _LeadStatusStyle(
-          background: Color(0xFFF3F7EF),
-          foreground: AppColors.blue,
-        );
-      case 'Hot':
-        return const _LeadStatusStyle(
-          background: Color(0xFFEAF3E6),
-          foreground: AppColors.primary900,
-        );
-      default:
-        return const _LeadStatusStyle(
-          background: AppColors.surfaceSoft,
-          foreground: AppColors.textMuted,
-        );
-    }
-  }
-
-  Future<void> _openFilterSheet() async {
-    String status = _statusFilter;
-    String source = _sourceFilter;
-    String team = _teamFilter;
-    String product = _productFilterController.text;
-    int pageSize = _selectedPageSize;
-    final productController = TextEditingController(text: product);
-
-    await showModalBottomSheet<void>(
+  void _openFilterSheet() {
+    showModalBottomSheet<void>(
       context: context,
-      isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (context) {
+        String tempStatus = _statusFilter;
+        String tempSource = _sourceFilter;
+        String tempTeam = _teamFilter;
+
         return StatefulBuilder(
-          builder: (context, modalSetState) {
-            return Padding(
-              padding: EdgeInsets.fromLTRB(
-                18,
-                18,
-                18,
-                MediaQuery.of(context).viewInsets.bottom + 18,
+          builder: (context, setModalState) {
+            return Container(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+              decoration: const BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
               ),
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(30),
-                ),
+              child: SafeArea(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Lead Filters',
-                      style: TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                      ),
+                    Row(
+                      children: [
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: AppColors.deliveryGreenSoft,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.tune_rounded,
+                            color: AppColors.deliveryGreen,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        const Expanded(
+                          child: Text(
+                            'Filter Leads',
+                            style: TextStyle(
+                              color: AppColors.deliveryInk,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(
+                            Icons.close_rounded,
+                            color: AppColors.textSecondary,
+                            size: 20,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 6),
-                    const Text(
-                      'Refine the lead list with team, source and status.',
-                      style: TextStyle(
-                        color: AppColors.textMuted,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-                    _sheetDropdown(
-                      label: 'Status',
-                      value: status,
+                    const SizedBox(height: 14),
+                    _buildFilterDropdown(
+                      label: 'Lead Status',
+                      value: tempStatus,
                       items: _statusOptions,
-                      onChanged: (value) =>
-                          modalSetState(() => status = value!),
+                      onChanged: (val) {
+                        if (val != null) setModalState(() => tempStatus = val);
+                      },
                     ),
-                    const SizedBox(height: 14),
-                    _sheetDropdown(
-                      label: 'Source',
-                      value: source,
+                    const SizedBox(height: 12),
+                    _buildFilterDropdown(
+                      label: 'Lead Source',
+                      value: tempSource,
                       items: _sourceOptions,
-                      onChanged: (value) =>
-                          modalSetState(() => source = value!),
+                      onChanged: (val) {
+                        if (val != null) setModalState(() => tempSource = val);
+                      },
                     ),
-                    const SizedBox(height: 14),
-                    _sheetDropdown(
-                      label: 'Team',
-                      value: team,
+                    const SizedBox(height: 12),
+                    _buildFilterDropdown(
+                      label: 'Assigned Team Member',
+                      value: tempTeam,
                       items: _teamOptions,
-                      onChanged: (value) => modalSetState(() => team = value!),
+                      onChanged: (val) {
+                        if (val != null) setModalState(() => tempTeam = val);
+                      },
                     ),
-                    const SizedBox(height: 14),
-                    _sheetDropdown(
-                      label: 'Page Size',
-                      value: '$pageSize',
-                      items: _pageSizeOptions.map((e) => '$e').toList(),
-                      onChanged: (value) =>
-                          modalSetState(() => pageSize = int.parse(value!)),
-                    ),
-                    const SizedBox(height: 14),
-                    TextField(
-                      controller: productController,
-                      decoration: InputDecoration(
-                        labelText: 'Category filter',
-                        labelStyle: const TextStyle(color: AppColors.textMuted),
-                        filled: true,
-                        fillColor: AppColors.surfaceSoft,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(18),
-                          borderSide: const BorderSide(color: AppColors.border),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(18),
-                          borderSide: const BorderSide(color: AppColors.border),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 20),
                     Row(
                       children: [
                         Expanded(
                           child: OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(
+                                color: AppColors.deliverySurfaceBorder,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  AppSizes.controlRadius,
+                                ),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
                             onPressed: () {
                               setState(() {
                                 _statusFilter = 'All Status';
                                 _sourceFilter = 'All Sources';
                                 _teamFilter = 'All Team';
-                                _selectedPageSize = 10;
-                                _productFilterController.clear();
                               });
-                              Navigator.of(context).pop();
+                              Navigator.pop(context);
                             },
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 15),
-                              side: const BorderSide(
-                                color: AppColors.borderStrong,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(18),
-                              ),
-                            ),
                             child: const Text(
-                              'Reset',
-                              style: TextStyle(color: AppColors.textSecondary),
+                              'Reset Filters',
+                              style: TextStyle(
+                                color: AppColors.textSecondary,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 10),
                         Expanded(
                           child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.deliveryGreen,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  AppSizes.controlRadius,
+                                ),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
                             onPressed: () {
                               setState(() {
-                                _statusFilter = status;
-                                _sourceFilter = source;
-                                _teamFilter = team;
-                                _selectedPageSize = pageSize;
-                                _productFilterController.text =
-                                    productController.text;
+                                _statusFilter = tempStatus;
+                                _sourceFilter = tempSource;
+                                _teamFilter = tempTeam;
                               });
-                              Navigator.of(context).pop();
+                              Navigator.pop(context);
                             },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 15),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(18),
-                              ),
+                            child: const Text(
+                              'Apply Filters',
+                              style: TextStyle(fontWeight: FontWeight.w800),
                             ),
-                            child: const Text('Apply'),
                           ),
                         ),
                       ],
@@ -1412,79 +470,1264 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
         );
       },
     );
-
-    productController.dispose();
   }
 
-  Widget _sheetDropdown({
+  Widget _buildFilterDropdown({
     required String label,
     required String value,
     required List<String> items,
     required ValueChanged<String?> onChanged,
   }) {
-    return DropdownButtonFormField<String>(
-      initialValue: value,
-      onChanged: onChanged,
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(color: AppColors.textMuted),
-        filled: true,
-        fillColor: AppColors.surfaceSoft,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-          borderSide: const BorderSide(color: AppColors.border),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            color: AppColors.textSecondary,
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+          ),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-          borderSide: const BorderSide(color: AppColors.border),
+        const SizedBox(height: 6),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: AppColors.deliveryCardSoft,
+            borderRadius: BorderRadius.circular(AppSizes.inputRadius),
+            border: Border.all(color: AppColors.deliverySurfaceBorder),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: items.contains(value) ? value : items.first,
+              isExpanded: true,
+              icon: const Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: AppColors.textMuted,
+              ),
+              items: items.map((opt) {
+                return DropdownMenuItem<String>(
+                  value: opt,
+                  child: Text(
+                    opt,
+                    style: const TextStyle(
+                      color: AppColors.deliveryInk,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                );
+              }).toList(),
+              onChanged: onChanged,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  List<_LeadRecord> _filteredLeads() {
+    final query = _searchController.text.trim().toLowerCase();
+
+    return _leads.where((lead) {
+      final statusOk =
+          _statusFilter == 'All Status' ||
+          lead.status.toLowerCase() == _statusFilter.toLowerCase();
+      final sourceOk =
+          _sourceFilter == 'All Sources' ||
+          lead.source.toLowerCase() == _sourceFilter.toLowerCase();
+      final teamOk =
+          _teamFilter == 'All Team' ||
+          lead.assignedTo.toLowerCase() == _teamFilter.toLowerCase();
+      final queryOk =
+          query.isEmpty ||
+          lead.personName.toLowerCase().contains(query) ||
+          lead.companyName.toLowerCase().contains(query) ||
+          lead.phone.toLowerCase().contains(query) ||
+          lead.source.toLowerCase().contains(query) ||
+          lead.category.toLowerCase().contains(query);
+      return statusOk && sourceOk && teamOk && queryOk;
+    }).toList();
+  }
+
+  int _countByStatus(String status) {
+    return _leads.where((l) => l.status.toLowerCase() == status.toLowerCase()).length;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final textScaler = MediaQuery.textScalerOf(
+      context,
+    ).clamp(minScaleFactor: 0.9, maxScaleFactor: 1.2);
+    final leads = _filteredLeads();
+    final query = _searchController.text.trim();
+
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(textScaler: textScaler),
+      child: Scaffold(
+        key: _scaffoldKey,
+        backgroundColor: AppColors.deliveryBackground,
+        drawer: widget.useSalesManagerShell
+            ? SalesManagerSidebarDrawer(
+                currentPage: 'Leads',
+                onSelect: _handleSalesManagerSidebarSelection,
+              )
+            : const AppDrawer(activeItem: 'Leads'),
+        body: SafeArea(
+          child: Column(
+            children: [
+              widget.useSalesManagerShell
+                  ? const SalesManagerTopBar(title: 'Leads')
+                  : AdminTopBar(
+                      title: 'Leads',
+                      leadingIcon: Icons.menu_rounded,
+                      onLeadingTap: () =>
+                          _scaffoldKey.currentState?.openDrawer(),
+                      actions: [
+                        Tooltip(
+                          message: 'Refresh leads',
+                          child: InkWell(
+                            onTap: _loadLeads,
+                            borderRadius: BorderRadius.circular(12),
+                            child: Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.10),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(
+                                Icons.refresh_rounded,
+                                color: Colors.white,
+                                size: 21,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+              Expanded(
+                child: _isLoading
+                    ? const _StateView.loading()
+                    : _errorMessage != null
+                    ? _StateView.error(
+                        message: _errorMessage!,
+                        onRetry: _loadLeads,
+                      )
+                    : RefreshIndicator(
+                        color: AppColors.primary,
+                        onRefresh: _loadLeads,
+                        child: ListView(
+                          physics: const AlwaysScrollableScrollPhysics(
+                            parent: BouncingScrollPhysics(),
+                          ),
+                          padding: const EdgeInsets.fromLTRB(
+                            AppSpacing.screenSmall,
+                            AppSpacing.md,
+                            AppSpacing.screenSmall,
+                            AppSpacing.xl + 40,
+                          ),
+                          children: [
+                            Center(
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(
+                                   maxWidth: 920,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _HeaderCard(
+                                      total: _leads.length,
+                                      onAdd: _openAddLeadPage,
+                                    ),
+                                    const SizedBox(height: AppSpacing.md),
+                                    _MetricsGrid(
+                                      total: _leads.length,
+                                      newCount: _countByStatus('New'),
+                                      followUpCount: _countByStatus('Follow Up'),
+                                      hotCount: _countByStatus('Hot'),
+                                    ),
+                                    const SizedBox(height: AppSpacing.md),
+                                    _SearchCard(
+                                      controller: _searchController,
+                                      query: query,
+                                      activeFilterCount: _activeFilterCount(),
+                                      onChanged: (_) => setState(() {}),
+                                      onClear: () => setState(_searchController.clear),
+                                      onFilterTap: _openFilterSheet,
+                                    ),
+                                    const SizedBox(height: AppSpacing.sm),
+                                    _QuickFiltersRow(
+                                      selectedStatus: _statusFilter,
+                                      onSelectStatus: (status) {
+                                        setState(() => _statusFilter = status);
+                                      },
+                                    ),
+                                    const SizedBox(height: AppSpacing.md),
+                                    _SectionHeader(
+                                      title: 'Lead List',
+                                      count: leads.length,
+                                      trailingIcon: Icons.leaderboard_outlined,
+                                    ),
+                                    const SizedBox(height: AppSpacing.sm),
+                                    if (leads.isEmpty)
+                                      _StateView.empty(
+                                        hasSearch: query.isNotEmpty || _activeFilterCount() > 0,
+                                      )
+                                    else
+                                      ...leads.map(
+                                        (lead) => Padding(
+                                          padding: const EdgeInsets.only(
+                                            bottom: 10,
+                                          ),
+                                          child: _LeadCard(
+                                            lead: lead,
+                                            onTap: () => _openLeadDetails(lead),
+                                            onCall: () => _callLead(lead.phone),
+                                            onWhatsApp: () => _openWhatsApp(lead.phone),
+                                            onAction: (act) => _handleLeadAction(lead, act),
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+              ),
+            ],
+          ),
         ),
       ),
-      items: items
-          .map(
-            (item) => DropdownMenuItem<String>(value: item, child: Text(item)),
-          )
-          .toList(),
     );
   }
 }
 
-class _QuickFilterData {
-  final String label;
-  final IconData? icon;
-  final Color? dotColor;
-  final bool selected;
-  final VoidCallback onTap;
+class _HeaderCard extends StatelessWidget {
+  final int total;
+  final VoidCallback onAdd;
 
-  const _QuickFilterData({
-    required this.label,
-    this.icon,
-    this.dotColor,
-    required this.selected,
-    required this.onTap,
-  });
+  const _HeaderCard({required this.total, required this.onAdd});
+
+  @override
+  Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 420;
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(compact ? 14 : 16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [AppColors.primary900, AppColors.primary],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.16),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.leaderboard_outlined,
+              color: Colors.white,
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Sales Leads',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: compact ? 16 : 18,
+                    height: 1.15,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '$total leads in your sales pipeline',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: compact ? 11 : 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Material(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            child: InkWell(
+              onTap: onAdd,
+              borderRadius: BorderRadius.circular(10),
+              child: const SizedBox(
+                width: 40,
+                height: 40,
+                child: Icon(
+                  Icons.add_rounded,
+                  color: AppColors.primary,
+                  size: 22,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
-class _StatCardData {
+class _MetricsGrid extends StatelessWidget {
+  final int total;
+  final int newCount;
+  final int followUpCount;
+  final int hotCount;
+
+  const _MetricsGrid({
+    required this.total,
+    required this.newCount,
+    required this.followUpCount,
+    required this.hotCount,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final rows = [
+      _MetricInfo(
+        'Total Leads',
+        total.toString(),
+        Icons.groups_rounded,
+        AppColors.deliveryBlue,
+        AppColors.deliveryBlueSoft,
+      ),
+      _MetricInfo(
+        'New Leads',
+        newCount.toString(),
+        Icons.trending_up_rounded,
+        AppColors.deliveryGreen,
+        AppColors.deliveryGreenSoft,
+      ),
+      _MetricInfo(
+        'Follow Ups',
+        followUpCount.toString(),
+        Icons.access_time_rounded,
+        AppColors.deliveryCustomerOrders,
+        AppColors.deliveryCustomerOrdersSoft,
+      ),
+      _MetricInfo(
+        'Hot Leads',
+        hotCount.toString(),
+        Icons.local_fire_department_rounded,
+        AppColors.deliveryRed,
+        AppColors.deliveryRedSoft,
+      ),
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth >= 700 ? 4 : 2;
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: rows.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columns,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            mainAxisExtent: 68,
+          ),
+          itemBuilder: (_, index) => _MetricTile(info: rows[index]),
+        );
+      },
+    );
+  }
+}
+
+class _MetricInfo {
+  final String label;
   final String value;
-  final String label;
   final IconData icon;
-  final Color glowColor;
-  final List<Color> iconBackground;
+  final Color color;
+  final Color background;
 
-  const _StatCardData({
-    required this.value,
-    required this.label,
-    required this.icon,
-    required this.glowColor,
-    required this.iconBackground,
-  });
+  const _MetricInfo(
+    this.label,
+    this.value,
+    this.icon,
+    this.color,
+    this.background,
+  );
 }
 
-class _LeadStatusStyle {
-  final Color background;
-  final Color foreground;
+class _MetricTile extends StatelessWidget {
+  final _MetricInfo info;
 
-  const _LeadStatusStyle({required this.background, required this.foreground});
+  const _MetricTile({required this.info});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.deliveryCardBorder),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: info.background,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(info.icon, color: info.color, size: 18),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  info.value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.deliveryInk,
+                    fontSize: 14,
+                    height: 1.1,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  info.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF586176),
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SearchCard extends StatelessWidget {
+  final TextEditingController controller;
+  final String query;
+  final int activeFilterCount;
+  final ValueChanged<String> onChanged;
+  final VoidCallback onClear;
+  final VoidCallback onFilterTap;
+
+  const _SearchCard({
+    required this.controller,
+    required this.query,
+    required this.activeFilterCount,
+    required this.onChanged,
+    required this.onClear,
+    required this.onFilterTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return _SurfaceCard(
+      padding: const EdgeInsets.all(12),
+      child: Row(
+        children: [
+          Expanded(
+            child: SizedBox(
+              height: 44,
+              child: TextField(
+                controller: controller,
+                onChanged: onChanged,
+                textInputAction: TextInputAction.search,
+                style: const TextStyle(
+                  color: AppColors.deliveryInk,
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w600,
+                ),
+                decoration: InputDecoration(
+                  hintText: 'Search by name, company, mobile...',
+                  hintStyle: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  prefixIcon: const Icon(
+                    Icons.search_rounded,
+                    color: AppColors.deliveryGreen,
+                    size: 20,
+                  ),
+                  suffixIcon: query.isEmpty
+                      ? null
+                      : IconButton(
+                          tooltip: 'Clear search',
+                          icon: const Icon(
+                            Icons.close_rounded,
+                            color: AppColors.textSecondary,
+                            size: 18,
+                          ),
+                          onPressed: onClear,
+                        ),
+                  filled: true,
+                  fillColor: AppColors.deliveryCardSoft,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 0,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppSizes.inputRadius),
+                    borderSide: const BorderSide(
+                      color: AppColors.deliverySurfaceBorder,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppSizes.inputRadius),
+                    borderSide: const BorderSide(
+                      color: AppColors.deliverySurfaceBorder,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppSizes.inputRadius),
+                    borderSide: const BorderSide(color: AppColors.deliveryGreen),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Material(
+            color: activeFilterCount > 0
+                ? AppColors.primary
+                : AppColors.deliveryCardSoft,
+            borderRadius: BorderRadius.circular(AppSizes.inputRadius),
+            child: InkWell(
+              onTap: onFilterTap,
+              borderRadius: BorderRadius.circular(AppSizes.inputRadius),
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(AppSizes.inputRadius),
+                  border: Border.all(
+                    color: activeFilterCount > 0
+                        ? AppColors.primary
+                        : AppColors.deliverySurfaceBorder,
+                  ),
+                ),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Center(
+                      child: Icon(
+                        Icons.tune_rounded,
+                        color: activeFilterCount > 0
+                            ? Colors.white
+                            : AppColors.deliveryInk,
+                        size: 20,
+                      ),
+                    ),
+                    if (activeFilterCount > 0)
+                      Positioned(
+                        top: 4,
+                        right: 4,
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: AppColors.deliveryGreen,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _QuickFiltersRow extends StatelessWidget {
+  final String selectedStatus;
+  final ValueChanged<String> onSelectStatus;
+
+  const _QuickFiltersRow({
+    required this.selectedStatus,
+    required this.onSelectStatus,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final filters = const [
+      'All Status',
+      'New',
+      'Follow Up',
+      'Hot',
+      'Qualified',
+    ];
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
+      child: Row(
+        children: filters.map((status) {
+          final isSelected = selectedStatus.toLowerCase() == status.toLowerCase() ||
+              (selectedStatus == 'All Status' && status == 'All Status');
+          return Padding(
+            padding: const EdgeInsets.only(right: 6),
+            child: Material(
+              color: isSelected
+                  ? AppColors.primary
+                  : AppColors.surface,
+              borderRadius: BorderRadius.circular(10),
+              child: InkWell(
+                onTap: () => onSelectStatus(status),
+                borderRadius: BorderRadius.circular(10),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 7,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: isSelected
+                          ? AppColors.primary
+                          : AppColors.deliverySurfaceBorder,
+                    ),
+                  ),
+                  child: Text(
+                    status == 'All Status' ? 'All Leads' : status,
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : AppColors.deliveryInk,
+                      fontSize: 12,
+                      fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  final String title;
+  final int count;
+  final IconData trailingIcon;
+
+  const _SectionHeader({
+    required this.title,
+    required this.count,
+    required this.trailingIcon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 2),
+      child: Row(
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              color: AppColors.deliveryInk,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(
+              color: AppColors.deliveryCardSoft,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppColors.deliveryCardBorder),
+            ),
+            child: Text(
+              '$count',
+              style: const TextStyle(
+                color: AppColors.deliveryInk,
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+          const Spacer(),
+          Icon(
+            trailingIcon,
+            color: AppColors.textMuted,
+            size: 18,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LeadCard extends StatelessWidget {
+  final _LeadRecord lead;
+  final VoidCallback onTap;
+  final VoidCallback onCall;
+  final VoidCallback onWhatsApp;
+  final ValueChanged<_LeadAction> onAction;
+
+  const _LeadCard({
+    required this.lead,
+    required this.onTap,
+    required this.onCall,
+    required this.onWhatsApp,
+    required this.onAction,
+  });
+
+  Color _resolveStatusColor(String status) {
+    final s = status.trim().toLowerCase();
+    if (s.contains('new')) return AppColors.deliveryGreen;
+    if (s.contains('follow')) return AppColors.deliveryCustomerOrders;
+    if (s.contains('hot')) return AppColors.deliveryRed;
+    if (s.contains('qualified') || s.contains('converted') || s.contains('won')) {
+      return AppColors.deliveryGreen;
+    }
+    if (s.contains('lost')) return AppColors.textMuted;
+    return AppColors.primary;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final statusColor = _resolveStatusColor(lead.status);
+
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(AppSizes.cardRadius),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppSizes.cardRadius),
+        child: Ink(
+          decoration: _surfaceDecoration(),
+          child: Stack(
+            children: [
+              Positioned(
+                left: 0,
+                top: 0,
+                bottom: 0,
+                child: ColoredBox(
+                  color: statusColor,
+                  child: const SizedBox(width: 3.5),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 12, 10, 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        CustomerAvatar(
+                          name: lead.personName,
+                          size: 50,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      lead.personName,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 13.5,
+                                        fontWeight: FontWeight.w900,
+                                        color: AppColors.deliveryInk,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  _StatusBadge(
+                                    label: lead.status,
+                                    color: statusColor,
+                                  ),
+                                  const SizedBox(width: 2),
+                                  const Icon(
+                                    Icons.chevron_right_rounded,
+                                    color: AppColors.textMuted,
+                                    size: 18,
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 3),
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.business_outlined,
+                                    size: 13,
+                                    color: AppColors.textMuted,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Expanded(
+                                    child: Text(
+                                      lead.companyName.isEmpty || lead.companyName == '-'
+                                          ? 'Independent Buyer'
+                                          : lead.companyName,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: AppColors.textMuted,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _CardMiniField(
+                                      label: 'Assigned',
+                                      value: lead.assignedTo,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: _CardMiniField(
+                                      label: 'Source',
+                                      value: lead.source,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: _CardMiniField(
+                                      label: 'Product',
+                                      value: lead.category,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    const Divider(
+                      height: 1,
+                      color: AppColors.deliverySurfaceBorder,
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.schedule_rounded,
+                          size: 13,
+                          color: AppColors.textLightMuted,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          lead.lastActivity,
+                          style: const TextStyle(
+                            color: AppColors.textMuted,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const Spacer(),
+                        _CircularActionButton(
+                          icon: Icons.call_rounded,
+                          color: AppColors.deliveryGreen,
+                          background: AppColors.deliveryGreenSoft,
+                          onTap: onCall,
+                          tooltip: 'Call lead',
+                        ),
+                        const SizedBox(width: 6),
+                        _CircularActionButton(
+                          icon: FontAwesomeIcons.whatsapp,
+                          color: const Color(0xFF25D366),
+                          background: const Color(0xFFEDFBF0),
+                          onTap: onWhatsApp,
+                          tooltip: 'WhatsApp',
+                        ),
+                        const SizedBox(width: 4),
+                        PopupMenuButton<_LeadAction>(
+                          tooltip: 'Options',
+                          color: AppColors.surface,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          onSelected: onAction,
+                          itemBuilder: (context) => const [
+                            PopupMenuItem(
+                              value: _LeadAction.viewDetails,
+                              child: Row(
+                                children: [
+                                  Icon(Icons.visibility_outlined, size: 18),
+                                  SizedBox(width: 8),
+                                  Text('View Details'),
+                                ],
+                              ),
+                            ),
+                            PopupMenuItem(
+                              value: _LeadAction.edit,
+                              child: Row(
+                                children: [
+                                  Icon(Icons.edit_outlined, size: 18),
+                                  SizedBox(width: 8),
+                                  Text('Edit Lead'),
+                                ],
+                              ),
+                            ),
+                            PopupMenuItem(
+                              value: _LeadAction.convertToCustomer,
+                              child: Row(
+                                children: [
+                                  Icon(Icons.person_add_alt_1_outlined, size: 18),
+                                  SizedBox(width: 8),
+                                  Text('Convert to Customer'),
+                                ],
+                              ),
+                            ),
+                          ],
+                          child: Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: AppColors.deliveryCardSoft,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: AppColors.deliveryCardBorder,
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.more_vert_rounded,
+                              size: 18,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CardMiniField extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _CardMiniField({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: AppColors.textMuted,
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 1),
+        Text(
+          value.isEmpty || value == '-' ? 'General' : value,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: AppColors.deliveryInk,
+            fontSize: 11.5,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _CircularActionButton extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final Color background;
+  final VoidCallback onTap;
+  final String tooltip;
+
+  const _CircularActionButton({
+    required this.icon,
+    required this.color,
+    required this.background,
+    required this.onTap,
+    required this.tooltip,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: background,
+        shape: const CircleBorder(),
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: onTap,
+          child: SizedBox(
+            width: 32,
+            height: 32,
+            child: Icon(icon, color: color, size: 16),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _StatusBadge extends StatelessWidget {
+  final String label;
+  final Color color;
+
+  const _StatusBadge({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withValues(alpha: 0.24)),
+      ),
+      child: Text(
+        label.isEmpty ? 'New' : label,
+        style: TextStyle(
+          color: color,
+          fontSize: 10,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+}
+
+class _SurfaceCard extends StatelessWidget {
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+
+  const _SurfaceCard({
+    required this.child,
+    this.padding = const EdgeInsets.all(12),
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: padding,
+      decoration: _surfaceDecoration(),
+      child: child,
+    );
+  }
+}
+
+BoxDecoration _surfaceDecoration() {
+  return BoxDecoration(
+    color: AppColors.surface,
+    borderRadius: BorderRadius.circular(AppSizes.cardRadius),
+    border: Border.all(color: AppColors.deliverySurfaceBorder),
+    boxShadow: const [
+      BoxShadow(
+        color: Color(0x080F172A),
+        blurRadius: 10,
+        offset: Offset(0, 3),
+      ),
+    ],
+  );
+}
+
+class _StateView extends StatelessWidget {
+  final bool isLoading;
+  final bool hasSearch;
+  final String? errorMessage;
+  final VoidCallback? onRetry;
+
+  const _StateView.loading()
+      : isLoading = true,
+        hasSearch = false,
+        errorMessage = null,
+        onRetry = null;
+
+  const _StateView.empty({required this.hasSearch})
+      : isLoading = false,
+        errorMessage = null,
+        onRetry = null;
+
+  const _StateView.error({
+    required String message,
+    required this.onRetry,
+  })  : isLoading = false,
+        hasSearch = false,
+        errorMessage = message;
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 80),
+        child: Center(
+          child: CircularProgressIndicator(color: AppColors.deliveryGreen),
+        ),
+      );
+    }
+
+    if (errorMessage != null) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 40),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.error_outline_rounded,
+                size: 36,
+                color: AppColors.deliveryRed,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                errorMessage!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              if (onRetry != null) ...[
+                const SizedBox(height: 12),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.deliveryGreen,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  onPressed: onRetry,
+                  child: const Text('Retry'),
+                ),
+              ],
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 50),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 52,
+              height: 52,
+              decoration: const BoxDecoration(
+                color: AppColors.deliveryGreenSoft,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.leaderboard_outlined,
+                color: AppColors.deliveryGreen,
+                size: 26,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              hasSearch ? 'No matching leads found' : 'No leads available yet',
+              style: const TextStyle(
+                color: AppColors.deliveryInk,
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              hasSearch
+                  ? 'Try searching with different keywords or reset filters.'
+                  : 'Tap the "+" button to add your first sales lead.',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: AppColors.textMuted,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 enum _LeadAction { viewDetails, edit, convertToCustomer, delete }
@@ -1496,14 +1739,9 @@ class _LeadRecord {
   final String phone;
   final String source;
   final String assignedTo;
-  final String assignedInitials;
   final String status;
   final String category;
   final String lastActivity;
-  final Color accentColor;
-  final Color avatarStart;
-  final Color avatarEnd;
-  final String? avatarUrl;
 
   const _LeadRecord({
     required this.id,
@@ -1512,14 +1750,9 @@ class _LeadRecord {
     required this.phone,
     required this.source,
     required this.assignedTo,
-    required this.assignedInitials,
     required this.status,
     required this.category,
     required this.lastActivity,
-    required this.accentColor,
-    required this.avatarStart,
-    required this.avatarEnd,
-    this.avatarUrl,
   });
 
   factory _LeadRecord.fromJson(Map<String, dynamic> json) {
@@ -1527,7 +1760,7 @@ class _LeadRecord {
       'name',
       'contact_person',
       'contactPerson',
-    ], fallback: '-');
+    ], fallback: 'New Lead');
     final assignedTo = _leadString(
       json,
       const ['assigned_salesperson_name', 'assignedSalespersonName'],
@@ -1552,9 +1785,8 @@ class _LeadRecord {
         'lead_source',
         'leadSource',
         'source',
-      ], fallback: '-'),
+      ], fallback: 'Direct'),
       assignedTo: assignedTo,
-      assignedInitials: _initials(assignedTo),
       status: _leadString(json, const [
         'lead_status',
         'leadStatus',
@@ -1564,37 +1796,9 @@ class _LeadRecord {
         'interested_product',
         'interestedProduct',
         'category',
-      ], fallback: '-'),
+      ], fallback: 'General'),
       lastActivity: _relativeLeadTime(
         _leadString(json, const ['created_at', 'createdAt'], fallback: ''),
-      ),
-      accentColor: AppColors.primary,
-      avatarStart: AppColors.surfaceSoft,
-      avatarEnd: AppColors.activeMenuBg,
-      avatarUrl: null,
-    );
-  }
-}
-
-class _LeadErrorState extends StatelessWidget {
-  final String message;
-  final VoidCallback onRetry;
-
-  const _LeadErrorState({required this.message, required this.onRetry});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 56),
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(message, textAlign: TextAlign.center),
-            const SizedBox(height: 12),
-            OutlinedButton(onPressed: onRetry, child: const Text('Retry')),
-          ],
-        ),
       ),
     );
   }
@@ -1623,15 +1827,9 @@ String _leadString(
   return fallback;
 }
 
-String _initials(String value) {
-  final parts = value.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty);
-  final initials = parts.take(2).map((p) => p[0].toUpperCase()).join();
-  return initials.isEmpty ? 'NA' : initials;
-}
-
 String _relativeLeadTime(String value) {
   final parsed = DateTime.tryParse(value);
-  if (parsed == null) return '-';
+  if (parsed == null) return 'Recently';
   final diff = DateTime.now().difference(parsed);
   if (diff.inDays > 0) return '${diff.inDays}d ago';
   if (diff.inHours > 0) return '${diff.inHours}h ago';

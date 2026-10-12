@@ -317,7 +317,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
 
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.deliveryBackground,
       drawer: widget.useSalesManagerShell
           ? SalesManagerSidebarDrawer(
               currentPage: 'Quotations',
@@ -347,31 +347,55 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
                       isMobile ? 14 : 18,
                       18,
                     ),
-                    child: Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(28),
-                        border: Border.all(color: const Color(0xFFE5E7EB)),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.04),
-                            blurRadius: 18,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      child: isMobile
-                          ? _isLoading
-                                ? _loadingState()
-                                : _errorMessage != null
-                                ? _errorState(_errorMessage!, _loadQuotations)
-                                : _buildMobileContent(quotations)
-                          : _isLoading
-                          ? _loadingState()
-                          : _errorMessage != null
-                          ? _errorState(_errorMessage!, _loadQuotations)
-                          : _buildDesktopContent(quotations),
+                     child: Center(
+                       child: ConstrainedBox(
+                         constraints: const BoxConstraints(maxWidth: 920),
+                         child: Column(
+                           children: [
+                             _QuotationPageHero(
+                               total: _quotations.length,
+                               visible: quotations.length,
+                             ),
+                             const SizedBox(height: 12),
+                             Container(
+                               width: double.infinity,
+                               decoration: BoxDecoration(
+                                 color: Colors.white,
+                                 borderRadius: BorderRadius.circular(16),
+                                 border: Border.all(
+                                   color: AppColors.deliveryCardBorder,
+                                 ),
+                                 boxShadow: [
+                                   BoxShadow(
+                                     color: AppColors.primary.withValues(
+                                       alpha: 0.05,
+                                     ),
+                                     blurRadius: 12,
+                                     offset: const Offset(0, 4),
+                                   ),
+                                 ],
+                               ),
+                               child: isMobile
+                                   ? _isLoading
+                                         ? _loadingState()
+                                         : _errorMessage != null
+                                         ? _errorState(
+                                             _errorMessage!,
+                                             _loadQuotations,
+                                           )
+                                         : _buildMobileContent(quotations)
+                                   : _isLoading
+                                   ? _loadingState()
+                                   : _errorMessage != null
+                                   ? _errorState(
+                                       _errorMessage!,
+                                       _loadQuotations,
+                                     )
+                                   : _buildDesktopContent(quotations),
+                             ),
+                           ],
+                         ),
+                       ),
                     ),
                   ),
                 ),
@@ -415,7 +439,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
                     vertical: 14,
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(999),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   textStyle: const TextStyle(
                     fontSize: 14,
@@ -515,7 +539,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
                         vertical: 13,
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(999),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       textStyle: const TextStyle(
                         fontSize: 14,
@@ -712,6 +736,104 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
           if (i != quotations.length - 1) const SizedBox(height: 12),
         ],
       ],
+    );
+  }
+}
+
+class _QuotationPageHero extends StatelessWidget {
+  const _QuotationPageHero({required this.total, required this.visible});
+
+  final int total;
+  final int visible;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [AppColors.primary900, AppColors.primary],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.14),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.16),
+              ),
+            ),
+            child: const Icon(
+              Icons.request_quote_outlined,
+              color: Colors.white,
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Quotation workspace',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Create, track and convert customer quotations.',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  '$visible / $total',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const Text(
+                  'visible',
+                  style: TextStyle(color: Colors.white70, fontSize: 11),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -916,7 +1038,7 @@ class _QuotationCard extends StatelessWidget {
           return Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _quotationAvatar(record.initials, compact ? 52 : 60),
+               _quotationAvatar(record.initials, compact ? 44 : 48),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
@@ -1136,7 +1258,7 @@ class _StatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(999),
@@ -1148,7 +1270,7 @@ class _StatusChip extends StatelessWidget {
             label,
             style: TextStyle(
               color: foreground,
-              fontSize: 14,
+               fontSize: 11,
               fontWeight: FontWeight.w800,
               letterSpacing: 0,
             ),
