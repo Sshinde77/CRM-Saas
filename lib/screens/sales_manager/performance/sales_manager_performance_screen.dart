@@ -175,38 +175,38 @@ class _SalesManagerPerformanceScreenState
       child: Scaffold(
         key: _scaffoldKey,
         backgroundColor: AppColors.deliveryBackground,
-      drawer: SalesManagerSidebarDrawer(
-        onSelect: _handleSidebarSelection,
-        currentPage: 'My Performance',
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            const SalesManagerTopBar(title: 'My Performance'),
-            Expanded(
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 920),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const _PerformanceOverview(overallScore: 0.88),
-                        const SizedBox(height: 16),
-                        _buildMetricGrid(),
-                        const SizedBox(height: 16),
-                        _buildOverallPerformance(),
-                      ],
+        drawer: SalesManagerSidebarDrawer(
+          onSelect: _handleSidebarSelection,
+          currentPage: 'My Performance',
+        ),
+        body: SafeArea(
+          child: Column(
+            children: [
+              const SalesManagerTopBar(title: 'My Performance'),
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 920),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const _PerformanceOverview(overallScore: 0.88),
+                          const SizedBox(height: 16),
+                          _buildMetricGrid(),
+                          const SizedBox(height: 16),
+                          _buildOverallPerformance(),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -267,7 +267,7 @@ class _SalesManagerPerformanceScreenState
                   style: TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 16,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -276,7 +276,7 @@ class _SalesManagerPerformanceScreenState
                 style: TextStyle(
                   color: AppColors.primary,
                   fontSize: 16,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],
@@ -382,7 +382,7 @@ class _PerformanceOverview extends StatelessWidget {
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const Text(
@@ -434,7 +434,7 @@ class _MetricCard extends StatelessWidget {
                       style: const TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: 12,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -472,7 +472,7 @@ class _MetricCard extends StatelessWidget {
                       style: const TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: 16,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -494,7 +494,7 @@ class _MetricCard extends StatelessWidget {
                     style: const TextStyle(
                       color: AppColors.primary,
                       fontSize: 14,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 2),

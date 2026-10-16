@@ -21,7 +21,7 @@ class BillingScreen extends StatefulWidget {
 class _BillingScreenState extends State<BillingScreen> {
   static const Color _titleColor = Color(0xFF0F172A);
   static const Color _mutedColor = Color(0xFF64748B);
-  static const Color _accent = Color(0xFF00092A);
+  static const Color _accent = Color(0xFF0D1F42);
   static const Color _borderColor = Color(0xFFD8DFD8);
   static const Color _fieldBg = Colors.white;
   final ApiService _apiService = ApiService();
@@ -495,7 +495,7 @@ class _SectionShell extends StatelessWidget {
           style: const TextStyle(
             color: _BillingScreenState._titleColor,
             fontSize: 16,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
           ),
         ),
         const SizedBox(height: 4),
@@ -574,7 +574,7 @@ class _QrUploadCard extends StatelessWidget {
                   color: _BillingScreenState._titleColor,
                   fontSize: 14,
                   height: 1.28,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               const SizedBox(height: 6),

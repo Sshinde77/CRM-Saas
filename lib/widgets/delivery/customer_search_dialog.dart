@@ -141,7 +141,11 @@ class _CustomerSearchDialogState extends State<CustomerSearchDialog> {
                   ),
                   hintText:
                       'Search by customer name, business name, ID or phone number...',
-                  hintStyle: const TextStyle(color: _muted, fontSize: 13),
+                  hintStyle: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                  ),
                   prefixIcon: const Icon(Icons.search, color: _muted),
                   suffixIcon: IconButton(
                     tooltip: 'Search by voice',

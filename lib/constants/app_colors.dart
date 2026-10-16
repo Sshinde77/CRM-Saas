@@ -3,12 +3,18 @@ import 'package:flutter/material.dart';
 class AppColors {
   const AppColors._();
 
-  static const Color primary = Color(0xFF00092A);
-  static const Color secondary = Color(0xFF000000);
-  static const Color primary900 = Color(0xFF000720);
-  static const Color primary950 = Color(0xFF00051A);
-  static const Color adminSidebarBg = Color(0xFFF1F3FA);
-  static const Color activeMenuBg = Color(0xFFDDE4FF);
+  static const Color primary = Color(0xFF0D1F42);
+  static const Color secondary = Color(0xFF112548);
+  static const Color primary900 = Color(0xFF112548);
+  static const Color primary950 = Color(0xFF061431);
+  static const Color adminSidebarBg = Color(0xFFF2F5FA);
+  static const Color activeMenuBg = Color(0xFFDDE6F5);
+
+  static const LinearGradient primaryGradient = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [primary900, primary950],
+  );
 
   static const Color background = Color(0xFFFFFFFF);
   static const Color surface = Color(0xFFFFFFFF);

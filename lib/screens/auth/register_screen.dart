@@ -140,7 +140,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 16,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                         color: headingText,
                       ),
                     ),
@@ -352,7 +352,7 @@ class _StepHeader extends StatelessWidget {
             '1',
             style: TextStyle(
               color: Colors.white,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               fontSize: 14,
             ),
           ),
@@ -362,7 +362,7 @@ class _StepHeader extends StatelessWidget {
           title,
           style: const TextStyle(
             color: _RegisterScreenState.headingText,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
             fontSize: 16,
           ),
         ),

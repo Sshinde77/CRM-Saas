@@ -215,7 +215,7 @@ class _SalesManagerAttendanceScreenState
             style: TextStyle(
               color: AppColors.textPrimary,
               fontSize: 14,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 16),
@@ -287,7 +287,7 @@ class _SalesManagerAttendanceScreenState
             style: TextStyle(
               color: AppColors.textPrimary,
               fontSize: 14,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 16),
@@ -350,7 +350,7 @@ class _CheckpointCard extends StatelessWidget {
             style: const TextStyle(
               color: AppColors.textPrimary,
               fontSize: 16,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const Spacer(),
@@ -407,7 +407,7 @@ class _AttendanceHeaderRow extends StatelessWidget {
     const labelStyle = TextStyle(
       color: Color(0xFF64748B),
       fontSize: 14,
-      fontWeight: FontWeight.w800,
+      fontWeight: FontWeight.w700,
       letterSpacing: 0.9,
     );
 

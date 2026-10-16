@@ -199,9 +199,9 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
     if (normalized.isEmpty || normalized == '-') return;
     await Clipboard.setData(ClipboardData(text: normalized));
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$label copied to clipboard')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('$label copied to clipboard')));
   }
 
   Future<void> _callLead(String phone) async {
@@ -217,9 +217,9 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
       await launchUrl(uri);
     } else {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Unable to call $phone')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Unable to call $phone')));
     }
   }
 
@@ -250,7 +250,9 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
     final digits = phone.replaceAll(RegExp(r'[^0-9]'), '');
     if (digits.isEmpty || digits == '-') {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Phone number not available for WhatsApp.')),
+        const SnackBar(
+          content: Text('Phone number not available for WhatsApp.'),
+        ),
       );
       return;
     }
@@ -259,9 +261,9 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Unable to open WhatsApp.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Unable to open WhatsApp.')));
     }
   }
 
@@ -340,7 +342,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
                             style: TextStyle(
                               color: AppColors.deliveryInk,
                               fontSize: 16,
-                              fontWeight: FontWeight.w900,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
@@ -359,8 +361,12 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       decoration: BoxDecoration(
                         color: AppColors.deliveryCardSoft,
-                        borderRadius: BorderRadius.circular(AppSizes.inputRadius),
-                        border: Border.all(color: AppColors.deliverySurfaceBorder),
+                        borderRadius: BorderRadius.circular(
+                          AppSizes.inputRadius,
+                        ),
+                        border: Border.all(
+                          color: AppColors.deliverySurfaceBorder,
+                        ),
                       ),
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
@@ -433,7 +439,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
                                 Navigator.of(context).pop(selectedStatus),
                             child: const Text(
                               'Save Status',
-                              style: TextStyle(fontWeight: FontWeight.w800),
+                              style: TextStyle(fontWeight: FontWeight.w700),
                             ),
                           ),
                         ),
@@ -482,7 +488,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
             style: TextStyle(
               color: AppColors.deliveryInk,
               fontSize: 16,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
           content: TextField(
@@ -495,8 +501,9 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
             decoration: InputDecoration(
               hintText: 'Enter notes, client feedback or next steps...',
               hintStyle: const TextStyle(
-                color: AppColors.textMuted,
-                fontSize: 13,
+                color: AppColors.textSecondary,
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
               ),
               filled: true,
               fillColor: AppColors.deliveryCardSoft,
@@ -635,7 +642,9 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
       );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Lead converted to customer successfully')),
+        const SnackBar(
+          content: Text('Lead converted to customer successfully'),
+        ),
       );
       await _loadLead();
 
@@ -649,9 +658,9 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
       }
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to convert lead: $error')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to convert lead: $error')));
     }
   }
 
@@ -674,6 +683,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
     return '';
   }
 
+  // ignore: unused_element
   Color _resolveStatusColor(String status) {
     final s = status.trim().toLowerCase();
     if (s.contains('new')) return AppColors.deliveryGreen;
@@ -705,7 +715,8 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
                   onSelect: _handleSalesManagerSidebarSelection,
                 )
               : const AppDrawer(activeItem: 'Leads'),
-          bottomNavigationBar: lead == null || _isLoading || _errorMessage != null
+          bottomNavigationBar:
+              lead == null || _isLoading || _errorMessage != null
               ? null
               : _buildBottomActionBar(lead),
           body: SafeArea(
@@ -777,18 +788,18 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
                       : _errorMessage != null && lead == null
                       ? _buildErrorView()
                       : RefreshIndicator(
-                           color: AppColors.primary,
+                          color: AppColors.primary,
                           onRefresh: _loadLead,
                           child: ListView(
                             physics: const AlwaysScrollableScrollPhysics(
                               parent: BouncingScrollPhysics(),
                             ),
-                             padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
+                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
                             children: [
                               Center(
                                 child: ConstrainedBox(
                                   constraints: const BoxConstraints(
-                                     maxWidth: 920,
+                                    maxWidth: 920,
                                   ),
                                   child: Column(
                                     children: [
@@ -800,8 +811,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
                                         onEmail: () => _emailLead(lead.email),
                                         onMap: () => _openMap(lead),
                                         onEdit: () => _openEditLead(lead),
-                                        onStatus: () =>
-                                            _updateLeadStatus(lead),
+                                        onStatus: () => _updateLeadStatus(lead),
                                       ),
                                       const SizedBox(height: 12),
                                       _MetricsSection(lead: lead),
@@ -873,10 +883,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
   Widget _buildTabBody(LeadDetailModel lead) {
     switch (_selectedTab) {
       case 0:
-        return _OverviewSection(
-          lead: lead,
-          onCopy: _copyValue,
-        );
+        return _OverviewSection(lead: lead, onCopy: _copyValue);
       case 1:
         return _FollowUpsSection(
           items: _localFollowUps,
@@ -889,10 +896,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
         );
       case 3:
       default:
-        return _NotesSection(
-          lead: lead,
-          onAddNote: () => _addNote(lead),
-        );
+        return _NotesSection(lead: lead, onAddNote: () => _addNote(lead));
     }
   }
 
@@ -1043,20 +1047,27 @@ class _ProfileCard extends StatelessWidget {
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 18,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        const Icon(Icons.business_outlined, size: 14, color: Colors.white70),
+                        const Icon(
+                          Icons.business_outlined,
+                          size: 14,
+                          color: Colors.white70,
+                        ),
                         const SizedBox(width: 5),
                         Expanded(
                           child: Text(
                             company,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(color: Colors.white70, fontSize: 12),
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12,
+                            ),
                           ),
                         ),
                       ],
@@ -1086,7 +1097,11 @@ class _ProfileCard extends StatelessWidget {
                   child: const SizedBox(
                     width: 40,
                     height: 40,
-                    child: Icon(Icons.edit_outlined, color: Colors.white, size: 20),
+                    child: Icon(
+                      Icons.edit_outlined,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
                 ),
               ),
@@ -1101,7 +1116,13 @@ class _ProfileCard extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Expanded(child: _DateSummary(label: 'Created', value: _formatDate(lead.createdAt), light: true)),
+                Expanded(
+                  child: _DateSummary(
+                    label: 'Created',
+                    value: _formatDate(lead.createdAt),
+                    light: true,
+                  ),
+                ),
                 Container(width: 1, height: 30, color: Colors.white24),
                 Expanded(
                   child: _DateSummary(
@@ -1197,7 +1218,7 @@ class _DateSummary extends StatelessWidget {
           style: TextStyle(
             color: light ? Colors.white : AppColors.deliveryInk,
             fontSize: 12.5,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ],
@@ -1371,7 +1392,7 @@ class _MetricTile extends StatelessWidget {
                     color: AppColors.deliveryInk,
                     fontSize: 13.5,
                     height: 1.1,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -1457,9 +1478,13 @@ class _ActivityPanel extends StatelessWidget {
                         child: Text(
                           tabs[index],
                           style: TextStyle(
-                            color: isSelected ? Colors.white : AppColors.deliveryInk,
+                            color: isSelected
+                                ? Colors.white
+                                : AppColors.deliveryInk,
                             fontSize: 12,
-                            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                            fontWeight: isSelected
+                                ? FontWeight.w700
+                                : FontWeight.w600,
                           ),
                         ),
                       ),
@@ -1518,7 +1543,10 @@ class _OverviewSection extends StatelessWidget {
           icon: Icons.checklist_rounded,
           children: [
             _InfoRow(label: 'Source', value: lead.source),
-            _InfoRow(label: 'Interested Product', value: lead.interestedProduct),
+            _InfoRow(
+              label: 'Interested Product',
+              value: lead.interestedProduct,
+            ),
             _InfoRow(label: 'Budget', value: lead.budget),
             _InfoRow(label: 'Priority', value: lead.priority),
             _InfoRow(label: 'Lead Type', value: lead.leadType),
@@ -1532,7 +1560,10 @@ class _OverviewSection extends StatelessWidget {
           children: [
             _InfoRow(label: 'Assigned To', value: lead.assignedTo),
             _InfoRow(label: 'Existing Customer', value: lead.existingCustomer),
-            _InfoRow(label: 'Next Follow-up', value: _formatDate(lead.followUpDate)),
+            _InfoRow(
+              label: 'Next Follow-up',
+              value: _formatDate(lead.followUpDate),
+            ),
             _InfoRow(
               label: 'Expected Closing',
               value: _formatDate(lead.expectedClosingDate),
@@ -1596,7 +1627,7 @@ class _DetailSectionCard extends StatelessWidget {
                 style: const TextStyle(
                   color: AppColors.deliveryInk,
                   fontSize: 12.5,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],
@@ -1628,15 +1659,13 @@ class _InfoRow extends StatelessWidget {
   final String value;
   final VoidCallback? onCopy;
 
-  const _InfoRow({
-    required this.label,
-    required this.value,
-    this.onCopy,
-  });
+  const _InfoRow({required this.label, required this.value, this.onCopy});
 
   @override
   Widget build(BuildContext context) {
-    final displayValue = value.trim().isEmpty || value == '-' ? 'Not set' : value;
+    final displayValue = value.trim().isEmpty || value == '-'
+        ? 'Not set'
+        : value;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -1705,14 +1734,17 @@ class _FollowUpsSection extends StatelessWidget {
               style: TextStyle(
                 color: AppColors.deliveryInk,
                 fontSize: 13,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
               ),
             ),
             TextButton.icon(
               onPressed: onAdd,
               style: TextButton.styleFrom(
                 foregroundColor: AppColors.deliveryGreen,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
               ),
               icon: const Icon(Icons.add_rounded, size: 16),
               label: const Text(
@@ -1758,7 +1790,7 @@ class _FollowUpsSection extends StatelessWidget {
                             style: const TextStyle(
                               color: AppColors.deliveryInk,
                               fontSize: 13,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
@@ -1840,14 +1872,17 @@ class _VisitsSection extends StatelessWidget {
               style: TextStyle(
                 color: AppColors.deliveryInk,
                 fontSize: 13,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
               ),
             ),
             TextButton.icon(
               onPressed: onAdd,
               style: TextButton.styleFrom(
                 foregroundColor: AppColors.deliveryGreen,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
               ),
               icon: const Icon(Icons.add_rounded, size: 16),
               label: const Text(
@@ -1893,7 +1928,7 @@ class _VisitsSection extends StatelessWidget {
                             style: const TextStyle(
                               color: AppColors.deliveryInk,
                               fontSize: 13,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
@@ -1986,14 +2021,17 @@ class _NotesSection extends StatelessWidget {
               style: TextStyle(
                 color: AppColors.deliveryInk,
                 fontSize: 13,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
               ),
             ),
             TextButton.icon(
               onPressed: onAddNote,
               style: TextButton.styleFrom(
                 foregroundColor: AppColors.deliveryGreen,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
               ),
               icon: const Icon(Icons.add_rounded, size: 16),
               label: const Text(
@@ -2089,7 +2127,10 @@ class _EmptyTabState extends StatelessWidget {
               ),
               child: Text(
                 actionLabel,
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ],
@@ -2154,7 +2195,7 @@ class _BottomActionButton extends StatelessWidget {
                   style: TextStyle(
                     color: foreground,
                     fontSize: 12.5,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -2186,7 +2227,7 @@ class _StatusBadge extends StatelessWidget {
         style: TextStyle(
           color: color,
           fontSize: 10.5,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );
@@ -2219,7 +2260,7 @@ class _PriorityBadge extends StatelessWidget {
         style: TextStyle(
           color: color,
           fontSize: 10.5,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );
@@ -2245,7 +2286,7 @@ class _LeadCodePill extends StatelessWidget {
         style: const TextStyle(
           color: AppColors.textSecondary,
           fontSize: 10.5,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );
@@ -2258,11 +2299,7 @@ BoxDecoration _surfaceDecoration() {
     borderRadius: BorderRadius.circular(AppSizes.cardRadius),
     border: Border.all(color: AppColors.deliverySurfaceBorder),
     boxShadow: const [
-      BoxShadow(
-        color: Color(0x080F172A),
-        blurRadius: 10,
-        offset: Offset(0, 3),
-      ),
+      BoxShadow(color: Color(0x080F172A), blurRadius: 10, offset: Offset(0, 3)),
     ],
   );
 }
@@ -2316,7 +2353,11 @@ class _SheetShell extends StatelessWidget {
                           color: AppColors.deliveryGreenSoft,
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Icon(icon, color: AppColors.deliveryGreen, size: 20),
+                        child: Icon(
+                          icon,
+                          color: AppColors.deliveryGreen,
+                          size: 20,
+                        ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
@@ -2325,7 +2366,7 @@ class _SheetShell extends StatelessWidget {
                           style: const TextStyle(
                             color: AppColors.deliveryInk,
                             fontSize: 15,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
@@ -2340,7 +2381,10 @@ class _SheetShell extends StatelessWidget {
                     ],
                   ),
                 ),
-                const Divider(height: 1, color: AppColors.deliverySurfaceBorder),
+                const Divider(
+                  height: 1,
+                  color: AppColors.deliverySurfaceBorder,
+                ),
                 Expanded(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
@@ -2419,7 +2463,10 @@ class _FollowUpSheetState extends State<_FollowUpSheet> {
                     _fieldLabel('Date *'),
                     InkWell(
                       onTap: _pickDate,
-                      child: _pickerBox(_apiDate(_dueDate), Icons.calendar_today_outlined),
+                      child: _pickerBox(
+                        _apiDate(_dueDate),
+                        Icons.calendar_today_outlined,
+                      ),
                     ),
                   ],
                 ),
@@ -2432,7 +2479,10 @@ class _FollowUpSheetState extends State<_FollowUpSheet> {
                     _fieldLabel('Time *'),
                     InkWell(
                       onTap: _pickTime,
-                      child: _pickerBox(_formatTime(_dueTime), Icons.access_time_rounded),
+                      child: _pickerBox(
+                        _formatTime(_dueTime),
+                        Icons.access_time_rounded,
+                      ),
                     ),
                   ],
                 ),
@@ -2454,13 +2504,18 @@ class _FollowUpSheetState extends State<_FollowUpSheet> {
             items: [null, ...widget.staff.map((u) => u.id)],
             itemLabel: (v) {
               if (v == null) return 'Select Staff';
-              return widget.staff.where((u) => u.id == v).firstOrNull?.name ?? v;
+              return widget.staff.where((u) => u.id == v).firstOrNull?.name ??
+                  v;
             },
             onChanged: (v) => setState(() => _assigneeId = v),
           ),
           const SizedBox(height: 12),
           _fieldLabel('Description / Requirements'),
-          _inputField(_descriptionController, hint: 'Optional details...', maxLines: 3),
+          _inputField(
+            _descriptionController,
+            hint: 'Optional details...',
+            maxLines: 3,
+          ),
           const SizedBox(height: 20),
           Row(
             children: [
@@ -2468,11 +2523,18 @@ class _FollowUpSheetState extends State<_FollowUpSheet> {
                 child: OutlinedButton(
                   onPressed: () => Navigator.pop(context),
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppColors.deliverySurfaceBorder),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    side: const BorderSide(
+                      color: AppColors.deliverySurfaceBorder,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: AppColors.textSecondary),
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
@@ -2489,17 +2551,27 @@ class _FollowUpSheetState extends State<_FollowUpSheet> {
                         description: _descriptionController.text.trim(),
                         dueAt: dueAt,
                         priority: _priority,
-                        assigneeName: widget.staff.where((u) => u.id == _assigneeId).firstOrNull?.name ?? 'Assigned Staff',
+                        assigneeName:
+                            widget.staff
+                                .where((u) => u.id == _assigneeId)
+                                .firstOrNull
+                                ?.name ??
+                            'Assigned Staff',
                       ),
                     );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.deliveryGreen,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  child: const Text('Schedule', style: TextStyle(fontWeight: FontWeight.w800)),
+                  child: const Text(
+                    'Schedule',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
                 ),
               ),
             ],
@@ -2553,7 +2625,11 @@ class _VisitSheetState extends State<_VisitSheet> {
           _inputField(_purposeController, hint: 'Visit objective'),
           const SizedBox(height: 12),
           _fieldLabel('Notes & Discussion'),
-          _inputField(_notesController, hint: 'Key discussion points...', maxLines: 3),
+          _inputField(
+            _notesController,
+            hint: 'Key discussion points...',
+            maxLines: 3,
+          ),
           const SizedBox(height: 12),
           _fieldLabel('Outcome'),
           _inputField(_outcomeController, hint: 'e.g. Requested quotation'),
@@ -2564,11 +2640,18 @@ class _VisitSheetState extends State<_VisitSheet> {
                 child: OutlinedButton(
                   onPressed: () => Navigator.pop(context),
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppColors.deliverySurfaceBorder),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    side: const BorderSide(
+                      color: AppColors.deliverySurfaceBorder,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: AppColors.textSecondary),
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
@@ -2581,7 +2664,9 @@ class _VisitSheetState extends State<_VisitSheet> {
                       context,
                       _VisitFormResult(
                         visitType: _visitType,
-                        visitTypeLabel: _visitType[0].toUpperCase() + _visitType.substring(1),
+                        visitTypeLabel:
+                            _visitType[0].toUpperCase() +
+                            _visitType.substring(1),
                         purpose: purpose,
                         notes: _notesController.text.trim(),
                         outcome: _outcomeController.text.trim(),
@@ -2591,10 +2676,15 @@ class _VisitSheetState extends State<_VisitSheet> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.deliveryGreen,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  child: const Text('Log Visit', style: TextStyle(fontWeight: FontWeight.w800)),
+                  child: const Text(
+                    'Log Visit',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
                 ),
               ),
             ],
@@ -2640,7 +2730,10 @@ class _ConvertLeadSheetState extends State<_ConvertLeadSheet> {
     _addressController = TextEditingController(
       text: widget.lead.address == '-' ? '' : widget.lead.address,
     );
-    _salesOfficerId = widget.staff.where((u) => u.name == widget.lead.assignedTo).firstOrNull?.id;
+    _salesOfficerId = widget.staff
+        .where((u) => u.name == widget.lead.assignedTo)
+        .firstOrNull
+        ?.id;
   }
 
   @override
@@ -2669,15 +2762,29 @@ class _ConvertLeadSheetState extends State<_ConvertLeadSheet> {
           _inputField(_contactController, hint: 'Contact name'),
           const SizedBox(height: 12),
           _fieldLabel('Phone Number *'),
-          _inputField(_phoneController, hint: '10-digit mobile', keyboardType: TextInputType.phone),
+          _inputField(
+            _phoneController,
+            hint: '10-digit mobile',
+            keyboardType: TextInputType.phone,
+          ),
           const SizedBox(height: 12),
           _fieldLabel('Email Address'),
-          _inputField(_emailController, hint: 'Email', keyboardType: TextInputType.emailAddress),
+          _inputField(
+            _emailController,
+            hint: 'Email',
+            keyboardType: TextInputType.emailAddress,
+          ),
           const SizedBox(height: 12),
           _fieldLabel('Customer Type'),
           _dropdownBox<String>(
             value: _customerType,
-            items: const ['business', 'retail', 'wholesale', 'distributor', 'individual'],
+            items: const [
+              'business',
+              'retail',
+              'wholesale',
+              'distributor',
+              'individual',
+            ],
             itemLabel: (v) => v[0].toUpperCase() + v.substring(1),
             onChanged: (v) => setState(() => _customerType = v ?? 'business'),
           ),
@@ -2686,7 +2793,11 @@ class _ConvertLeadSheetState extends State<_ConvertLeadSheet> {
           _inputField(_gstController, hint: 'GSTIN (Optional)'),
           const SizedBox(height: 12),
           _fieldLabel('Address'),
-          _inputField(_addressController, hint: 'Billing & Delivery Address', maxLines: 2),
+          _inputField(
+            _addressController,
+            hint: 'Billing & Delivery Address',
+            maxLines: 2,
+          ),
           const SizedBox(height: 12),
           _fieldLabel('Assigned Sales Officer'),
           _dropdownBox<String?>(
@@ -2694,7 +2805,8 @@ class _ConvertLeadSheetState extends State<_ConvertLeadSheet> {
             items: [null, ...widget.staff.map((u) => u.id)],
             itemLabel: (v) {
               if (v == null) return 'Select Staff';
-              return widget.staff.where((u) => u.id == v).firstOrNull?.name ?? v;
+              return widget.staff.where((u) => u.id == v).firstOrNull?.name ??
+                  v;
             },
             onChanged: (v) => setState(() => _salesOfficerId = v),
           ),
@@ -2705,11 +2817,18 @@ class _ConvertLeadSheetState extends State<_ConvertLeadSheet> {
                 child: OutlinedButton(
                   onPressed: () => Navigator.pop(context),
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppColors.deliverySurfaceBorder),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    side: const BorderSide(
+                      color: AppColors.deliverySurfaceBorder,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: AppColors.textSecondary),
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
@@ -2728,16 +2847,22 @@ class _ConvertLeadSheetState extends State<_ConvertLeadSheet> {
                       'gst_number': _gstController.text.trim(),
                       'billing_address': _addressController.text.trim(),
                       'delivery_address': _addressController.text.trim(),
-                      if (_salesOfficerId != null) 'assigned_sales_officer_id': _salesOfficerId,
+                      if (_salesOfficerId != null)
+                        'assigned_sales_officer_id': _salesOfficerId,
                     });
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.deliveryGreen,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  child: const Text('Convert', style: TextStyle(fontWeight: FontWeight.w800)),
+                  child: const Text(
+                    'Convert',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
                 ),
               ),
             ],
@@ -2783,7 +2908,11 @@ Widget _inputField(
     ),
     decoration: InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+      hintStyle: const TextStyle(
+        color: AppColors.textSecondary,
+        fontSize: 14,
+        fontWeight: FontWeight.w400,
+      ),
       filled: true,
       fillColor: AppColors.deliveryCardSoft,
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -2926,8 +3055,18 @@ String _formatDate(String rawValue) {
   if (parsed == null) return rawValue.trim().isEmpty ? '-' : rawValue;
 
   const months = <String>[
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ];
 
   return '${parsed.day.toString().padLeft(2, '0')} ${months[parsed.month - 1]} ${parsed.year}';

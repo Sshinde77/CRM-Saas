@@ -36,7 +36,7 @@ class ReconciliationSummary extends StatelessWidget {
                   style: TextStyle(
                     color: AppColors.deliveryInk,
                     fontSize: 16,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -156,7 +156,7 @@ class _SummaryRow extends StatelessWidget {
                   style: const TextStyle(
                     color: AppColors.deliveryInk,
                     fontSize: 14,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -217,7 +217,7 @@ class _SummaryMetric extends StatelessWidget {
           style: const TextStyle(
             color: AppColors.deliveryInk,
             fontSize: 14,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
           ),
         ),
         if (subValue != null)
@@ -227,7 +227,7 @@ class _SummaryMetric extends StatelessWidget {
             style: const TextStyle(
               color: Color(0xFF2563EB),
               fontSize: 14,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
       ],
@@ -249,7 +249,7 @@ class _HeaderText extends StatelessWidget {
       style: const TextStyle(
         color: AppColors.deliveryInk,
         fontSize: 14,
-        fontWeight: FontWeight.w900,
+        fontWeight: FontWeight.w700,
       ),
     );
   }
@@ -270,7 +270,7 @@ class _NumberText extends StatelessWidget {
       style: const TextStyle(
         color: AppColors.deliveryInk,
         fontSize: 14,
-        fontWeight: FontWeight.w800,
+        fontWeight: FontWeight.w700,
       ),
     );
   }

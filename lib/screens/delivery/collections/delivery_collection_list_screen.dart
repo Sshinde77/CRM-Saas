@@ -205,7 +205,7 @@ class _CollectionContent extends StatelessWidget {
                 padding: EdgeInsets.fromLTRB(4, 2, 4, 8),
                 child: Text(
                   'Collection List',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
                 ),
               ),
               Row(
@@ -327,7 +327,7 @@ class _CollectionsCard extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 18,
                           height: 1.1,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.deliveryInk,
                         ),
                       ),
@@ -403,7 +403,7 @@ class _CollectionMetricTile extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 16,
                     height: 1.1,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.deliveryInk,
                   ),
                 ),
@@ -477,7 +477,7 @@ class _CollectionListTile extends StatelessWidget {
                     delivery.initials,
                     style: const TextStyle(
                       fontSize: 18,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       color: AppColors.deliveryInk,
                     ),
                   ),
@@ -493,7 +493,7 @@ class _CollectionListTile extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontSize: 13,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -530,7 +530,7 @@ class _CollectionListTile extends StatelessWidget {
                       style: TextStyle(
                         color: accent,
                         fontSize: 14,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -628,7 +628,7 @@ class _CollectionTab extends StatelessWidget {
           style: TextStyle(
             color: selected ? color : AppColors.deliveryGreen,
             fontSize: 13,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
@@ -719,7 +719,7 @@ class _EmptyCollectionList extends StatelessWidget {
             'No collections found',
             style: TextStyle(
               fontSize: 16,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               color: AppColors.deliveryInk,
             ),
           ),
@@ -753,7 +753,7 @@ class _SectionHeader extends StatelessWidget {
           title,
           style: const TextStyle(
             fontSize: 14,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
             color: AppColors.deliveryInk,
           ),
         ),
@@ -858,7 +858,7 @@ class _ErrorPanel extends StatelessWidget {
             'Collections could not load',
             style: TextStyle(
               fontSize: 16,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               color: AppColors.deliveryInk,
             ),
           ),

@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../core/theme/app_text_styles.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
 import '../../../widgets/super_admin/super_admin_sidebar.dart';
 
@@ -599,7 +600,7 @@ class _MetricCard extends StatelessWidget {
                   style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 16,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
@@ -656,7 +657,7 @@ class _ChartCard extends StatelessWidget {
             style: const TextStyle(
               color: AppColors.textPrimary,
               fontSize: 14,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 4),
@@ -726,7 +727,7 @@ class _PlanChart extends StatelessWidget {
                     style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 16,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -820,7 +821,7 @@ class _OrganizationsCard extends StatelessWidget {
             style: TextStyle(
               color: AppColors.textPrimary,
               fontSize: 14,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 4),
@@ -1023,7 +1024,7 @@ class _OrganizationsListPageState extends State<_OrganizationsListPage> {
                 style: TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 14,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               const SizedBox(height: 12),
@@ -1421,7 +1422,7 @@ class _UpgradeRequestCard extends StatelessWidget {
                   style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 14,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 3),
@@ -1728,7 +1729,7 @@ class _PlanCard extends StatelessWidget {
                       style: const TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: 16,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     _Pill(
@@ -1770,7 +1771,7 @@ class _PlanCard extends StatelessWidget {
                 style: const TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 16,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               const SizedBox(width: 8),
@@ -1910,7 +1911,7 @@ class _CreatePlanDialogState extends State<_CreatePlanDialog> {
                       style: TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: 14,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -2148,9 +2149,9 @@ class _DialogField extends StatelessWidget {
             filled: true,
             fillColor: Colors.white,
             hintStyle: const TextStyle(
-              color: AppColors.textLightMuted,
+              color: AppColors.textSecondary,
               fontSize: 14,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w400,
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -2294,7 +2295,7 @@ class _OrganizationMobileCard extends StatelessWidget {
                   style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 14,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -2356,7 +2357,11 @@ class _InfoChip extends StatelessWidget {
       ),
       child: RichText(
         text: TextSpan(
-          style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+          style: const TextStyle(
+            fontFamily: AppTextStyles.fontFamily,
+            fontSize: 14,
+            color: AppColors.textSecondary,
+          ),
           children: [
             TextSpan(
               text: '$label: ',
@@ -2550,7 +2555,7 @@ class _PlatformAnalyticsPage extends StatelessWidget {
                 style: TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 14,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               const SizedBox(height: 4),
@@ -2632,7 +2637,7 @@ class _AnalyticsStatCard extends StatelessWidget {
                   style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 16,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
@@ -2691,7 +2696,7 @@ class _AnalyticsBreakdownCard extends StatelessWidget {
             style: const TextStyle(
               color: AppColors.textPrimary,
               fontSize: 14,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 10),
@@ -2784,7 +2789,7 @@ class _AnalyticsTableHeader extends StatelessWidget {
     const style = TextStyle(
       color: AppColors.textLightMuted,
       fontSize: 14,
-      fontWeight: FontWeight.w800,
+      fontWeight: FontWeight.w700,
       letterSpacing: 0.9,
     );
 
@@ -2893,7 +2898,7 @@ class _TableHeader extends StatelessWidget {
     const style = TextStyle(
       color: AppColors.textLightMuted,
       fontSize: 14,
-      fontWeight: FontWeight.w800,
+      fontWeight: FontWeight.w700,
       letterSpacing: 0.9,
     );
 
@@ -3192,7 +3197,7 @@ class _OrganizationDetailsPageState extends State<_OrganizationDetailsPage> {
                                 style: const TextStyle(
                                   color: AppColors.textPrimary,
                                   fontSize: 16,
-                                  fontWeight: FontWeight.w800,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                               _Pill(
@@ -3522,7 +3527,7 @@ class _OrganizationDetailsViewState extends State<_OrganizationDetailsView> {
                           style: const TextStyle(
                             color: AppColors.textPrimary,
                             fontSize: 16,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                         _Pill(label: widget.row.status, color: AppColors.blue),
@@ -3774,7 +3779,7 @@ class _SummaryStatCard extends StatelessWidget {
                   style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 16,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
@@ -3824,7 +3829,7 @@ class _DetailSection extends StatelessWidget {
             style: const TextStyle(
               color: AppColors.textPrimary,
               fontSize: 14,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
           if (subtitle != null) ...[
@@ -3871,6 +3876,7 @@ class _Pill extends StatelessWidget {
         child: Text(
           label,
           style: TextStyle(
+            fontFamily: AppTextStyles.fontFamily,
             color: textColor,
             fontSize: 14,
             fontWeight: FontWeight.w700,
@@ -3928,6 +3934,7 @@ class _GrowthChartPainter extends CustomPainter {
         text: TextSpan(
           text: value.toString(),
           style: TextStyle(
+            fontFamily: AppTextStyles.fontFamily,
             color: textColor,
             fontSize: 14,
             fontWeight: FontWeight.w600,

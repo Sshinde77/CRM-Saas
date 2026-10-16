@@ -7,6 +7,7 @@ import '../../../models/auth_models.dart';
 import '../../../services/api_service.dart';
 import '../../../widgets/admin/app_drawer.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
+import '../../../widgets/app_pagination.dart';
 import '../../../widgets/soft_action_button.dart';
 import 'add_staff_screen.dart';
 
@@ -38,7 +39,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
   String _query = '';
   String _selectedStatusFilter = 'All';
   int _currentPage = 0;
-  static const int _pageSize = 6;
+  int _pageSize = 10;
 
   @override
   void initState() {
@@ -253,7 +254,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
                           : user.name.trim()[0].toUpperCase(),
                       style: const TextStyle(
                         color: textPrimary,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -350,7 +351,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
             ),
             child: Text(
               nextIsActive ? 'Set Active' : 'Set Inactive',
-              style: const TextStyle(fontWeight: FontWeight.w800),
+              style: const TextStyle(fontWeight: FontWeight.w700),
             ),
           ),
         ],
@@ -497,7 +498,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         textStyle: const TextStyle(
           fontSize: 14,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
           letterSpacing: 0,
         ),
       ),
@@ -524,9 +525,9 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
               decoration: InputDecoration(
                 hintText: 'Search staff',
                 hintStyle: const TextStyle(
-                  color: textSecondary,
+                  color: AppColors.textSecondary,
                   fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w400,
                 ),
                 prefixIcon: const Padding(
                   padding: EdgeInsets.only(left: 10, right: 4),
@@ -697,77 +698,29 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
       );
     }
 
-    final start = totalCount == 0 ? 0 : currentPage * _pageSize;
-    final end = totalCount == 0 ? 0 : start + users.length;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ...users.asMap().entries.map((entry) {
-          final index = start + entry.key;
+          final index = (currentPage * _pageSize) + entry.key;
           return Padding(
             padding: const EdgeInsets.only(bottom: 10),
             child: _userCard(entry.value, index),
           );
         }),
         const SizedBox(height: 8),
-        Row(
-          children: [
-            Text(
-              '${start + 1} to $end of $totalCount',
-              style: const TextStyle(
-                color: textSecondary,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const Spacer(),
-            _pageButton(
-              icon: Icons.chevron_left_rounded,
-              enabled: currentPage > 0,
-              onTap: () {
-                if (currentPage <= 0) return;
-                setState(() => _currentPage = currentPage - 1);
-              },
-            ),
-            const SizedBox(width: 10),
-            _pageButton(
-              icon: Icons.chevron_right_rounded,
-              enabled: currentPage < pageCount - 1,
-              onTap: () {
-                if (currentPage >= pageCount - 1) return;
-                setState(() => _currentPage = currentPage + 1);
-              },
-            ),
-          ],
+        AppPagination(
+          page: currentPage + 1,
+          pageSize: _pageSize,
+          total: totalCount,
+          totalPages: pageCount,
+          onPageChanged: (page) => setState(() => _currentPage = page - 1),
+          onPageSizeChanged: (size) => setState(() {
+            _pageSize = size;
+            _currentPage = 0;
+          }),
         ),
       ],
-    );
-  }
-
-  Widget _pageButton({
-    required IconData icon,
-    required bool enabled,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: enabled ? onTap : null,
-      borderRadius: BorderRadius.circular(999),
-      child: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          color: enabled ? Colors.white : const Color(0xFFF2F4F7),
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: _cardBorder),
-        ),
-        alignment: Alignment.center,
-        child: Icon(
-          icon,
-          size: 18,
-          color: enabled ? textPrimary : AppColors.textLightMuted,
-        ),
-      ),
     );
   }
 
@@ -908,7 +861,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
                             style: const TextStyle(
                               color: textPrimary,
                               fontSize: 14,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -1018,7 +971,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
         initials.isEmpty ? '?' : initials,
         style: const TextStyle(
           color: AppColors.primary,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
           fontSize: 16,
         ),
       ),
@@ -1152,7 +1105,7 @@ class _ResetPasswordDialogState extends State<_ResetPasswordDialog> {
                         style: TextStyle(
                           color: AppColors.textPrimary,
                           fontSize: 16,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
@@ -1213,7 +1166,7 @@ class _ResetPasswordDialogState extends State<_ResetPasswordDialog> {
                                     : userName[0].toUpperCase(),
                                 style: const TextStyle(
                                   color: AppColors.textPrimary,
-                                  fontWeight: FontWeight.w800,
+                                  fontWeight: FontWeight.w700,
                                   fontSize: 16,
                                 ),
                               ),
@@ -1338,7 +1291,7 @@ class _ResetPasswordDialogState extends State<_ResetPasswordDialog> {
                       ),
                       child: const Text(
                         'Reset Password',
-                        style: TextStyle(fontWeight: FontWeight.w800),
+                        style: TextStyle(fontWeight: FontWeight.w700),
                       ),
                     ),
                   ],

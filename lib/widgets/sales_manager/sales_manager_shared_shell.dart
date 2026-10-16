@@ -33,8 +33,8 @@ void _openSalesManagerPage(BuildContext context, String action) {
   final destination = switch (action) {
     'Dashboard' => const SalesManagerDashboardScreen(),
     'Leads' => const AdminLeadsScreen(useSalesManagerShell: true),
-    'Quotations' || 'Quotation' =>
-      const AdminQuotationsScreen(useSalesManagerShell: true),
+    'Quotations' ||
+    'Quotation' => const AdminQuotationsScreen(useSalesManagerShell: true),
     'Sales Orders' => const AdminOrdersScreen(useSalesManagerShell: true),
     'Create Order' => const NewAdminOrderScreen(useSalesManagerShell: true),
     'Stock' => const SalesManagerStockScreen(),
@@ -46,7 +46,7 @@ void _openSalesManagerPage(BuildContext context, String action) {
 
   Navigator.of(context).pop();
   if (destination == null) return;
-  Navigator.of(context).pushReplacement(
-    MaterialPageRoute(builder: (_) => destination),
-  );
+  Navigator.of(
+    context,
+  ).pushReplacement(MaterialPageRoute(builder: (_) => destination));
 }

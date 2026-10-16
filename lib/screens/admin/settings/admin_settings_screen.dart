@@ -95,7 +95,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                                 style: TextStyle(
                                   color: textPrimary,
                                   fontSize: 16,
-                                  fontWeight: FontWeight.w800,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                               SizedBox(height: 4),

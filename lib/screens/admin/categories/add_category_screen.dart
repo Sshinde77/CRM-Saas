@@ -157,7 +157,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
                                     style: TextStyle(
                                       color: Color(0xFF0F172A),
                                       fontSize: 16,
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
                                   const SizedBox(height: 6),
@@ -274,7 +274,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
               style: TextStyle(
                 color: Color(0xFF111827),
                 fontSize: 14,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 16),
@@ -301,7 +301,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
                           icon: const Icon(Icons.upload_outlined, size: 18),
                           label: const Text('Upload'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF00092A),
+                            backgroundColor: const Color(0xFF0D1F42),
                             foregroundColor: Colors.white,
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -330,7 +330,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
                           icon: const Icon(Icons.upload_outlined, size: 18),
                           label: const Text('Upload'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF00092A),
+                            backgroundColor: const Color(0xFF0D1F42),
                             foregroundColor: Colors.white,
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -355,7 +355,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
               style: TextStyle(
                 color: Color(0xFF111827),
                 fontSize: 14,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 6),
@@ -589,7 +589,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
         icon: const Icon(Icons.add, size: 16),
         label: const Text('Add Category'),
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF00092A),
+          backgroundColor: const Color(0xFF0D1F42),
           foregroundColor: Colors.white,
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -648,7 +648,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
             style: const TextStyle(
               color: Color(0xFF111827),
               fontSize: 14,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 12),
@@ -739,7 +739,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF00092A)),
+              borderSide: const BorderSide(color: Color(0xFF0D1F42)),
             ),
           ),
         ),

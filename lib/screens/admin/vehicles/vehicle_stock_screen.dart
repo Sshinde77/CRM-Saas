@@ -310,7 +310,7 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
                                   style: TextStyle(
                                     color: AppColors.deliveryInk,
                                     fontSize: 16,
-                                    fontWeight: FontWeight.w800,
+                                    fontWeight: FontWeight.w700,
                                   ),
                                 ),
                                 const SizedBox(height: 8),
@@ -386,7 +386,7 @@ class _AdminListFilter extends StatelessWidget {
               style: TextStyle(
                 color: AppColors.deliveryInk,
                 fontSize: 14,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -479,8 +479,9 @@ class _DeliveryHistoryToolbar extends StatelessWidget {
               decoration: InputDecoration(
                 hintText: 'Search history',
                 hintStyle: const TextStyle(
-                  color: AppColors.textMuted,
-                  fontSize: 13,
+                  color: AppColors.textSecondary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
                 ),
                 prefixIcon: const Icon(Icons.search_rounded, size: 20),
                 suffixIcon: controller.text.isEmpty
@@ -581,7 +582,7 @@ class _DeliveryStockOverview extends StatelessWidget {
                         color: AppColors.deliveryInk,
                         fontSize: 16,
                         height: 1.15,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 3),
@@ -611,7 +612,7 @@ class _DeliveryStockOverview extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   textStyle: const TextStyle(
                     fontSize: 13,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -705,7 +706,7 @@ class _OverviewMetric extends StatelessWidget {
               color: color,
               fontSize: 15,
               height: 1,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 4),
@@ -792,7 +793,7 @@ class _VehicleListCard extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 15,
                             height: 1.15,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                             color: AppColors.deliveryInk,
                           ),
                         ),
@@ -897,7 +898,7 @@ class _MiniStockStat extends StatelessWidget {
               color: color,
               fontSize: 13,
               height: 1,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 4),
@@ -1002,7 +1003,7 @@ class _DeliveryStockSummary extends StatelessWidget {
                   style: TextStyle(
                     color: AppColors.deliveryInk,
                     fontSize: 16,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -1105,7 +1106,7 @@ class _DeliverySummaryMetric extends StatelessWidget {
                     color: color,
                     fontSize: 15,
                     height: 1,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -1153,7 +1154,7 @@ class _DeliveryLoadingDetails extends StatelessWidget {
                   style: TextStyle(
                     color: AppColors.deliveryInk,
                     fontSize: 16,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -1280,7 +1281,7 @@ class _DeliveryStockProductsState extends State<_DeliveryStockProducts> {
             style: TextStyle(
               color: AppColors.deliveryInk,
               fontSize: 16,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 10),
@@ -1290,8 +1291,9 @@ class _DeliveryStockProductsState extends State<_DeliveryStockProducts> {
             decoration: InputDecoration(
               hintText: 'Search products by name or SKU',
               hintStyle: const TextStyle(
-                color: AppColors.textMuted,
-                fontSize: 12,
+                color: AppColors.textSecondary,
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
               ),
               prefixIcon: const Icon(Icons.search_rounded, size: 20),
               filled: true,
@@ -1444,7 +1446,7 @@ class _DeliveryProductQuantity extends StatelessWidget {
           style: TextStyle(
             color: color,
             fontSize: 12,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ],
@@ -1478,7 +1480,7 @@ class _SessionInfoCard extends StatelessWidget {
                   style: TextStyle(
                     color: Color(0xFF065F1B),
                     fontSize: 16,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -1586,7 +1588,7 @@ class _InfoField extends StatelessWidget {
                   style: const TextStyle(
                     color: AppColors.deliveryInk,
                     fontSize: 14,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
@@ -1623,7 +1625,7 @@ class _StockItemsTable extends StatelessWidget {
                   style: TextStyle(
                     color: AppColors.deliveryInk,
                     fontSize: 16,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -1685,7 +1687,7 @@ class _StockProductCard extends StatelessWidget {
                         color: AppColors.deliveryInk,
                         fontSize: 14,
                         height: 1.15,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     if (item.variantId.isNotEmpty) ...[
@@ -1777,7 +1779,7 @@ class _QuantityBadge extends StatelessWidget {
               color: color,
               fontSize: 14,
               height: 1,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 3),
@@ -1788,7 +1790,7 @@ class _QuantityBadge extends StatelessWidget {
             style: TextStyle(
               color: color,
               fontSize: 10,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -1828,7 +1830,7 @@ class _StockMetricChip extends StatelessWidget {
               color: color,
               fontSize: 13,
               height: 1,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 4),
@@ -1937,7 +1939,7 @@ class _RemainingSummary extends StatelessWidget {
                   style: TextStyle(
                     color: Color(0xFF065F1B),
                     fontSize: 14,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 SizedBox(height: 3),
@@ -1962,7 +1964,7 @@ class _RemainingSummary extends StatelessWidget {
                   color: Color(0xFF065F1B),
                   fontSize: 16,
                   height: 1,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               const Text(
@@ -2011,7 +2013,7 @@ class _StatusPill extends StatelessWidget {
         style: TextStyle(
           color: color,
           fontSize: 14,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );
@@ -2084,7 +2086,7 @@ class _ErrorState extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w700,
                 color: AppColors.deliveryInk,
               ),
             ),
@@ -2134,7 +2136,7 @@ class _EmptyState extends StatelessWidget {
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 14,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w700,
                 color: AppColors.deliveryInk,
               ),
             ),

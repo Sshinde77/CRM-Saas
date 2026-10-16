@@ -473,7 +473,7 @@ class _BottomNavItem extends StatelessWidget {
                       : AppColors.surface.withValues(alpha: 0.88),
                   fontSize: 11.5 * scale,
                   height: 1.05,
-                  fontWeight: selected ? FontWeight.w900 : FontWeight.w600,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
                 ),
               ),
             ),

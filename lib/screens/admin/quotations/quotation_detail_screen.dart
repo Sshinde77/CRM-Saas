@@ -17,6 +17,7 @@ import '../customers/customers_screen.dart';
 import '../leads/admin_leads_screen.dart';
 import '../orders/admin_orders_screen.dart';
 import '../orders/new_admin_order_screen.dart';
+import '../orders/order_detail_screen.dart';
 import 'admin_quotations_screen.dart';
 
 class QuotationDetailScreen extends StatefulWidget {
@@ -133,7 +134,7 @@ class _QuotationDetailScreenState extends State<QuotationDetailScreen> {
             'Delete Quotation',
             style: TextStyle(
               color: AppColors.textPrimary,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
           content: Text(
@@ -151,7 +152,7 @@ class _QuotationDetailScreenState extends State<QuotationDetailScreen> {
                 'Delete',
                 style: TextStyle(
                   color: AppColors.red,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
@@ -179,14 +180,25 @@ class _QuotationDetailScreenState extends State<QuotationDetailScreen> {
       );
       if (result == null) return;
 
-      await _apiProvider.convertQuotationToOrder(
+      final conversion = await _apiProvider.convertQuotationToOrder(
         quotationId: widget.quotationId,
         request: result,
       );
-      final json = await _apiProvider.fetchQuotationById(widget.quotationId);
       if (!mounted) return;
-      setState(() => _quotation = _QuotationDetail.fromJson(json));
-      _showSnack('Quotation converted to order.');
+
+      final orderId = _convertedOrderId(conversion);
+      final destination = orderId.isNotEmpty
+          ? OrderDetailScreen(
+              orderId: orderId,
+              useSalesManagerShell: widget.useSalesManagerShell,
+            )
+          : AdminOrdersScreen(
+              useSalesManagerShell: widget.useSalesManagerShell,
+            );
+
+      await Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => destination));
     });
   }
 
@@ -482,7 +494,7 @@ class _HeroPanel extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF00092A).withValues(alpha: 0.22),
+            color: const Color(0xFF0D1F42).withValues(alpha: 0.22),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
@@ -525,7 +537,7 @@ class _HeroPanel extends StatelessWidget {
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 16,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                         _StatusChip(
@@ -686,7 +698,7 @@ class _ItemsTable extends StatelessWidget {
                         style: const TextStyle(
                           color: AppColors.textPrimary,
                           fontSize: 14,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
@@ -803,7 +815,7 @@ class _ConvertQuotationDialogState extends State<_ConvertQuotationDialog> {
         'Convert to Order',
         style: TextStyle(
           color: AppColors.textPrimary,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w700,
         ),
       ),
       content: SizedBox(
@@ -935,7 +947,7 @@ class _SectionCard extends StatelessWidget {
                 style: const TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 14,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],
@@ -996,7 +1008,7 @@ class _StatCard extends StatelessWidget {
                   style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 14,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
@@ -1079,7 +1091,7 @@ class _StatusChip extends StatelessWidget {
             style: TextStyle(
               color: foreground,
               fontSize: 11,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -1099,9 +1111,7 @@ class _DetailRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10),
       decoration: const BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: AppColors.borderLight),
-        ),
+        border: Border(bottom: BorderSide(color: AppColors.borderLight)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1175,7 +1185,7 @@ class _ItemMobileCard extends StatelessWidget {
             item.productName,
             style: const TextStyle(
               color: AppColors.textPrimary,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 7),
@@ -1204,7 +1214,7 @@ class _TableHeader extends StatelessWidget {
       style: const TextStyle(
         color: AppColors.textSecondary,
         fontSize: 11,
-        fontWeight: FontWeight.w900,
+        fontWeight: FontWeight.w700,
       ),
     );
   }
@@ -1471,6 +1481,43 @@ Map<String, dynamic> _unwrapMap(Map<String, dynamic> json) {
     if (value is Map<String, dynamic>) return value;
   }
   return json;
+}
+
+String _convertedOrderId(Map<String, dynamic> response) {
+  String directId(Map<String, dynamic> json) {
+    for (final key in const ['order_id', 'orderId']) {
+      final value = json[key]?.toString().trim() ?? '';
+      if (value.isNotEmpty) return value;
+    }
+
+    final order = json['order'];
+    if (order is Map) {
+      final normalized = Map<String, dynamic>.from(order);
+      for (final key in const ['id', '_id', 'order_id', 'orderId']) {
+        final value = normalized[key]?.toString().trim() ?? '';
+        if (value.isNotEmpty) return value;
+      }
+    }
+    return '';
+  }
+
+  final pending = <Map<String, dynamic>>[response];
+  final visited = <Map<String, dynamic>>{};
+  while (pending.isNotEmpty) {
+    final current = pending.removeAt(0);
+    if (!visited.add(current)) continue;
+
+    final id = directId(current);
+    if (id.isNotEmpty) return id;
+
+    for (final key in const ['conversion', 'data', 'result']) {
+      final nested = current[key];
+      if (nested is Map) {
+        pending.add(Map<String, dynamic>.from(nested));
+      }
+    }
+  }
+  return '';
 }
 
 String _jsonText(

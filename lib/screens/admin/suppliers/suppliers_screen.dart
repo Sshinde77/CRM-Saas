@@ -4,6 +4,7 @@ import '../../../constants/app_colors.dart';
 import '../../../providers/api_provider.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
+import '../../../widgets/app_pagination.dart';
 import 'add_supplier_screen.dart';
 
 class SuppliersScreen extends StatefulWidget {
@@ -23,6 +24,10 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
   bool _providerReady = false;
   bool _isLoading = true;
   String? _errorMessage;
+  int _currentPage = 1;
+  int _pageSize = 10;
+  int _totalItems = 0;
+  int _totalPages = 0;
 
   static const List<String> _tabs = ['All', 'Active', 'Inactive'];
   List<String> _categories = const [
@@ -71,8 +76,16 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
       _errorMessage = null;
     });
     try {
-      final items = await _apiProvider.fetchSuppliers();
-      final suppliers = items.map(_SupplierRecord.fromJson).toList();
+      final result = await _apiProvider.fetchPaginatedSuppliers(
+        page: _currentPage,
+        pageSize: _pageSize,
+        search: _searchController.text.trim(),
+        category: _selectedCategory == 'All categories'
+            ? null
+            : _selectedCategory,
+        isActive: _selectedTab == 'All' ? null : _selectedTab == 'Active',
+      );
+      final suppliers = result.items.map(_SupplierRecord.fromJson).toList();
       final categories =
           suppliers
               .map((supplier) => supplier.category)
@@ -83,6 +96,10 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
       if (!mounted) return;
       setState(() {
         _suppliers = suppliers;
+        _currentPage = result.page;
+        _pageSize = result.pageSize;
+        _totalItems = result.total;
+        _totalPages = result.totalPages;
         _categories = ['All categories', ...categories];
         if (!_categories.contains(_selectedCategory)) {
           _selectedCategory = 'All categories';
@@ -193,9 +210,13 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                                           (tab) => _TabChip(
                                             label: tab,
                                             selected: _selectedTab == tab,
-                                            onTap: () => setState(
-                                              () => _selectedTab = tab,
-                                            ),
+                                            onTap: () {
+                                              setState(() {
+                                                _selectedTab = tab;
+                                                _currentPage = 1;
+                                              });
+                                              _loadSuppliers();
+                                            },
                                           ),
                                         )
                                         .toList(),
@@ -252,26 +273,22 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                           const Divider(height: 1, color: Color(0xFFE5E7EB)),
                           Padding(
                             padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
-                            child: Row(
-                              children: [
-                                Text(
-                                  '${suppliers.length} to ${suppliers.isEmpty ? 0 : suppliers.length}',
-                                  style: const TextStyle(
-                                    color: Color(0xFF94A3B8),
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const Spacer(),
-                                const Text(
-                                  'Suppliers',
-                                  style: TextStyle(
-                                    color: Color(0xFF94A3B8),
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
+                            child: AppPagination(
+                              page: _currentPage,
+                              pageSize: _pageSize,
+                              total: _totalItems,
+                              totalPages: _totalPages,
+                              onPageChanged: (page) {
+                                setState(() => _currentPage = page);
+                                _loadSuppliers();
+                              },
+                              onPageSizeChanged: (size) {
+                                setState(() {
+                                  _pageSize = size;
+                                  _currentPage = 1;
+                                });
+                                _loadSuppliers();
+                              },
                             ),
                           ),
                         ],
@@ -293,12 +310,16 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
       child: TextField(
         controller: _searchController,
         onChanged: (_) => setState(() {}),
+        onSubmitted: (_) {
+          setState(() => _currentPage = 1);
+          _loadSuppliers();
+        },
         decoration: InputDecoration(
           hintText: 'Search suppliers, contact, phone',
           hintStyle: const TextStyle(
-            color: Color(0xFF94A3B8),
+            color: AppColors.textSecondary,
             fontSize: 14,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w400,
           ),
           prefixIcon: const Icon(Icons.search_rounded, size: 20),
           filled: true,
@@ -317,7 +338,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: Color(0xFF00092A)),
+            borderSide: const BorderSide(color: Color(0xFF0D1F42)),
           ),
         ),
       ),
@@ -327,7 +348,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
   Widget _loadingState() {
     return const Padding(
       padding: EdgeInsets.symmetric(vertical: 56),
-      child: Center(child: CircularProgressIndicator(color: Color(0xFF00092A))),
+      child: Center(child: CircularProgressIndicator(color: Color(0xFF0D1F42))),
     );
   }
 
@@ -353,7 +374,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
       icon: Icon(Icons.add, size: compact ? 16 : 18),
       label: const Text('Add Supplier'),
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF00092A),
+        backgroundColor: const Color(0xFF0D1F42),
         foregroundColor: Colors.white,
         elevation: 0,
         minimumSize: Size(compact ? 0 : 44, compact ? 34 : 44),
@@ -395,7 +416,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFF00092A)),
+          borderSide: const BorderSide(color: Color(0xFF0D1F42)),
         ),
       ),
       items: _categories
@@ -408,7 +429,11 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
           .toList(),
       onChanged: (value) {
         if (value == null) return;
-        setState(() => _selectedCategory = value);
+        setState(() {
+          _selectedCategory = value;
+          _currentPage = 1;
+        });
+        _loadSuppliers();
       },
     );
   }
@@ -680,7 +705,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                       style: const TextStyle(
                         color: Color(0xFF111827),
                         fontSize: 14,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -763,7 +788,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
           style: const TextStyle(
             color: Color(0xFF94A3B8),
             fontSize: 14,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
             letterSpacing: 0.8,
           ),
         ),
@@ -808,7 +833,7 @@ class _TabChip extends StatelessWidget {
               label,
               style: TextStyle(
                 color: selected
-                    ? const Color(0xFF00092A)
+                    ? const Color(0xFF0D1F42)
                     : const Color(0xFF64748B),
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -820,7 +845,7 @@ class _TabChip extends StatelessWidget {
               width: 18,
               height: 3,
               decoration: BoxDecoration(
-                color: selected ? const Color(0xFF00092A) : Colors.transparent,
+                color: selected ? const Color(0xFF0D1F42) : Colors.transparent,
                 borderRadius: BorderRadius.circular(999),
               ),
             ),
@@ -843,7 +868,7 @@ class _TableHead extends StatelessWidget {
       style: const TextStyle(
         color: Color(0xFF94A3B8),
         fontSize: 14,
-        fontWeight: FontWeight.w800,
+        fontWeight: FontWeight.w700,
         letterSpacing: 1.2,
       ),
     );

@@ -700,9 +700,9 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
     return InputDecoration(
       hintText: hintText,
       hintStyle: const TextStyle(
-        color: Color(0xFF9AA3AF),
+        color: AppColors.textSecondary,
         fontSize: 14,
-        fontWeight: FontWeight.w500,
+        fontWeight: FontWeight.w400,
       ),
       filled: true,
       fillColor: const Color(0xFFFBFCFE),
@@ -788,7 +788,7 @@ class _Footer extends StatelessWidget {
             style: FilledButton.styleFrom(
               minimumSize: const Size(132, 48),
               padding: const EdgeInsets.symmetric(horizontal: 12),
-              backgroundColor: const Color(0xFF00092A),
+              backgroundColor: const Color(0xFF0D1F42),
               foregroundColor: Colors.white,
               disabledBackgroundColor: const Color(0xFF9AB99B),
               shape: RoundedRectangleBorder(
@@ -997,7 +997,7 @@ class _Label extends StatelessWidget {
       style: const TextStyle(
         color: Color(0xFF344054),
         fontSize: 14,
-        fontWeight: FontWeight.w800,
+        fontWeight: FontWeight.w700,
       ),
     );
   }

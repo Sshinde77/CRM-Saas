@@ -446,7 +446,7 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
                               : AppColors.textSecondary,
                           fontSize: 14,
                           fontWeight: selected
-                              ? FontWeight.w800
+                              ? FontWeight.w700
                               : FontWeight.w600,
                         ),
                       ),
@@ -674,7 +674,7 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
     const labelStyle = TextStyle(
       color: Color(0xFF8F9AB0),
       fontSize: 14,
-      fontWeight: FontWeight.w800,
+      fontWeight: FontWeight.w700,
       letterSpacing: 1.1,
     );
 
@@ -755,7 +755,7 @@ class _SummaryCard extends StatelessWidget {
             style: const TextStyle(
               color: AppColors.textPrimary,
               fontSize: 16,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -976,7 +976,7 @@ class _StockStatePanel extends StatelessWidget {
             style: const TextStyle(
               color: AppColors.textPrimary,
               fontSize: 14,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
           if (subtitle != null) ...[

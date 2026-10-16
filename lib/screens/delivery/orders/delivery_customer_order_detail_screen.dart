@@ -71,7 +71,7 @@ class _DeliveryCustomerOrderDetailScreenState
           child: Column(
             children: [
               DeliveryTopBar(
-                title: 'Customer Order Details',
+                title: 'Order Detail Page',
                 subtitle: 'Order summary and delivery information',
                 leadingIcon: Icons.arrow_back_rounded,
                 onLeadingTap: () => Navigator.of(context).maybePop(),

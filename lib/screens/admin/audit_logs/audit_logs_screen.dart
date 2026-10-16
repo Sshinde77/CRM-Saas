@@ -140,7 +140,7 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
                 style: TextStyle(
                   color: textPrimary,
                   fontSize: 16,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               SizedBox(height: 4),
@@ -237,7 +237,7 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
                 style: TextStyle(
                   color: accent,
                   fontSize: 16,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],
@@ -348,7 +348,7 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
                         style: TextStyle(
                           color: entry.accent,
                           fontSize: 14,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
@@ -380,7 +380,7 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
                   style: const TextStyle(
                     color: textPrimary,
                     fontSize: 16,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 6),

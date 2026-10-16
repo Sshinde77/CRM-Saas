@@ -13,7 +13,7 @@ import '../../../widgets/admin/admin_top_bar.dart';
 
 const Color kBrandingTitleColor = Color(0xFF0F172A);
 const Color kBrandingMutedColor = Color(0xFF64748B);
-const Color kBrandingAccentColor = Color(0xFF00092A);
+const Color kBrandingAccentColor = Color(0xFF0D1F42);
 const Color kBrandingBorderColor = Color(0xFFD8DFD8);
 
 class BrandingIdentityScreen extends StatefulWidget {
@@ -391,7 +391,7 @@ class _SectionShell extends StatelessWidget {
           style: const TextStyle(
             color: kBrandingTitleColor,
             fontSize: 16,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
           ),
         ),
         const SizedBox(height: 4),
@@ -497,7 +497,7 @@ class _BrandUploadCard extends StatelessWidget {
                   style: const TextStyle(
                     color: kBrandingTitleColor,
                     fontSize: 14,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 4),

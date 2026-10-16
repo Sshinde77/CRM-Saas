@@ -156,7 +156,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           fontSize: 14,
                           fontWeight: item.isRead
                               ? FontWeight.w600
-                              : FontWeight.w800,
+                              : FontWeight.w700,
                         ),
                       ),
                     ),

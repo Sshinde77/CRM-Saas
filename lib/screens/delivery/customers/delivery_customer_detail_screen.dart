@@ -637,7 +637,7 @@ class _ActivityPanel extends StatelessWidget {
                             ? AppColors.deliveryGreen
                             : AppColors.textSecondary,
                         fontSize: 11,
-                        fontWeight: active ? FontWeight.w800 : FontWeight.w600,
+                        fontWeight: active ? FontWeight.w700 : FontWeight.w600,
                       ),
                     ),
                   ),

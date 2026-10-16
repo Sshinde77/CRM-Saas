@@ -125,7 +125,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                 style: TextStyle(
                                   color: textPrimary,
                                   fontSize: 16,
-                                  fontWeight: FontWeight.w800,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                               SizedBox(height: 4),
@@ -350,7 +350,7 @@ class _ReportCard extends StatelessWidget {
                       style: const TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: 16,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -400,7 +400,7 @@ class _ReportCard extends StatelessWidget {
                           style: TextStyle(
                             color: data.accent,
                             fontSize: 14,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ],

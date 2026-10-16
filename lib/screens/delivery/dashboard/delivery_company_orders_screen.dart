@@ -186,9 +186,9 @@ class _FiltersCard extends StatelessWidget {
                 fillColor: const Color(0xFFF8FAFC),
                 hintText: 'Search order number',
                 hintStyle: const TextStyle(
-                  color: AppColors.textMuted,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
+                  color: AppColors.textSecondary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
                 ),
                 prefixIcon: const Icon(
                   Icons.search_rounded,
@@ -362,7 +362,7 @@ class _OrderCard extends StatelessWidget {
                       style: const TextStyle(
                         color: AppColors.deliveryInk,
                         fontSize: 15,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 3),
@@ -482,7 +482,7 @@ class _StatusPill extends StatelessWidget {
         style: TextStyle(
           color: color,
           fontSize: 11,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );
@@ -583,7 +583,7 @@ class _StateCard extends StatelessWidget {
                       style: const TextStyle(
                         color: AppColors.deliveryInk,
                         fontSize: 15,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 5),

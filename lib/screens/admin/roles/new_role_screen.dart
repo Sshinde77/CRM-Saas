@@ -204,7 +204,7 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
                                                   style: TextStyle(
                                                     color: Color(0xFF111827),
                                                     fontSize: 16,
-                                                    fontWeight: FontWeight.w800,
+                                                    fontWeight: FontWeight.w700,
                                                   ),
                                                 ),
                                                 SizedBox(height: 8),
@@ -253,7 +253,7 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
                                               style: TextStyle(
                                                 color: Color(0xFF111827),
                                                 fontSize: 16,
-                                                fontWeight: FontWeight.w800,
+                                                fontWeight: FontWeight.w700,
                                               ),
                                             ),
                                             SizedBox(height: 8),
@@ -303,7 +303,7 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
                                   style: TextStyle(
                                     color: Color(0xFF111827),
                                     fontSize: 14,
-                                    fontWeight: FontWeight.w800,
+                                    fontWeight: FontWeight.w700,
                                   ),
                                 ),
                               ],
@@ -349,7 +349,7 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
                                   icon: const Icon(Icons.add, size: 18),
                                   label: const Text('Create Role'),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF00092A),
+                                    backgroundColor: const Color(0xFF0D1F42),
                                     foregroundColor: Colors.white,
                                     elevation: 0,
                                     padding: const EdgeInsets.symmetric(
@@ -509,7 +509,7 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: const BorderSide(
-                color: Color(0xFF00092A),
+                color: Color(0xFF0D1F42),
                 width: 1.2,
               ),
             ),
@@ -553,7 +553,7 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: const BorderSide(
-                color: Color(0xFF00092A),
+                color: Color(0xFF0D1F42),
                 width: 1.2,
               ),
             ),
@@ -607,7 +607,7 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
               style: TextStyle(
                 color: Color(0xFF94A3B8),
                 fontSize: 14,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 letterSpacing: 0.9,
               ),
             ),
@@ -620,7 +620,7 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
                 style: TextStyle(
                   color: Color(0xFF94A3B8),
                   fontSize: 14,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   letterSpacing: 0.9,
                 ),
               ),
@@ -638,7 +638,7 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
                     style: const TextStyle(
                       color: Color(0xFF94A3B8),
                       fontSize: 14,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       letterSpacing: 0.8,
                     ),
                   ),
@@ -681,7 +681,7 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
                 value: _allSelectionValue(module),
                 tristate: true,
                 onChanged: (value) => _toggleAll(module, value),
-                activeColor: const Color(0xFF00092A),
+                activeColor: const Color(0xFF0D1F42),
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 visualDensity: VisualDensity.compact,
               ),
@@ -696,7 +696,7 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
                       _modulePermissions[module]?.contains(permission) ?? false,
                   onChanged: (value) =>
                       _togglePermission(module, permission, value),
-                  activeColor: const Color(0xFF00092A),
+                  activeColor: const Color(0xFF0D1F42),
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   visualDensity: VisualDensity.compact,
                 ),

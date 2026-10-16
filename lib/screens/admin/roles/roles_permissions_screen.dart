@@ -151,7 +151,7 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
                                         style: TextStyle(
                                           color: Color(0xFF111827),
                                           fontSize: 16,
-                                          fontWeight: FontWeight.w800,
+                                          fontWeight: FontWeight.w700,
                                         ),
                                       ),
                                       const SizedBox(height: 8),
@@ -187,7 +187,7 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
                                               style: TextStyle(
                                                 color: Color(0xFF111827),
                                                 fontSize: 16,
-                                                fontWeight: FontWeight.w800,
+                                                fontWeight: FontWeight.w700,
                                               ),
                                             ),
                                             SizedBox(height: 8),
@@ -281,7 +281,7 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
         icon: Icon(Icons.add, size: compact ? 16 : 17),
         label: const Text('New Role'),
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF00092A),
+          backgroundColor: const Color(0xFF0D1F42),
           foregroundColor: Colors.white,
           elevation: 0,
           padding: EdgeInsets.symmetric(horizontal: compact ? 14 : 16),
@@ -309,9 +309,9 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
         decoration: InputDecoration(
           hintText: 'Search roles',
           hintStyle: const TextStyle(
-            color: Color(0xFF94A3B8),
+            color: AppColors.textSecondary,
             fontSize: 14,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w400,
           ),
           prefixIcon: const Icon(Icons.search_rounded, size: 20),
           prefixIconConstraints: const BoxConstraints(minWidth: 44),
@@ -331,7 +331,7 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: Color(0xFF00092A), width: 1.2),
+            borderSide: const BorderSide(color: Color(0xFF0D1F42), width: 1.2),
           ),
         ),
       ),
@@ -419,7 +419,7 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
                                     style: const TextStyle(
                                       color: Color(0xFF111827),
                                       fontSize: 14,
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
                                 ),
@@ -516,7 +516,7 @@ class _RoleRow extends StatelessWidget {
                     style: const TextStyle(
                       color: Color(0xFF111827),
                       fontSize: 14,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
@@ -571,7 +571,7 @@ class _DefaultPill extends StatelessWidget {
       child: const Text(
         'Default',
         style: TextStyle(
-          color: Color(0xFF00092A),
+          color: Color(0xFF0D1F42),
           fontSize: 14,
           fontWeight: FontWeight.w700,
         ),
@@ -592,7 +592,7 @@ class _HeaderLabel extends StatelessWidget {
       style: const TextStyle(
         color: Color(0xFF94A3B8),
         fontSize: 14,
-        fontWeight: FontWeight.w800,
+        fontWeight: FontWeight.w700,
         letterSpacing: 0.9,
       ),
     );

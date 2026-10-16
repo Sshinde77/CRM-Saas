@@ -148,7 +148,7 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
               const Expanded(
                 child: Text(
                   'Voice customer details',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
                 ),
               ),
               IconButton(

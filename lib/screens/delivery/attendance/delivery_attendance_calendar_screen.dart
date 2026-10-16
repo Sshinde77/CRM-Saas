@@ -179,7 +179,7 @@ class _CalendarCard extends StatelessWidget {
                       style: const TextStyle(
                         color: AppColors.deliveryInk,
                         fontSize: 18,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -302,7 +302,7 @@ class _CalendarDayCell extends StatelessWidget {
             style: TextStyle(
               color: inMonth ? color : AppColors.textLightMuted,
               fontSize: 13,
-              fontWeight: selected ? FontWeight.w900 : FontWeight.w700,
+              fontWeight: selected ? FontWeight.w700 : FontWeight.w700,
             ),
           ),
         ),
@@ -350,7 +350,7 @@ class _MonthlyAttendanceSummary extends StatelessWidget {
             style: const TextStyle(
               color: AppColors.deliveryInk,
               fontSize: 14,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 8),
@@ -440,7 +440,7 @@ class _MonthlyMetricCard extends StatelessWidget {
                       color: color,
                       fontSize: 14,
                       height: 1.1,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -506,7 +506,7 @@ class _DayDetailsCard extends StatelessWidget {
                       style: const TextStyle(
                         color: AppColors.deliveryInk,
                         fontSize: 16,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -611,7 +611,7 @@ class _DetailRow extends StatelessWidget {
                   ? AppColors.textMuted
                   : AppColors.deliveryInk,
               fontSize: 13,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -640,7 +640,7 @@ class _StatusPill extends StatelessWidget {
         style: TextStyle(
           color: color,
           fontSize: 12,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );
@@ -685,7 +685,7 @@ class _WeekdayCell extends StatelessWidget {
         style: const TextStyle(
           color: AppColors.textMuted,
           fontSize: 11,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );

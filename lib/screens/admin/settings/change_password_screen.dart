@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../core/theme/app_text_styles.dart';
 import '../../../models/auth_models.dart';
 import '../../../services/api_service.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
@@ -17,7 +18,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   static const Color _mutedColor = Color(0xFF64748B);
   static const Color _borderColor = Color(0xFFDDE3EA);
   static const Color _fieldBg = Colors.white;
-  static const Color _accent = Color(0xFF00092A);
+  static const Color _accent = Color(0xFF0D1F42);
 
   final ApiService _apiService = ApiService();
   final TextEditingController _currentPasswordController =
@@ -255,6 +256,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               ? RichText(
                   text: TextSpan(
                     style: const TextStyle(
+                      fontFamily: AppTextStyles.fontFamily,
                       color: _titleColor,
                       fontSize: 14,
                       fontWeight: FontWeight.w700,

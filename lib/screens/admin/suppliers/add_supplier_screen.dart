@@ -105,7 +105,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
                               style: TextStyle(
                                 color: Color(0xFF111827),
                                 fontSize: 16,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                             SizedBox(height: 8),
@@ -242,7 +242,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
                             ElevatedButton(
                               onPressed: _saveSupplier,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF00092A),
+                                backgroundColor: const Color(0xFF0D1F42),
                                 foregroundColor: Colors.white,
                                 elevation: 0,
                                 padding: const EdgeInsets.symmetric(
@@ -276,7 +276,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
           width: 28,
           height: 28,
           decoration: const BoxDecoration(
-            color: Color(0xFF00092A),
+            color: Color(0xFF0D1F42),
             shape: BoxShape.circle,
           ),
           alignment: Alignment.center,
@@ -285,7 +285,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
             style: const TextStyle(
               color: Colors.white,
               fontSize: 14,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),
@@ -295,7 +295,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
           style: const TextStyle(
             color: Color(0xFF111827),
             fontSize: 14,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ],
@@ -343,7 +343,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF00092A)),
+              borderSide: const BorderSide(color: Color(0xFF0D1F42)),
             ),
           ),
         ),
@@ -393,7 +393,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF00092A)),
+              borderSide: const BorderSide(color: Color(0xFF0D1F42)),
             ),
           ),
           items: items

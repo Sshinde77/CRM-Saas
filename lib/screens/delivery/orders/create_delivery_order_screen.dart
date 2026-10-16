@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../core/theme/app_text_styles.dart';
 import '../../../models/customer_model.dart';
 import '../../../models/app_user.dart';
 import '../../../models/auth_models.dart';
@@ -558,7 +559,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                       _money(_total),
                       style: const TextStyle(
                         color: _green,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ],
@@ -1279,13 +1280,14 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                   RichText(
                     text: TextSpan(
                       style: const TextStyle(
+                        fontFamily: AppTextStyles.fontFamily,
                         color: AppColors.textPrimary,
                         fontSize: 14,
                       ),
                       children: [
                         TextSpan(
                           text: _money(_unitPrice(p)),
-                          style: const TextStyle(fontWeight: FontWeight.w800),
+                          style: const TextStyle(fontWeight: FontWeight.w700),
                         ),
                         TextSpan(
                           text: ' / ${p.unit}',
@@ -1426,7 +1428,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
             title,
             style: TextStyle(
               fontSize: 14,
-              fontWeight: bold ? FontWeight.w800 : FontWeight.w500,
+              fontWeight: bold ? FontWeight.w700 : FontWeight.w500,
             ),
           ),
         ),
@@ -1436,7 +1438,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
           style: TextStyle(
             fontSize: 14,
             color: bold ? _green : null,
-            fontWeight: bold ? FontWeight.w800 : FontWeight.w600,
+            fontWeight: bold ? FontWeight.w700 : FontWeight.w600,
           ),
         ),
       ],
@@ -1466,7 +1468,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
       text,
       style: const TextStyle(
         fontSize: 14,
-        fontWeight: FontWeight.w800,
+        fontWeight: FontWeight.w700,
         color: AppColors.deliveryDashboardHeaderEnd,
       ),
     ),
@@ -2009,7 +2011,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                         style: TextStyle(
                           color: _header,
                           fontSize: 16,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                       if (_error != null) ...[
@@ -2038,7 +2040,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                                     widget.customer.name,
                                     style: const TextStyle(
                                       fontSize: 16,
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
                                   if (address != null && address.isNotEmpty)
@@ -2075,7 +2077,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                                       style: TextStyle(
                                         color: AppColors.primary,
                                         fontSize: 16,
-                                        fontWeight: FontWeight.w800,
+                                        fontWeight: FontWeight.w700,
                                       ),
                                     ),
                                   ),
@@ -2302,7 +2304,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
             label,
             style: TextStyle(
               color: color ?? AppColors.textPrimary,
-              fontWeight: strong ? FontWeight.w800 : FontWeight.w500,
+              fontWeight: strong ? FontWeight.w700 : FontWeight.w500,
             ),
           ),
         ),
@@ -2315,7 +2317,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
               textAlign: TextAlign.right,
               style: TextStyle(
                 color: color ?? AppColors.textPrimary,
-                fontWeight: strong ? FontWeight.w800 : FontWeight.w500,
+                fontWeight: strong ? FontWeight.w700 : FontWeight.w500,
               ),
             ),
           ),
@@ -2348,7 +2350,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
             textAlign: TextAlign.right,
             style: TextStyle(
               color: color ?? AppColors.textPrimary,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),
@@ -2625,7 +2627,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                       style: const TextStyle(
                         color: _green,
                         fontSize: 12,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -2651,7 +2653,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                       '${item.quantity}',
                       style: const TextStyle(
                         fontSize: 13,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),

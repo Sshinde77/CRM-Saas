@@ -131,7 +131,11 @@ class _DeliveryPartnerSearchDialogState
                   ),
                   hintText:
                       'Search by name, email, employee ID or phone number...',
-                  hintStyle: const TextStyle(color: _muted, fontSize: 13),
+                  hintStyle: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                  ),
                   prefixIcon: const Icon(Icons.search, color: _muted),
                   suffixIcon: IconButton(
                     tooltip: 'Search by voice',
@@ -305,7 +309,7 @@ class _PartnerAvatar extends StatelessWidget {
         style: TextStyle(
           color: _DeliveryPartnerSearchDialogState._accent,
           fontSize: size >= 64 ? 22 : 14,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );

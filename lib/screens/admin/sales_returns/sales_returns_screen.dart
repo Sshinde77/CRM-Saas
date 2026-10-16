@@ -286,9 +286,9 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
           prefixIcon: const Icon(Icons.search_rounded, size: 20),
           hintText: 'Search sales returns',
           hintStyle: const TextStyle(
-            color: Color(0xFF94A3B8),
+            color: AppColors.textSecondary,
             fontSize: 14,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w400,
           ),
           filled: true,
           fillColor: Colors.white,
@@ -306,7 +306,7 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: Color(0xFF00092A)),
+            borderSide: const BorderSide(color: Color(0xFF0D1F42)),
           ),
         ),
       ),
@@ -365,7 +365,7 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
                           ? AppColors.primary
                           : const Color(0xFF475569),
                       fontWeight: status == 'All status'
-                          ? FontWeight.w800
+                          ? FontWeight.w700
                           : FontWeight.w500,
                     ),
                   ),
@@ -387,7 +387,7 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
       icon: Icon(Icons.add_rounded, size: compact ? 18 : 20),
       label: const Text('New Return'),
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF00092A),
+        backgroundColor: const Color(0xFF0D1F42),
         foregroundColor: Colors.white,
         elevation: 8,
         shadowColor: const Color(0x330B4A06),
@@ -463,7 +463,7 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
                   style: const TextStyle(
                     color: textPrimary,
                     fontSize: 14,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 3),

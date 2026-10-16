@@ -353,7 +353,7 @@ class _EndOfDayProgress extends StatelessWidget {
                         color: AppColors.deliveryInk,
                         fontSize: 16,
                         height: 1.15,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 3),
@@ -448,7 +448,7 @@ class _EndOfDayMetric extends StatelessWidget {
               color: color,
               fontSize: 14,
               height: 1,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 4),
@@ -517,7 +517,7 @@ class _StepPill extends StatelessWidget {
         style: const TextStyle(
           color: AppColors.deliveryGreen,
           fontSize: 11,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );
@@ -546,7 +546,7 @@ class _StepDot extends StatelessWidget {
           style: TextStyle(
             color: color,
             fontSize: 10.5,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ],

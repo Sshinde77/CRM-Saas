@@ -169,7 +169,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 16,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                             color: headingText,
                           ),
                         ),
@@ -641,7 +641,7 @@ class _SocialCircleButton extends StatelessWidget {
                   label!,
                   style: const TextStyle(
                     color: _LoginScreenState.headingText,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     fontSize: 14,
                   ),
                 )

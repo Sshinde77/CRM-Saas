@@ -14,7 +14,7 @@ import '../../../widgets/admin/admin_top_bar.dart';
 
 const Color kGeneralInfoTitleColor = Color(0xFF0F172A);
 const Color kGeneralInfoMutedColor = Color(0xFF64748B);
-const Color kGeneralInfoAccentColor = Color(0xFF00092A);
+const Color kGeneralInfoAccentColor = Color(0xFF0D1F42);
 
 class GeneralInformationScreen extends StatefulWidget {
   const GeneralInformationScreen({super.key});
@@ -246,7 +246,7 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
                   style: const TextStyle(
                     color: kGeneralInfoTitleColor,
                     fontSize: 16,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -1274,7 +1274,7 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
                       style: const TextStyle(
                         color: kGeneralInfoTitleColor,
                         fontSize: 14,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     if (subtitle.trim().isNotEmpty) ...[
@@ -1395,7 +1395,7 @@ class _GeneralInfoSectionCard extends StatelessWidget {
                     width: 30,
                     height: 30,
                     decoration: const BoxDecoration(
-                      color: Color(0xFF00092A),
+                      color: Color(0xFF0D1F42),
                       shape: BoxShape.circle,
                     ),
                     alignment: Alignment.center,
@@ -1404,7 +1404,7 @@ class _GeneralInfoSectionCard extends StatelessWidget {
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 14,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -1418,7 +1418,7 @@ class _GeneralInfoSectionCard extends StatelessWidget {
                           style: const TextStyle(
                             color: kGeneralInfoTitleColor,
                             fontSize: 16,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                         const SizedBox(height: 2),

@@ -76,10 +76,7 @@ class _DeliveryAttendanceScreenState extends State<DeliveryAttendanceScreen> {
       key: _scaffoldKey,
       backgroundColor: const Color(0xFFF8FAF9),
       drawer: useSalesManagerShell
-          ? buildSalesManagerDrawer(
-              context: context,
-              currentPage: 'Attendance',
-            )
+          ? buildSalesManagerDrawer(context: context, currentPage: 'Attendance')
           : const DeliveryPartnerSidebar(
               currentRoute: AppRoutes.deliveryAttendance,
             ),
@@ -351,7 +348,7 @@ class _OnDutyStatus extends StatelessWidget {
                   style: TextStyle(
                     color: AppColors.deliveryGreen,
                     fontSize: 15,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
@@ -362,7 +359,7 @@ class _OnDutyStatus extends StatelessWidget {
             style: const TextStyle(
               color: AppColors.deliveryInk,
               fontSize: 13,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(width: 8),
@@ -434,7 +431,7 @@ class _CheckpointActionButton extends StatelessWidget {
             disabledForegroundColor: color,
             textStyle: const TextStyle(
               fontSize: 14,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -480,7 +477,7 @@ class _CheckpointActionButton extends StatelessWidget {
                           color: AppColors.deliveryInk,
                           fontSize: 13,
                           height: 1.1,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
@@ -514,7 +511,7 @@ class _CheckpointActionButton extends StatelessWidget {
                     style: const TextStyle(
                       color: AppColors.deliveryInk,
                       fontSize: 14,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
@@ -682,7 +679,7 @@ class _MonthlyAttendanceSummary extends StatelessWidget {
             style: const TextStyle(
               color: AppColors.deliveryInk,
               fontSize: 14,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 8),
@@ -774,7 +771,7 @@ class _MonthlyAttendanceMetric extends StatelessWidget {
                       color: color,
                       fontSize: 14,
                       height: 1.1,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -958,7 +955,7 @@ class _HistoryRow extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     fontSize: 12,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.deliveryInk,
                   ),
                 ),
@@ -1023,7 +1020,7 @@ class _CardTitle extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 16,
                   height: 1.2,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.deliveryInk,
                 ),
               ),
@@ -1126,7 +1123,7 @@ class _HistoryMessage extends StatelessWidget {
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 14,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w700,
                 color: AppColors.deliveryInk,
               ),
             ),

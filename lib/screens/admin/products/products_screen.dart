@@ -5,6 +5,7 @@ import '../../../providers/api_provider.dart';
 import '../../../utils/product_image_url.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
+import '../../../widgets/app_pagination.dart';
 
 class ProductsScreen extends StatefulWidget {
   const ProductsScreen({super.key});
@@ -25,6 +26,9 @@ class _ProductsScreenState extends State<ProductsScreen> {
   String _selectedBrand = 'All Brands';
   String _sortBy = 'Latest';
   int _currentPage = 1;
+  int _pageSize = 10;
+  int _totalItems = 0;
+  int _totalPages = 0;
   late ApiProvider _apiProvider;
   bool _providerReady = false;
   bool _isLoading = true;
@@ -165,14 +169,18 @@ class _ProductsScreenState extends State<ProductsScreen> {
       _errorMessage = null;
     });
     try {
+      final pageResult = await _apiProvider.fetchPaginatedProducts(
+        page: _currentPage,
+        pageSize: _pageSize,
+        search: _query.trim().isEmpty ? null : _query.trim(),
+      );
       final results = await Future.wait([
-        _apiProvider.fetchProducts(),
         _apiProvider.fetchCategories(),
         _apiProvider.fetchBrands(),
       ]);
-      final products = results[0].map(_ProductItem.fromJson).toList();
+      final products = pageResult.items.map(_ProductItem.fromJson).toList();
       final categories =
-          results[1]
+          results[0]
               .map(
                 (item) => _productText(item, const ['name', 'category_name']),
               )
@@ -181,7 +189,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
               .toList()
             ..sort();
       final brands =
-          results[2]
+          results[1]
               .map((item) => _productText(item, const ['name']))
               .where((value) => value.trim().isNotEmpty)
               .toSet()
@@ -190,6 +198,10 @@ class _ProductsScreenState extends State<ProductsScreen> {
       if (!mounted) return;
       setState(() {
         _products = products;
+        _currentPage = pageResult.page;
+        _pageSize = pageResult.pageSize;
+        _totalItems = pageResult.total;
+        _totalPages = pageResult.totalPages;
         _categories = ['All Categories', ...categories];
         _brands = ['All Brands', ...brands];
         if (!_categories.contains(_selectedCategory)) {
@@ -317,7 +329,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                       style: const TextStyle(
                         color: textPrimary,
                         fontSize: 16,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -457,7 +469,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
             ),
             textStyle: const TextStyle(
               fontSize: 14,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),
@@ -471,10 +483,14 @@ class _ProductsScreenState extends State<ProductsScreen> {
         Expanded(
           child: TextField(
             controller: _searchController,
-            onChanged: (value) => setState(() {
-              _query = value;
-              _currentPage = 1;
-            }),
+            onChanged: (value) => setState(() => _query = value),
+            onSubmitted: (value) {
+              setState(() {
+                _query = value.trim();
+                _currentPage = 1;
+              });
+              _loadProducts();
+            },
             style: const TextStyle(color: textPrimary, fontSize: 14),
             decoration: InputDecoration(
               hintText: 'Search products...',
@@ -528,7 +544,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                   color: AppColors.primary,
                   fontSize: 16,
                   height: 1,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],
@@ -571,7 +587,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
               style: const TextStyle(
                 color: textPrimary,
                 fontSize: 14,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
               ),
               items: _sortOptions
                   .map(
@@ -633,7 +649,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                               style: const TextStyle(
                                 color: textPrimary,
                                 fontSize: 16,
-                                fontWeight: FontWeight.w900,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
@@ -647,7 +663,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                         style: const TextStyle(
                           color: AppColors.primary,
                           fontSize: 16,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                       const SizedBox(height: 9),
@@ -681,7 +697,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                                   style: TextStyle(
                                     color: statusColor,
                                     fontSize: 16,
-                                    fontWeight: FontWeight.w900,
+                                    fontWeight: FontWeight.w700,
                                   ),
                                 ),
                               ],
@@ -842,7 +858,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
         style: TextStyle(
           color: color,
           fontSize: 14,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );
@@ -903,84 +919,27 @@ class _ProductsScreenState extends State<ProductsScreen> {
   }
 
   Widget _buildPagination() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _pageButton(
-          Icons.chevron_left_rounded,
-          onTap: () => _setPage(_currentPage - 1),
-        ),
-        const SizedBox(width: 10),
-        _pageNumber(1),
-        const SizedBox(width: 10),
-        _pageNumber(2),
-        const SizedBox(width: 10),
-        _pageNumber(3),
-        const SizedBox(width: 14),
-        const Text(
-          '...',
-          style: TextStyle(color: textPrimary, fontWeight: FontWeight.w800),
-        ),
-        const SizedBox(width: 14),
-        _pageNumber(5),
-        const SizedBox(width: 10),
-        _pageButton(
-          Icons.chevron_right_rounded,
-          onTap: () => _setPage(_currentPage + 1),
-        ),
-      ],
-    );
-  }
-
-  Widget _pageNumber(int page) {
-    final selected = _currentPage == page;
-    return InkWell(
-      onTap: () => _setPage(page),
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        width: 40,
-        height: 40,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: selected ? AppColors.primary : AppColors.surface,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: selected ? AppColors.primary : AppColors.border,
-          ),
-        ),
-        child: Text(
-          '$page',
-          style: TextStyle(
-            color: selected ? Colors.white : textPrimary,
-            fontSize: 14,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _pageButton(IconData icon, {required VoidCallback onTap}) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        width: 40,
-        height: 40,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColors.border),
-        ),
-        child: Icon(icon, color: textPrimary, size: 22),
-      ),
+    return AppPagination(
+      page: _currentPage,
+      pageSize: _pageSize,
+      total: _totalItems,
+      totalPages: _totalPages,
+      isLoading: _isLoading,
+      onPageChanged: _setPage,
+      onPageSizeChanged: (size) {
+        setState(() {
+          _pageSize = size;
+          _currentPage = 1;
+        });
+        _loadProducts();
+      },
     );
   }
 
   void _setPage(int page) {
-    if (page < 1 || page > 5) return;
+    if (page < 1 || page > _totalPages || page == _currentPage) return;
     setState(() => _currentPage = page);
+    _loadProducts();
   }
 
   void _openFiltersSheet() {
@@ -1004,7 +963,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                     style: TextStyle(
                       color: textPrimary,
                       fontSize: 16,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 18),
@@ -1473,7 +1432,7 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
                       style: const TextStyle(
                         color: textPrimary,
                         fontSize: 16,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),

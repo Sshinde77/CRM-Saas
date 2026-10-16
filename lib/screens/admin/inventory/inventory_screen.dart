@@ -284,7 +284,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                       style: TextStyle(
                         color: textPrimary,
                         fontSize: 16,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 4),

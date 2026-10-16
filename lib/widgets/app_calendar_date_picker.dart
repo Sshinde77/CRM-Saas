@@ -113,7 +113,7 @@ class _AppCalendarDatePickerState extends State<AppCalendarDatePicker> {
                       style: const TextStyle(
                         color: AppColors.deliveryInk,
                         fontSize: 16,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -196,7 +196,7 @@ class _AppCalendarDatePickerState extends State<AppCalendarDatePicker> {
                       },
                 child: const Text(
                   'Today',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
                 ),
               ),
               const Spacer(),
@@ -217,7 +217,7 @@ class _AppCalendarDatePickerState extends State<AppCalendarDatePicker> {
                   padding: const EdgeInsets.symmetric(horizontal: 14),
                   textStyle: const TextStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppSizes.pillRadius),
@@ -292,7 +292,7 @@ class _DateCell extends StatelessWidget {
             style: TextStyle(
               color: textColor,
               fontSize: 13,
-              fontWeight: selected ? FontWeight.w900 : FontWeight.w700,
+              fontWeight: selected ? FontWeight.w700 : FontWeight.w700,
             ),
           ),
         ),
@@ -348,7 +348,7 @@ class _WeekdayCell extends StatelessWidget {
         style: const TextStyle(
           color: AppColors.textMuted,
           fontSize: 11,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );

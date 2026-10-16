@@ -200,6 +200,22 @@ class ApiProvider extends ChangeNotifier {
     }
   }
 
+  Future<PaginatedResult<CustomerModel>> fetchPaginatedCustomers({
+    int page = 1,
+    int pageSize = 10,
+    String? search,
+    String? category,
+    bool? isActive,
+    String? assignedSalesOfficerId,
+  }) => _apiService.fetchPaginatedCustomers(
+    page: page,
+    pageSize: pageSize,
+    search: search,
+    category: category,
+    isActive: isActive,
+    assignedSalesOfficerId: assignedSalesOfficerId,
+  );
+
   Future<List<Map<String, dynamic>>> fetchLeads({String? status}) {
     return _apiService.fetchLeads(status: status);
   }
@@ -640,6 +656,20 @@ class ApiProvider extends ChangeNotifier {
     );
   }
 
+  Future<PaginatedResult<Map<String, dynamic>>> fetchPaginatedSuppliers({
+    int page = 1,
+    int pageSize = 10,
+    String? search,
+    String? category,
+    bool? isActive,
+  }) => _apiService.fetchPaginatedSuppliers(
+    page: page,
+    pageSize: pageSize,
+    search: search,
+    category: category,
+    isActive: isActive,
+  );
+
   Future<List<Map<String, dynamic>>> fetchCategories({String? search}) {
     return _apiService.fetchCategories(search: search);
   }
@@ -655,6 +685,24 @@ class ApiProvider extends ChangeNotifier {
     String? barcode,
   }) {
     return _apiService.fetchProducts(
+      search: search,
+      categoryId: categoryId,
+      isActive: isActive,
+      barcode: barcode,
+    );
+  }
+
+  Future<PaginatedResult<Map<String, dynamic>>> fetchPaginatedProducts({
+    int page = 1,
+    int pageSize = 10,
+    String? search,
+    String? categoryId,
+    bool? isActive,
+    String? barcode,
+  }) {
+    return _apiService.fetchPaginatedProducts(
+      page: page,
+      pageSize: pageSize,
       search: search,
       categoryId: categoryId,
       isActive: isActive,

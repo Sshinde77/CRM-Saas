@@ -6,6 +6,7 @@ import '../../screens/delivery/customers/delivery_customers_screen.dart';
 import '../../screens/delivery/deliveries/assigned_deliveries_screen.dart';
 import '../../screens/delivery/expenses/delivery_expenses_screen.dart';
 import '../../screens/delivery/leaves/delivery_leaves_screen.dart';
+import '../sidebar_logout_button.dart';
 
 class SalesManagerSidebarDrawer extends StatelessWidget {
   final ValueChanged<String> onSelect;
@@ -41,7 +42,6 @@ class SalesManagerSidebar extends StatelessWidget {
     final items = <_SidebarItem>[
       const _SidebarItem('Dashboard', Icons.dashboard_outlined),
       const _SidebarItem('Customers', Icons.groups_outlined),
-      const _SidebarItem('Deliveries', Icons.local_shipping_outlined),
       const _SidebarItem('Leads', Icons.person_add_alt_1_outlined),
       const _SidebarItem('Quotations', Icons.description_outlined),
       const _SidebarItem(
@@ -77,7 +77,7 @@ class SalesManagerSidebar extends StatelessWidget {
                 style: TextStyle(
                   color: AppColors.textSecondary.withValues(alpha: 0.72),
                   fontSize: 14,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   letterSpacing: 1.2,
                 ),
               ),
@@ -96,10 +96,8 @@ class SalesManagerSidebar extends StatelessWidget {
                     color: Colors.transparent,
                     child: InkWell(
                       borderRadius: BorderRadius.circular(18),
-                      onTap: () => _handleTap(
-                        context,
-                        item.actionLabel ?? item.label,
-                      ),
+                      onTap: () =>
+                          _handleTap(context, item.actionLabel ?? item.label),
                       child: Ink(
                         decoration: BoxDecoration(
                           color: selected
@@ -151,7 +149,7 @@ class SalesManagerSidebar extends StatelessWidget {
                                         : AppColors.textSecondary,
                                     fontSize: 14,
                                     fontWeight: selected
-                                        ? FontWeight.w800
+                                        ? FontWeight.w700
                                         : FontWeight.w600,
                                   ),
                                 ),
@@ -165,6 +163,8 @@ class SalesManagerSidebar extends StatelessWidget {
                 },
               ),
             ),
+            const Divider(height: 1, color: AppColors.border),
+            const SidebarLogoutButton(),
           ],
         ),
       ),
@@ -187,9 +187,9 @@ class SalesManagerSidebar extends StatelessWidget {
     }
 
     Navigator.of(context).pop();
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => sharedDeliveryScreen),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => sharedDeliveryScreen));
   }
 
   bool _isSelected(_SidebarItem item, String currentPage) {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../core/theme/app_text_styles.dart';
 import '../../../models/auth_models.dart';
 import '../../../models/plan_model.dart';
 import '../../../services/api_service.dart';
@@ -165,7 +166,7 @@ class _PlansScreenState extends State<PlansScreen> {
                               'Upgrade Plan',
                               style: TextStyle(
                                 fontSize: 14,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
@@ -301,7 +302,7 @@ class _PlansScreenState extends State<PlansScreen> {
             style: const TextStyle(
               color: AppColors.textPrimary,
               fontSize: 16,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               height: 1.1,
             ),
           ),
@@ -375,7 +376,7 @@ class _PlansScreenState extends State<PlansScreen> {
                       style: const TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: 16,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     Container(
@@ -413,6 +414,7 @@ class _PlansScreenState extends State<PlansScreen> {
                 RichText(
                   text: TextSpan(
                     style: const TextStyle(
+                      fontFamily: AppTextStyles.fontFamily,
                       color: AppColors.textSecondary,
                       fontSize: 14,
                     ),
@@ -421,7 +423,7 @@ class _PlansScreenState extends State<PlansScreen> {
                         text: _formatCyclePrice(currentPlan),
                         style: const TextStyle(
                           color: AppColors.statusActiveText,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                           fontSize: 14,
                         ),
                       ),
@@ -578,7 +580,7 @@ class _PlansScreenState extends State<PlansScreen> {
                 style: const TextStyle(
                   color: AppColors.statusActiveText,
                   fontSize: 14,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
@@ -589,7 +591,7 @@ class _PlansScreenState extends State<PlansScreen> {
             style: const TextStyle(
               color: AppColors.textPrimary,
               fontSize: 16,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 4),
@@ -619,7 +621,7 @@ class _PlansScreenState extends State<PlansScreen> {
                 style: const TextStyle(
                   color: AppColors.statusActiveText,
                   fontSize: 16,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               Text(
@@ -668,7 +670,7 @@ class _PlansScreenState extends State<PlansScreen> {
                       style: const TextStyle(
                         color: AppColors.statusActiveText,
                         fontSize: 14,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ],

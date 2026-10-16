@@ -153,7 +153,7 @@ class _DeliveryLeavesScreenState extends State<DeliveryLeavesScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
+              Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
               const SizedBox(height: 2),
               Text(message),
             ],
@@ -209,7 +209,7 @@ class _DeliveryLeavesScreenState extends State<DeliveryLeavesScreen> {
             icon: const Icon(Icons.add_rounded, size: 20),
             label: const Text(
               'Apply Leave',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
             ),
           ),
         ),
@@ -377,7 +377,7 @@ class _SummaryTile extends StatelessWidget {
                     color: AppColors.deliveryInk,
                     fontSize: 16,
                     height: 1.1,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 3),
@@ -462,7 +462,7 @@ class _FilterPill extends StatelessWidget {
             style: TextStyle(
               color: selected ? AppColors.surface : AppColors.deliveryInk,
               fontSize: 11,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),
@@ -506,7 +506,7 @@ class _LeavesPanel extends StatelessWidget {
               style: TextStyle(
                 color: AppColors.deliveryInk,
                 fontSize: 18,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(width: 8),
@@ -521,7 +521,7 @@ class _LeavesPanel extends StatelessWidget {
                 style: const TextStyle(
                   color: AppColors.deliveryGreen,
                   fontSize: 11,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
@@ -609,7 +609,7 @@ class _LeavesTable extends StatelessWidget {
         headingTextStyle: const TextStyle(
           color: AppColors.textMuted,
           fontSize: 11,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
         ),
         dataTextStyle: const TextStyle(
           color: AppColors.deliveryInk,
@@ -732,7 +732,7 @@ class _LeaveCard extends StatelessWidget {
                             style: const TextStyle(
                               color: AppColors.deliveryInk,
                               fontSize: 13,
-                              fontWeight: FontWeight.w900,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                           const SizedBox(height: 3),
@@ -850,7 +850,7 @@ class _LeaveCard extends StatelessWidget {
                               'Cancel',
                               style: TextStyle(
                                 fontSize: 12,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
@@ -907,7 +907,7 @@ class _CardFact extends StatelessWidget {
               style: const TextStyle(
                 color: AppColors.deliveryInk,
                 fontSize: 11.5,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],
@@ -1125,7 +1125,7 @@ class _ApplyLeaveSheetState extends State<_ApplyLeaveSheet> {
                     style: TextStyle(
                       color: AppColors.deliveryInk,
                       fontSize: 18,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -1361,7 +1361,7 @@ class _LeaveDetailsDialog extends StatelessWidget {
                         style: TextStyle(
                           color: AppColors.deliveryInk,
                           fontSize: 20,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
@@ -1435,7 +1435,7 @@ class _LeaveDetailsDialog extends StatelessWidget {
                       ),
                       textStyle: const TextStyle(
                         fontSize: 14,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     child: const Text('Close'),
@@ -1551,7 +1551,7 @@ class _StatusBadge extends StatelessWidget {
             style: TextStyle(
               color: tone.foreground,
               fontSize: 11,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -1588,7 +1588,7 @@ class _InlineMetric extends StatelessWidget {
           style: const TextStyle(
             color: AppColors.deliveryInk,
             fontSize: 12,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ],
@@ -1612,7 +1612,7 @@ class _SectionHeader extends StatelessWidget {
           title,
           style: const TextStyle(
             fontSize: 14,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
             color: AppColors.deliveryInk,
           ),
         ),
@@ -1717,7 +1717,7 @@ class _ErrorState extends StatelessWidget {
             style: TextStyle(
               color: AppColors.deliveryInk,
               fontSize: 16,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 6),
@@ -1774,7 +1774,7 @@ class _EmptyState extends StatelessWidget {
               style: const TextStyle(
                 color: AppColors.deliveryInk,
                 fontSize: 16,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 6),

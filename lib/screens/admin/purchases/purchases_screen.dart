@@ -185,7 +185,7 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                                 style: TextStyle(
                                   color: textPrimary,
                                   fontSize: 16,
-                                  fontWeight: FontWeight.w800,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                               SizedBox(height: 4),
@@ -298,7 +298,7 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                       style: const TextStyle(
                         color: textPrimary,
                         fontSize: 14,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -371,7 +371,7 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                         style: const TextStyle(
                           color: AppColors.purple,
                           fontSize: 16,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ],
@@ -406,7 +406,7 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                         style: const TextStyle(
                           color: AppColors.green,
                           fontSize: 16,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ],
@@ -648,7 +648,7 @@ class _PurchaseInvoiceFormDialogState
                       style: const TextStyle(
                         color: textPrimary,
                         fontSize: 16,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -834,7 +834,7 @@ class _PurchaseInvoiceFormDialogState
                             style: const TextStyle(
                               color: AppColors.purple,
                               fontSize: 16,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ],

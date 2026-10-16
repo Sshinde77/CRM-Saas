@@ -5,10 +5,11 @@ import '../../constants/app_colors.dart';
 class AppTextStyles {
   const AppTextStyles._();
 
-  static const String fontFamily = 'Poppins';
+  static const String fontFamily = 'Open Sans';
+  static const String headingFontFamily = 'DM Sans';
 
   static const TextStyle appBarTitle = TextStyle(
-    fontFamily: fontFamily,
+    fontFamily: headingFontFamily,
     fontSize: 16,
     height: 1.2,
     fontWeight: FontWeight.w700,
@@ -16,18 +17,18 @@ class AppTextStyles {
   );
 
   static const TextStyle screenHeading = TextStyle(
-    fontFamily: fontFamily,
+    fontFamily: headingFontFamily,
     fontSize: 16,
     height: 1.2,
-    fontWeight: FontWeight.w900,
+    fontWeight: FontWeight.w700,
     color: AppColors.textPrimary,
   );
 
   static const TextStyle sectionHeading = TextStyle(
-    fontFamily: fontFamily,
+    fontFamily: headingFontFamily,
     fontSize: 16,
     height: 1.25,
-    fontWeight: FontWeight.w800,
+    fontWeight: FontWeight.w700,
     color: AppColors.textPrimary,
   );
 
@@ -43,7 +44,7 @@ class AppTextStyles {
     fontFamily: fontFamily,
     fontSize: 14,
     height: 1.35,
-    fontWeight: FontWeight.w800,
+    fontWeight: FontWeight.w700,
     color: AppColors.textPrimary,
   );
 
@@ -55,11 +56,19 @@ class AppTextStyles {
     color: AppColors.textMuted,
   );
 
+  static const TextStyle inputHint = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 14,
+    height: 1.35,
+    fontWeight: FontWeight.w400,
+    color: AppColors.textSecondary,
+  );
+
   static const TextStyle secondaryStrong = TextStyle(
     fontFamily: fontFamily,
     fontSize: 14,
     height: 1.35,
-    fontWeight: FontWeight.w800,
+    fontWeight: FontWeight.w700,
     color: AppColors.textMuted,
   );
 
@@ -75,15 +84,15 @@ class AppTextStyles {
     fontFamily: fontFamily,
     fontSize: 14,
     height: 1.3,
-    fontWeight: FontWeight.w800,
+    fontWeight: FontWeight.w700,
     color: AppColors.textMuted,
   );
 
   static const TextStyle importantNumber = TextStyle(
-    fontFamily: fontFamily,
+    fontFamily: headingFontFamily,
     fontSize: 16,
     height: 1.15,
-    fontWeight: FontWeight.w900,
+    fontWeight: FontWeight.w700,
     color: AppColors.textPrimary,
   );
 
@@ -96,7 +105,7 @@ class AppTextStyles {
   );
 
   static const TextStyle cardTitle = TextStyle(
-    fontFamily: fontFamily,
+    fontFamily: headingFontFamily,
     fontSize: 14,
     height: 1.25,
     fontWeight: FontWeight.w700,

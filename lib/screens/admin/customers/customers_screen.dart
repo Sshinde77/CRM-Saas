@@ -11,6 +11,7 @@ import 'customer_details_screen.dart';
 import 'add_customer_screen.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
+import '../../../widgets/app_pagination.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
 import '../../sales_manager/attendance/sales_manager_attendance_screen.dart';
@@ -48,6 +49,10 @@ class _CustomersScreenState extends State<CustomersScreen> {
   String? _category;
   bool? _isActive;
   String? _assignedSalesOfficerId;
+  int _currentPage = 1;
+  int _pageSize = 10;
+  int _totalItems = 0;
+  int _totalPages = 0;
 
   List<CustomerModel> _customers = const [];
 
@@ -84,7 +89,9 @@ class _CustomersScreenState extends State<CustomersScreen> {
     });
 
     try {
-      final customers = await _apiProvider.fetchCustomers(
+      final result = await _apiProvider.fetchPaginatedCustomers(
+        page: _currentPage,
+        pageSize: _pageSize,
         search: _search,
         category: _category,
         isActive: _isActive,
@@ -93,7 +100,11 @@ class _CustomersScreenState extends State<CustomersScreen> {
 
       if (!mounted) return;
       setState(() {
-        _customers = customers;
+        _customers = result.items;
+        _currentPage = result.page;
+        _pageSize = result.pageSize;
+        _totalItems = result.total;
+        _totalPages = result.totalPages;
         _isLoading = false;
       });
     } catch (error) {
@@ -108,6 +119,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
 
   void _scheduleSearchReload(String value) {
     _search = value.trim();
+    _currentPage = 1;
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
       if (!mounted) return;
@@ -207,7 +219,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
           ),
           title: const Text(
             'Delete Customer',
-            style: TextStyle(fontWeight: FontWeight.w800),
+            style: TextStyle(fontWeight: FontWeight.w700),
           ),
           content: Text(
             'Delete ${customer.name}? This action cannot be undone.',
@@ -288,7 +300,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
                             style: TextStyle(
                               color: textPrimary,
                               fontSize: 16,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
@@ -468,25 +480,24 @@ class _CustomersScreenState extends State<CustomersScreen> {
                           ),
                         ),
                       const SizedBox(height: 8),
-                      Text.rich(
-                        TextSpan(
-                          text: 'Total Customers: ',
-                          children: [
-                            TextSpan(
-                              text: '${_customers.length}',
-                              style: const TextStyle(
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                          ],
+                      if (!_isLoading && _errorMessage == null)
+                        AppPagination(
+                          page: _currentPage,
+                          pageSize: _pageSize,
+                          total: _totalItems,
+                          totalPages: _totalPages,
+                          onPageChanged: (page) {
+                            setState(() => _currentPage = page);
+                            _loadCustomers();
+                          },
+                          onPageSizeChanged: (size) {
+                            setState(() {
+                              _pageSize = size;
+                              _currentPage = 1;
+                            });
+                            _loadCustomers();
+                          },
                         ),
-                        style: const TextStyle(
-                          color: textPrimary,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
                     ],
                   ),
                 ),
@@ -508,7 +519,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
               color: textPrimary,
               fontSize: 16,
               height: 1,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               letterSpacing: 0,
             ),
           ),
@@ -529,7 +540,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
             ),
             textStyle: const TextStyle(
               fontSize: 14,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               letterSpacing: 0,
             ),
           ),
@@ -555,9 +566,9 @@ class _CustomersScreenState extends State<CustomersScreen> {
               decoration: InputDecoration(
                 hintText: 'Search name, business, phone, email...',
                 hintStyle: const TextStyle(
-                  color: textSecondary,
+                  color: AppColors.textSecondary,
                   fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w400,
                 ),
                 prefixIcon: const Padding(
                   padding: EdgeInsets.only(left: 8, right: 2),
@@ -715,7 +726,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
                             style: const TextStyle(
                               color: textPrimary,
                               fontSize: 14,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w700,
                               letterSpacing: 0,
                             ),
                           ),
@@ -1035,7 +1046,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
         initials,
         style: TextStyle(
           color: AppColors.primary,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w700,
           fontSize: size * 0.24,
           letterSpacing: 0,
         ),
@@ -1062,7 +1073,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
                   ? AppColors.statusActiveText
                   : AppColors.statusInactiveText,
               fontSize: 14,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               letterSpacing: 0,
             ),
           ),

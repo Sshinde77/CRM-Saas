@@ -106,7 +106,7 @@ class _StockReconciliationFormState extends State<StockReconciliationForm> {
                   style: TextStyle(
                     color: AppColors.deliveryInk,
                     fontSize: 16,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -135,7 +135,7 @@ class _StockReconciliationFormState extends State<StockReconciliationForm> {
                 style: TextStyle(
                   color: AppColors.deliveryInk,
                   fontSize: 14,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               const SizedBox(height: 10),
@@ -229,7 +229,7 @@ class _StockReconciliationFormState extends State<StockReconciliationForm> {
                         color: AppColors.deliveryInk,
                         fontSize: 14,
                         height: 1.15,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     if (item.variantId.isNotEmpty) ...[
@@ -321,7 +321,7 @@ class _QuantityChip extends StatelessWidget {
               color: AppColors.deliveryGreen,
               fontSize: 13,
               height: 1,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 4),

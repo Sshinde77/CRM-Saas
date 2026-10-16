@@ -671,7 +671,7 @@ class _CreateDeliveryCustomerScreenState
                                 : const Text(
                                     'CREATE CUSTOMER',
                                     style: TextStyle(
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w700,
                                       letterSpacing: 0.4,
                                     ),
                                   ),
@@ -833,7 +833,7 @@ class _VoiceEntryCard extends StatelessWidget {
               children: [
                 Text(
                   'Fill with voice',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
                 ),
                 SizedBox(height: 3),
                 Text(

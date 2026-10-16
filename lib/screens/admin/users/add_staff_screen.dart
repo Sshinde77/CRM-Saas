@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../core/theme/app_text_styles.dart';
 import '../../../models/app_user.dart';
 import '../../../models/auth_models.dart';
 import '../../../models/role_model.dart';
@@ -912,7 +913,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                       style: TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: 16,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     SizedBox(height: 6),
@@ -1137,7 +1138,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                         _currentStep == _steps.length - 1
                             ? _submitLabel
                             : 'Next',
-                        style: const TextStyle(fontWeight: FontWeight.w800),
+                        style: const TextStyle(fontWeight: FontWeight.w700),
                       ),
               ),
             ],
@@ -1163,7 +1164,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             style: const TextStyle(
               color: Colors.white,
               fontSize: 14,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),
@@ -1173,7 +1174,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
           style: const TextStyle(
             color: AppColors.textPrimary,
             fontSize: 16,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ],
@@ -1255,7 +1256,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             style: TextStyle(
               color: AppColors.textPrimary,
               fontSize: 16,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 6),
@@ -1357,7 +1358,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             style: TextStyle(
               color: AppColors.textPrimary,
               fontSize: 16,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 6),
@@ -1489,7 +1490,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             style: TextStyle(
               color: AppColors.textPrimary,
               fontSize: 16,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 6),
@@ -1628,7 +1629,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                     style: TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 16,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -1768,7 +1769,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             style: TextStyle(
               color: AppColors.textPrimary,
               fontSize: 16,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 6),
@@ -1851,7 +1852,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             style: TextStyle(
               color: AppColors.textPrimary,
               fontSize: 16,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 6),
@@ -2063,7 +2064,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             style: TextStyle(
               color: AppColors.textPrimary,
               fontSize: 16,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 6),
@@ -2171,7 +2172,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             style: TextStyle(
               color: AppColors.textPrimary,
               fontSize: 16,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 6),
@@ -2327,7 +2328,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                 style: const TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 14,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               if (secondaryWidget != null) ...[
@@ -2375,6 +2376,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
         ? RichText(
             text: TextSpan(
               style: const TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
                 color: AppColors.textPrimary,
                 fontSize: 14,
                 fontWeight: FontWeight.w700,

@@ -111,7 +111,7 @@ class _StockReturnFormState extends State<StockReturnForm> {
                   style: TextStyle(
                     color: AppColors.deliveryInk,
                     fontSize: 16,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -198,7 +198,7 @@ class _StockReturnFormState extends State<StockReturnForm> {
                         color: AppColors.deliveryInk,
                         fontSize: 14,
                         height: 1.15,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     if (item.variantId.isNotEmpty) ...[
@@ -278,7 +278,7 @@ class _StockReturnFormState extends State<StockReturnForm> {
                 style: TextStyle(
                   color: AppColors.deliveryRed,
                   fontSize: 12,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
@@ -315,7 +315,7 @@ class _QuantityChip extends StatelessWidget {
               color: AppColors.deliveryGreen,
               fontSize: 13,
               height: 1,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 4),

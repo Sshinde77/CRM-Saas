@@ -57,23 +57,6 @@ class DeliveryPartnerSidebar extends StatelessWidget {
                 AppSpacing.md,
                 AppSpacing.md + bottomPadding,
               ),
-              child: _AttendanceStatusCard(
-                active: currentRoute == AppRoutes.deliveryAttendance,
-                onTap: () => _handleNavigation(
-                  context,
-                  _deliveryMenuItems.firstWhere(
-                    (item) => item.route == AppRoutes.deliveryAttendance,
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.md,
-                0,
-                AppSpacing.md,
-                AppSpacing.md,
-              ),
               child: ListTile(
                 key: const Key('delivery_logout'),
                 shape: RoundedRectangleBorder(
@@ -217,7 +200,7 @@ class _SidebarHeader extends StatelessWidget {
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 16,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 SizedBox(height: AppSpacing.xs),
@@ -291,9 +274,7 @@ class _SidebarItemTile extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(AppSizes.cardRadius),
               border: active
-                  ? Border.all(
-                      color: AppColors.primary.withValues(alpha: 0.18),
-                    )
+                  ? Border.all(color: AppColors.primary.withValues(alpha: 0.18))
                   : Border.all(color: Colors.transparent),
             ),
             child: Row(
@@ -325,93 +306,6 @@ class _SidebarItemTile extends StatelessWidget {
                   ),
               ],
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _AttendanceStatusCard extends StatelessWidget {
-  final bool active;
-  final VoidCallback onTap;
-
-  const _AttendanceStatusCard({required this.active, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(AppSizes.cardRadius),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppSizes.cardRadius),
-        child: Container(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppSizes.cardRadius),
-            border: Border.all(
-              color: active
-                  ? AppColors.primary.withValues(alpha: 0.18)
-                  : const Color(0xFFE2E7F0),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 14,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: AppColors.activeMenuBg,
-                  borderRadius: BorderRadius.circular(AppSizes.cardRadius),
-                ),
-                child: const Icon(
-                  Icons.fact_check_outlined,
-                  color: AppColors.primary,
-                  size: AppSizes.bottomNavIcon,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Attendance',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: AppColors.deliveryInk,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    SizedBox(height: AppSpacing.xs),
-                    Text(
-                      'View Attendance',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: Color(0xFF586176),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(
-                Icons.chevron_right_rounded,
-                color: AppColors.primary,
-              ),
-            ],
           ),
         ),
       ),

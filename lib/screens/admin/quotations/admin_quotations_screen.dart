@@ -187,7 +187,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
             'Delete Quotation',
             style: TextStyle(
               color: AppColors.textPrimary,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
           content: Text(
@@ -205,7 +205,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
                 'Delete',
                 style: TextStyle(
                   color: AppColors.red,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
@@ -347,55 +347,52 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
                       isMobile ? 14 : 18,
                       18,
                     ),
-                     child: Center(
-                       child: ConstrainedBox(
-                         constraints: const BoxConstraints(maxWidth: 920),
-                         child: Column(
-                           children: [
-                             _QuotationPageHero(
-                               total: _quotations.length,
-                               visible: quotations.length,
-                             ),
-                             const SizedBox(height: 12),
-                             Container(
-                               width: double.infinity,
-                               decoration: BoxDecoration(
-                                 color: Colors.white,
-                                 borderRadius: BorderRadius.circular(16),
-                                 border: Border.all(
-                                   color: AppColors.deliveryCardBorder,
-                                 ),
-                                 boxShadow: [
-                                   BoxShadow(
-                                     color: AppColors.primary.withValues(
-                                       alpha: 0.05,
-                                     ),
-                                     blurRadius: 12,
-                                     offset: const Offset(0, 4),
-                                   ),
-                                 ],
-                               ),
-                               child: isMobile
-                                   ? _isLoading
-                                         ? _loadingState()
-                                         : _errorMessage != null
-                                         ? _errorState(
-                                             _errorMessage!,
-                                             _loadQuotations,
-                                           )
-                                         : _buildMobileContent(quotations)
-                                   : _isLoading
-                                   ? _loadingState()
-                                   : _errorMessage != null
-                                   ? _errorState(
-                                       _errorMessage!,
-                                       _loadQuotations,
-                                     )
-                                   : _buildDesktopContent(quotations),
-                             ),
-                           ],
-                         ),
-                       ),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 920),
+                        child: Column(
+                          children: [
+                            _QuotationPageHero(
+                              total: _quotations.length,
+                              visible: quotations.length,
+                            ),
+                            const SizedBox(height: 12),
+                            Container(
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: AppColors.deliveryCardBorder,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.primary.withValues(
+                                      alpha: 0.05,
+                                    ),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: isMobile
+                                  ? _isLoading
+                                        ? _loadingState()
+                                        : _errorMessage != null
+                                        ? _errorState(
+                                            _errorMessage!,
+                                            _loadQuotations,
+                                          )
+                                        : _buildMobileContent(quotations)
+                                  : _isLoading
+                                  ? _loadingState()
+                                  : _errorMessage != null
+                                  ? _errorState(_errorMessage!, _loadQuotations)
+                                  : _buildDesktopContent(quotations),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -432,7 +429,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
                 icon: const Icon(Icons.add, size: 18),
                 label: const Text('New Quotation'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF00092A),
+                  backgroundColor: const Color(0xFF0D1F42),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 18,
@@ -487,7 +484,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
   Widget _loadingState() {
     return const Padding(
       padding: EdgeInsets.symmetric(vertical: 80),
-      child: Center(child: CircularProgressIndicator(color: Color(0xFF00092A))),
+      child: Center(child: CircularProgressIndicator(color: Color(0xFF0D1F42))),
     );
   }
 
@@ -532,7 +529,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
                     icon: const Icon(Icons.add, size: 18),
                     label: const Text('New Quotation'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF00092A),
+                      backgroundColor: const Color(0xFF0D1F42),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
@@ -637,7 +634,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFF00092A)),
+          borderSide: const BorderSide(color: Color(0xFF0D1F42)),
         ),
       ),
     );
@@ -675,7 +672,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFF00092A)),
+          borderSide: const BorderSide(color: Color(0xFF0D1F42)),
         ),
       ),
       icon: const Icon(
@@ -773,9 +770,7 @@ class _QuotationPageHero extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.16),
-              ),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
             ),
             child: const Icon(
               Icons.request_quote_outlined,
@@ -1038,7 +1033,7 @@ class _QuotationCard extends StatelessWidget {
           return Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-               _quotationAvatar(record.initials, compact ? 44 : 48),
+              _quotationAvatar(record.initials, compact ? 44 : 48),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
@@ -1055,7 +1050,7 @@ class _QuotationCard extends StatelessWidget {
                             style: const TextStyle(
                               color: AppColors.textPrimary,
                               fontSize: 14,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w700,
                               letterSpacing: 0,
                             ),
                           ),
@@ -1209,7 +1204,7 @@ class _QuotationCard extends StatelessWidget {
         initials,
         style: TextStyle(
           color: AppColors.primary,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w700,
           fontSize: size * 0.24,
           letterSpacing: 0,
         ),
@@ -1258,7 +1253,7 @@ class _StatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(999),
@@ -1270,8 +1265,8 @@ class _StatusChip extends StatelessWidget {
             label,
             style: TextStyle(
               color: foreground,
-               fontSize: 11,
-              fontWeight: FontWeight.w800,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
               letterSpacing: 0,
             ),
           ),

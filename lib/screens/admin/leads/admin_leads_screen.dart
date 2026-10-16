@@ -10,6 +10,7 @@ import '../../../widgets/customer_avatar.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
+import '../../../widgets/sales_manager/sales_manager_bottom_navigation.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
 import '../../shared/lead_detail_screen.dart';
 import '../../sales_manager/attendance/sales_manager_attendance_screen.dart';
@@ -184,9 +185,9 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
       await launchUrl(uri);
     } else {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Unable to call $phone')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Unable to call $phone')));
     }
   }
 
@@ -194,7 +195,9 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
     final digits = phone.replaceAll(RegExp(r'[^0-9]'), '');
     if (digits.isEmpty || digits == '-') {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Phone number not available for WhatsApp.')),
+        const SnackBar(
+          content: Text('Phone number not available for WhatsApp.'),
+        ),
       );
       return;
     }
@@ -203,9 +206,9 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Unable to open WhatsApp.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Unable to open WhatsApp.')));
     }
   }
 
@@ -223,7 +226,9 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
       case _LeadAction.delete:
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Delete action for ${lead.personName} is not available.'),
+            content: Text(
+              'Delete action for ${lead.personName} is not available.',
+            ),
           ),
         );
         return;
@@ -358,7 +363,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                             style: TextStyle(
                               color: AppColors.deliveryInk,
                               fontSize: 16,
-                              fontWeight: FontWeight.w900,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
@@ -456,7 +461,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                             },
                             child: const Text(
                               'Apply Filters',
-                              style: TextStyle(fontWeight: FontWeight.w800),
+                              style: TextStyle(fontWeight: FontWeight.w700),
                             ),
                           ),
                         ),
@@ -551,7 +556,9 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
   }
 
   int _countByStatus(String status) {
-    return _leads.where((l) => l.status.toLowerCase() == status.toLowerCase()).length;
+    return _leads
+        .where((l) => l.status.toLowerCase() == status.toLowerCase())
+        .length;
   }
 
   @override
@@ -573,6 +580,9 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                 onSelect: _handleSalesManagerSidebarSelection,
               )
             : const AppDrawer(activeItem: 'Leads'),
+        bottomNavigationBar: widget.useSalesManagerShell
+            ? const SalesManagerBottomNavigation(currentIndex: 1)
+            : null,
         body: SafeArea(
           child: Column(
             children: [
@@ -631,7 +641,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                             Center(
                               child: ConstrainedBox(
                                 constraints: const BoxConstraints(
-                                   maxWidth: 920,
+                                  maxWidth: 920,
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -644,7 +654,9 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                                     _MetricsGrid(
                                       total: _leads.length,
                                       newCount: _countByStatus('New'),
-                                      followUpCount: _countByStatus('Follow Up'),
+                                      followUpCount: _countByStatus(
+                                        'Follow Up',
+                                      ),
                                       hotCount: _countByStatus('Hot'),
                                     ),
                                     const SizedBox(height: AppSpacing.md),
@@ -653,7 +665,8 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                                       query: query,
                                       activeFilterCount: _activeFilterCount(),
                                       onChanged: (_) => setState(() {}),
-                                      onClear: () => setState(_searchController.clear),
+                                      onClear: () =>
+                                          setState(_searchController.clear),
                                       onFilterTap: _openFilterSheet,
                                     ),
                                     const SizedBox(height: AppSpacing.sm),
@@ -672,7 +685,9 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                                     const SizedBox(height: AppSpacing.sm),
                                     if (leads.isEmpty)
                                       _StateView.empty(
-                                        hasSearch: query.isNotEmpty || _activeFilterCount() > 0,
+                                        hasSearch:
+                                            query.isNotEmpty ||
+                                            _activeFilterCount() > 0,
                                       )
                                     else
                                       ...leads.map(
@@ -684,8 +699,10 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                                             lead: lead,
                                             onTap: () => _openLeadDetails(lead),
                                             onCall: () => _callLead(lead.phone),
-                                            onWhatsApp: () => _openWhatsApp(lead.phone),
-                                            onAction: (act) => _handleLeadAction(lead, act),
+                                            onWhatsApp: () =>
+                                                _openWhatsApp(lead.phone),
+                                            onAction: (act) =>
+                                                _handleLeadAction(lead, act),
                                           ),
                                         ),
                                       ),
@@ -758,10 +775,10 @@ class _HeaderCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                      color: Colors.white,
-                      fontSize: compact ? 16 : 18,
+                    color: Colors.white,
+                    fontSize: compact ? 16 : 18,
                     height: 1.15,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -929,7 +946,7 @@ class _MetricTile extends StatelessWidget {
                     color: AppColors.deliveryInk,
                     fontSize: 14,
                     height: 1.1,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 3),
@@ -990,9 +1007,9 @@ class _SearchCard extends StatelessWidget {
                 decoration: InputDecoration(
                   hintText: 'Search by name, company, mobile...',
                   hintStyle: const TextStyle(
-                    color: AppColors.textMuted,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
+                    color: AppColors.textSecondary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
                   ),
                   prefixIcon: const Icon(
                     Icons.search_rounded,
@@ -1030,7 +1047,9 @@ class _SearchCard extends StatelessWidget {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppSizes.inputRadius),
-                    borderSide: const BorderSide(color: AppColors.deliveryGreen),
+                    borderSide: const BorderSide(
+                      color: AppColors.deliveryGreen,
+                    ),
                   ),
                 ),
               ),
@@ -1116,14 +1135,13 @@ class _QuickFiltersRow extends StatelessWidget {
       physics: const BouncingScrollPhysics(),
       child: Row(
         children: filters.map((status) {
-          final isSelected = selectedStatus.toLowerCase() == status.toLowerCase() ||
+          final isSelected =
+              selectedStatus.toLowerCase() == status.toLowerCase() ||
               (selectedStatus == 'All Status' && status == 'All Status');
           return Padding(
             padding: const EdgeInsets.only(right: 6),
             child: Material(
-              color: isSelected
-                  ? AppColors.primary
-                  : AppColors.surface,
+              color: isSelected ? AppColors.primary : AppColors.surface,
               borderRadius: BorderRadius.circular(10),
               child: InkWell(
                 onTap: () => onSelectStatus(status),
@@ -1146,7 +1164,9 @@ class _QuickFiltersRow extends StatelessWidget {
                     style: TextStyle(
                       color: isSelected ? Colors.white : AppColors.deliveryInk,
                       fontSize: 12,
-                      fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                      fontWeight: isSelected
+                          ? FontWeight.w700
+                          : FontWeight.w600,
                     ),
                   ),
                 ),
@@ -1181,7 +1201,7 @@ class _SectionHeader extends StatelessWidget {
             style: const TextStyle(
               color: AppColors.deliveryInk,
               fontSize: 13,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(width: 8),
@@ -1197,16 +1217,12 @@ class _SectionHeader extends StatelessWidget {
               style: const TextStyle(
                 color: AppColors.deliveryInk,
                 fontSize: 11,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
           const Spacer(),
-          Icon(
-            trailingIcon,
-            color: AppColors.textMuted,
-            size: 18,
-          ),
+          Icon(trailingIcon, color: AppColors.textMuted, size: 18),
         ],
       ),
     );
@@ -1233,7 +1249,9 @@ class _LeadCard extends StatelessWidget {
     if (s.contains('new')) return AppColors.deliveryGreen;
     if (s.contains('follow')) return AppColors.deliveryCustomerOrders;
     if (s.contains('hot')) return AppColors.deliveryRed;
-    if (s.contains('qualified') || s.contains('converted') || s.contains('won')) {
+    if (s.contains('qualified') ||
+        s.contains('converted') ||
+        s.contains('won')) {
       return AppColors.deliveryGreen;
     }
     if (s.contains('lost')) return AppColors.textMuted;
@@ -1272,10 +1290,7 @@ class _LeadCard extends StatelessWidget {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        CustomerAvatar(
-                          name: lead.personName,
-                          size: 50,
-                        ),
+                        CustomerAvatar(name: lead.personName, size: 50),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Column(
@@ -1290,7 +1305,7 @@ class _LeadCard extends StatelessWidget {
                                       overflow: TextOverflow.ellipsis,
                                       style: const TextStyle(
                                         fontSize: 13.5,
-                                        fontWeight: FontWeight.w900,
+                                        fontWeight: FontWeight.w700,
                                         color: AppColors.deliveryInk,
                                       ),
                                     ),
@@ -1319,7 +1334,8 @@ class _LeadCard extends StatelessWidget {
                                   const SizedBox(width: 4),
                                   Expanded(
                                     child: Text(
-                                      lead.companyName.isEmpty || lead.companyName == '-'
+                                      lead.companyName.isEmpty ||
+                                              lead.companyName == '-'
                                           ? 'Independent Buyer'
                                           : lead.companyName,
                                       maxLines: 1,
@@ -1434,7 +1450,10 @@ class _LeadCard extends StatelessWidget {
                               value: _LeadAction.convertToCustomer,
                               child: Row(
                                 children: [
-                                  Icon(Icons.person_add_alt_1_outlined, size: 18),
+                                  Icon(
+                                    Icons.person_add_alt_1_outlined,
+                                    size: 18,
+                                  ),
                                   SizedBox(width: 8),
                                   Text('Convert to Customer'),
                                 ],
@@ -1564,7 +1583,7 @@ class _StatusBadge extends StatelessWidget {
         style: TextStyle(
           color: color,
           fontSize: 10,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );
@@ -1597,11 +1616,7 @@ BoxDecoration _surfaceDecoration() {
     borderRadius: BorderRadius.circular(AppSizes.cardRadius),
     border: Border.all(color: AppColors.deliverySurfaceBorder),
     boxShadow: const [
-      BoxShadow(
-        color: Color(0x080F172A),
-        blurRadius: 10,
-        offset: Offset(0, 3),
-      ),
+      BoxShadow(color: Color(0x080F172A), blurRadius: 10, offset: Offset(0, 3)),
     ],
   );
 }
@@ -1613,22 +1628,20 @@ class _StateView extends StatelessWidget {
   final VoidCallback? onRetry;
 
   const _StateView.loading()
-      : isLoading = true,
-        hasSearch = false,
-        errorMessage = null,
-        onRetry = null;
+    : isLoading = true,
+      hasSearch = false,
+      errorMessage = null,
+      onRetry = null;
 
   const _StateView.empty({required this.hasSearch})
-      : isLoading = false,
-        errorMessage = null,
-        onRetry = null;
+    : isLoading = false,
+      errorMessage = null,
+      onRetry = null;
 
-  const _StateView.error({
-    required String message,
-    required this.onRetry,
-  })  : isLoading = false,
-        hasSearch = false,
-        errorMessage = message;
+  const _StateView.error({required String message, required this.onRetry})
+    : isLoading = false,
+      hasSearch = false,
+      errorMessage = message;
 
   @override
   Widget build(BuildContext context) {
@@ -1708,7 +1721,7 @@ class _StateView extends StatelessWidget {
               style: const TextStyle(
                 color: AppColors.deliveryInk,
                 fontSize: 14,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 4),

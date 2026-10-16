@@ -381,7 +381,7 @@ class _DashboardIdentityHeader extends StatelessWidget {
                             color: AppColors.surface,
                             fontSize: 16,
                             height: 1.15,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                         const SizedBox(height: AppSpacing.xs),
@@ -526,7 +526,7 @@ class _FloatingCheckInButton extends StatelessWidget {
           : const Icon(Icons.login_rounded, size: 20),
       label: Text(
         busy ? 'Checking in' : 'Check In',
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
       ),
     );
   }
@@ -695,7 +695,7 @@ class _HeroSummaryCard extends StatelessWidget {
                                           style: const TextStyle(
                                             color: AppColors.surface,
                                             fontSize: 14,
-                                            fontWeight: FontWeight.w800,
+                                            fontWeight: FontWeight.w700,
                                           ),
                                         ),
                                       ],
@@ -824,7 +824,7 @@ class _HeroMetric extends StatelessWidget {
                   color: AppColors.surface,
                   fontSize: isNumber ? AppSizes.iconLarge : 14,
                   height: 1.15,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],
@@ -878,7 +878,7 @@ class _HeroAction extends StatelessWidget {
                   color: AppColors.deliveryInk,
                   fontSize: 14,
                   height: 1.1,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
@@ -1056,7 +1056,7 @@ class _StatCard extends StatelessWidget {
       style: const TextStyle(
         fontSize: 18,
         height: 1,
-        fontWeight: FontWeight.w900,
+        fontWeight: FontWeight.w700,
         color: AppColors.deliveryDashboardText,
       ),
     );
@@ -1165,7 +1165,7 @@ class _CollectionsCard extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 18,
                           height: 1.1,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.deliveryInk,
                         ),
                       ),
@@ -1241,7 +1241,7 @@ class _CollectionMetricTile extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 16,
                     height: 1.1,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.deliveryInk,
                   ),
                 ),
@@ -1365,7 +1365,7 @@ class _PriorityRow extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 color: info.color,
               ),
             ),
@@ -1448,7 +1448,7 @@ class _StockLineRow extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.deliveryInk,
                   ),
                 ),
@@ -1469,7 +1469,7 @@ class _StockLineRow extends StatelessWidget {
             '${item.loadedQuantityText} Pcs',
             style: const TextStyle(
               fontSize: 14,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               color: AppColors.deliveryInk,
             ),
           ),
@@ -1558,7 +1558,7 @@ class _StatusTile extends StatelessWidget {
             style: TextStyle(
               fontSize: 16,
               height: 1,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               color: info.color,
             ),
           ),
@@ -1640,7 +1640,7 @@ class _DeliveryPreviewTile extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.deliveryInk,
                   ),
                 ),
@@ -1672,7 +1672,7 @@ class _DeliveryPreviewTile extends StatelessWidget {
                 delivery.formattedAmount,
                 style: const TextStyle(
                   fontSize: 18,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.deliveryInk,
                 ),
               ),
@@ -1742,7 +1742,7 @@ class _SectionHeader extends StatelessWidget {
           title,
           style: const TextStyle(
             fontSize: 14,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
             color: AppColors.deliveryInk,
           ),
         ),
@@ -1770,7 +1770,7 @@ class _SectionHeader extends StatelessWidget {
             'View All',
             style: TextStyle(
               fontSize: 14,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               color: AppColors.deliveryBlue,
             ),
           ),
@@ -1799,7 +1799,7 @@ class _FooterLink extends StatelessWidget {
               label,
               style: const TextStyle(
                 fontSize: 14,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 color: AppColors.deliveryBlue,
               ),
             ),
@@ -1909,7 +1909,7 @@ class _ErrorPanel extends StatelessWidget {
             'Dashboard could not load',
             style: TextStyle(
               fontSize: 16,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               color: AppColors.deliveryInk,
             ),
           ),

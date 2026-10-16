@@ -23,6 +23,7 @@ import '../../screens/admin/roles/roles_permissions_screen.dart';
 import '../../screens/admin/settings/admin_settings_screen.dart';
 import '../../screens/admin/settings/company_settings_screen.dart';
 import '../../screens/admin/settings/plans_screen.dart';
+import '../sidebar_logout_button.dart';
 import '../../screens/admin/suppliers/suppliers_screen.dart';
 import '../../screens/admin/users/admin_user_list_screen.dart';
 import '../../screens/admin/vehicles/vehicle_stock_screen.dart';
@@ -431,7 +432,7 @@ class _AppDrawerState extends State<AppDrawer> {
               style: const TextStyle(
                 color: Color(0xFF9AA0B1),
                 fontSize: 14,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 letterSpacing: 1.1,
               ),
             ),
@@ -451,7 +452,7 @@ class _AppDrawerState extends State<AppDrawer> {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFF00092A),
+        color: const Color(0xFF0D1F42),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -486,7 +487,7 @@ class _AppDrawerState extends State<AppDrawer> {
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 16,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -524,7 +525,7 @@ class _AppDrawerState extends State<AppDrawer> {
                 ),
                 textStyle: const TextStyle(
                   fontSize: 14,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
@@ -535,81 +536,16 @@ class _AppDrawerState extends State<AppDrawer> {
   }
 
   Widget _buildBottomArea(_DrawerMeta meta) {
-    final user = meta.user;
-    final organization = meta.authMe?.organization;
-    final displayName = user?.name.trim().isNotEmpty == true
-        ? user!.name.trim()
-        : 'Admin';
-    final email = user?.email?.trim().isNotEmpty == true
-        ? user!.email!.trim()
-        : 'admin@demo.com';
-    final initials = _initials(displayName);
-    final planLabel = organization?.plan?.name ?? 'Plan';
-
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+      padding: const EdgeInsets.only(top: 8),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.primary.withValues(alpha: 0.12),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  initials,
-                  style: const TextStyle(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      displayName,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      email,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 14,
-                      ),
-                    ),
-                    if (planLabel.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        planLabel,
-                        style: const TextStyle(
-                          color: AppColors.primary,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ],
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: _buildUpgradeCard(meta),
           ),
-          const SizedBox(height: 14),
-          _buildUpgradeCard(meta),
+          const SidebarLogoutButton(),
         ],
       ),
     );
@@ -723,21 +659,4 @@ class _AppDrawerState extends State<AppDrawer> {
     );
   }
 
-  String _initials(String value) {
-    final parts = value
-        .trim()
-        .split(RegExp(r'\s+'))
-        .where((part) => part.isNotEmpty)
-        .toList();
-    if (parts.isEmpty) {
-      return 'AD';
-    }
-    if (parts.length == 1) {
-      final text = parts.first;
-      return text.length >= 2
-          ? text.substring(0, 2).toUpperCase()
-          : text.toUpperCase();
-    }
-    return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
-  }
 }

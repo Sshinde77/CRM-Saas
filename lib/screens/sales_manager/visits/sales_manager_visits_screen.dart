@@ -7,6 +7,7 @@ import '../../admin/orders/admin_orders_screen.dart';
 import '../../admin/orders/new_admin_order_screen.dart';
 import '../../admin/quotations/admin_quotations_screen.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
+import '../../../widgets/sales_manager/sales_manager_bottom_navigation.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
 import '../attendance/sales_manager_attendance_screen.dart';
 import '../dashboard/sales_manager_dashboard_screen.dart';
@@ -161,6 +162,7 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
         onSelect: _handleSidebarSelection,
         currentPage: 'Visits',
       ),
+      bottomNavigationBar: const SalesManagerBottomNavigation(currentIndex: 4),
       body: SafeArea(
         child: Column(
           children: [
@@ -247,9 +249,7 @@ class _VisitsOverview extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.16),
-              ),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
             ),
             child: const Icon(
               Icons.location_on_outlined,
@@ -379,7 +379,7 @@ class _CheckInCardState extends State<_CheckInCard> {
             style: TextStyle(
               color: AppColors.textPrimary,
               fontSize: 16,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 16),
@@ -526,7 +526,7 @@ class _VisitHistoryPanel extends StatelessWidget {
             style: TextStyle(
               color: AppColors.textPrimary,
               fontSize: 16,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),
@@ -572,7 +572,7 @@ class _VisitHistoryCard extends StatelessWidget {
                   style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 14,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -584,14 +584,8 @@ class _VisitHistoryCard extends StatelessWidget {
             spacing: 12,
             runSpacing: 8,
             children: [
-              _VisitTime(
-                label: 'In',
-                value: record.inTime,
-              ),
-              _VisitTime(
-                label: 'Out',
-                value: record.outTime,
-              ),
+              _VisitTime(label: 'In', value: record.inTime),
+              _VisitTime(label: 'Out', value: record.outTime),
             ],
           ),
           const SizedBox(height: 12),

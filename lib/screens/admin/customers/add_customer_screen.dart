@@ -1021,7 +1021,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
               color: Colors.white,
               fontSize: 16,
               height: 1.1,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 10),
@@ -1051,7 +1051,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 14,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -1146,7 +1146,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             style: const TextStyle(
               color: Colors.white,
               fontSize: 14,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -1188,7 +1188,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                 style: TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 16,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               SizedBox(height: 6),
@@ -1392,7 +1392,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                                   ? 'Save Changes'
                                   : 'Add New Customer')
                             : 'Next',
-                        style: const TextStyle(fontWeight: FontWeight.w800),
+                        style: const TextStyle(fontWeight: FontWeight.w700),
                       ),
               ),
             ],
@@ -1418,7 +1418,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             style: const TextStyle(
               color: Colors.white,
               fontSize: 14,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),
@@ -1428,7 +1428,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           style: const TextStyle(
             color: AppColors.textPrimary,
             fontSize: 16,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ],
@@ -1549,7 +1549,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             style: const TextStyle(
               color: AppColors.textPrimary,
               fontSize: 16,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 6),
@@ -2313,7 +2313,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                   style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 14,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -2440,7 +2440,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                 style: TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 16,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               SizedBox(height: 6),
@@ -2768,7 +2768,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             style: const TextStyle(
               color: Colors.white,
               fontSize: 14,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),
@@ -2778,7 +2778,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           style: const TextStyle(
             color: AppColors.textPrimary,
             fontSize: 16,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ],

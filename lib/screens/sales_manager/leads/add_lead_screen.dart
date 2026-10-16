@@ -487,7 +487,7 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
             style: const TextStyle(
               color: Color(0xFF0F172A),
               fontSize: 16,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 4),
@@ -771,7 +771,7 @@ class _Header extends StatelessWidget {
                 style: const TextStyle(
                   color: Color(0xFF0F172A),
                   fontSize: 16,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               const SizedBox(height: 4),
@@ -1119,7 +1119,7 @@ class _InfoCard extends StatelessWidget {
                   style: const TextStyle(
                     color: Color(0xFF0F172A),
                     fontSize: 14,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -1251,7 +1251,7 @@ class _LabeledField extends StatelessWidget {
           style: const TextStyle(
             color: Color(0xFF0F172A),
             fontSize: 14,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
           ),
         ),
         const SizedBox(height: 7),
@@ -1304,7 +1304,7 @@ class _CenteredState extends StatelessWidget {
               style: const TextStyle(
                 color: Color(0xFF0F172A),
                 fontSize: 16,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 6),

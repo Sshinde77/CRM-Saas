@@ -1,0 +1,130 @@
+# Backend Pagination, Search & Filtering Across List APIs (2026-10-10)
+
+This document records the implementation of server-side pagination, global text search, deterministic sorting, and multi-field filtering across normal list APIs in the backend.
+
+---
+
+## 1. Standard Paginated Response Format
+
+Normal list endpoints return a standard envelope structure:
+
+```json
+{
+  "items": [ ... ],
+  "total": 45,
+  "page": 1,
+  "page_size": 10,
+  "total_pages": 5
+}
+```
+
+- **`items`**: Array of records returned for the requested page slice.
+- **`total`**: Total matching records across the entire database after tenant scoping, search, and filtering.
+- **`page`**: Current page number (1-indexed).
+- **`page_size`**: Number of records returned per page.
+- **`total_pages`**: Total number of matching result pages (`ceil(total / page_size)`, or `0` when `total == 0`).
+
+### Defaults and Limits
+- **Default page**: `1`
+- **Default page size**: `10`
+- **Maximum page size**: `100`
+
+---
+
+## 2. Request and Query Execution Flow
+
+All changed list endpoints execute following a strict sequential query pipeline:
+
+1. **Tenant & Authorization Scoping**: Apply organization isolation (`organization_id == current_user.organization_id`), user scoping, and soft-delete exclusions (`is_deleted == False`).
+2. **Apply Filters**: Apply domain-specific query filters (e.g., status, customer, warehouse, date ranges).
+3. **Apply Search**: Execute case-insensitive text search (`ilike`) across all searchable database columns. Search operates across all database records satisfying active filters, not merely the records already displayed on the current page.
+4. **Calculate Total Count**: Execute SQL count (`func.count()`) against the filtered and searched query *before* pagination.
+5. **Apply Deterministic Sorting**: Order records by primary business fields (e.g., `created_at desc`, `order_date desc`) with unique tie-breakers (e.g., `id desc`).
+6. **Apply Database Pagination**: Apply `offset((page - 1) * page_size)` and `limit(page_size)` in the database query.
+7. **Return Response**: Return the requested records in `items` along with `total`, `page`, `page_size`, and `total_pages`.
+
+---
+
+## 3. Changed Endpoints (36 Endpoints)
+
+The following 36 normal list endpoints have been updated from returning raw arrays to returning the standard paginated response envelope. Each endpoint supports `page`, `page_size`, `search`, and its domain-specific filtering parameters:
+
+### Phase 1 — Core Business Lists
+- `GET /customers`
+- `GET /suppliers`
+- `GET /products`
+- `GET /orders`
+- `GET /invoices`
+- `GET /purchases`
+- `GET /supplier-invoices`
+- `GET /expenses`
+- `GET /payment-receipts`
+- `GET /sales-returns`
+
+### Phase 2 — Operations, Logistics and Inventory
+- `GET /leads`
+- `GET /quotations`
+- `GET /deliveries`
+- `GET /deliveries/assigned`
+- `GET /deliveries/notes`
+- `GET /deliveries/collections`
+- `GET /grns`
+- `GET /inventory`
+- `GET /inventory/expiring`
+- `GET /warehouses/stock`
+- `GET /transfers`
+- `GET /vehicles`
+- `GET /vehicle-stock`
+- `GET /warehouses/{warehouse_id}/movements`
+
+### Phase 3 — Users, Activities, Administration and Billing
+- `GET /users`
+- `GET /attendance`
+- `GET /attendance/me`
+- `GET /leaves`
+- `GET /leaves/me`
+- `GET /follow-ups`
+- `GET /visits`
+- `GET /notifications`
+- `GET /dashboard/delivery-partner/orders`
+- `GET /superadmin/organizations`
+- `GET /superadmin/subscription-payments`
+- `GET /billing/payments`
+
+---
+
+## 4. Existing Functionality Preserved
+
+### 4.1 Pre-Existing Paginated Endpoints
+The following endpoints already supported pagination prior to this update and retain their established contracts, filtering, and summary calculations:
+- `GET /supplier-payments`
+- `GET /purchase-returns`
+- `GET /accounts-payable`
+- `GET /reports/{report_type}`
+
+### 4.2 Preserved Full-Data Endpoints
+Existing full-data behavior remains completely unpaginated for dashboard summaries, financial aggregates, customer ledgers, account statements, notification unread counts, report exports, and selection dropdowns:
+- `GET /dashboard/admin`
+- `GET /dashboard/delivery-partner`
+- `GET /accounts-payable/summary`
+- `GET /organizations/overview`
+- `GET /customers/{id}/ledger`
+- `GET /customers/{id}/account-statement`
+- `GET /notifications/unread-count`
+- `GET /reports/{report_type}/export`
+- Dropdown & lookup APIs (`/users/assignable`, `/deliveries/partners`, `/brands`, `/categories`, `/roles`, `/teams`, `/warehouses`, `/plans`, `/companies`, `/expenses/categories`, `/products/{id}/batches`, `/products/{id}/serials`, `/vehicles/{id}/assignments`, `/vehicles/{id}/activity`)
+
+---
+
+## 5. Important Data Flow Rule
+
+- **Paginated List Endpoints**: Return only the requested page slice of records.
+- **`total` Metadata**: Represents the count of matching database records. It does **not** represent monetary totals, revenue sums, or other financial aggregates.
+- **Aggregates & Metrics**: Dashboard KPI cards, revenue summaries, balance sheets, ledgers, and statement calculations must consume dedicated complete-data backend endpoints (e.g., `/dashboard/admin`, `/accounts-payable/summary`, `/reports/*`) rather than summing `items` across a paginated list response.
+
+---
+
+## 6. Existing Pagination and API Compatibility
+
+- The response format for the 36 list endpoints now uses the envelope `{ items, total, page, page_size, total_pages }` instead of a flat JSON array `[...]`.
+- External web and mobile client codebases are hosted outside this backend repository; client consumption compatibility and migration remain unverified and should be updated to read from `response.data.items` and pass `page` / `page_size` parameters.

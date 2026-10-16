@@ -479,7 +479,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                           style: const TextStyle(
                             color: AppColors.textPrimary,
                             fontSize: 16,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
@@ -927,7 +927,7 @@ class _HeaderCard extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 fontSize: 16,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 color: AppColors.textPrimary,
                 height: 1.15,
               ),
@@ -1073,7 +1073,7 @@ class _CustomerAvatar extends StatelessWidget {
         initials,
         style: const TextStyle(
           fontSize: 16,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
           color: AppColors.primary,
           letterSpacing: 0.4,
         ),
@@ -1337,7 +1337,7 @@ class _MetricCard extends StatelessWidget {
                     style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 16,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
@@ -1675,7 +1675,7 @@ class _SummaryBox extends StatelessWidget {
             style: const TextStyle(
               color: AppColors.textPrimary,
               fontSize: 16,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -1876,7 +1876,7 @@ class _DocumentListRow extends StatelessWidget {
               style: const TextStyle(
                 color: AppColors.primary,
                 fontSize: 14,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -2002,7 +2002,7 @@ class _DocumentPreviewMessage extends StatelessWidget {
               style: const TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 16,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 6),
@@ -2149,7 +2149,7 @@ class _AccountStatementCard extends StatelessWidget {
             style: TextStyle(
               color: AppColors.textSecondary,
               fontSize: 14,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               letterSpacing: 1.2,
             ),
           ),
@@ -2180,7 +2180,7 @@ class _AccountStatementCard extends StatelessWidget {
             style: TextStyle(
               color: AppColors.textSecondary,
               fontSize: 14,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               letterSpacing: 1.2,
             ),
           ),
@@ -2269,7 +2269,7 @@ class _StatementMetricCard extends StatelessWidget {
             style: TextStyle(
               color: data.accentColor ?? AppColors.textPrimary,
               fontSize: 16,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -2381,7 +2381,7 @@ class _StatementTransactionCard extends StatelessWidget {
                     style: TextStyle(
                       color: amountColor,
                       fontSize: 16,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(width: 5),
@@ -2498,7 +2498,7 @@ class _PaymentHistoryCard extends StatelessWidget {
                   style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 16,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -2628,7 +2628,7 @@ class _OrderHistoryCard extends StatelessWidget {
                       style: const TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: 14,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -2649,7 +2649,7 @@ class _OrderHistoryCard extends StatelessWidget {
                 style: const TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 16,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],

@@ -298,7 +298,7 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
                           ),
                           label: const Text('Raise Return'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF00092A),
+                            backgroundColor: const Color(0xFF0D1F42),
                             foregroundColor: Colors.white,
                             elevation: 8,
                             shadowColor: const Color(0x330B4A06),
@@ -363,7 +363,7 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
             style: const TextStyle(
               color: textPrimary,
               fontSize: 16,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
           if (subtitle != null) ...[
@@ -462,7 +462,7 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFF00092A)),
+          borderSide: const BorderSide(color: Color(0xFF0D1F42)),
         ),
       ),
       items: items
@@ -525,7 +525,7 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFF00092A)),
+        borderSide: const BorderSide(color: Color(0xFF0D1F42)),
       ),
     );
   }

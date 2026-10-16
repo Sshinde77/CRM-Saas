@@ -77,6 +77,52 @@ flutter:
     - assets/avatar3.png
     - assets/delivery1.png
 
+  fonts:
+    - family: DM Sans
+      fonts:
+        - asset: web-fonts/web-fonts/DM_Sans,Open_Sans/DM_Sans/static/DMSans-Regular.ttf
+          weight: 400
+        - asset: web-fonts/web-fonts/DM_Sans,Open_Sans/DM_Sans/static/DMSans-Medium.ttf
+          weight: 500
+        - asset: web-fonts/web-fonts/DM_Sans,Open_Sans/DM_Sans/static/DMSans-SemiBold.ttf
+          weight: 600
+        - asset: web-fonts/web-fonts/DM_Sans,Open_Sans/DM_Sans/static/DMSans-Bold.ttf
+          weight: 700
+        - asset: web-fonts/web-fonts/DM_Sans,Open_Sans/DM_Sans/static/DMSans-Italic.ttf
+          weight: 400
+          style: italic
+        - asset: web-fonts/web-fonts/DM_Sans,Open_Sans/DM_Sans/static/DMSans-MediumItalic.ttf
+          weight: 500
+          style: italic
+        - asset: web-fonts/web-fonts/DM_Sans,Open_Sans/DM_Sans/static/DMSans-SemiBoldItalic.ttf
+          weight: 600
+          style: italic
+        - asset: web-fonts/web-fonts/DM_Sans,Open_Sans/DM_Sans/static/DMSans-BoldItalic.ttf
+          weight: 700
+          style: italic
+    - family: Open Sans
+      fonts:
+        - asset: web-fonts/web-fonts/Open_Sans/static/OpenSans-Regular.ttf
+          weight: 400
+        - asset: web-fonts/web-fonts/Open_Sans/static/OpenSans-Medium.ttf
+          weight: 500
+        - asset: web-fonts/web-fonts/Open_Sans/static/OpenSans-SemiBold.ttf
+          weight: 600
+        - asset: web-fonts/web-fonts/Open_Sans/static/OpenSans-Bold.ttf
+          weight: 700
+        - asset: web-fonts/web-fonts/Open_Sans/static/OpenSans-Italic.ttf
+          weight: 400
+          style: italic
+        - asset: web-fonts/web-fonts/Open_Sans/static/OpenSans-MediumItalic.ttf
+          weight: 500
+          style: italic
+        - asset: web-fonts/web-fonts/Open_Sans/static/OpenSans-SemiBoldItalic.ttf
+          weight: 600
+          style: italic
+        - asset: web-fonts/web-fonts/Open_Sans/static/OpenSans-BoldItalic.ttf
+          weight: 700
+          style: italic
+
   # assets:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg

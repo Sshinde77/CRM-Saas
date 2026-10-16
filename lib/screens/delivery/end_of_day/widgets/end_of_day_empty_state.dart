@@ -35,7 +35,7 @@ class EndOfDayEmptyState extends StatelessWidget {
               style: TextStyle(
                 color: AppColors.deliveryInk,
                 fontSize: 16,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 18),

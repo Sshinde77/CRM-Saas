@@ -806,7 +806,7 @@ class _Metric extends StatelessWidget {
                     color: color,
                     fontSize: 14,
                     height: 1,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -1153,7 +1153,7 @@ class _LoadedSessionBanner extends StatelessWidget {
                   style: TextStyle(
                     color: AppColors.deliveryInk,
                     fontSize: 16,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -1176,7 +1176,7 @@ class _LoadedSessionBanner extends StatelessWidget {
                   style: const TextStyle(
                     color: AppColors.deliveryGreen,
                     fontSize: 12,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
@@ -1410,7 +1410,7 @@ class _TinyProductMetric extends StatelessWidget {
         style: TextStyle(
           color: color,
           fontSize: 12,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
         ),
       ),
     ],
@@ -1463,7 +1463,7 @@ class _LoadingItemRow extends StatelessWidget {
                     color: AppColors.deliveryInk,
                     fontSize: 14,
                     height: 1.15,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -1527,7 +1527,7 @@ class _LoadingItemRow extends StatelessWidget {
               style: const TextStyle(
                 color: AppColors.textMuted,
                 fontSize: 11,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -1671,7 +1671,7 @@ class _StockAdjustmentSheetState extends State<_StockAdjustmentSheet> {
                 widget.title,
                 style: const TextStyle(
                   fontSize: 16,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.deliveryInk,
                 ),
               ),
@@ -1916,7 +1916,7 @@ class _BottomSummary extends StatelessWidget {
                           ),
                           textStyle: const TextStyle(
                             fontSize: 14,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
@@ -1953,7 +1953,7 @@ class _SummaryStat extends StatelessWidget {
             style: const TextStyle(
               color: AppColors.textMuted,
               fontSize: 14,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 4),
@@ -1969,7 +1969,7 @@ class _SummaryStat extends StatelessWidget {
                     color: Color(0xFF08733A),
                     fontSize: 16,
                     height: 0.95,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -2117,7 +2117,7 @@ class _SectionHeader extends StatelessWidget {
             style: const TextStyle(
               color: AppColors.deliveryInk,
               fontSize: 16,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),
@@ -2310,7 +2310,7 @@ class _ErrorPanel extends StatelessWidget {
               style: TextStyle(
                 color: AppColors.deliveryInk,
                 fontSize: 14,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 5),
@@ -2366,8 +2366,9 @@ InputDecoration _inputDecoration({required String hint, IconData? icon}) {
         ? null
         : Icon(icon, color: const Color(0xFF718096)),
     hintStyle: const TextStyle(
-      color: Color(0xFF98A2B3),
-      fontWeight: FontWeight.w600,
+      color: AppColors.textSecondary,
+      fontSize: 14,
+      fontWeight: FontWeight.w400,
     ),
     filled: true,
     fillColor: Colors.white,

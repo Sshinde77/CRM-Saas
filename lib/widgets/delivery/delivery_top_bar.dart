@@ -18,6 +18,8 @@ class DeliveryTopBar extends StatefulWidget {
   final String? profileName;
   final String? profileRole;
   final Future<void> Function()? onSignOut;
+  final FontWeight titleFontWeight;
+  final double titleFontSize;
 
   const DeliveryTopBar({
     super.key,
@@ -28,10 +30,12 @@ class DeliveryTopBar extends StatefulWidget {
     this.onNotificationTap,
     this.actions = const [],
     this.showNotification = true,
-    this.showProfile = true,
+    this.showProfile = false,
     this.profileName,
     this.profileRole,
     this.onSignOut,
+    this.titleFontWeight = FontWeight.w700,
+    this.titleFontSize = 16,
   });
 
   @override
@@ -167,11 +171,11 @@ class _DeliveryTopBarState extends State<DeliveryTopBar> {
                       widget.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
-                        fontSize: 16,
+                        fontSize: widget.titleFontSize,
                         height: 1.15,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: widget.titleFontWeight,
                       ),
                     ),
                     if (subtitle != null && subtitle.isNotEmpty) ...[
@@ -387,7 +391,7 @@ class _DeliveryAvatar extends StatelessWidget {
                     _initials,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       fontSize: 14,
                     ),
                   );
@@ -397,7 +401,7 @@ class _DeliveryAvatar extends StatelessWidget {
                 _initials,
                 style: const TextStyle(
                   color: Colors.white,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   fontSize: 14,
                 ),
               ),

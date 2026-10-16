@@ -340,136 +340,148 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             16,
           ),
           children: [
-        _HeaderCard(
-          number: _readString(order, const [
-            'order_number',
-            'orderNumber',
-            'number',
-          ], fallback: 'Order'),
-          customer: _customerName(order),
-          customerProfileImageUrl: _customerProfileImageUrl(order),
-          status: status,
-          total: _formatMoney(
-            _readDouble(order, const [
-              'grand_total',
-              'grandTotal',
-              'total',
-              'total_amount',
-            ]),
-          ),
-          onConfirm: widget.useDeliveryShell ||
-                  widget.useSalesManagerShell ||
-                  _isActionLoading ||
-                  !canConfirm
-              ? null
-              : _confirmOrder,
-          onCancel: widget.useDeliveryShell ||
-                  widget.useSalesManagerShell ||
-                  _isActionLoading ||
-                  !canCancel
-              ? null
-              : _cancelOrder,
-          showActions: !widget.useDeliveryShell &&
-              !widget.useSalesManagerShell &&
-              (canConfirm || canCancel),
-        ),
-        const SizedBox(height: 10),
-        OrderProgressTracker(
-          status: _readString(
-            order,
-            const [
-              'fulfillment_status',
-              'fulfilment_status',
-              'delivery_status',
-            ],
-            fallback:
-                widget.initialProgressStatus ??
-                _readString(order, const ['status'], fallback: 'ordered'),
-          ),
-        ),
-        const SizedBox(height: 10),
-        _SectionCard(
-          title: 'Order Summary',
-          icon: Icons.receipt_long_outlined,
-          child: Column(
-            children: [
-              _DetailRow(
-                'Order Date',
-                _formatAnyDate(order, const [
-                  'order_date',
-                  'orderDate',
-                  'created_at',
+            _HeaderCard(
+              number: _readString(order, const [
+                'order_number',
+                'orderNumber',
+                'number',
+              ], fallback: 'Order'),
+              customer: _customerName(order),
+              customerProfileImageUrl: _customerProfileImageUrl(order),
+              status: status,
+              total: _formatMoney(
+                _readDouble(order, const [
+                  'grand_total',
+                  'grandTotal',
+                  'total',
+                  'total_amount',
                 ]),
               ),
-              _DetailRow(
-                'Delivery Date',
-                _formatAnyDate(order, const ['delivery_date', 'deliveryDate']),
+              onConfirm:
+                  widget.useDeliveryShell ||
+                      widget.useSalesManagerShell ||
+                      _isActionLoading ||
+                      !canConfirm
+                  ? null
+                  : _confirmOrder,
+              onCancel:
+                  widget.useDeliveryShell ||
+                      widget.useSalesManagerShell ||
+                      _isActionLoading ||
+                      !canCancel
+                  ? null
+                  : _cancelOrder,
+              showActions:
+                  !widget.useDeliveryShell &&
+                  !widget.useSalesManagerShell &&
+                  (canConfirm || canCancel),
+            ),
+            const SizedBox(height: 10),
+            OrderProgressTracker(
+              status: _readString(
+                order,
+                const [
+                  'fulfillment_status',
+                  'fulfilment_status',
+                  'delivery_status',
+                ],
+                fallback:
+                    widget.initialProgressStatus ??
+                    _readString(order, const ['status'], fallback: 'ordered'),
               ),
-              _DetailRow('Fulfilment', fulfilment.isEmpty ? '-' : fulfilment),
-              _DetailRow(
-                'Payment',
-                _titleCase(
-                  _readString(order, const [
-                    'payment_type',
-                    'paymentType',
-                    'payment_status',
-                  ]),
-                ),
-              ),
-              _DetailRow('Source', _sourceLabel(order)),
-              _DetailRow('Warehouse', _nestedName(order, const ['warehouse'])),
-            ],
-          ),
-        ),
-        const SizedBox(height: 10),
-        _SectionCard(
-          title: 'Delivery & Customer',
-          icon: Icons.local_shipping_outlined,
-          child: Column(
-            children: [
-              _DetailRow('Customer', _customerName(order)),
-              _DetailRow(
-                'Delivery Partner',
-                _nestedName(order, const [
-                  'delivery_partner',
-                  'deliveryPartner',
-                ]),
-              ),
-              _DetailRow(
-                'Delivery Address',
-                _readString(order, const [
-                  'delivery_address',
-                  'deliveryAddress',
-                  'shipping_address',
-                ]),
-              ),
-              _DetailRow('Created By', _creatorName(order)),
-            ],
-          ),
-        ),
-        const SizedBox(height: 10),
-        _SectionCard(
-          title: 'Items (${items.length})',
-          icon: Icons.inventory_2_outlined,
-          child: items.isEmpty
-              ? const Text(
-                  'No items found.',
-                  style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 14,
+            ),
+            const SizedBox(height: 10),
+            _SectionCard(
+              title: 'Order Summary',
+              icon: Icons.receipt_long_outlined,
+              child: Column(
+                children: [
+                  _DetailRow(
+                    'Order Date',
+                    _formatAnyDate(order, const [
+                      'order_date',
+                      'orderDate',
+                      'created_at',
+                    ]),
                   ),
-                )
-              : Column(
-                  children: [
-                    for (final item in items)
-                      _ItemTile(
-                        item: item is Map
-                            ? Map<String, dynamic>.from(item)
-                            : const {},
+                  _DetailRow(
+                    'Delivery Date',
+                    _formatAnyDate(order, const [
+                      'delivery_date',
+                      'deliveryDate',
+                    ]),
+                  ),
+                  _DetailRow(
+                    'Fulfilment',
+                    fulfilment.isEmpty ? '-' : fulfilment,
+                  ),
+                  _DetailRow(
+                    'Payment',
+                    _titleCase(
+                      _readString(order, const [
+                        'payment_type',
+                        'paymentType',
+                        'payment_status',
+                      ]),
+                    ),
+                  ),
+                  _DetailRow('Source', _sourceLabel(order)),
+                  _DetailRow(
+                    'Warehouse',
+                    _nestedName(order, const ['warehouse']),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+            _SectionCard(
+              title: 'Delivery & Customer',
+              icon: Icons.local_shipping_outlined,
+              child: Column(
+                children: [
+                  _DetailRow('Customer', _customerName(order)),
+                  _DetailRow(
+                    'Delivery Partner',
+                    _nestedName(order, const [
+                      'delivery_partner',
+                      'deliveryPartner',
+                    ]),
+                  ),
+                  _DetailRow(
+                    'Delivery Address',
+                    _readString(order, const [
+                      'delivery_address',
+                      'deliveryAddress',
+                      'shipping_address',
+                    ]),
+                  ),
+                  _DetailRow('Created By', _creatorName(order)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+            _SectionCard(
+              title: 'Items (${items.length})',
+              icon: Icons.inventory_2_outlined,
+              child: items.isEmpty
+                  ? const Text(
+                      'No items found.',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 14,
                       ),
-                  ],
-                ),
-        ),
+                    )
+                  : Column(
+                      children: [
+                        for (final item in items)
+                          _ItemTile(
+                            item: item is Map
+                                ? Map<String, dynamic>.from(item)
+                                : const {},
+                          ),
+                      ],
+                    ),
+            ),
           ],
         );
       },
@@ -532,7 +544,7 @@ class _HeaderCard extends StatelessWidget {
                       style: const TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: 16,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 3),
@@ -558,7 +570,7 @@ class _HeaderCard extends StatelessWidget {
             style: const TextStyle(
               color: AppColors.primary,
               fontSize: 16,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
             ),
           ),
           if (showActions) ...[
@@ -656,7 +668,7 @@ class _SectionCard extends StatelessWidget {
                 style: const TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 14,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],
@@ -760,7 +772,7 @@ class _ItemTile extends StatelessWidget {
                   style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 14,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -832,7 +844,7 @@ class _HeaderAction extends StatelessWidget {
         foregroundColor: AppColors.primary,
         elevation: 0,
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
       ),
     );
   }
@@ -857,7 +869,7 @@ class _TinyChip extends StatelessWidget {
         style: const TextStyle(
           color: AppColors.textPrimary,
           fontSize: 11,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );
@@ -897,7 +909,7 @@ class _StateCard extends StatelessWidget {
             style: const TextStyle(
               color: AppColors.textPrimary,
               fontSize: 14,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
             ),
           ),
           if (subtitle != null) ...[

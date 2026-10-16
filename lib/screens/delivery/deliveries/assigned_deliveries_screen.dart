@@ -462,7 +462,7 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
+              Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
               const SizedBox(height: 2),
               Text(message),
             ],
@@ -505,10 +505,7 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
       key: _scaffoldKey,
       backgroundColor: const Color(0xFFF7F9FC),
       drawer: useSalesManagerShell
-          ? buildSalesManagerDrawer(
-              context: context,
-              currentPage: 'Deliveries',
-            )
+          ? buildSalesManagerDrawer(context: context, currentPage: 'Deliveries')
           : const DeliveryPartnerSidebar(
               currentRoute: AppRoutes.deliveryDeliveries,
             ),
@@ -670,9 +667,9 @@ class _SearchAndFilterBar extends StatelessWidget {
               fillColor: AppColors.surface,
               hintText: 'Search by order, customer or status...',
               hintStyle: const TextStyle(
-                color: AppColors.textMuted,
+                color: AppColors.textSecondary,
                 fontSize: 14,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w400,
               ),
               prefixIcon: const Icon(
                 Icons.search_rounded,
@@ -799,7 +796,7 @@ class _FilterTab extends StatelessWidget {
               color: selected ? AppColors.surface : AppColors.textSecondary,
               fontSize: 12 * scale,
               height: 1.05,
-              fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+              fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
             ),
           ),
         ),
@@ -852,7 +849,7 @@ class _SummaryCard extends StatelessWidget {
                     color: AppColors.deliveryInk,
                     fontSize: compact ? 14 : 16,
                     height: 1.15,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -889,7 +886,7 @@ class _SummaryCard extends StatelessWidget {
                   style: TextStyle(
                     color: Color(0xFF31394D),
                     fontSize: compact ? 10.5 : 11.5,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(width: AppSpacing.xs),
@@ -1003,7 +1000,7 @@ class _DeliveryCard extends StatelessWidget {
                                     style: const TextStyle(
                                       color: AppColors.deliveryInk,
                                       fontSize: 13,
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
                                 ),
@@ -1119,7 +1116,7 @@ class _DeliveryCard extends StatelessWidget {
                             color: AppColors.deliveryGreen,
                             fontSize: 15,
                             height: 1,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
@@ -1295,7 +1292,7 @@ class _DeliveryActionButton extends StatelessWidget {
                     style: TextStyle(
                       fontSize: compact ? 10.5 : 12,
                       height: 1,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
@@ -1644,7 +1641,7 @@ class _StatusPill extends StatelessWidget {
               color: tone.foreground,
               fontSize: compact ? 10.5 : 12,
               height: 1,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -1692,7 +1689,7 @@ class _ErrorState extends StatelessWidget {
                 'Deliveries could not load',
                 style: AppTextStyles.sectionHeading.copyWith(
                   color: AppColors.deliveryInk,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               const SizedBox(height: AppSpacing.sm),
@@ -1759,7 +1756,7 @@ class _EmptyState extends StatelessWidget {
               style: const TextStyle(
                 color: AppColors.deliveryInk,
                 fontSize: 16,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 6),

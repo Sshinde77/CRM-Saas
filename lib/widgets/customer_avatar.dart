@@ -34,7 +34,7 @@ class CustomerAvatar extends StatelessWidget {
         initials,
         style: TextStyle(
           color: AppColors.primary,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
           fontSize: size * 0.28,
         ),
       ),

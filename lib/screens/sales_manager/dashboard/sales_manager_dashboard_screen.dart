@@ -4,6 +4,7 @@ import '../../../constants/app_colors.dart';
 import '../../../models/customer_model.dart';
 import '../../../providers/api_provider.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
+import '../../../widgets/sales_manager/sales_manager_bottom_navigation.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
 import '../../admin/leads/admin_leads_screen.dart';
 import '../../admin/orders/admin_orders_screen.dart';
@@ -61,8 +62,13 @@ class _SalesManagerDashboardScreenState
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_didStartLoad) {
-      _future = _loadDashboard();
       _didStartLoad = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        setState(() {
+          _future = _loadDashboard();
+        });
+      });
     }
   }
 
@@ -115,7 +121,9 @@ class _SalesManagerDashboardScreenState
 
   Future<void> _refresh() async {
     final request = _loadDashboard();
-    setState(() => _future = request);
+    setState(() {
+      _future = request;
+    });
     await request;
   }
 
@@ -172,18 +180,27 @@ class _SalesManagerDashboardScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    final textScaler = MediaQuery.textScalerOf(
+      context,
+    ).clamp(minScaleFactor: 0.9, maxScaleFactor: 1.2);
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(textScaler: textScaler),
+      child: Scaffold(
       key: _scaffoldKey,
-      backgroundColor: const Color(0xFFF8FAF9),
+      backgroundColor: AppColors.deliveryBackground,
       drawer: SalesManagerSidebarDrawer(
         onSelect: _handleSidebarSelection,
         currentPage: 'Dashboard',
       ),
+      bottomNavigationBar: const SalesManagerBottomNavigation(currentIndex: 0),
       body: SafeArea(
+        bottom: false,
         child: Column(
           children: [
             SalesManagerTopBar(
               title: 'Dashboard',
+                titleFontWeight: FontWeight.w400,
+                titleFontSize: 20,
               onNotificationTap: () => _showSnack('Notifications'),
             ),
             Expanded(
@@ -209,28 +226,22 @@ class _SalesManagerDashboardScreenState
                       physics: const AlwaysScrollableScrollPhysics(
                         parent: BouncingScrollPhysics(),
                       ),
-                      padding: const EdgeInsets.fromLTRB(12, 10, 12, 18),
-                      child: Center(
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 980),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _GreetingPanel(
-                                data: data,
-                                onAttendanceTap: _openAttendance,
-                              ),
-                              const SizedBox(height: 10),
-                              _QuickActions(
-                                onCreateOrder: _openCreateOrder,
-                                onCreateQuotation: _openCreateQuotation,
-                                onAddCustomer: _openCustomers,
-                                onAddLead: _openLeads,
-                                onScheduleVisit: _openVisits,
-                              ),
-                              const SizedBox(height: 10),
-                              _StatsGrid(data: data),
-                              const SizedBox(height: 10),
+                      child: Column(
+                        children: [
+                          _SalesDashboardHero(data: data),
+                          Center(
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 980),
+                              child: Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  12,
+                                  10,
+                                  12,
+                                  18,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
                               _SalesTargetCard(data: data),
                               const SizedBox(height: 10),
                               _PrioritiesCard(
@@ -239,24 +250,12 @@ class _SalesManagerDashboardScreenState
                                 onVisits: _openVisits,
                                 onQuotations: _openQuotations,
                               ),
-                              const SizedBox(height: 10),
-                              _OrderStatusCard(
-                                data: data,
-                                onViewAll: _openSalesOrders,
+                                  ],
+                                ),
                               ),
-                              const SizedBox(height: 10),
-                              _VisitsCard(
-                                visits: data.recentVisits,
-                                onViewAll: _openVisits,
-                              ),
-                              const SizedBox(height: 10),
-                              _RecentOrdersCard(
-                                orders: data.recentOrders,
-                                onViewAll: _openSalesOrders,
-                              ),
-                            ],
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ),
                   );
@@ -266,13 +265,14 @@ class _SalesManagerDashboardScreenState
           ],
         ),
       ),
+      ),
     );
   }
 
   void _openCustomers() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const DeliveryCustomersScreen()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const DeliveryCustomersScreen()));
   }
 
   void _openLeads() {
@@ -299,6 +299,7 @@ class _SalesManagerDashboardScreenState
     );
   }
 
+  // ignore: unused_element
   void _openCreateQuotation() {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -340,174 +341,194 @@ class _SalesManagerDashboardScreenState
   }
 
   void _openAttendance() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const DeliveryAttendanceScreen()),
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const DeliveryAttendanceScreen()));
+  }
+}
+
+class _SalesDashboardHero extends StatelessWidget {
+  final _DashboardData data;
+
+  const _SalesDashboardHero({required this.data});
+
+  static const double _statsOverlap = 44;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _SalesIdentityHeader(
+              data: data,
+              bottomPadding: 32 + _statsOverlap,
+            ),
+            const SizedBox(height: _StatsGrid.gridHeight - _statsOverlap),
+          ],
+        ),
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 820),
+                child: _StatsGrid(data: data),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
 
-class _GreetingPanel extends StatelessWidget {
+class _SalesIdentityHeader extends StatelessWidget {
   final _DashboardData data;
-  final VoidCallback onAttendanceTap;
+  final double bottomPadding;
 
-  const _GreetingPanel({required this.data, required this.onAttendanceTap});
+  const _SalesIdentityHeader({required this.data, required this.bottomPadding});
 
   @override
   Widget build(BuildContext context) {
-    return _Panel(
-      padding: const EdgeInsets.all(12),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: const BoxDecoration(
-              color: Color(0xFFFFF4D8),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.wb_sunny_outlined,
-              color: Color(0xFFF59E0B),
-              size: 26,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${_greeting()},',
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  data.userName,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.primary,
-                    fontSize: 16,
-                    height: 1.05,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  'Stay focused and close more deals today!',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                if (data.attendance != null) ...[
-                  const SizedBox(height: 7),
-                  InkWell(
-                    onTap: onAttendanceTap,
-                    borderRadius: BorderRadius.circular(999),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 9,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(999),
-                        border: Border.all(color: const Color(0xFFDDE7E1)),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.check_circle_rounded,
-                            color: AppColors.primary,
-                            size: 15,
-                          ),
-                          const SizedBox(width: 5),
-                          Text(
-                            'Checked In - ${_formatTime(data.attendance!.checkIn!)}',
-                            style: const TextStyle(
-                              color: AppColors.primary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.fromLTRB(16, 8, 16, bottomPadding),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            AppColors.deliveryDashboardHeaderStart,
+            AppColors.deliveryDashboardHeaderMid,
+            AppColors.deliveryDashboardHeaderEnd,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.deliveryHeroShadow.withValues(alpha: 0.18),
+            blurRadius: 14,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 820),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final compact = constraints.maxWidth < 360;
+              return Row(
+                children: [
+                  Container(
+                    width: compact ? 68 : 76,
+                    height: compact ? 68 : 76,
+                    decoration: BoxDecoration(
+                      color: AppColors.deliveryProfileAvatarBg,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppColors.deliveryProfileAvatarBorder,
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.person_rounded,
+                      color: AppColors.deliveryDashboardHeaderEnd,
+                      size: compact ? 39 : 44,
+                    ),
+                  ),
+                  SizedBox(width: compact ? 10 : 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Hello, ${data.userName}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: AppColors.surface,
+                            fontSize: 16,
+                            height: 1.15,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Sales Person',
+                          style: TextStyle(
+                            color: AppColors.surface.withValues(alpha: 0.78),
+                            fontSize: 12,
+                            height: 1.2,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  _SalesDatePill(compact: compact),
+                ],
+              );
+            },
+          ),
+        ),
+      ),
     );
   }
 }
 
-class _QuickActions extends StatelessWidget {
-  final VoidCallback onCreateOrder;
-  final VoidCallback onCreateQuotation;
-  final VoidCallback onAddCustomer;
-  final VoidCallback onAddLead;
-  final VoidCallback onScheduleVisit;
+class _SalesDatePill extends StatelessWidget {
+  final bool compact;
 
-  const _QuickActions({
-    required this.onCreateOrder,
-    required this.onCreateQuotation,
-    required this.onAddCustomer,
-    required this.onAddLead,
-    required this.onScheduleVisit,
-  });
+  const _SalesDatePill({required this.compact});
 
   @override
   Widget build(BuildContext context) {
-    final actions = [
-      _QuickAction('Create Order', Icons.shopping_cart_outlined, onCreateOrder),
-      _QuickAction(
-        'Create Quotation',
-        Icons.description_outlined,
-        onCreateQuotation,
-      ),
-      _QuickAction(
-        'Add Customer',
-        Icons.person_add_alt_1_outlined,
-        onAddCustomer,
-      ),
-      _QuickAction('Add Lead', Icons.group_add_outlined, onAddLead),
-      _QuickAction(
-        'Schedule Visit',
-        Icons.event_available_outlined,
-        onScheduleVisit,
-      ),
+    final now = DateTime.now();
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
     ];
-
-    return _Panel(
-      padding: EdgeInsets.zero,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          return Row(
-            children: [
-              for (var i = 0; i < actions.length; i++) ...[
-                Expanded(child: _QuickActionTile(action: actions[i])),
-                if (i != actions.length - 1)
-                  Container(
-                    width: 1,
-                    height: 42,
-                    color: const Color(0xFFE6EBF0),
-                  ),
-              ],
-            ],
-          );
-        },
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 7 : 9,
+        vertical: compact ? 5 : 6,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.secondary.withValues(alpha: 0.10),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Today ${now.day} ${months[now.month - 1]} ${now.year}',
+            style: const TextStyle(
+              color: AppColors.deliveryDashboardHeaderEnd,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(width: 3),
+          const Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: AppColors.deliveryDashboardHeaderEnd,
+            size: 16,
+          ),
+        ],
       ),
     );
   }
@@ -518,51 +539,54 @@ class _StatsGrid extends StatelessWidget {
 
   const _StatsGrid({required this.data});
 
+  static const double _tileHeight = 78;
+  static const double _spacing = 8;
+  static const double gridHeight = _tileHeight * 2 + _spacing;
+
   @override
   Widget build(BuildContext context) {
     final stats = [
       _StatCardData(
         'Assigned Customers',
         data.activeCustomers.toString(),
-        'Active accounts',
         Icons.groups_2_outlined,
         AppColors.primary,
+        AppColors.deliveryKpiMintBg,
       ),
       _StatCardData(
         'Visits Today',
         data.visitsToday.toString(),
-        'Planned visits',
         Icons.calendar_month_outlined,
         const Color(0xFF2563EB),
+        AppColors.deliveryKpiAquaBg,
       ),
       _StatCardData(
         'Pending Follow-ups',
         data.pendingFollowUps.toString(),
-        'Require attention',
         Icons.history_rounded,
         const Color(0xFFF97316),
+        AppColors.deliveryKpiYellowBg,
       ),
       _StatCardData(
         'Orders This Month',
         data.ordersThisMonth.length.toString(),
-        'Total orders',
         Icons.bar_chart_rounded,
         const Color(0xFF16A34A),
+        AppColors.deliveryKpiGreenBg,
       ),
     ];
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final columns = constraints.maxWidth >= 760 ? 4 : 2;
         return GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: stats.length,
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: columns,
-            crossAxisSpacing: 8,
-            mainAxisSpacing: 8,
-            childAspectRatio: constraints.maxWidth >= 760 ? 2.75 : 2.35,
+            crossAxisCount: 2,
+            mainAxisExtent: _tileHeight,
+            crossAxisSpacing: 6,
+            mainAxisSpacing: _spacing,
           ),
           itemBuilder: (context, index) => _StatCard(data: stats[index]),
         );
@@ -582,99 +606,222 @@ class _SalesTargetCard extends StatelessWidget {
         (data.monthlySales / _SalesManagerDashboardScreenState._monthlyTarget)
             .clamp(0.0, 1.0);
     final percent = (progress * 100).round();
+    final statuses = [
+      _SalesSummaryData(
+        label: 'Total Orders',
+        value: data.orders.length.toString(),
+        icon: Icons.receipt_long_outlined,
+        color: const Color(0xFF2563EB),
+        background: const Color(0xFFEAF2FF),
+      ),
+      _SalesSummaryData(
+        label: 'Confirmed',
+        value: data.confirmedOrders.toString(),
+        icon: Icons.fact_check_outlined,
+        color: const Color(0xFFD38B16),
+        background: const Color(0xFFFFF9E8),
+      ),
+      _SalesSummaryData(
+        label: 'Completed',
+        value: data.completedOrders.toString(),
+        icon: Icons.check_circle_outline_rounded,
+        color: AppColors.primary,
+        background: AppColors.deliveryKpiGreenBg,
+      ),
+      _SalesSummaryData(
+        label: 'Cancelled',
+        value: data.cancelledOrders.toString(),
+        icon: Icons.cancel_outlined,
+        color: AppColors.deliveryRed,
+        background: AppColors.deliveryKpiRedBg,
+      ),
+    ];
 
     return _Panel(
       padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.track_changes_rounded,
-                color: AppColors.primary,
-                size: 20,
-              ),
-              const SizedBox(width: 8),
-              const Expanded(
-                child: Text(
-                  'Monthly Sales Target',
-                  style: TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    _currency(_SalesManagerDashboardScreenState._monthlyTarget),
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  const Text(
-                    'Target',
-                    style: TextStyle(color: AppColors.textMuted, fontSize: 14),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 9),
-          Text(
-            _currency(data.monthlySales),
-            style: const TextStyle(
-              color: AppColors.primary,
-              fontSize: 16,
-              height: 1,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          const SizedBox(height: 2),
-          const Text(
-            'Current Sales',
-            style: TextStyle(
-              color: AppColors.textMuted,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 9),
-          Row(
+          const Row(
             children: [
               Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(999),
-                  child: LinearProgressIndicator(
-                    value: progress,
-                    minHeight: 7,
-                    backgroundColor: const Color(0xFFDDEFE4),
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                      AppColors.primary,
-                    ),
+                child: Text(
+                  'Sales Target',
+                  style: TextStyle(
+                    color: AppColors.deliveryDashboardText,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
-              Text(
-                '$percent%',
-                style: const TextStyle(
-                  color: AppColors.primary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w900,
-                ),
+              Icon(
+                Icons.track_changes_rounded,
+                color: AppColors.deliveryDashboardText,
+                size: 18,
               ),
             ],
+          ),
+          const SizedBox(height: 10),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF1F5FB),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFFE4EAF3)),
+            ),
+            child: Row(
+              children: [
+                const _TintIcon(
+                  icon: Icons.currency_rupee_rounded,
+                  color: AppColors.primary,
+                  size: 34,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _currency(data.monthlySales),
+                        style: const TextStyle(
+                          color: AppColors.deliveryDashboardText,
+                          fontSize: 16,
+                          height: 1,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Monthly sales of ${_currency(_SalesManagerDashboardScreenState._monthlyTarget)} target',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.textMuted,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Text(
+                  '$percent%',
+                  style: const TextStyle(
+                    color: AppColors.primary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 6,
+              backgroundColor: const Color(0xFFDDEFE4),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                AppColors.primary,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: statuses.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisExtent: 62,
+              crossAxisSpacing: 6,
+              mainAxisSpacing: 6,
+            ),
+            itemBuilder: (context, index) =>
+                _SalesSummaryTile(data: statuses[index]),
           ),
         ],
       ),
     );
   }
+}
+
+class _SalesSummaryTile extends StatelessWidget {
+  final _SalesSummaryData data;
+
+  const _SalesSummaryTile({required this.data});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 8),
+      decoration: BoxDecoration(
+        color: data.background,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: data.color.withValues(alpha: 0.10)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 30,
+            height: 30,
+            decoration: BoxDecoration(
+              color: AppColors.surface.withValues(alpha: 0.78),
+              borderRadius: BorderRadius.circular(9),
+            ),
+            child: Icon(data.icon, color: data.color, size: 17),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  data.value,
+                  style: const TextStyle(
+                    color: AppColors.deliveryDashboardText,
+                    fontSize: 14,
+                    height: 1,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  data.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SalesSummaryData {
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color color;
+  final Color background;
+
+  const _SalesSummaryData({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.color,
+    required this.background,
+  });
 }
 
 class _PrioritiesCard extends StatelessWidget {
@@ -743,6 +890,7 @@ class _PrioritiesCard extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _OrderStatusCard extends StatelessWidget {
   final _DashboardData data;
   final VoidCallback onViewAll;
@@ -811,6 +959,7 @@ class _OrderStatusCard extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _VisitsCard extends StatelessWidget {
   final List<_VisitRecord> visits;
   final VoidCallback onViewAll;
@@ -840,6 +989,7 @@ class _VisitsCard extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _RecentOrdersCard extends StatelessWidget {
   final List<_DashboardOrder> orders;
   final VoidCallback onViewAll;
@@ -869,44 +1019,6 @@ class _RecentOrdersCard extends StatelessWidget {
   }
 }
 
-class _QuickActionTile extends StatelessWidget {
-  final _QuickAction action;
-
-  const _QuickActionTile({required this.action});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: action.onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(action.icon, color: AppColors.primary, size: 23),
-              const SizedBox(height: 5),
-              Text(
-                action.label,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 14,
-                  height: 1.15,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _StatCard extends StatelessWidget {
   final _StatCardData data;
 
@@ -915,17 +1027,17 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _Panel(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       child: Row(
         children: [
           Container(
-            width: 34,
-            height: 34,
+            width: 38,
+            height: 38,
             decoration: BoxDecoration(
-              color: data.color.withValues(alpha: 0.12),
+              color: data.background,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(data.icon, color: data.color, size: 19),
+            child: Icon(data.icon, color: data.color, size: 23),
           ),
           const SizedBox(width: 9),
           Expanded(
@@ -938,33 +1050,22 @@ class _StatCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 16,
+                    color: AppColors.deliveryDashboardText,
+                    fontSize: 18,
                     height: 1,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   data.title,
-                  maxLines: 1,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 14,
+                    color: AppColors.deliveryDashboardText,
+                    fontSize: 11,
                     height: 1.1,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  data.subtitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.textMuted,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
               ],
@@ -1009,7 +1110,7 @@ class _PriorityRow extends StatelessWidget {
                       style: const TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: 14,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -1031,7 +1132,7 @@ class _PriorityRow extends StatelessWidget {
                 style: TextStyle(
                   color: row.color,
                   fontSize: 16,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               const SizedBox(width: 5),
@@ -1077,7 +1178,7 @@ class _StatusTile extends StatelessWidget {
                     color: AppColors.textPrimary,
                     fontSize: 14,
                     height: 1,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -1177,7 +1278,7 @@ class _ListRow extends StatelessWidget {
                   style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 14,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -1241,7 +1342,7 @@ class _SectionTitle extends StatelessWidget {
             style: const TextStyle(
               color: AppColors.textPrimary,
               fontSize: 14,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),
@@ -1256,7 +1357,7 @@ class _SectionTitle extends StatelessWidget {
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             textStyle: const TextStyle(
               fontSize: 14,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),
@@ -1313,7 +1414,7 @@ class _InitialsAvatar extends StatelessWidget {
         style: const TextStyle(
           color: Color(0xFF2563EB),
           fontSize: 14,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );
@@ -1341,7 +1442,7 @@ class _Pill extends StatelessWidget {
         style: TextStyle(
           color: color,
           fontSize: 14,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );
@@ -1466,7 +1567,7 @@ class _ErrorState extends StatelessWidget {
                 style: TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 16,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               const SizedBox(height: 5),
@@ -1722,27 +1823,19 @@ class _VisitRecord {
   DateTime get dateTime => _readDate(date);
 }
 
-class _QuickAction {
-  final String label;
-  final IconData icon;
-  final VoidCallback onTap;
-
-  const _QuickAction(this.label, this.icon, this.onTap);
-}
-
 class _StatCardData {
   final String title;
   final String value;
-  final String subtitle;
   final IconData icon;
   final Color color;
+  final Color background;
 
   const _StatCardData(
     this.title,
     this.value,
-    this.subtitle,
     this.icon,
     this.color,
+    this.background,
   );
 }
 
@@ -1780,6 +1873,7 @@ extension _StringTail on String {
   }
 }
 
+// ignore: unused_element
 String _greeting() {
   final hour = DateTime.now().hour;
   if (hour < 12) return 'Good Morning';
@@ -1866,6 +1960,7 @@ String _formatShortDate(DateTime value) {
   return '${value.day.toString().padLeft(2, '0')} ${months[value.month - 1]} ${value.year}';
 }
 
+// ignore: unused_element
 String _formatTime(DateTime value) {
   final local = value.toLocal();
   final hour = local.hour == 0

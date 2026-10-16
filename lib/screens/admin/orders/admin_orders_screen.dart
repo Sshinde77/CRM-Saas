@@ -6,8 +6,10 @@ import '../../../utils/product_image_url.dart';
 import '../../../widgets/admin/app_drawer.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/app_calendar_date_picker.dart';
+import '../../../widgets/app_pagination.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
+import '../../../widgets/sales_manager/sales_manager_bottom_navigation.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
 import '../../sales_manager/attendance/sales_manager_attendance_screen.dart';
 import '../../sales_manager/dashboard/sales_manager_dashboard_screen.dart';
@@ -15,6 +17,7 @@ import '../../sales_manager/follow_ups/sales_manager_follow_ups_screen.dart';
 import '../../sales_manager/performance/sales_manager_performance_screen.dart';
 import '../../sales_manager/stock/sales_manager_stock_screen.dart';
 import '../../sales_manager/visits/sales_manager_visits_screen.dart';
+import '../../delivery/orders/delivery_customer_order_detail_screen.dart';
 import '../customers/customers_screen.dart';
 import '../leads/admin_leads_screen.dart';
 import '../quotations/admin_quotations_screen.dart';
@@ -75,7 +78,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
       'Total Orders',
       '21',
       Icons.shopping_cart_outlined,
-      Color(0xFF00092A),
+      Color(0xFF0D1F42),
     ),
     _OrderMetric(
       'Pending Orders',
@@ -221,7 +224,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
         'Total Orders',
         orders.length.toString(),
         Icons.shopping_cart_outlined,
-        const Color(0xFF00092A),
+        const Color(0xFF0D1F42),
       ),
       _OrderMetric(
         'Pending Orders',
@@ -413,10 +416,15 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     if (record.id.isEmpty) return;
     await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => OrderDetailScreen(
-          orderId: record.id,
-          useSalesManagerShell: widget.useSalesManagerShell,
-        ),
+        builder: (_) => widget.useSalesManagerShell
+            ? DeliveryCustomerOrderDetailScreen(
+                orderId: record.id,
+                initialProgressStatus: record.status,
+              )
+            : OrderDetailScreen(
+                orderId: record.id,
+                useSalesManagerShell: false,
+              ),
       ),
     );
     if (mounted) _loadOrders();
@@ -553,7 +561,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: widget.useSalesManagerShell
-          ? AppColors.deliveryBackground
+          ? const Color(0xFFF7F9FC)
           : AppColors.background,
       drawer: widget.useSalesManagerShell
           ? SalesManagerSidebarDrawer(
@@ -561,7 +569,11 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
               onSelect: _handleSalesManagerSidebarSelection,
             )
           : const AppDrawer(activeItem: 'Orders'),
+      bottomNavigationBar: widget.useSalesManagerShell
+          ? const SalesManagerBottomNavigation(currentIndex: 3)
+          : null,
       body: SafeArea(
+        bottom: false,
         child: LayoutBuilder(
           builder: (context, constraints) {
             final isMobile = constraints.maxWidth < 900;
@@ -569,7 +581,10 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
             return Column(
               children: [
                 widget.useSalesManagerShell
-                    ? const SalesManagerTopBar(title: 'Sales Orders')
+                    ? const SalesManagerTopBar(
+                        title: 'Sales Orders',
+                        subtitle: 'View and manage customer orders',
+                      )
                     : _buildTopBar(),
                 Expanded(
                   child: RefreshIndicator(
@@ -578,10 +593,18 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                     child: SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       padding: EdgeInsets.fromLTRB(
-                        isMobile ? 10 : 14,
-                        8,
-                        isMobile ? 10 : 14,
-                        14,
+                        widget.useSalesManagerShell
+                            ? 12
+                            : isMobile
+                            ? 10
+                            : 14,
+                        widget.useSalesManagerShell ? 10 : 8,
+                        widget.useSalesManagerShell
+                            ? 12
+                            : isMobile
+                            ? 10
+                            : 14,
+                        widget.useSalesManagerShell ? 96 : 14,
                       ),
                       child: widget.useSalesManagerShell
                           ? _buildSalesManagerOrders(orders)
@@ -605,128 +628,60 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
         constraints: const BoxConstraints(maxWidth: 820),
         child: Column(
           children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppColors.primary900, AppColors.primary],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+            SizedBox(
+              height: 40,
+              child: TextField(
+                controller: _searchController,
+                textInputAction: TextInputAction.search,
+                onChanged: (_) => setState(() {}),
+                onSubmitted: (_) => _reloadFirstPage(),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: AppColors.surface,
+                  hintText: 'Search by order, customer or status...',
+                  hintStyle: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  prefixIcon: const Icon(
+                    Icons.search_rounded,
+                    color: AppColors.textSecondary,
+                    size: 18,
+                  ),
+                  suffixIcon: _searchController.text.trim().isEmpty
+                      ? null
+                      : IconButton(
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() {});
+                          },
+                          icon: const Icon(Icons.close_rounded, size: 18),
+                        ),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(
+                      color: AppColors.deliverySurfaceBorder,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(
+                      color: AppColors.deliverySurfaceBorder,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: AppColors.primary),
+                  ),
                 ),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.receipt_long_outlined,
-                      color: Colors.white,
-                      size: 22,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Sales orders',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'Review customer orders and delivery progress.',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '$_totalItems orders',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ],
               ),
             ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.deliverySurfaceBorder),
-              ),
-              child: Column(
-                children: [
-                  SizedBox(
-                    height: 42,
-                    child: TextField(
-                      controller: _searchController,
-                      textInputAction: TextInputAction.search,
-                      onChanged: (_) => setState(() {}),
-                      onSubmitted: (_) => _reloadFirstPage(),
-                      decoration: InputDecoration(
-                        hintText: 'Search order number or customer',
-                        hintStyle: const TextStyle(fontSize: 13),
-                        prefixIcon: const Icon(Icons.search_rounded, size: 18),
-                        suffixIcon: IconButton(
-                          onPressed: _reloadFirstPage,
-                          icon: const Icon(Icons.arrow_forward_rounded, size: 18),
-                        ),
-                        filled: true,
-                        fillColor: AppColors.surfaceSoft,
-                        contentPadding: EdgeInsets.zero,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: AppColors.deliverySurfaceBorder,
-                          ),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: AppColors.deliverySurfaceBorder,
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColors.primary),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  _tabBar(desktop: false),
-                ],
-              ),
-            ),
+            const SizedBox(height: 10),
+            _salesStatusTabBar(),
+            const SizedBox(height: 10),
+            _SalesOrdersSummary(total: _totalItems),
             const SizedBox(height: 12),
             if (_isLoading)
               const _SalesOrderState(
@@ -760,6 +715,68 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                 ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _salesStatusTabBar() {
+    return SizedBox(
+      height: 44,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: _tabs.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 6),
+        itemBuilder: (context, index) {
+          final selected = index == _selectedTab;
+          return InkWell(
+            onTap: () async {
+              setState(() {
+                _selectedTab = index;
+                _currentPage = 1;
+              });
+              await _loadOrders();
+            },
+            borderRadius: BorderRadius.circular(999),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 160),
+              curve: Curves.easeOut,
+              alignment: Alignment.center,
+              constraints: const BoxConstraints(minHeight: 40),
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              decoration: BoxDecoration(
+                color: selected ? AppColors.primary : AppColors.surface,
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(
+                  color: selected
+                      ? AppColors.primary
+                      : AppColors.deliverySurfaceBorder,
+                ),
+                boxShadow: selected
+                    ? [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.18),
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
+                        ),
+                      ]
+                    : null,
+              ),
+              child: Text(
+                _tabs[index],
+                maxLines: 1,
+                softWrap: false,
+                style: TextStyle(
+                  color: selected
+                      ? AppColors.surface
+                      : AppColors.textSecondary,
+                  fontSize: 12,
+                  height: 1.05,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -852,10 +869,10 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                 icon: const Icon(Icons.add_rounded, size: 15),
                 label: const Text('New Order'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF00092A),
+                  backgroundColor: const Color(0xFF0D1F42),
                   foregroundColor: Colors.white,
                   elevation: 6,
-                  shadowColor: const Color(0xFF00092A).withValues(alpha: 0.28),
+                  shadowColor: const Color(0xFF0D1F42).withValues(alpha: 0.28),
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(999),
@@ -893,10 +910,10 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
               icon: const Icon(Icons.add_rounded, size: 15),
               label: const Text('New Order'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF00092A),
+                backgroundColor: const Color(0xFF0D1F42),
                 foregroundColor: Colors.white,
                 elevation: 6,
-                shadowColor: const Color(0xFF00092A).withValues(alpha: 0.28),
+                shadowColor: const Color(0xFF0D1F42).withValues(alpha: 0.28),
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(999),
@@ -985,7 +1002,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                 style: TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: mobile ? 15 : 17,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],
@@ -1072,120 +1089,18 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
   }
 
   Widget _paginationBar() {
-    final start = _totalItems == 0 ? 0 : ((_currentPage - 1) * _pageSize) + 1;
-    final end = (_currentPage * _pageSize).clamp(0, _totalItems);
     final totalPages = _hasNextPage && _totalPages <= _currentPage
         ? _currentPage + 1
         : (_totalPages < 1 ? 1 : _totalPages);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceSoft,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      child: Wrap(
-        crossAxisAlignment: WrapCrossAlignment.center,
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          Text(
-            'Showing $start-$end of $_totalItems',
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(width: 4),
-          _pageSizeDropdown(),
-          const SizedBox(width: 4),
-          _pagerButton(
-            icon: Icons.chevron_left_rounded,
-            enabled: _currentPage > 1,
-            onTap: () => _goToPage(_currentPage - 1),
-          ),
-          Text(
-            'Page $_currentPage / $totalPages',
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          _pagerButton(
-            icon: Icons.chevron_right_rounded,
-            enabled: _hasNextPage,
-            onTap: () => _goToPage(_currentPage + 1),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _pageSizeDropdown() {
-    return PopupMenuButton<int>(
-      tooltip: 'Rows per page',
-      onSelected: _changePageSize,
-      itemBuilder: (context) => const [
-        PopupMenuItem(value: 10, child: Text('10 / page')),
-        PopupMenuItem(value: 25, child: Text('25 / page')),
-        PopupMenuItem(value: 50, child: Text('50 / page')),
-      ],
-      child: Container(
-        height: 28,
-        padding: const EdgeInsets.symmetric(horizontal: 9),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: const Color(0xFFE5E7EB)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              '$_pageSize / page',
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(width: 3),
-            const Icon(
-              Icons.keyboard_arrow_down_rounded,
-              color: AppColors.textSecondary,
-              size: 16,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _pagerButton({
-    required IconData icon,
-    required bool enabled,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: enabled ? onTap : null,
-      borderRadius: BorderRadius.circular(999),
-      child: Container(
-        width: 28,
-        height: 28,
-        decoration: BoxDecoration(
-          color: enabled ? Colors.white : const Color(0xFFF1F5F9),
-          shape: BoxShape.circle,
-          border: Border.all(color: const Color(0xFFE5E7EB)),
-        ),
-        child: Icon(
-          icon,
-          size: 18,
-          color: enabled ? AppColors.textPrimary : AppColors.textLightMuted,
-        ),
-      ),
+    return AppPagination(
+      page: _currentPage,
+      pageSize: _pageSize,
+      total: _totalItems,
+      totalPages: totalPages,
+      isLoading: _isLoading,
+      pageSizeOptions: const [10, 20, 50],
+      onPageChanged: _goToPage,
+      onPageSizeChanged: _changePageSize,
     );
   }
 
@@ -1215,7 +1130,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                     _tabs[index],
                     style: TextStyle(
                       color: selected
-                          ? const Color(0xFF00092A)
+                          ? const Color(0xFF0D1F42)
                           : AppColors.textSecondary,
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -1227,7 +1142,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                   width: selected ? 16 : 0,
                   height: 2,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF00092A),
+                    color: const Color(0xFF0D1F42),
                     borderRadius: BorderRadius.circular(999),
                   ),
                 ),
@@ -1323,7 +1238,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
           _loadOrders();
         },
         style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
-        cursorColor: const Color(0xFF00092A),
+        cursorColor: const Color(0xFF0D1F42),
         decoration: InputDecoration(
           filled: true,
           fillColor: Colors.white,
@@ -1344,7 +1259,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFF00092A), width: 1),
+            borderSide: const BorderSide(color: Color(0xFF0D1F42), width: 1),
           ),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 12,
@@ -1429,7 +1344,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                 option,
                 style: TextStyle(
                   color: value == option
-                      ? const Color(0xFF00092A)
+                      ? const Color(0xFF0D1F42)
                       : AppColors.textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
@@ -1457,7 +1372,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
             'All payments',
             style: TextStyle(
               color: _selectedPayment == 'All payments'
-                  ? const Color(0xFF00092A)
+                  ? const Color(0xFF0D1F42)
                   : AppColors.textPrimary,
               fontWeight: FontWeight.w600,
             ),
@@ -1470,7 +1385,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
               payment,
               style: TextStyle(
                 color: _selectedPayment == payment
-                    ? const Color(0xFF00092A)
+                    ? const Color(0xFF0D1F42)
                     : AppColors.textPrimary,
                 fontWeight: FontWeight.w600,
               ),
@@ -1555,7 +1470,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
       style: const TextStyle(
         color: Color(0xFF94A3B8),
         fontSize: 14,
-        fontWeight: FontWeight.w800,
+        fontWeight: FontWeight.w700,
         letterSpacing: 0.8,
       ),
     );
@@ -1725,6 +1640,90 @@ class _DesktopOrderRow extends StatelessWidget {
   }
 }
 
+class _SalesOrdersSummary extends StatelessWidget {
+  final int total;
+
+  const _SalesOrdersSummary({required this.total});
+
+  @override
+  Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 420;
+    return Container(
+      padding: EdgeInsets.all(compact ? 10 : 12),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFE2E7F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: compact ? 34 : 38,
+            height: compact ? 34 : 38,
+            decoration: BoxDecoration(
+              color: AppColors.deliveryKpiGreenBg,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              Icons.receipt_long_outlined,
+              color: AppColors.primary,
+              size: compact ? 18 : 21,
+            ),
+          ),
+          SizedBox(width: compact ? 8 : 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'My Sales Orders',
+                  style: TextStyle(
+                    color: AppColors.deliveryInk,
+                    fontSize: compact ? 14 : 16,
+                    height: 1.15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '$total Orders',
+                  style: TextStyle(
+                    color: const Color(0xFF4F5870),
+                    fontSize: compact ? 10.5 : 11.5,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Sort by: Date',
+                style: TextStyle(
+                  color: Color(0xFF31394D),
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              SizedBox(width: 4),
+              Icon(Icons.expand_more_rounded, size: 18),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _SalesOrderCard extends StatelessWidget {
   final _OrderRecord record;
   final VoidCallback onOpen;
@@ -1733,121 +1732,310 @@ class _SalesOrderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onOpen,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.deliverySurfaceBorder),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.04),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
+    final compact = MediaQuery.sizeOf(context).width < 360;
+    return InkWell(
+      onTap: onOpen,
+      borderRadius: BorderRadius.circular(12),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        width: double.infinity,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE2E7F0)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            Positioned(
+              left: 0,
+              top: 0,
+              bottom: 0,
+              child: ColoredBox(
+                color: record.statusColor,
+                child: const SizedBox(width: 3),
               ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+            ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                compact ? 10 : 12,
+                10,
+                compact ? 10 : 12,
+                9,
+              ),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _CustomerAvatar(imageUrl: record.customerProfileImageUrl),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          record.number,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          record.customer,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  _StatusChip(
-                    label: record.status,
-                    foreground: record.statusColor,
-                    background: record.statusBackground,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  _SalesOrderMeta(Icons.inventory_2_outlined, '${record.items} items'),
-                  _SalesOrderMeta(Icons.currency_rupee_rounded, record.total),
-                  _SalesOrderMeta(Icons.payments_outlined, record.payment),
-                  _SalesOrderMeta(Icons.calendar_today_outlined, record.date),
-                ],
-              ),
-              const SizedBox(height: 12),
-              const Divider(height: 1, color: AppColors.deliverySurfaceBorder),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  const Icon(
-                    Icons.local_shipping_outlined,
-                    size: 16,
-                    color: AppColors.textSecondary,
-                  ),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      record.deliveryPartner == '-'
-                          ? 'Delivery partner not assigned'
-                          : record.deliveryPartner,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _SalesCustomerAvatar(
+                        imageUrl: record.customerProfileImageUrl,
+                        foreground: record.statusColor,
+                        background: record.statusBackground,
                       ),
-                    ),
+                      const SizedBox(width: 9),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    record.number,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      color: AppColors.deliveryInk,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 5),
+                                _SalesStatusPill(
+                                  label: record.status,
+                                  foreground: record.statusColor,
+                                  background: record.statusBackground,
+                                  compact: compact,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 3),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.calendar_today_outlined,
+                                  color: AppColors.textMuted,
+                                  size: 11,
+                                ),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Text(
+                                    record.date,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      color: AppColors.textMuted,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 7),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _SalesOrderField(
+                                    label: 'Customer',
+                                    value: record.customer,
+                                    compact: compact,
+                                  ),
+                                ),
+                                Container(
+                                  width: 1,
+                                  height: 25,
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: 9,
+                                  ),
+                                  color: const Color(0xFFE2E7F0),
+                                ),
+                                Expanded(
+                                  child: _SalesOrderField(
+                                    label: 'Payment',
+                                    value: record.payment,
+                                    compact: compact,
+                                  ),
+                                ),
+                                const Icon(
+                                  Icons.chevron_right_rounded,
+                                  color: AppColors.deliveryInk,
+                                  size: 17,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  const Icon(
-                    Icons.chevron_right_rounded,
-                    color: AppColors.textSecondary,
-                    size: 20,
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          record.total,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: AppColors.primary,
+                            fontSize: 15,
+                            height: 1,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      const Icon(
+                        Icons.inventory_2_outlined,
+                        color: AppColors.textMuted,
+                        size: 14,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${record.items} items',
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
+class _SalesOrderField extends StatelessWidget {
+  final String label;
+  final String value;
+  final bool compact;
+
+  const _SalesOrderField({
+    required this.label,
+    required this.value,
+    required this.compact,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: AppColors.textMuted,
+            fontSize: compact ? 10.5 : 12,
+            height: 1,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: AppColors.deliveryInk,
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SalesCustomerAvatar extends StatelessWidget {
+  final String imageUrl;
+  final Color foreground;
+  final Color background;
+
+  const _SalesCustomerAvatar({
+    required this.imageUrl,
+    required this.foreground,
+    required this.background,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final url = imageUrl.trim();
+    return Container(
+      width: 36,
+      height: 36,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(color: background, shape: BoxShape.circle),
+      child: url.isEmpty
+          ? Icon(Icons.person_outline_rounded, color: foreground, size: 20)
+          : Image.network(
+              url,
+              fit: BoxFit.cover,
+              errorBuilder: (_, error, stackTrace) => Icon(
+                Icons.person_outline_rounded,
+                color: foreground,
+                size: 20,
+              ),
+            ),
+    );
+  }
+}
+
+class _SalesStatusPill extends StatelessWidget {
+  final String label;
+  final Color foreground;
+  final Color background;
+  final bool compact;
+
+  const _SalesStatusPill({
+    required this.label,
+    required this.foreground,
+    required this.background,
+    required this.compact,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 6 : 7,
+        vertical: compact ? 3 : 4,
+      ),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: foreground.withValues(alpha: 0.24)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            _salesOrderStatusIcon(label),
+            color: foreground,
+            size: compact ? 10 : 11,
+          ),
+          const SizedBox(width: 3),
+          Text(
+            label,
+            style: TextStyle(
+              color: foreground,
+              fontSize: compact ? 10.5 : 12,
+              height: 1,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ignore: unused_element
 class _SalesOrderMeta extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -1988,7 +2176,7 @@ class _OrderMobileCard extends StatelessWidget {
                         style: const TextStyle(
                           color: AppColors.textPrimary,
                           fontSize: 14,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -2171,7 +2359,7 @@ class _OrdersStatePanel extends StatelessWidget {
             style: const TextStyle(
               color: AppColors.textPrimary,
               fontSize: 14,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
           if (subtitle != null) ...[
@@ -2616,6 +2804,24 @@ _ChipColors _statusColors(String status) {
     return const _ChipColors(Color(0xFF7C3AED), Color(0xFFF3E8FF));
   }
   return const _ChipColors(Color(0xFF64748B), Color(0xFFF1F5F9));
+}
+
+IconData _salesOrderStatusIcon(String status) {
+  final normalized = _AdminOrdersScreenState._normalizeStatus(status);
+  if (normalized == 'delivered' || normalized == 'completed') {
+    return Icons.check_circle_outline_rounded;
+  }
+  if (normalized == 'confirmed') return Icons.fact_check_outlined;
+  if (normalized == 'processing') return Icons.sync_rounded;
+  if (normalized == 'out for delivery') {
+    return Icons.local_shipping_outlined;
+  }
+  if (normalized == 'cancelled') return Icons.cancel_outlined;
+  if (normalized == 'returned') return Icons.keyboard_return_rounded;
+  if (normalized == 'partially delivered') {
+    return Icons.inventory_2_outlined;
+  }
+  return Icons.schedule_rounded;
 }
 
 extension _StringTakeLast on String {

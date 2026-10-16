@@ -24,7 +24,7 @@ class _AccountScreenState extends State<AccountScreen> {
   static const Color _titleColor = Color(0xFF0F172A);
   static const Color _mutedColor = Color(0xFF64748B);
   static const Color _cardBg = Colors.white;
-  static const Color _accent = Color(0xFF00092A);
+  static const Color _accent = Color(0xFF0D1F42);
   final ApiService _apiService = ApiService();
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -292,7 +292,7 @@ class _AccountScreenState extends State<AccountScreen> {
               style: TextStyle(
                 color: _titleColor,
                 fontSize: 16,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
               ),
             ),
             const Spacer(),
@@ -358,7 +358,7 @@ class _AccountScreenState extends State<AccountScreen> {
                             style: const TextStyle(
                               color: _titleColor,
                               fontSize: 16,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
@@ -406,7 +406,7 @@ class _AccountScreenState extends State<AccountScreen> {
         style: const TextStyle(
           color: _accent,
           fontSize: 16,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
         ),
       );
     }
@@ -424,7 +424,7 @@ class _AccountScreenState extends State<AccountScreen> {
               style: const TextStyle(
                 color: _accent,
                 fontSize: 16,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
               ),
             ),
           );
@@ -442,7 +442,7 @@ class _AccountScreenState extends State<AccountScreen> {
     if (photoUrl == null || photoUrl.isEmpty) {
       return Text(
         initial,
-        style: const TextStyle(color: _accent, fontWeight: FontWeight.w800),
+        style: const TextStyle(color: _accent, fontWeight: FontWeight.w700),
       );
     }
 
@@ -455,7 +455,7 @@ class _AccountScreenState extends State<AccountScreen> {
         errorBuilder: (context, error, stackTrace) {
           return Text(
             initial,
-            style: const TextStyle(color: _accent, fontWeight: FontWeight.w800),
+            style: const TextStyle(color: _accent, fontWeight: FontWeight.w700),
           );
         },
       ),
@@ -563,7 +563,7 @@ class _AccountScreenState extends State<AccountScreen> {
                       style: const TextStyle(
                         color: _titleColor,
                         fontSize: 16,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -608,7 +608,7 @@ class _AccountScreenState extends State<AccountScreen> {
                     style: TextStyle(
                       color: _titleColor,
                       fontSize: 16,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       height: 1,
                     ),
                   ),
@@ -626,7 +626,7 @@ class _AccountScreenState extends State<AccountScreen> {
                   style: TextStyle(
                     color: _titleColor,
                     fontSize: 14,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 SizedBox(height: 6),
@@ -684,7 +684,7 @@ class _AccountScreenState extends State<AccountScreen> {
                       : 'S',
                   style: const TextStyle(
                     color: _accent,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -698,7 +698,7 @@ class _AccountScreenState extends State<AccountScreen> {
                       style: const TextStyle(
                         color: _titleColor,
                         fontSize: 16,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 3),
@@ -808,7 +808,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 style: TextStyle(
                   color: _accent,
                   fontSize: 14,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
@@ -838,7 +838,7 @@ class _AccountScreenState extends State<AccountScreen> {
                   style: TextStyle(
                     color: _titleColor,
                     fontSize: 14,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -914,7 +914,7 @@ class _AccountScreenState extends State<AccountScreen> {
             style: TextStyle(
               color: _accent,
               fontSize: 14,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),
@@ -1108,7 +1108,7 @@ class _AccountScreenState extends State<AccountScreen> {
           style: const TextStyle(
             color: _titleColor,
             fontSize: 14,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ],
@@ -1184,7 +1184,7 @@ class _AccountScreenState extends State<AccountScreen> {
           style: TextStyle(
             color: _accent,
             fontSize: 14,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
@@ -1222,7 +1222,7 @@ class _AccountScreenState extends State<AccountScreen> {
                   style: const TextStyle(
                     color: _titleColor,
                     fontSize: 14,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -1634,7 +1634,7 @@ class _SectionCard extends StatelessWidget {
                     width: 30,
                     height: 30,
                     decoration: const BoxDecoration(
-                      color: Color(0xFF00092A),
+                      color: Color(0xFF0D1F42),
                       shape: BoxShape.circle,
                     ),
                     alignment: Alignment.center,
@@ -1643,7 +1643,7 @@ class _SectionCard extends StatelessWidget {
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 14,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -1657,7 +1657,7 @@ class _SectionCard extends StatelessWidget {
                           style: const TextStyle(
                             color: _AccountScreenState._titleColor,
                             fontSize: 16,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                         const SizedBox(height: 2),

@@ -229,10 +229,7 @@ class _DeliveryExpensesScreenState extends State<DeliveryExpensesScreen> {
         key: _scaffoldKey,
         backgroundColor: AppColors.deliveryBackground,
         drawer: useSalesManagerShell
-            ? buildSalesManagerDrawer(
-                context: context,
-                currentPage: 'Expenses',
-              )
+            ? buildSalesManagerDrawer(context: context, currentPage: 'Expenses')
             : const DeliveryPartnerSidebar(
                 currentRoute: AppRoutes.deliveryExpenses,
               ),
@@ -404,7 +401,7 @@ class _HeaderCard extends StatelessWidget {
                     color: AppColors.deliveryInk,
                     fontSize: compact ? 14 : 16,
                     height: 1.15,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -547,7 +544,7 @@ class _MetricTile extends StatelessWidget {
                     color: AppColors.deliveryInk,
                     fontSize: 14,
                     height: 1.1,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 3),
@@ -598,7 +595,8 @@ class _FiltersCard extends StatelessWidget {
               hintText: 'Search category, purpose, or claim id',
               hintStyle: const TextStyle(
                 color: AppColors.textSecondary,
-                fontSize: 12,
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
               ),
               prefixIcon: const Icon(Icons.search_rounded, size: 20),
               isDense: true,
@@ -649,7 +647,7 @@ class _FiltersCard extends StatelessWidget {
                         ? AppColors.surface
                         : AppColors.textSecondary,
                     fontSize: 10.5,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                   selectedColor: AppColors.deliveryGreen,
                   backgroundColor: AppColors.surface,
@@ -740,7 +738,7 @@ class _ExpenseCard extends StatelessWidget {
                                     style: const TextStyle(
                                       color: AppColors.deliveryInk,
                                       fontSize: 13,
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
                                 ),
@@ -845,7 +843,7 @@ class _ExpenseCard extends StatelessWidget {
                                       color: AppColors.deliveryGreen,
                                       fontSize: 13,
                                       height: 1,
-                                      fontWeight: FontWeight.w900,
+                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
                                 ),
@@ -903,7 +901,7 @@ class _ExpenseDetailsDialog extends StatelessWidget {
                       style: const TextStyle(
                         color: AppColors.deliveryInk,
                         fontSize: 18,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -1294,7 +1292,7 @@ class _ExpenseFormSheetState extends State<_ExpenseFormSheet> {
                       style: const TextStyle(
                         color: AppColors.deliveryInk,
                         fontSize: 18,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -1497,7 +1495,7 @@ class _SectionHeader extends StatelessWidget {
             style: const TextStyle(
               color: AppColors.deliveryInk,
               fontSize: 14,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),
@@ -1579,7 +1577,7 @@ class _StatusBadge extends StatelessWidget {
         style: TextStyle(
           color: color,
           fontSize: compact ? 9.5 : 11,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );
@@ -1642,7 +1640,7 @@ class _StateView extends StatelessWidget {
               style: const TextStyle(
                 color: AppColors.deliveryInk,
                 fontSize: 16,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 6),

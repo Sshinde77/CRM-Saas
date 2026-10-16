@@ -151,7 +151,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                                               style: TextStyle(
                                                 color: Color(0xFF111827),
                                                 fontSize: 16,
-                                                fontWeight: FontWeight.w800,
+                                                fontWeight: FontWeight.w700,
                                               ),
                                             ),
                                             SizedBox(height: 8),
@@ -181,7 +181,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                                               style: TextStyle(
                                                 color: Color(0xFF111827),
                                                 fontSize: 16,
-                                                fontWeight: FontWeight.w800,
+                                                fontWeight: FontWeight.w700,
                                               ),
                                             ),
                                             SizedBox(height: 8),
@@ -279,7 +279,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         icon: Icon(Icons.add, size: compact ? 16 : 17),
         label: const Text('Add Category'),
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF00092A),
+          backgroundColor: const Color(0xFF0D1F42),
           foregroundColor: Colors.white,
           elevation: 0,
           padding: EdgeInsets.symmetric(horizontal: compact ? 14 : 16),
@@ -301,7 +301,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   Widget _loadingState() {
     return const Padding(
       padding: EdgeInsets.symmetric(vertical: 56),
-      child: Center(child: CircularProgressIndicator(color: Color(0xFF00092A))),
+      child: Center(child: CircularProgressIndicator(color: Color(0xFF0D1F42))),
     );
   }
 
@@ -330,9 +330,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         decoration: InputDecoration(
           hintText: 'Search categories',
           hintStyle: const TextStyle(
-            color: Color(0xFF94A3B8),
+            color: AppColors.textSecondary,
             fontSize: 14,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w400,
           ),
           prefixIcon: const Icon(Icons.search_rounded, size: 20),
           filled: true,
@@ -351,7 +351,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: Color(0xFF00092A)),
+            borderSide: const BorderSide(color: Color(0xFF0D1F42)),
           ),
         ),
       ),
@@ -455,9 +455,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                   child: Text(
                     category.imageLabel,
                     style: const TextStyle(
-                      color: Color(0xFF00092A),
+                      color: Color(0xFF0D1F42),
                       fontSize: 14,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
@@ -535,9 +535,9 @@ class _CategoryCompactCard extends StatelessWidget {
             child: Text(
               category.imageLabel,
               style: const TextStyle(
-                color: Color(0xFF00092A),
+                color: Color(0xFF0D1F42),
                 fontSize: 14,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -604,7 +604,7 @@ class _TableHead extends StatelessWidget {
       style: const TextStyle(
         color: Color(0xFF94A3B8),
         fontSize: 14,
-        fontWeight: FontWeight.w800,
+        fontWeight: FontWeight.w700,
         letterSpacing: 1.0,
       ),
     );

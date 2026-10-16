@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../constants/app_colors.dart';
+import '../sidebar_logout_button.dart';
 
 class SuperAdminSidebarDrawer extends StatelessWidget {
   final String currentPage;
@@ -80,7 +81,7 @@ class SuperAdminSidebar extends StatelessWidget {
                           style: TextStyle(
                             color: AppColors.textPrimary,
                             fontSize: 14,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                         SizedBox(height: 2),
@@ -106,7 +107,7 @@ class SuperAdminSidebar extends StatelessWidget {
                 style: TextStyle(
                   color: AppColors.textSecondary.withValues(alpha: 0.72),
                   fontSize: 14,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   letterSpacing: 1.2,
                 ),
               ),
@@ -181,7 +182,7 @@ class SuperAdminSidebar extends StatelessWidget {
                                         : AppColors.textSecondary,
                                     fontSize: 14,
                                     fontWeight: selected
-                                        ? FontWeight.w800
+                                        ? FontWeight.w700
                                         : FontWeight.w600,
                                   ),
                                 ),
@@ -195,6 +196,8 @@ class SuperAdminSidebar extends StatelessWidget {
                 },
               ),
             ),
+            const Divider(height: 1, color: AppColors.border),
+            const SidebarLogoutButton(),
           ],
         ),
       ),

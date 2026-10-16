@@ -192,7 +192,7 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                       style: TextStyle(
                         color: textPrimary,
                         fontSize: 16,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -274,7 +274,7 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                             style: TextStyle(
                               color: textPrimary,
                               fontSize: 16,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -403,7 +403,7 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                   style: const TextStyle(
                     color: textPrimary,
                     fontSize: 16,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -468,7 +468,7 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                       style: const TextStyle(
                         color: textPrimary,
                         fontSize: 14,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 2),

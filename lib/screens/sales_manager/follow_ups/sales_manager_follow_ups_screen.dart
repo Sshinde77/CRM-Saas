@@ -77,11 +77,13 @@ class _SalesManagerFollowUpsScreenState
   List<_FollowUpItem> get _visibleItems {
     final query = _searchController.text.trim().toLowerCase();
     return _items.where((item) {
-      final matchesFilter = _selectedFilter == 'All' ||
+      final matchesFilter =
+          _selectedFilter == 'All' ||
           (_selectedFilter == 'Upcoming'
               ? item.status != 'Done'
               : item.status == _selectedFilter);
-      final matchesQuery = query.isEmpty ||
+      final matchesQuery =
+          query.isEmpty ||
           item.customerName.toLowerCase().contains(query) ||
           item.contactPerson.toLowerCase().contains(query) ||
           item.note.toLowerCase().contains(query);
@@ -275,7 +277,7 @@ class _SalesManagerFollowUpsScreenState
                                           style: TextStyle(
                                             color: AppColors.textPrimary,
                                             fontSize: 16,
-                                            fontWeight: FontWeight.w800,
+                                            fontWeight: FontWeight.w700,
                                           ),
                                         ),
                                       ),
@@ -311,8 +313,9 @@ class _SalesManagerFollowUpsScreenState
                               final item = visibleItems[index];
                               return Center(
                                 child: ConstrainedBox(
-                                  constraints:
-                                      const BoxConstraints(maxWidth: 920),
+                                  constraints: const BoxConstraints(
+                                    maxWidth: 920,
+                                  ),
                                   child: _FollowUpCard(
                                     item: item,
                                     onTap: () => _openDetails(item),
@@ -347,7 +350,7 @@ class _FollowUpPageIntro extends StatelessWidget {
           style: TextStyle(
             color: AppColors.textPrimary,
             fontSize: 18,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
           ),
         ),
         SizedBox(height: 4),
@@ -386,7 +389,9 @@ class _FollowUpSummary extends StatelessWidget {
             final item = cards[index];
             return Expanded(
               child: Padding(
-                padding: EdgeInsets.only(right: index == cards.length - 1 ? 0 : 8),
+                padding: EdgeInsets.only(
+                  right: index == cards.length - 1 ? 0 : 8,
+                ),
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -404,7 +409,7 @@ class _FollowUpSummary extends StatelessWidget {
                         style: const TextStyle(
                           color: AppColors.textPrimary,
                           fontSize: 18,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -453,8 +458,16 @@ class _FollowUpSearch extends StatelessWidget {
       style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
       decoration: InputDecoration(
         hintText: 'Search customer, contact, or note',
-        hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 13),
-        prefixIcon: const Icon(Icons.search_rounded, color: AppColors.primary, size: 20),
+        hintStyle: const TextStyle(
+          color: AppColors.textSecondary,
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+        ),
+        prefixIcon: const Icon(
+          Icons.search_rounded,
+          color: AppColors.primary,
+          size: 20,
+        ),
         suffixIcon: controller.text.isEmpty
             ? null
             : IconButton(
@@ -466,7 +479,10 @@ class _FollowUpSearch extends StatelessWidget {
               ),
         filled: true,
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 12,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.deliveryCardBorder),
@@ -507,7 +523,9 @@ class _FollowUpFilters extends StatelessWidget {
               selectedColor: AppColors.activeMenuBg,
               backgroundColor: Colors.white,
               side: BorderSide(
-                color: active ? AppColors.primary : AppColors.deliveryCardBorder,
+                color: active
+                    ? AppColors.primary
+                    : AppColors.deliveryCardBorder,
               ),
               labelStyle: TextStyle(
                 color: active ? AppColors.primary : AppColors.textSecondary,
@@ -515,7 +533,9 @@ class _FollowUpFilters extends StatelessWidget {
                 fontWeight: FontWeight.w700,
               ),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
           );
         }).toList(),
@@ -542,12 +562,20 @@ class _FollowUpEmptyState extends StatelessWidget {
                 color: AppColors.activeMenuBg,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.event_available_outlined, color: AppColors.primary, size: 28),
+              child: const Icon(
+                Icons.event_available_outlined,
+                color: AppColors.primary,
+                size: 28,
+              ),
             ),
             const SizedBox(height: 12),
             const Text(
               'No follow-ups found',
-              style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w800),
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
             ),
             const SizedBox(height: 4),
             const Text(
@@ -633,7 +661,7 @@ class _FollowUpCard extends StatelessWidget {
                             style: const TextStyle(
                               color: AppColors.textPrimary,
                               fontSize: 15,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
@@ -778,10 +806,7 @@ class _FollowUpDetailScreenState extends State<_FollowUpDetailScreen> {
 
   void _markCompleted() {
     setState(() {
-      _item = _item.copyWith(
-        status: 'Done',
-        color: AppColors.primary,
-      );
+      _item = _item.copyWith(status: 'Done', color: AppColors.primary);
     });
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -839,13 +864,19 @@ class _FollowUpDetailScreenState extends State<_FollowUpDetailScreen> {
                                     label: 'Date',
                                     value: _item.dateLabel,
                                   ),
-                                  const Divider(height: 20, color: AppColors.deliveryCardBorder),
+                                  const Divider(
+                                    height: 20,
+                                    color: AppColors.deliveryCardBorder,
+                                  ),
                                   _DetailRow(
                                     icon: Icons.schedule_rounded,
                                     label: 'Time',
                                     value: _item.timeLabel,
                                   ),
-                                  const Divider(height: 20, color: AppColors.deliveryCardBorder),
+                                  const Divider(
+                                    height: 20,
+                                    color: AppColors.deliveryCardBorder,
+                                  ),
                                   _DetailRow(
                                     icon: Icons.flag_outlined,
                                     label: 'Priority',
@@ -864,13 +895,19 @@ class _FollowUpDetailScreenState extends State<_FollowUpDetailScreen> {
                                     label: 'Contact person',
                                     value: _item.contactPerson,
                                   ),
-                                  const Divider(height: 20, color: AppColors.deliveryCardBorder),
+                                  const Divider(
+                                    height: 20,
+                                    color: AppColors.deliveryCardBorder,
+                                  ),
                                   _DetailRow(
                                     icon: Icons.phone_outlined,
                                     label: 'Phone number',
                                     value: _item.phone,
                                   ),
-                                  const Divider(height: 20, color: AppColors.deliveryCardBorder),
+                                  const Divider(
+                                    height: 20,
+                                    color: AppColors.deliveryCardBorder,
+                                  ),
                                   _DetailRow(
                                     icon: Icons.forum_outlined,
                                     label: 'Follow-up type',
@@ -945,7 +982,11 @@ class _DetailHero extends StatelessWidget {
               color: Colors.white.withValues(alpha: 0.14),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: const Icon(Icons.notifications_active_outlined, color: Colors.white, size: 24),
+            child: const Icon(
+              Icons.notifications_active_outlined,
+              color: Colors.white,
+              size: 24,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -954,12 +995,19 @@ class _DetailHero extends StatelessWidget {
               children: [
                 Text(
                   item.customerName,
-                  style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   '${item.followUpType} with ${item.contactPerson}',
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.78), fontSize: 12),
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.78),
+                    fontSize: 12,
+                  ),
                 ),
               ],
             ),
@@ -993,7 +1041,11 @@ class _DetailSection extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w800),
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
           ),
           const SizedBox(height: 14),
           child,
@@ -1008,7 +1060,11 @@ class _DetailRow extends StatelessWidget {
   final String label;
   final String value;
 
-  const _DetailRow({required this.icon, required this.label, required this.value});
+  const _DetailRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1017,7 +1073,10 @@ class _DetailRow extends StatelessWidget {
         Container(
           width: 36,
           height: 36,
-          decoration: BoxDecoration(color: AppColors.activeMenuBg, borderRadius: BorderRadius.circular(10)),
+          decoration: BoxDecoration(
+            color: AppColors.activeMenuBg,
+            borderRadius: BorderRadius.circular(10),
+          ),
           child: Icon(icon, color: AppColors.primary, size: 18),
         ),
         const SizedBox(width: 12),
@@ -1025,9 +1084,23 @@ class _DetailRow extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 11, fontWeight: FontWeight.w600)),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
               const SizedBox(height: 2),
-              Text(value, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w700)),
+              Text(
+                value,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ],
           ),
         ),
@@ -1043,9 +1116,17 @@ class _ActivityTimeline extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Column(
       children: [
-        _TimelineEntry(title: 'Follow-up scheduled', subtitle: 'Created by Sales Manager', active: true),
+        _TimelineEntry(
+          title: 'Follow-up scheduled',
+          subtitle: 'Created by Sales Manager',
+          active: true,
+        ),
         SizedBox(height: 14),
-        _TimelineEntry(title: 'Customer response', subtitle: 'Waiting for the next interaction', active: false),
+        _TimelineEntry(
+          title: 'Customer response',
+          subtitle: 'Waiting for the next interaction',
+          active: false,
+        ),
       ],
     );
   }
@@ -1056,7 +1137,11 @@ class _TimelineEntry extends StatelessWidget {
   final String subtitle;
   final bool active;
 
-  const _TimelineEntry({required this.title, required this.subtitle, required this.active});
+  const _TimelineEntry({
+    required this.title,
+    required this.subtitle,
+    required this.active,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1077,9 +1162,22 @@ class _TimelineEntry extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: const TextStyle(color: AppColors.textPrimary, fontSize: 13, fontWeight: FontWeight.w700)),
+              Text(
+                title,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
               const SizedBox(height: 2),
-              Text(subtitle, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 12,
+                ),
+              ),
             ],
           ),
         ),
@@ -1108,14 +1206,21 @@ class _DetailActionBar extends StatelessWidget {
           height: 48,
           child: FilledButton.icon(
             onPressed: completed ? null : onComplete,
-            icon: Icon(completed ? Icons.task_alt_rounded : Icons.check_rounded, size: 20),
-            label: Text(completed ? 'Follow-up completed' : 'Mark as completed'),
+            icon: Icon(
+              completed ? Icons.task_alt_rounded : Icons.check_rounded,
+              size: 20,
+            ),
+            label: Text(
+              completed ? 'Follow-up completed' : 'Mark as completed',
+            ),
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
               disabledBackgroundColor: AppColors.activeMenuBg,
               disabledForegroundColor: AppColors.primary,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
           ),
         ),
@@ -1233,7 +1338,7 @@ class _AddFollowUpSheetState extends State<_AddFollowUpSheet> {
                 style: TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 16,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               const SizedBox(height: 16),

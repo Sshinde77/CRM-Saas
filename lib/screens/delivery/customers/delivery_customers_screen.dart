@@ -284,7 +284,7 @@ class _HeaderCard extends StatelessWidget {
                     color: AppColors.deliveryInk,
                     fontSize: compact ? 14 : 16,
                     height: 1.15,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -427,7 +427,7 @@ class _MetricTile extends StatelessWidget {
                     color: AppColors.deliveryInk,
                     fontSize: 14,
                     height: 1.1,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 3),
@@ -481,9 +481,9 @@ class _SearchCard extends StatelessWidget {
           decoration: InputDecoration(
             hintText: 'Search by name, phone, ID or city',
             hintStyle: const TextStyle(
-              color: AppColors.textMuted,
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
+              color: AppColors.textSecondary,
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
             ),
             prefixIcon: const Icon(
               Icons.search_rounded,
@@ -607,7 +607,7 @@ class _CustomerCard extends StatelessWidget {
                                       overflow: TextOverflow.ellipsis,
                                       style: const TextStyle(
                                         fontSize: 13,
-                                        fontWeight: FontWeight.w900,
+                                        fontWeight: FontWeight.w700,
                                         color: AppColors.deliveryInk,
                                       ),
                                     ),
@@ -622,7 +622,7 @@ class _CustomerCard extends StatelessWidget {
                                           ? AppColors.deliveryOrange
                                           : AppColors.textMuted,
                                       fontSize: 10,
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
                                   const SizedBox(width: 6),
@@ -866,7 +866,7 @@ class _SectionHeader extends StatelessWidget {
             style: const TextStyle(
               color: AppColors.deliveryInk,
               fontSize: 14,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),
@@ -923,7 +923,7 @@ class _StatusBadge extends StatelessWidget {
         style: TextStyle(
           color: color,
           fontSize: 9.5,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );
@@ -994,7 +994,7 @@ class _StateView extends StatelessWidget {
                   style: const TextStyle(
                     color: AppColors.deliveryInk,
                     fontSize: 16,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 6),

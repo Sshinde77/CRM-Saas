@@ -33,7 +33,7 @@ class AppTheme {
         elevation: 0,
         toolbarHeight: kToolbarHeight,
         titleTextStyle: TextStyle(
-          fontFamily: AppTextStyles.fontFamily,
+          fontFamily: AppTextStyles.headingFontFamily,
           fontSize: 16,
           height: 1.2,
           fontWeight: FontWeight.w700,
@@ -108,12 +108,22 @@ class AppTheme {
           ),
         ),
       ),
+      searchBarTheme: const SearchBarThemeData(
+        hintStyle: WidgetStatePropertyAll(AppTextStyles.inputHint),
+        textStyle: WidgetStatePropertyAll(AppTextStyles.body),
+      ),
+      dropdownMenuTheme: const DropdownMenuThemeData(
+        textStyle: AppTextStyles.inputHint,
+        inputDecorationTheme: InputDecorationTheme(
+          hintStyle: AppTextStyles.inputHint,
+        ),
+      ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.surface,
         labelStyle: AppTextStyles.body,
         floatingLabelStyle: AppTextStyles.bodyStrong,
-        hintStyle: AppTextStyles.secondary,
+        hintStyle: AppTextStyles.inputHint,
         helperStyle: AppTextStyles.small,
         errorStyle: AppTextStyles.small.copyWith(color: AppColors.red),
         enabledBorder: OutlineInputBorder(

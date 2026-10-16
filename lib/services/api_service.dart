@@ -28,27 +28,41 @@ class ApiException implements Exception {
   String toString() => message;
 }
 
-class PaginatedOrdersResult {
-  final List<Map<String, dynamic>> orders;
-  final int currentPage;
+class PaginatedResult<T> {
+  final List<T> items;
+  final int page;
   final int pageSize;
-  final int totalItems;
+  final int total;
   final int totalPages;
 
-  const PaginatedOrdersResult({
-    required this.orders,
-    required this.currentPage,
+  const PaginatedResult({
+    required this.items,
+    required this.page,
     required this.pageSize,
-    required this.totalItems,
+    required this.total,
     required this.totalPages,
   });
 
-  bool get hasPreviousPage => currentPage > 1;
+  bool get hasPreviousPage => page > 1;
+  bool get hasNextPage => page < totalPages;
+}
 
-  bool get hasNextPage {
-    if (totalPages > 0) return currentPage < totalPages;
-    return orders.length >= pageSize;
-  }
+class PaginatedOrdersResult extends PaginatedResult<Map<String, dynamic>> {
+  const PaginatedOrdersResult({
+    required List<Map<String, dynamic>> orders,
+    required int currentPage,
+    required super.pageSize,
+    required int totalItems,
+    required super.totalPages,
+  }) : super(
+         items: orders,
+         page: currentPage,
+         total: totalItems,
+       );
+
+  List<Map<String, dynamic>> get orders => items;
+  int get currentPage => page;
+  int get totalItems => total;
 }
 
 class ApiService {
@@ -511,6 +525,8 @@ class ApiService {
       isActive: isActive,
       assignedSalesOfficerId: assignedSalesOfficerId,
     ).toQueryParameters();
+    query['page'] = '1';
+    query['page_size'] = '100';
 
     final response = await _send(
       method: 'GET',
@@ -529,7 +545,56 @@ class ApiService {
         .toList();
   }
 
+  Future<PaginatedResult<CustomerModel>> fetchPaginatedCustomers({
+    int page = 1,
+    int pageSize = 10,
+    String? search,
+    String? category,
+    bool? isActive,
+    String? assignedSalesOfficerId,
+  }) async {
+    final raw = await fetchPaginatedRawList(
+      endpoint: ApiEndpoints.customersList,
+      queryParameters: _cleanQuery({
+        'page': '$page',
+        'page_size': '$pageSize',
+        'search': search,
+        'category': category,
+        'is_active': isActive?.toString(),
+        'assigned_sales_officer_id': assignedSalesOfficerId,
+      }),
+      candidateKeys: const ['customers', 'data', 'items', 'results'],
+      fallbackMessage: 'Invalid customers response.',
+    );
+    return PaginatedResult<CustomerModel>(
+      items: raw.items.map(CustomerModel.fromJson).toList(),
+      page: raw.page,
+      pageSize: raw.pageSize,
+      total: raw.total,
+      totalPages: raw.totalPages,
+    );
+  }
+
   Future<List<Map<String, dynamic>>> fetchRawList({
+    required String endpoint,
+    Map<String, String>? queryParameters,
+    List<String> candidateKeys = const ['data', 'items', 'results'],
+    String fallbackMessage = 'Invalid list response.',
+    Duration? timeout,
+    bool retryOnTimeout = false,
+  }) async {
+    final result = await fetchPaginatedRawList(
+      endpoint: endpoint,
+      queryParameters: {'page': '1', 'page_size': '100', ...?queryParameters},
+      candidateKeys: candidateKeys,
+      fallbackMessage: fallbackMessage,
+      timeout: timeout,
+      retryOnTimeout: retryOnTimeout,
+    );
+    return result.items;
+  }
+
+  Future<PaginatedResult<Map<String, dynamic>>> fetchPaginatedRawList({
     required String endpoint,
     Map<String, String>? queryParameters,
     List<String> candidateKeys = const ['data', 'items', 'results'],
@@ -551,7 +616,32 @@ class ApiService {
       candidateKeys,
       fallbackMessage: fallbackMessage,
     );
-    return rawItems.whereType<Map<String, dynamic>>().toList();
+    final items = rawItems.whereType<Map<String, dynamic>>().toList();
+    final meta = decoded is Map<String, dynamic>
+        ? _extractPaginationMeta(decoded)
+        : const <String, dynamic>{};
+    final requestedPage = int.tryParse(queryParameters?['page'] ?? '') ?? 1;
+    final requestedPageSize =
+        int.tryParse(queryParameters?['page_size'] ?? '') ?? items.length;
+    final total = _readMetaInt(meta, const ['total', 'count'], items.length);
+    final pageSize = _readMetaInt(meta, const [
+      'page_size',
+      'pageSize',
+      'per_page',
+      'perPage',
+      'limit',
+    ], requestedPageSize);
+    return PaginatedResult<Map<String, dynamic>>(
+      items: items,
+      page: _readMetaInt(meta, const ['page', 'current_page'], requestedPage),
+      pageSize: pageSize,
+      total: total,
+      totalPages: _readMetaInt(meta, const [
+        'total_pages',
+        'totalPages',
+        'pages',
+      ], total == 0 || pageSize == 0 ? 0 : (total / pageSize).ceil()),
+    );
   }
 
   Future<AdminDashboardData> fetchAdminDashboard({
@@ -1315,6 +1405,7 @@ class ApiService {
       method: 'GET',
       endpoint: ApiEndpoints.attendanceMe,
       requiresAuth: true,
+      queryParameters: const {'page': '1', 'page_size': '100'},
     );
     final decoded = _tryDecodeBody(response.body.trim());
     if (decoded is List) {
@@ -1463,7 +1554,11 @@ class ApiService {
       method: 'GET',
       endpoint: ApiEndpoints.expensesList,
       requiresAuth: true,
-      queryParameters: _cleanQuery({'submitted_by': submittedBy}),
+      queryParameters: _cleanQuery({
+        'page': '1',
+        'page_size': '100',
+        'submitted_by': submittedBy,
+      }),
     );
     final decoded = _tryDecodeBody(response.body.trim());
     return _extractExpensesList(
@@ -1815,6 +1910,27 @@ class ApiService {
     );
   }
 
+  Future<PaginatedResult<Map<String, dynamic>>> fetchPaginatedSuppliers({
+    int page = 1,
+    int pageSize = 10,
+    String? search,
+    String? category,
+    bool? isActive,
+  }) {
+    return fetchPaginatedRawList(
+      endpoint: ApiEndpoints.suppliersList,
+      queryParameters: _cleanQuery({
+        'page': '$page',
+        'page_size': '$pageSize',
+        'search': search,
+        'category': category,
+        'is_active': isActive?.toString(),
+      }),
+      candidateKeys: const ['suppliers', 'data', 'items', 'results'],
+      fallbackMessage: 'Invalid suppliers response.',
+    );
+  }
+
   Future<List<Map<String, dynamic>>> fetchCategories({String? search}) {
     return fetchRawList(
       endpoint: ApiEndpoints.categoriesList,
@@ -1842,6 +1958,29 @@ class ApiService {
     return fetchRawList(
       endpoint: ApiEndpoints.productsList,
       queryParameters: _cleanQuery({
+        'search': search,
+        'category_id': categoryId,
+        'is_active': isActive?.toString(),
+        'barcode': barcode,
+      }),
+      candidateKeys: const ['products', 'data', 'items', 'results'],
+      fallbackMessage: 'Invalid products response.',
+    );
+  }
+
+  Future<PaginatedResult<Map<String, dynamic>>> fetchPaginatedProducts({
+    int page = 1,
+    int pageSize = 10,
+    String? search,
+    String? categoryId,
+    bool? isActive,
+    String? barcode,
+  }) {
+    return fetchPaginatedRawList(
+      endpoint: ApiEndpoints.productsList,
+      queryParameters: _cleanQuery({
+        'page': '$page',
+        'page_size': '$pageSize',
         'search': search,
         'category_id': categoryId,
         'is_active': isActive?.toString(),
@@ -2076,6 +2215,7 @@ class ApiService {
       method: 'GET',
       endpoint: ApiEndpoints.usersList,
       requiresAuth: true,
+      queryParameters: const {'page': '1', 'page_size': '100'},
     );
 
     final decoded = _tryDecodeBody(response.body.trim());
