@@ -1,3 +1,4 @@
+import 'package:crm_saas/models/list_pagination.dart';
 import 'package:crm_saas/models/customer_model.dart';
 import 'package:crm_saas/providers/api_provider.dart';
 import 'package:crm_saas/routes/app_router.dart';
@@ -25,6 +26,7 @@ class _CustomersProvider extends ApiProvider {
 
   @override
   Future<List<CustomerModel>> fetchCustomers({
+    ListPagination? pagination,
     String? search,
     String? category,
     bool? isActive,
@@ -78,6 +80,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Create Customer'));
       await tester.pumpAndSettle();
+      final requestsBeforeCreate = provider.requests;
       final created = CustomerModel.fromJson({
         'id': 'new',
         'name': 'New Store',
@@ -87,7 +90,7 @@ void main() {
         tester.element(find.byType(CreateDeliveryCustomerScreen)),
       ).pop(created);
       await tester.pumpAndSettle();
-      expect(provider.requests, 2);
+      expect(provider.requests, requestsBeforeCreate + 1);
       expect(find.text('New Store'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },

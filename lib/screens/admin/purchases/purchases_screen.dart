@@ -1,3 +1,5 @@
+import '../../../models/list_pagination.dart';
+import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
@@ -51,6 +53,13 @@ class PurchasesScreen extends StatefulWidget {
 }
 
 class _PurchasesScreenState extends State<PurchasesScreen> {
+  final _pagination = ListPagination();
+  @override
+  void dispose() {
+    _pagination.dispose();
+    super.dispose();
+  }
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   static const Color textPrimary = AppColors.textPrimary;
@@ -157,7 +166,13 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final pageInvoices = _pagination.local(_invoices);
     return Scaffold(
+      bottomNavigationBar: ListPaginationBar(
+        pagination: _pagination,
+        loading: false,
+        onChanged: () => setState(() {}),
+      ),
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       drawer: const AppDrawer(activeItem: 'Purchases'),
@@ -236,8 +251,8 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                         ),
                       )
                     else
-                      ..._invoices.asMap().entries.map((entry) {
-                        final index = entry.key;
+                      ...pageInvoices.asMap().entries.map((entry) {
+                        final index = _invoices.indexOf(entry.value);
                         final invoice = entry.value;
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 14),

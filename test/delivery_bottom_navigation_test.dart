@@ -1,3 +1,4 @@
+import 'package:crm_saas/models/list_pagination.dart';
 import 'package:crm_saas/routes/app_router.dart';
 import 'package:crm_saas/models/customer_model.dart';
 import 'package:crm_saas/providers/api_provider.dart';
@@ -9,6 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 class _ActionProvider extends ApiProvider {
   @override
   Future<List<CustomerModel>> fetchCustomers({
+    ListPagination? pagination,
     String? search,
     String? category,
     bool? isActive,
@@ -17,6 +19,7 @@ class _ActionProvider extends ApiProvider {
 
   @override
   Future<List<Map<String, dynamic>>> fetchProducts({
+    ListPagination? pagination,
     String? search,
     String? categoryId,
     bool? isActive,

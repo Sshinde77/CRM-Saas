@@ -1,3 +1,5 @@
+import '../../../models/list_pagination.dart';
+import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
@@ -17,6 +19,18 @@ class CategoriesScreen extends StatefulWidget {
 }
 
 class _CategoriesScreenState extends State<CategoriesScreen> {
+  final _pagination = ListPagination();
+  int _listRequest = 0;
+  Future<void> _changeListPage() async {
+    if (_pagination.isLoading) return;
+    setState(() => _pagination.isLoading = true);
+    try {
+      await _loadCategories();
+    } finally {
+      if (mounted) setState(() => _pagination.isLoading = false);
+    }
+  }
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
 
@@ -53,24 +67,27 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
   @override
   void dispose() {
+    _pagination.dispose();
     _searchController.dispose();
     super.dispose();
   }
 
   Future<void> _loadCategories() async {
+    final listRequest = ++_listRequest;
+    _pagination.filter(_searchController.text);
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
     try {
-      final items = await _apiProvider.fetchCategories();
-      if (!mounted) return;
+      final items = await _apiProvider.fetchCategories(pagination: _pagination);
+      if (!mounted || listRequest != _listRequest) return;
       setState(() {
         _categories = items.map(_categoryFromJson).toList();
         _isLoading = false;
       });
     } catch (error) {
-      if (!mounted) return;
+      if (!mounted || listRequest != _listRequest) return;
       setState(() {
         _errorMessage = error.toString();
         _isLoading = false;
@@ -99,9 +116,21 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _pagination.filters = {'search': _searchController.text};
+    if (_pagination.observe(_searchController.text)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _loadCategories();
+      });
+    }
+
     final categories = _filteredCategories();
 
     return Scaffold(
+      bottomNavigationBar: ListPaginationBar(
+        pagination: _pagination,
+        loading: _isLoading,
+        onChanged: _changeListPage,
+      ),
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       drawer: const AppDrawer(activeItem: 'Categories'),

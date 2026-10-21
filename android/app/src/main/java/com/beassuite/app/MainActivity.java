@@ -1,4 +1,4 @@
-package com.example.crm_saas;
+package com.beassuite.app;
 
 import io.flutter.embedding.android.FlutterActivity;
 

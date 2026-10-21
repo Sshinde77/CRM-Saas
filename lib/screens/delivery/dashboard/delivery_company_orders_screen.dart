@@ -1,3 +1,5 @@
+import '../../../models/list_pagination.dart';
+import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
@@ -18,6 +20,17 @@ class DeliveryCompanyOrdersScreen extends StatefulWidget {
 
 class _DeliveryCompanyOrdersScreenState
     extends State<DeliveryCompanyOrdersScreen> {
+  final _pagination = ListPagination();
+  Future<void> _changeListPage() async {
+    if (_pagination.isLoading) return;
+    setState(() => _pagination.isLoading = true);
+    try {
+      await _refresh();
+    } finally {
+      if (mounted) setState(() => _pagination.isLoading = false);
+    }
+  }
+
   final TextEditingController _searchController = TextEditingController();
   Future<List<_CompanyOrder>>? _future;
   String _status = 'all';
@@ -35,13 +48,18 @@ class _DeliveryCompanyOrdersScreenState
 
   @override
   void dispose() {
+    _pagination.dispose();
     _searchController.dispose();
     super.dispose();
   }
 
   Future<List<_CompanyOrder>> _loadOrders() async {
+    _pagination.filter(
+      [_searchController.text, _status, _fulfilmentStatus].join('|'),
+    );
     final rows = await ApiProviderScope.of(context)
         .fetchDeliveryPartnerCompanyOrders(
+          pagination: _pagination,
           status: _status == 'all' ? null : _status,
           fulfilmentStatus: _fulfilmentStatus == 'all'
               ? null
@@ -65,7 +83,20 @@ class _DeliveryCompanyOrdersScreenState
 
   @override
   Widget build(BuildContext context) {
+    if (_pagination.observe(
+      [_searchController.text, _status, _fulfilmentStatus].join('|'),
+    )) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _refresh();
+      });
+    }
+
     return Scaffold(
+      bottomNavigationBar: ListPaginationBar(
+        pagination: _pagination,
+        loading: false,
+        onChanged: _changeListPage,
+      ),
       backgroundColor: const Color(0xFFF8FAF9),
       body: SafeArea(
         bottom: false,

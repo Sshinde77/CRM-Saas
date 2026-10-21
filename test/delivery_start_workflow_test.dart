@@ -1,3 +1,4 @@
+import 'package:crm_saas/models/list_pagination.dart';
 import 'dart:convert';
 
 import 'package:crm_saas/models/auth_models.dart';
@@ -32,6 +33,7 @@ class _DeliveryWorkflowProvider extends ApiProvider {
 
   @override
   Future<List<Map<String, dynamic>>> fetchDeliveryPartnerDeliveries({
+    ListPagination? pagination,
     required String deliveryPartnerId,
   }) async => [
     {

@@ -1,3 +1,5 @@
+import '../../../models/list_pagination.dart';
+import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
@@ -9,7 +11,6 @@ import '../../../models/auth_models.dart';
 import '../../../services/api_service.dart';
 import '../../../widgets/admin/app_drawer.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
-import '../../../widgets/app_pagination.dart';
 import '../../../widgets/soft_action_button.dart';
 import 'add_staff_screen.dart';
 
@@ -21,6 +22,18 @@ class AdminUserListScreen extends StatefulWidget {
 }
 
 class _AdminUserListScreenState extends State<AdminUserListScreen> {
+  final _pagination = ListPagination();
+  Future<void> _changeListPage() async {
+    if (_pagination.isLoading) return;
+    setState(() => _pagination.isLoading = true);
+    try {
+      _refreshUsers();
+      await _usersFuture;
+    } finally {
+      if (mounted) setState(() => _pagination.isLoading = false);
+    }
+  }
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
   late final ApiService _apiService;
@@ -40,18 +53,17 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
 
   String _query = '';
   String _selectedStatusFilter = 'All';
-  int _currentPage = 0;
-  int _pageSize = 10;
 
   @override
   void initState() {
     super.initState();
     _apiService = ApiService();
-    _usersFuture = _apiService.fetchUsers();
+    _usersFuture = _apiService.fetchUsers(pagination: _pagination);
   }
 
   @override
   void dispose() {
+    _pagination.dispose();
     _apiService.close();
     _searchController.dispose();
     super.dispose();
@@ -76,26 +88,16 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
     }).toList();
   }
 
-  List<AppUser> _pagedUsers(List<AppUser> users) {
-    final start = _currentPage * _pageSize;
-    if (start >= users.length) {
-      return const <AppUser>[];
-    }
-
-    final end = (start + _pageSize).clamp(0, users.length);
-    return users.sublist(start, end);
-  }
-
   void _setStatusFilter(String value) {
     setState(() {
       _selectedStatusFilter = value;
-      _currentPage = 0;
+      _pagination.reset();
     });
   }
 
   void _refreshUsers() {
     setState(() {
-      _usersFuture = _apiService.fetchUsers();
+      _usersFuture = _apiService.fetchUsers(pagination: _pagination);
     });
   }
 
@@ -412,7 +414,23 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _pagination.filters = {
+      'search': _query,
+      if (_selectedStatusFilter != 'All')
+        'role': _selectedStatusFilter.toLowerCase().replaceAll(' ', '_'),
+    };
+    if (_pagination.observe([_query, _selectedStatusFilter].join('|'))) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _refreshUsers();
+      });
+    }
+
     return Scaffold(
+      bottomNavigationBar: ListPaginationBar(
+        pagination: _pagination,
+        loading: false,
+        onChanged: _changeListPage,
+      ),
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       drawer: const AppDrawer(activeItem: 'Staff', activeSubItem: 'Users'),
@@ -430,20 +448,6 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
                 builder: (context, snapshot) {
                   final allUsers = snapshot.data ?? const <AppUser>[];
                   final users = _filteredUsers(allUsers);
-                  final pageUsers = _pagedUsers(users);
-                  final totalCount = users.length;
-                  final pageCount = totalCount == 0
-                      ? 1
-                      : ((totalCount - 1) ~/ _pageSize) + 1;
-                  final currentPage = _currentPage.clamp(0, pageCount - 1);
-                  if (currentPage != _currentPage) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (mounted) {
-                        setState(() => _currentPage = currentPage);
-                      }
-                    });
-                  }
-
                   return ListView(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
                     children: [
@@ -469,12 +473,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
                       else if (snapshot.hasError)
                         _buildUsersError(snapshot.error.toString())
                       else
-                        _buildStaffList(
-                          pageUsers,
-                          totalCount,
-                          currentPage,
-                          pageCount,
-                        ),
+                        _buildStaffList(users),
                     ],
                   );
                 },
@@ -517,7 +516,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
               controller: _searchController,
               onChanged: (value) => setState(() {
                 _query = value;
-                _currentPage = 0;
+                _pagination.reset();
               }),
               style: const TextStyle(
                 color: textPrimary,
@@ -682,43 +681,21 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
     }
   }
 
-  Widget _buildStaffList(
-    List<AppUser> users,
-    int totalCount,
-    int currentPage,
-    int pageCount,
-  ) {
-    if (users.isEmpty) {
-      return _emptyUsers(
-        _query.isNotEmpty || _selectedStatusFilter != 'All'
-            ? 'No staff match your filters.'
-            : 'No staff available.',
-      );
-    }
-
+  Widget _buildStaffList(List<AppUser> users) {
+    if (users.isEmpty) return _emptyUsers('No staff match your filters.');
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ...users.asMap().entries.map((entry) {
-          final index = (currentPage * _pageSize) + entry.key;
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: _userCard(entry.value, index),
-          );
-        }),
-        const SizedBox(height: 8),
-        AppPagination(
-          page: currentPage + 1,
-          pageSize: _pageSize,
-          total: totalCount,
-          totalPages: pageCount,
-          onPageChanged: (page) => setState(() => _currentPage = page - 1),
-          onPageSizeChanged: (size) => setState(() {
-            _pageSize = size;
-            _currentPage = 0;
-          }),
-        ),
-      ],
+      children: users
+          .map(
+            (user) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: _userCard(
+                user,
+                (_pagination.page - 1) * _pagination.pageSize +
+                    users.indexOf(user),
+              ),
+            ),
+          )
+          .toList(),
     );
   }
 

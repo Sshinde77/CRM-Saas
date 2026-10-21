@@ -1,3 +1,5 @@
+import '../../../models/list_pagination.dart';
+import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
@@ -48,6 +50,8 @@ class InvoicesScreen extends StatefulWidget {
 }
 
 class _InvoicesScreenState extends State<InvoicesScreen> {
+  final _pagination = ListPagination();
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
 
@@ -113,6 +117,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
 
   @override
   void dispose() {
+    _pagination.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -169,7 +174,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
     final isSales = _selectedTab == _InvoiceTab.sales;
     final searchQuery = _searchController.text.trim().toLowerCase();
 
-    final filteredSales = _salesInvoices.where((invoice) {
+    var filteredSales = _salesInvoices.where((invoice) {
       if (searchQuery.isEmpty) return true;
       return invoice.invoiceNo.toLowerCase().contains(searchQuery) ||
           invoice.customer.toLowerCase().contains(searchQuery) ||
@@ -178,7 +183,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
           _formatMoney(invoice.total).toLowerCase().contains(searchQuery);
     }).toList();
 
-    final filteredPurchases = _purchaseInvoices.where((invoice) {
+    var filteredPurchases = _purchaseInvoices.where((invoice) {
       if (searchQuery.isEmpty) return true;
       return invoice.invoiceNo.toLowerCase().contains(searchQuery) ||
           invoice.supplier.toLowerCase().contains(searchQuery) ||
@@ -187,7 +192,18 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
           _formatMoney(invoice.total).toLowerCase().contains(searchQuery);
     }).toList();
 
+    _pagination.filter('$isSales|$searchQuery');
+    if (isSales) {
+      filteredSales = _pagination.local(filteredSales);
+    } else {
+      filteredPurchases = _pagination.local(filteredPurchases);
+    }
     return Scaffold(
+      bottomNavigationBar: ListPaginationBar(
+        pagination: _pagination,
+        loading: false,
+        onChanged: () => setState(() {}),
+      ),
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       drawer: const AppDrawer(activeItem: 'Invoices'),

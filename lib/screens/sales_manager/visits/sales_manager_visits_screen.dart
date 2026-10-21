@@ -1,3 +1,5 @@
+import '../../../models/list_pagination.dart';
+import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
@@ -28,6 +30,8 @@ class SalesManagerVisitsScreen extends StatefulWidget {
 }
 
 class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
+  final _pagination = ListPagination();
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _customerNameController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
@@ -104,6 +108,7 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
 
   @override
   void dispose() {
+    _pagination.dispose();
     _customerNameController.dispose();
     _notesController.dispose();
     super.dispose();
@@ -261,6 +266,7 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final visits = _pagination.local(_visits);
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: AppColors.deliveryBackground,
@@ -268,7 +274,17 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
         onSelect: _handleSidebarSelection,
         currentPage: 'Visits',
       ),
-      bottomNavigationBar: const SalesManagerBottomNavigation(currentIndex: 4),
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListPaginationBar(
+            pagination: _pagination,
+            loading: false,
+            onChanged: () => setState(() {}),
+          ),
+          const SalesManagerBottomNavigation(currentIndex: 4),
+        ],
+      ),
       body: SafeArea(
         child: Column(
           children: [
@@ -289,8 +305,10 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
                       onCheckIn: _handleCheckIn,
                     );
                     final rightPanel = _VisitHistoryPanel(
-                      visits: _visits,
-                      onCloseVisit: _closeVisit,
+                      visits: visits,
+                      onCloseVisit: (index) => _closeVisit(
+                        (_pagination.page - 1) * _pagination.pageSize + index,
+                      ),
                     );
 
                     return Center(

@@ -1,3 +1,5 @@
+import '../../../models/list_pagination.dart';
+import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
@@ -25,6 +27,27 @@ class DeliveryCollectionListScreen extends StatefulWidget {
 
 class _DeliveryCollectionListScreenState
     extends State<DeliveryCollectionListScreen> {
+  final _pendingPagination = ListPagination();
+  final _collectedPagination = ListPagination();
+  ListPagination get _pagination =>
+      _showPending ? _pendingPagination : _collectedPagination;
+  @override
+  void dispose() {
+    _pendingPagination.dispose();
+    _collectedPagination.dispose();
+    super.dispose();
+  }
+
+  Future<void> _changeListPage() async {
+    if (_pagination.isLoading) return;
+    setState(() => _pagination.isLoading = true);
+    try {
+      await _refresh();
+    } finally {
+      if (mounted) setState(() => _pagination.isLoading = false);
+    }
+  }
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late Future<_CollectionDashboardData> _collectionFuture;
   bool _didStartLoad = false;
@@ -42,8 +65,13 @@ class _DeliveryCollectionListScreenState
   Future<_CollectionDashboardData> _loadCollections() async {
     final provider = ApiProviderScope.of(context);
     final results = await Future.wait<Object>([
-      provider.fetchDeliveryCollections(),
-      provider.fetchCustomers(isActive: true),
+      provider.fetchDeliveryCollections(
+        pagination: _showPending ? null : _collectedPagination,
+      ),
+      provider.fetchCustomers(
+        isActive: true,
+        pagination: _showPending ? _pendingPagination : null,
+      ),
     ]);
     final collections = results[0] as List<Map<String, dynamic>>;
     final customers = results[1] as List<CustomerModel>;
@@ -89,9 +117,19 @@ class _DeliveryCollectionListScreenState
         drawer: const DeliveryPartnerSidebar(
           currentRoute: AppRoutes.deliveryCollections,
         ),
-        bottomNavigationBar: DeliveryBottomNavigation(
-          currentIndex: 4,
-          onCollectionCreated: _refresh,
+        bottomNavigationBar: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListPaginationBar(
+              pagination: _pagination,
+              loading: false,
+              onChanged: _changeListPage,
+            ),
+            DeliveryBottomNavigation(
+              currentIndex: 4,
+              onCollectionCreated: _refresh,
+            ),
+          ],
         ),
         body: SafeArea(
           bottom: false,
@@ -156,8 +194,11 @@ class _DeliveryCollectionListScreenState
                                             pendingCustomers: [],
                                           ),
                                       showPending: _showPending,
-                                      onTabChanged: (value) =>
-                                          setState(() => _showPending = value),
+                                      onTabChanged: (value) => setState(() {
+                                        _showPending = value;
+                                        _pagination.reset();
+                                        _collectionFuture = _loadCollections();
+                                      }),
                                       onCollect: _openPaymentCollection,
                                     ),
                             ),

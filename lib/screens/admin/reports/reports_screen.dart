@@ -1,3 +1,5 @@
+import '../../../models/list_pagination.dart';
+import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
@@ -12,6 +14,8 @@ class ReportsScreen extends StatefulWidget {
 }
 
 class _ReportsScreenState extends State<ReportsScreen> {
+  final _pagination = ListPagination();
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   String _selectedPeriod = 'This Month';
@@ -95,7 +99,13 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final reports = _pagination.local(_reports);
     return Scaffold(
+      bottomNavigationBar: ListPaginationBar(
+        pagination: _pagination,
+        loading: false,
+        onChanged: () => setState(() {}),
+      ),
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       drawer: const AppDrawer(activeItem: 'Reports'),
@@ -198,7 +208,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                         return Wrap(
                           spacing: 14,
                           runSpacing: 14,
-                          children: _reports
+                          children: reports
                               .map(
                                 (report) => SizedBox(
                                   width: cardWidth,

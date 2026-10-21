@@ -1,3 +1,5 @@
+import '../../../models/list_pagination.dart';
+import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
@@ -27,6 +29,18 @@ class SalesManagerStockScreen extends StatefulWidget {
 }
 
 class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
+  final _pagination = ListPagination();
+  int _listRequest = 0;
+  Future<void> _changeListPage() async {
+    if (_pagination.isLoading) return;
+    setState(() => _pagination.isLoading = true);
+    try {
+      await _loadStock();
+    } finally {
+      if (mounted) setState(() => _pagination.isLoading = false);
+    }
+  }
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
 
@@ -88,6 +102,8 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
   }
 
   Future<void> _loadStock() async {
+    final listRequest = ++_listRequest;
+    _pagination.filter([_searchController.text, _selectedCategoryId].join('|'));
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -95,13 +111,14 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
 
     try {
       final rows = await _apiProvider.fetchStockBoard(
+        pagination: _pagination,
         search: _searchController.text.trim().isEmpty
             ? null
             : _searchController.text.trim(),
         categoryId: _selectedCategoryId,
       );
       final createdAtByProduct = await _loadProductCreatedAtMap();
-      if (!mounted) return;
+      if (!mounted || listRequest != _listRequest) return;
       setState(() {
         _apiItems = rows
             .map(_StockItem.fromJson)
@@ -122,7 +139,7 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
         _isLoading = false;
       });
     } catch (error) {
-      if (!mounted) return;
+      if (!mounted || listRequest != _listRequest) return;
       setState(() {
         _apiItems = [];
         _errorMessage = error.toString();
@@ -155,6 +172,7 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
 
   @override
   void dispose() {
+    _pagination.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -296,9 +314,22 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_pagination.observe(
+      [_searchController.text, _selectedCategoryId].join('|'),
+    )) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _loadStock();
+      });
+    }
+
     final items = _filteredItems;
 
     return Scaffold(
+      bottomNavigationBar: ListPaginationBar(
+        pagination: _pagination,
+        loading: _isLoading,
+        onChanged: _changeListPage,
+      ),
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       drawer: SalesManagerSidebarDrawer(

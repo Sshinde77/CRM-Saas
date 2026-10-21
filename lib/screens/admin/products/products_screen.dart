@@ -1,3 +1,5 @@
+import '../../../models/list_pagination.dart';
+import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
@@ -7,7 +9,6 @@ import '../../../providers/api_provider.dart';
 import '../../../utils/product_image_url.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
-import '../../../widgets/app_pagination.dart';
 
 class ProductsScreen extends StatefulWidget {
   const ProductsScreen({super.key});
@@ -17,6 +18,18 @@ class ProductsScreen extends StatefulWidget {
 }
 
 class _ProductsScreenState extends State<ProductsScreen> {
+  final _pagination = ListPagination();
+  int _listRequest = 0;
+  Future<void> _changeListPage() async {
+    if (_pagination.isLoading) return;
+    setState(() => _pagination.isLoading = true);
+    try {
+      await _loadProducts();
+    } finally {
+      if (mounted) setState(() => _pagination.isLoading = false);
+    }
+  }
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
 
@@ -27,10 +40,6 @@ class _ProductsScreenState extends State<ProductsScreen> {
   String _selectedCategory = 'All Categories';
   String _selectedBrand = 'All Brands';
   String _sortBy = 'Latest';
-  int _currentPage = 1;
-  int _pageSize = 10;
-  int _totalItems = 0;
-  int _totalPages = 0;
   late ApiProvider _apiProvider;
   bool _providerReady = false;
   bool _isLoading = true;
@@ -161,28 +170,30 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
   @override
   void dispose() {
+    _pagination.dispose();
     _searchController.dispose();
     super.dispose();
   }
 
   Future<void> _loadProducts() async {
+    final listRequest = ++_listRequest;
+    _pagination.filter([_query, _selectedCategory, _selectedBrand].join('|'));
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
     try {
-      final pageResult = await _apiProvider.fetchPaginatedProducts(
-        page: _currentPage,
-        pageSize: _pageSize,
-        search: _query.trim().isEmpty ? null : _query.trim(),
-      );
       final results = await Future.wait([
+        _apiProvider.fetchProducts(
+          pagination: _pagination,
+          search: _query.trim().isEmpty ? null : _query.trim(),
+        ),
         _apiProvider.fetchCategories(),
         _apiProvider.fetchBrands(),
       ]);
-      final products = pageResult.items.map(_ProductItem.fromJson).toList();
+      final products = results[0].map(_ProductItem.fromJson).toList();
       final categories =
-          results[0]
+          results[1]
               .map(
                 (item) => _productText(item, const ['name', 'category_name']),
               )
@@ -191,19 +202,15 @@ class _ProductsScreenState extends State<ProductsScreen> {
               .toList()
             ..sort();
       final brands =
-          results[1]
+          results[2]
               .map((item) => _productText(item, const ['name']))
               .where((value) => value.trim().isNotEmpty)
               .toSet()
               .toList()
             ..sort();
-      if (!mounted) return;
+      if (!mounted || listRequest != _listRequest) return;
       setState(() {
         _products = products;
-        _currentPage = pageResult.page;
-        _pageSize = pageResult.pageSize;
-        _totalItems = pageResult.total;
-        _totalPages = pageResult.totalPages;
         _categories = ['All Categories', ...categories];
         _brands = ['All Brands', ...brands];
         if (!_categories.contains(_selectedCategory)) {
@@ -215,7 +222,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
         _isLoading = false;
       });
     } catch (error) {
-      if (!mounted) return;
+      if (!mounted || listRequest != _listRequest) return;
       setState(() {
         _errorMessage = error.toString();
         _isLoading = false;
@@ -272,7 +279,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
         _products[index] = result;
       } else {
         _products.insert(0, result);
-        _currentPage = 1;
+        _pagination.reset();
       }
     });
   }
@@ -383,9 +390,27 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _pagination.filters = {
+      'search': _query,
+      if (_selectedCategory != 'All Categories') 'category': _selectedCategory,
+      if (_selectedBrand != 'All Brands') 'brand': _selectedBrand,
+    };
+    if (_pagination.observe(
+      [_query, _selectedCategory, _selectedBrand].join('|'),
+    )) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _loadProducts();
+      });
+    }
+
     final filtered = _filteredProducts;
 
     return Scaffold(
+      bottomNavigationBar: ListPaginationBar(
+        pagination: _pagination,
+        loading: _isLoading,
+        onChanged: _changeListPage,
+      ),
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       drawer: const AppDrawer(activeItem: 'Products'),
@@ -433,10 +458,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                           child: _productCard(product, index),
                         );
                       }),
-                    if (filtered.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      _buildPagination(),
-                    ],
+                    if (filtered.isNotEmpty) ...[const SizedBox(height: 8)],
                   ],
                 ),
               ),
@@ -485,14 +507,10 @@ class _ProductsScreenState extends State<ProductsScreen> {
         Expanded(
           child: TextField(
             controller: _searchController,
-            onChanged: (value) => setState(() => _query = value),
-            onSubmitted: (value) {
-              setState(() {
-                _query = value.trim();
-                _currentPage = 1;
-              });
-              _loadProducts();
-            },
+            onChanged: (value) => setState(() {
+              _query = value;
+              _pagination.reset();
+            }),
             style: const TextStyle(color: textPrimary, fontSize: 14),
             decoration: InputDecoration(
               hintText: 'Search products...',
@@ -918,30 +936,6 @@ class _ProductsScreenState extends State<ProductsScreen> {
         ],
       ),
     );
-  }
-
-  Widget _buildPagination() {
-    return AppPagination(
-      page: _currentPage,
-      pageSize: _pageSize,
-      total: _totalItems,
-      totalPages: _totalPages,
-      isLoading: _isLoading,
-      onPageChanged: _setPage,
-      onPageSizeChanged: (size) {
-        setState(() {
-          _pageSize = size;
-          _currentPage = 1;
-        });
-        _loadProducts();
-      },
-    );
-  }
-
-  void _setPage(int page) {
-    if (page < 1 || page > _totalPages || page == _currentPage) return;
-    setState(() => _currentPage = page);
-    _loadProducts();
   }
 
   void _openFiltersSheet() {

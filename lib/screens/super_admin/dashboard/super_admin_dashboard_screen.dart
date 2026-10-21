@@ -1,3 +1,4 @@
+import '../../../widgets/paginated_records.dart';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -798,140 +799,123 @@ class _OrganizationsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.035),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Organizations',
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
+    return PaginatedRecords(
+      items: organizations,
+      builder: (context, organizations) => Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.border),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.035),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
             ),
-          ),
-          const SizedBox(height: 4),
-          const Text(
-            'All organizations on the SAAS CRM platform',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              SizedBox(
-                width: 260,
-                child: Container(
-                  height: 34,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(999),
-                    border: Border.all(color: AppColors.border),
-                  ),
-                  child: TextField(
-                    onChanged: onQueryChanged,
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    cursorColor: AppColors.primary,
-                    decoration: const InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white,
-                      prefixIcon: Icon(
-                        Icons.search_rounded,
-                        size: 18,
-                        color: AppColors.textLightMuted,
-                      ),
-                      hintText: 'Search organizations...',
-                      hintStyle: AppTextStyles.inputHint,
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 8,
-                      ),
-                    ),
-                  ),
-                ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Organizations',
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
               ),
-              const Spacer(),
-              Text(
-                '${organizations.length} results',
-                style: const TextStyle(
-                  color: AppColors.textLightMuted,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: SizedBox(
-              width: 1200,
-              child: Column(
-                children: [
-                  _TableHeader(),
-                  const Divider(height: 1, color: AppColors.border),
-                  ...organizations.map(
-                    (org) => Column(
-                      children: [
-                        _OrganizationRowItem(
-                          row: org,
-                          onViewDetails: onViewDetails,
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'All organizations on the SAAS CRM platform',
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                SizedBox(
+                  width: 260,
+                  child: Container(
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: TextField(
+                      onChanged: onQueryChanged,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      cursorColor: AppColors.primary,
+                      decoration: const InputDecoration(
+                        filled: true,
+                        fillColor: Colors.white,
+                        prefixIcon: Icon(
+                          Icons.search_rounded,
+                          size: 18,
+                          color: AppColors.textLightMuted,
                         ),
-                        const Divider(height: 1, color: AppColors.borderLight),
-                      ],
+                        hintText: 'Search organizations...',
+                        hintStyle: TextStyle(
+                          color: AppColors.textLightMuted,
+                          fontSize: 14,
+                        ),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
+                      ),
                     ),
                   ),
-                ],
-              ),
+                ),
+                const Spacer(),
+                Text(
+                  '${organizations.length} results',
+                  style: const TextStyle(
+                    color: AppColors.textLightMuted,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Text(
-                'Page ${pageIndex + 1} of 5',
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
+            const SizedBox(height: 12),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: SizedBox(
+                width: 1200,
+                child: Column(
+                  children: [
+                    _TableHeader(),
+                    const Divider(height: 1, color: AppColors.border),
+                    ...organizations.map(
+                      (org) => Column(
+                        children: [
+                          _OrganizationRowItem(
+                            row: org,
+                            onViewDetails: onViewDetails,
+                          ),
+                          const Divider(
+                            height: 1,
+                            color: AppColors.borderLight,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const Spacer(),
-              IconButton(
-                onPressed: pageIndex > 0
-                    ? () => onPageChange(pageIndex - 1)
-                    : null,
-                icon: const Icon(Icons.chevron_left_rounded),
-                color: AppColors.textSecondary,
-              ),
-              IconButton(
-                onPressed: pageIndex < 4
-                    ? () => onPageChange(pageIndex + 1)
-                    : null,
-                icon: const Icon(Icons.chevron_right_rounded),
-                color: AppColors.textSecondary,
-              ),
-            ],
-          ),
-        ],
+            ),
+            const SizedBox(height: 10),
+            const SizedBox.shrink(),
+          ],
+        ),
       ),
     );
   }
@@ -995,125 +979,100 @@ class _OrganizationsListPageState extends State<_OrganizationsListPage> {
   Widget build(BuildContext context) {
     final organizations = _filteredOrganizations;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.border),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.035),
-                blurRadius: 16,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Organizations List',
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
+    return PaginatedRecords(
+      items: organizations,
+      builder: (context, organizations) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppColors.border),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.035),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
                 ),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: _StatusDropdown(
-                      label: 'Status',
-                      value: _selectedStatus,
-                      options: _statusOptions,
-                      onChanged: (value) {
-                        if (value == null) return;
-                        setState(() => _selectedStatus = value);
-                      },
-                    ),
-                  ),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: _StatusDropdown(
-                      label: 'Upgrade request',
-                      value: _selectedUpgrade,
-                      options: _upgradeOptions,
-                      onChanged: (value) {
-                        if (value == null) return;
-                        setState(() => _selectedUpgrade = value);
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              _SearchRow(
-                controller: widget.searchController,
-                onChanged: widget.onQueryChanged,
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Text(
-                    '${organizations.length} results',
-                    style: const TextStyle(
-                      color: AppColors.textLightMuted,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              ...organizations.map(
-                (org) => Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: _OrganizationMobileCard(
-                    row: org,
-                    onViewDetails: widget.onViewDetails,
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Organizations List',
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Text(
-                    'Page ${widget.pageIndex + 1} of 5',
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _StatusDropdown(
+                        label: 'Status',
+                        value: _selectedStatus,
+                        options: _statusOptions,
+                        onChanged: (value) {
+                          if (value == null) return;
+                          setState(() => _selectedStatus = value);
+                        },
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: _StatusDropdown(
+                        label: 'Upgrade request',
+                        value: _selectedUpgrade,
+                        options: _upgradeOptions,
+                        onChanged: (value) {
+                          if (value == null) return;
+                          setState(() => _selectedUpgrade = value);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                _SearchRow(
+                  controller: widget.searchController,
+                  onChanged: widget.onQueryChanged,
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Text(
+                      '${organizations.length} results',
+                      style: const TextStyle(
+                        color: AppColors.textLightMuted,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                ...organizations.map(
+                  (org) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: _OrganizationMobileCard(
+                      row: org,
+                      onViewDetails: widget.onViewDetails,
                     ),
                   ),
-                  const Spacer(),
-                  IconButton(
-                    onPressed: widget.pageIndex > 0
-                        ? () => widget.onPageChange(widget.pageIndex - 1)
-                        : null,
-                    icon: const Icon(Icons.chevron_left_rounded),
-                    color: AppColors.textSecondary,
-                    visualDensity: VisualDensity.compact,
-                  ),
-                  IconButton(
-                    onPressed: widget.pageIndex < 4
-                        ? () => widget.onPageChange(widget.pageIndex + 1)
-                        : null,
-                    icon: const Icon(Icons.chevron_right_rounded),
-                    color: AppColors.textSecondary,
-                    visualDensity: VisualDensity.compact,
-                  ),
-                ],
-              ),
-            ],
+                ),
+                const SizedBox(height: 8),
+                const SizedBox.shrink(),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -1177,98 +1136,101 @@ class _UpgradeRequestsPageState extends State<_UpgradeRequestsPage> {
   Widget build(BuildContext context) {
     final items = _filteredItems;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.border),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.035),
-                blurRadius: 16,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _UpgradeTabs(
-                tabs: _tabs,
-                selectedTab: _selectedTab,
-                onChanged: (value) => setState(() => _selectedTab = value),
-              ),
-              const SizedBox(height: 22),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: AppColors.border),
+    return PaginatedRecords(
+      items: items,
+      builder: (context, items) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppColors.border),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.035),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
                 ),
-                child: Column(
-                  children: [
-                    ...items.map(
-                      (item) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: _UpgradeRequestCard(item: item),
-                      ),
-                    ),
-                    if (items.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 58),
-                        child: Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                width: 46,
-                                height: 46,
-                                decoration: BoxDecoration(
-                                  color: AppColors.surfaceSoft,
-                                  borderRadius: BorderRadius.circular(999),
-                                ),
-                                child: const Icon(
-                                  Icons.trending_up_rounded,
-                                  color: AppColors.primary,
-                                  size: 22,
-                                ),
-                              ),
-                              const SizedBox(height: 14),
-                              const Text(
-                                'No upgrade requests here',
-                                style: TextStyle(
-                                  color: AppColors.textPrimary,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              const Text(
-                                'Nothing to review in this view right now.',
-                                style: TextStyle(
-                                  color: AppColors.textLightMuted,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _UpgradeTabs(
+                  tabs: _tabs,
+                  selectedTab: _selectedTab,
+                  onChanged: (value) => setState(() => _selectedTab = value),
+                ),
+                const SizedBox(height: 22),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: Column(
+                    children: [
+                      ...items.map(
+                        (item) => Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: _UpgradeRequestCard(item: item),
                         ),
                       ),
-                  ],
+                      if (items.isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 58),
+                          child: Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 46,
+                                  height: 46,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.surfaceSoft,
+                                    borderRadius: BorderRadius.circular(999),
+                                  ),
+                                  child: const Icon(
+                                    Icons.trending_up_rounded,
+                                    color: AppColors.primary,
+                                    size: 22,
+                                  ),
+                                ),
+                                const SizedBox(height: 14),
+                                const Text(
+                                  'No upgrade requests here',
+                                  style: TextStyle(
+                                    color: AppColors.textPrimary,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                const Text(
+                                  'Nothing to review in this view right now.',
+                                  style: TextStyle(
+                                    color: AppColors.textLightMuted,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -1544,83 +1506,86 @@ class _PlansPageState extends State<_PlansPage> {
   Widget build(BuildContext context) {
     final cards = _cards;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF2F4F3),
-                borderRadius: BorderRadius.circular(999),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _TogglePill(
-                    label: 'Monthly',
-                    selected: _monthly,
-                    onTap: () => setState(() => _monthly = true),
-                  ),
-                  _TogglePill(
-                    label: 'Yearly',
-                    selected: !_monthly,
-                    onTap: () => setState(() => _monthly = false),
-                  ),
-                ],
-              ),
-            ),
-            const Spacer(),
-            TextButton.icon(
-              onPressed: () => _showCreatePlanDialog(context),
-              style: TextButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 18,
-                  vertical: 14,
-                ),
-                shape: RoundedRectangleBorder(
+    return PaginatedRecords(
+      items: cards,
+      builder: (context, cards) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF2F4F3),
                   borderRadius: BorderRadius.circular(999),
                 ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _TogglePill(
+                      label: 'Monthly',
+                      selected: _monthly,
+                      onTap: () => setState(() => _monthly = true),
+                    ),
+                    _TogglePill(
+                      label: 'Yearly',
+                      selected: !_monthly,
+                      onTap: () => setState(() => _monthly = false),
+                    ),
+                  ],
+                ),
               ),
-              icon: const Icon(Icons.add_rounded, size: 18),
-              label: const Text(
-                'Create Plan',
-                style: TextStyle(fontWeight: FontWeight.w700),
+              const Spacer(),
+              TextButton.icon(
+                onPressed: () => _showCreatePlanDialog(context),
+                style: TextButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 14,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+                icon: const Icon(Icons.add_rounded, size: 18),
+                label: const Text(
+                  'Create Plan',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 18),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final width = constraints.maxWidth;
-            final columns = width >= 1500
-                ? 3
-                : width >= 1024
-                ? 2
-                : 1;
+            ],
+          ),
+          const SizedBox(height: 18),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final width = constraints.maxWidth;
+              final columns = width >= 1500
+                  ? 3
+                  : width >= 1024
+                  ? 2
+                  : 1;
 
-            return GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: cards.length,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: columns,
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 14,
-                childAspectRatio: columns == 1 ? 1.55 : 1.9,
-              ),
-              itemBuilder: (context, index) {
-                final plan = cards[index];
-                return _PlanCard(data: plan, monthly: _monthly);
-              },
-            );
-          },
-        ),
-      ],
+              return GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: cards.length,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: columns,
+                  mainAxisSpacing: 16,
+                  crossAxisSpacing: 14,
+                  childAspectRatio: columns == 1 ? 1.55 : 1.9,
+                ),
+                itemBuilder: (context, index) {
+                  final plan = cards[index];
+                  return _PlanCard(data: plan, monthly: _monthly);
+                },
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 

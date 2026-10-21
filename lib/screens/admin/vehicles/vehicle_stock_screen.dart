@@ -1,3 +1,5 @@
+import '../../../models/list_pagination.dart';
+import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
@@ -32,6 +34,17 @@ class VehicleStockScreen extends StatefulWidget {
 }
 
 class _VehicleStockScreenState extends State<VehicleStockScreen> {
+  final _pagination = ListPagination();
+  Future<void> _changeListPage() async {
+    if (_pagination.isLoading) return;
+    setState(() => _pagination.isLoading = true);
+    try {
+      await _refresh();
+    } finally {
+      if (mounted) setState(() => _pagination.isLoading = false);
+    }
+  }
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _historySearchController =
       TextEditingController();
@@ -44,6 +57,7 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
 
   @override
   void dispose() {
+    _pagination.dispose();
     _historySearchController.dispose();
     super.dispose();
   }
@@ -79,7 +93,10 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
       );
       List<Map<String, dynamic>> historyRows;
       try {
-        historyRows = await provider.fetchVehicleStockSessions();
+        historyRows = await provider.fetchVehicleStockSessions(
+          deliveryPartnerId: deliveryPartnerId,
+          pagination: _pagination,
+        );
       } catch (_) {
         historyRows = const [];
       }
@@ -118,7 +135,9 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
       return [?current, ...history];
     }
 
-    final rows = await provider.fetchVehicleStockSessions();
+    final rows = await provider.fetchVehicleStockSessions(
+      pagination: _pagination,
+    );
     return rows
         .map(
           (row) =>
@@ -214,6 +233,22 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _pagination.filters = {
+      'search': _historySearchController.text,
+      if (_historyStatus != 'All') 'status': _historyStatus.toLowerCase(),
+    };
+    if (_pagination.observe(
+      [
+        _historySearchController.text,
+        _historyStatus,
+        _selectedPartner,
+      ].join('|'),
+    )) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _refresh();
+      });
+    }
+
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: _isDelivery
@@ -224,9 +259,23 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
               currentRoute: AppRoutes.deliveryVehicleStock,
             )
           : const AppDrawer(activeItem: 'Vehicle Stock'),
-      bottomNavigationBar: _isDelivery
-          ? const DeliveryBottomNavigation(currentIndex: -1)
-          : null,
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListPaginationBar(
+            pagination: _pagination,
+            loading: false,
+            onChanged: _changeListPage,
+          ),
+          if ((_isDelivery
+                  ? const DeliveryBottomNavigation(currentIndex: -1)
+                  : null) !=
+              null)
+            (_isDelivery
+                ? const DeliveryBottomNavigation(currentIndex: -1)
+                : null)!,
+        ],
+      ),
       body: SafeArea(
         bottom: false,
         child: Column(

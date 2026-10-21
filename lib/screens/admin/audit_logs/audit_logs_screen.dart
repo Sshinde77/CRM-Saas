@@ -1,3 +1,5 @@
+import '../../../models/list_pagination.dart';
+import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
@@ -12,6 +14,13 @@ class AuditLogsScreen extends StatefulWidget {
 }
 
 class _AuditLogsScreenState extends State<AuditLogsScreen> {
+  final _pagination = ListPagination();
+  @override
+  void dispose() {
+    _pagination.dispose();
+    super.dispose();
+  }
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   static const Color textPrimary = AppColors.textPrimary;
@@ -69,9 +78,17 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final entries = _visibleEntries;
+    final entries = _pagination.local(
+      _visibleEntries,
+      filterKey: _selectedFilter,
+    );
 
     return Scaffold(
+      bottomNavigationBar: ListPaginationBar(
+        pagination: _pagination,
+        loading: false,
+        onChanged: () => setState(() {}),
+      ),
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       drawer: const AppDrawer(activeItem: 'Audit Logs'),

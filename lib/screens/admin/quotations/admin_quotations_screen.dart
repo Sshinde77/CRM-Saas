@@ -1,3 +1,5 @@
+import '../../../models/list_pagination.dart';
+import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
@@ -31,6 +33,18 @@ class AdminQuotationsScreen extends StatefulWidget {
 }
 
 class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
+  final _pagination = ListPagination();
+  int _listRequest = 0;
+  Future<void> _changeListPage() async {
+    if (_pagination.isLoading) return;
+    setState(() => _pagination.isLoading = true);
+    try {
+      await _loadQuotations();
+    } finally {
+      if (mounted) setState(() => _pagination.isLoading = false);
+    }
+  }
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
 
@@ -90,24 +104,27 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
 
   @override
   void dispose() {
+    _pagination.dispose();
     _searchController.dispose();
     super.dispose();
   }
 
   Future<void> _loadQuotations() async {
+    final listRequest = ++_listRequest;
+    _pagination.filter([_searchController.text, _selectedStatus].join('|'));
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
     try {
-      final items = await _apiProvider.fetchQuotations();
-      if (!mounted) return;
+      final items = await _apiProvider.fetchQuotations(pagination: _pagination);
+      if (!mounted || listRequest != _listRequest) return;
       setState(() {
         _quotations = items.map(_QuotationRecord.fromJson).toList();
         _isLoading = false;
       });
     } catch (error) {
-      if (!mounted) return;
+      if (!mounted || listRequest != _listRequest) return;
       setState(() {
         _errorMessage = error.toString();
         _isLoading = false;
@@ -315,9 +332,27 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _pagination.filters = {
+      'search': _searchController.text,
+      if (_selectedStatus != 'All status')
+        'status': _selectedStatus.toLowerCase(),
+    };
+    if (_pagination.observe(
+      [_searchController.text, _selectedStatus].join('|'),
+    )) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _loadQuotations();
+      });
+    }
+
     final quotations = _filteredQuotations();
 
     return Scaffold(
+      bottomNavigationBar: ListPaginationBar(
+        pagination: _pagination,
+        loading: _isLoading,
+        onChanged: _changeListPage,
+      ),
       key: _scaffoldKey,
       backgroundColor: AppColors.deliveryBackground,
       drawer: widget.useSalesManagerShell

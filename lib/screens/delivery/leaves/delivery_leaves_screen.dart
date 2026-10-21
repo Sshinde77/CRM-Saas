@@ -1,3 +1,5 @@
+import '../../../models/list_pagination.dart';
+import '../../../widgets/list_pagination_bar.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -23,6 +25,24 @@ class DeliveryLeavesScreen extends StatefulWidget {
 }
 
 class _DeliveryLeavesScreenState extends State<DeliveryLeavesScreen> {
+  final _pagination = ListPagination();
+  @override
+  void dispose() {
+    _pagination.dispose();
+    super.dispose();
+  }
+
+  int _listRequest = 0;
+  Future<void> _changeListPage() async {
+    if (_pagination.isLoading) return;
+    setState(() => _pagination.isLoading = true);
+    try {
+      await _loadLeaves();
+    } finally {
+      if (mounted) setState(() => _pagination.isLoading = false);
+    }
+  }
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<_LeaveRequest> _leaves = const [];
   bool _isLoading = true;
@@ -41,20 +61,23 @@ class _DeliveryLeavesScreenState extends State<DeliveryLeavesScreen> {
   }
 
   Future<void> _loadLeaves() async {
+    final listRequest = ++_listRequest;
     setState(() {
       _isLoading = true;
       _error = null;
     });
 
     try {
-      final rows = await ApiProviderScope.of(context).fetchMyLeaves();
-      if (!mounted) return;
+      final rows = await ApiProviderScope.of(
+        context,
+      ).fetchMyLeaves(pagination: _pagination);
+      if (!mounted || listRequest != _listRequest) return;
       setState(() {
         _leaves = rows.map(_LeaveRequest.fromJson).toList();
         _isLoading = false;
       });
     } catch (error) {
-      if (!mounted) return;
+      if (!mounted || listRequest != _listRequest) return;
       setState(() {
         _leaves = const [];
         _error = _cleanError(error);
@@ -178,6 +201,13 @@ class _DeliveryLeavesScreenState extends State<DeliveryLeavesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _pagination.filters = {if (_statusFilter != 'all') 'status': _statusFilter};
+    if (_pagination.observe(_statusFilter)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _loadLeaves();
+      });
+    }
+
     final useSalesManagerShell = isSalesManagerSession(context);
     final textScaler = MediaQuery.textScalerOf(
       context,
@@ -194,9 +224,23 @@ class _DeliveryLeavesScreenState extends State<DeliveryLeavesScreen> {
             : const DeliveryPartnerSidebar(
                 currentRoute: AppRoutes.deliveryLeaves,
               ),
-        bottomNavigationBar: useSalesManagerShell
-            ? null
-            : const DeliveryBottomNavigation(currentIndex: -1),
+        bottomNavigationBar: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListPaginationBar(
+              pagination: _pagination,
+              loading: _isLoading,
+              onChanged: _changeListPage,
+            ),
+            if ((useSalesManagerShell
+                    ? null
+                    : const DeliveryBottomNavigation(currentIndex: -1)) !=
+                null)
+              (useSalesManagerShell
+                  ? null
+                  : const DeliveryBottomNavigation(currentIndex: -1))!,
+          ],
+        ),
         floatingActionButton: SizedBox(
           height: 48,
           child: FloatingActionButton.extended(

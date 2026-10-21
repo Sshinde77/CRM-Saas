@@ -1,3 +1,5 @@
+import '../../../models/list_pagination.dart';
+import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
@@ -27,6 +29,18 @@ class DeliveryCustomersScreen extends StatefulWidget {
 }
 
 class _DeliveryCustomersScreenState extends State<DeliveryCustomersScreen> {
+  final _pagination = ListPagination();
+  int _listRequest = 0;
+  Future<void> _changeListPage() async {
+    if (_pagination.isLoading) return;
+    setState(() => _pagination.isLoading = true);
+    try {
+      await _loadCustomers();
+    } finally {
+      if (mounted) setState(() => _pagination.isLoading = false);
+    }
+  }
+
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   final _search = TextEditingController();
   List<CustomerModel> _customers = [];
@@ -43,24 +57,31 @@ class _DeliveryCustomersScreenState extends State<DeliveryCustomersScreen> {
 
   @override
   void dispose() {
+    _pagination.dispose();
     _search.dispose();
     super.dispose();
   }
 
   Future<void> _loadCustomers() async {
+    final listRequest = ++_listRequest;
+    _pagination.filter(_search.text);
     setState(() {
       _loading = true;
       _error = null;
     });
     try {
-      final customers = await ApiProviderScope.of(context).fetchCustomers();
-      if (!mounted) return;
+      final customers = await ApiProviderScope.of(
+        context,
+      ).fetchCustomers(pagination: _pagination);
+      if (!mounted || listRequest != _listRequest) return;
       setState(() => _customers = customers);
     } catch (_) {
-      if (!mounted) return;
+      if (!mounted || listRequest != _listRequest) return;
       setState(() => _error = 'Could not load customers. Please try again.');
     } finally {
-      if (mounted) setState(() => _loading = false);
+      if (mounted && listRequest == _listRequest) {
+        setState(() => _loading = false);
+      }
     }
   }
 
@@ -110,6 +131,13 @@ class _DeliveryCustomersScreenState extends State<DeliveryCustomersScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _pagination.filters = {'search': _search.text};
+    if (_pagination.observe(_search.text)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _loadCustomers();
+      });
+    }
+
     final useSalesManagerShell = isSalesManagerSession(context);
     final textScaler = MediaQuery.textScalerOf(
       context,
@@ -139,9 +167,23 @@ class _DeliveryCustomersScreenState extends State<DeliveryCustomersScreen> {
             : const DeliveryPartnerSidebar(
                 currentRoute: AppRoutes.deliveryCustomers,
               ),
-        bottomNavigationBar: useSalesManagerShell
-            ? null
-            : const DeliveryBottomNavigation(currentIndex: -1),
+        bottomNavigationBar: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListPaginationBar(
+              pagination: _pagination,
+              loading: _loading,
+              onChanged: _changeListPage,
+            ),
+            if ((useSalesManagerShell
+                    ? null
+                    : const DeliveryBottomNavigation(currentIndex: -1)) !=
+                null)
+              (useSalesManagerShell
+                  ? null
+                  : const DeliveryBottomNavigation(currentIndex: -1))!,
+          ],
+        ),
         body: SafeArea(
           bottom: false,
           child: Column(
@@ -190,7 +232,7 @@ class _DeliveryCustomersScreenState extends State<DeliveryCustomersScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     _HeaderCard(
-                                      total: _customers.length,
+                                      total: _pagination.total,
                                       onAdd: _createCustomer,
                                     ),
                                     const SizedBox(height: AppSpacing.md),

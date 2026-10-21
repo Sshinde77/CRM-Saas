@@ -1,3 +1,4 @@
+import 'package:crm_saas/models/list_pagination.dart';
 import 'dart:async';
 
 import 'package:crm_saas/models/customer_model.dart';
@@ -24,6 +25,7 @@ class _CollectionProvider extends ApiProvider {
 
   @override
   Future<List<CustomerModel>> fetchCustomers({
+    ListPagination? pagination,
     String? search,
     String? category,
     bool? isActive,

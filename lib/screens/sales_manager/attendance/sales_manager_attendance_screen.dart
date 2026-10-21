@@ -1,3 +1,5 @@
+import '../../../models/list_pagination.dart';
+import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
@@ -24,6 +26,13 @@ class SalesManagerAttendanceScreen extends StatefulWidget {
 
 class _SalesManagerAttendanceScreenState
     extends State<SalesManagerAttendanceScreen> {
+  final _pagination = ListPagination();
+  @override
+  void dispose() {
+    _pagination.dispose();
+    super.dispose();
+  }
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final List<_CheckpointCardData> _checkpoints = const [
@@ -156,6 +165,11 @@ class _SalesManagerAttendanceScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: ListPaginationBar(
+        pagination: _pagination,
+        loading: false,
+        onChanged: () => setState(() {}),
+      ),
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       drawer: SalesManagerSidebarDrawer(
@@ -293,9 +307,9 @@ class _SalesManagerAttendanceScreenState
           const SizedBox(height: 16),
           const _AttendanceHeaderRow(),
           const Divider(height: 1, color: Color(0xFFE5E7EB)),
-          for (var i = 0; i < _records.length; i++) ...[
-            _AttendanceRow(record: _records[i]),
-            if (i != _records.length - 1)
+          for (var i = 0; i < _pagination.local(_records).length; i++) ...[
+            _AttendanceRow(record: _pagination.local(_records)[i]),
+            if (i != _pagination.local(_records).length - 1)
               const Divider(height: 1, color: Color(0xFFE5E7EB)),
           ],
         ],

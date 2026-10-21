@@ -1,3 +1,5 @@
+import '../../../models/list_pagination.dart';
+import '../../../widgets/list_pagination_bar.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -26,13 +28,24 @@ class AssignedDeliveriesScreen extends StatefulWidget {
 }
 
 class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
+  final _pagination = ListPagination();
+  int _listRequest = 0;
+  Future<void> _changeListPage() async {
+    if (_pagination.isLoading) return;
+    setState(() => _pagination.isLoading = true);
+    try {
+      await _loadDeliveries();
+    } finally {
+      if (mounted) setState(() => _pagination.isLoading = false);
+    }
+  }
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
   final Set<String> _busyDeliveryIds = <String>{};
   List<_AssignedDelivery> _deliveries = const [];
   bool _isLoading = true;
   bool _didStartLoad = false;
-  bool _requestInProgress = false;
   String? _error;
   String _statusFilter = 'all';
   _DeliverySort _sort = _DeliverySort.scheduledDate;
@@ -54,13 +67,13 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
 
   @override
   void dispose() {
+    _pagination.dispose();
     _searchController.dispose();
     super.dispose();
   }
 
   Future<void> _loadDeliveries() async {
-    if (_requestInProgress) return;
-    _requestInProgress = true;
+    final listRequest = ++_listRequest;
     setState(() {
       _isLoading = true;
       _error = null;
@@ -77,6 +90,7 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
       }
 
       final rows = await provider.fetchDeliveryPartnerDeliveries(
+        pagination: _pagination,
         deliveryPartnerId: deliveryPartnerId,
       );
       var deliveries = rows.map(_AssignedDelivery.fromJson).toList();
@@ -85,20 +99,18 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
         deliveryPartnerId: deliveryPartnerId,
         deliveries: deliveries,
       );
-      if (!mounted) return;
+      if (!mounted || listRequest != _listRequest) return;
       setState(() {
         _deliveries = deliveries;
         _isLoading = false;
       });
     } catch (error) {
-      if (!mounted) return;
+      if (!mounted || listRequest != _listRequest) return;
       setState(() {
         _deliveries = const [];
         _error = _cleanError(error);
         _isLoading = false;
       });
-    } finally {
-      _requestInProgress = false;
     }
   }
 
@@ -498,6 +510,18 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _pagination.filters = {
+      'search': _searchController.text,
+      if (_statusFilter != 'all') 'status': _statusFilter,
+    };
+    if (_pagination.observe(
+      [_searchController.text, _statusFilter].join('|'),
+    )) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _loadDeliveries();
+      });
+    }
+
     final useSalesManagerShell = isSalesManagerSession(context);
     final visibleDeliveries = _visibleDeliveries;
 
@@ -509,12 +533,29 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
           : const DeliveryPartnerSidebar(
               currentRoute: AppRoutes.deliveryDeliveries,
             ),
-      bottomNavigationBar: useSalesManagerShell
-          ? null
-          : DeliveryBottomNavigation(
-              currentIndex: 1,
-              onCollectionCreated: _loadDeliveries,
-            ),
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListPaginationBar(
+            pagination: _pagination,
+            loading: _isLoading,
+            onChanged: _changeListPage,
+          ),
+          if ((useSalesManagerShell
+                  ? null
+                  : DeliveryBottomNavigation(
+                      currentIndex: 1,
+                      onCollectionCreated: _loadDeliveries,
+                    )) !=
+              null)
+            (useSalesManagerShell
+                ? null
+                : DeliveryBottomNavigation(
+                    currentIndex: 1,
+                    onCollectionCreated: _loadDeliveries,
+                  ))!,
+        ],
+      ),
       body: SafeArea(
         bottom: false,
         child: RefreshIndicator(

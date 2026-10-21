@@ -1,3 +1,5 @@
+import '../../../models/list_pagination.dart';
+import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
@@ -14,6 +16,8 @@ class AttendanceScreen extends StatefulWidget {
 }
 
 class _AttendanceScreenState extends State<AttendanceScreen> {
+  final _pagination = ListPagination();
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
 
@@ -109,6 +113,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
   @override
   void dispose() {
+    _pagination.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -141,9 +146,23 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final records = _filteredRecords;
+    final records = _pagination.local(
+      _filteredRecords,
+      filterKey: [
+        _query,
+        _selectedRole,
+        _selectedEmployee,
+        _selectedDate,
+        _selectedStatus,
+      ].join('|'),
+    );
 
     return Scaffold(
+      bottomNavigationBar: ListPaginationBar(
+        pagination: _pagination,
+        loading: false,
+        onChanged: () => setState(() {}),
+      ),
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       drawer: const AppDrawer(activeItem: 'Attendance'),
@@ -272,38 +291,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                       ),
                                     ),
                                     const Spacer(),
-                                    Row(
-                                      children: [
-                                        _buildPagerButton(
-                                          icon: Icons.chevron_left_rounded,
-                                          active: false,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Container(
-                                          width: 38,
-                                          height: 38,
-                                          decoration: const BoxDecoration(
-                                            color: Color(0xFF0D1F42),
-                                            shape: BoxShape.circle,
-                                          ),
-                                          alignment: Alignment.center,
-                                          child: const Text(
-                                            '1',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w700,
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        _buildPagerButton(
-                                          icon: Icons.chevron_right_rounded,
-                                          active: false,
-                                        ),
-                                        const SizedBox(width: 14),
-                                        _buildRowsPerPage(),
-                                      ],
-                                    ),
                                   ],
                                 ),
                               ),
@@ -582,53 +569,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             borderRadius: BorderRadius.circular(14),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildRowsPerPage() {
-    return SizedBox(
-      width: 120,
-      child: DropdownButtonFormField<String>(
-        initialValue: '10 / page',
-        items: const [
-          DropdownMenuItem(value: '10 / page', child: Text('10 / page')),
-          DropdownMenuItem(value: '25 / page', child: Text('25 / page')),
-        ],
-        onChanged: (_) {},
-        decoration: InputDecoration(
-          filled: true,
-          fillColor: const Color(0xFFF8FAFC),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 10,
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPagerButton({required IconData icon, required bool active}) {
-    return Container(
-      width: 30,
-      height: 30,
-      decoration: BoxDecoration(
-        color: active ? const Color(0xFF0D1F42) : const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Icon(
-        icon,
-        size: 18,
-        color: active ? Colors.white : AppColors.textSecondary,
       ),
     );
   }

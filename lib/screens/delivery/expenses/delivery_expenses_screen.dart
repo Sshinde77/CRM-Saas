@@ -1,3 +1,5 @@
+import '../../../models/list_pagination.dart';
+import '../../../widgets/list_pagination_bar.dart';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -27,6 +29,17 @@ class DeliveryExpensesScreen extends StatefulWidget {
 }
 
 class _DeliveryExpensesScreenState extends State<DeliveryExpensesScreen> {
+  final _pagination = ListPagination();
+  Future<void> _changeListPage() async {
+    if (_pagination.isLoading) return;
+    setState(() => _pagination.isLoading = true);
+    try {
+      await _refresh();
+    } finally {
+      if (mounted) setState(() => _pagination.isLoading = false);
+    }
+  }
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
 
@@ -55,6 +68,7 @@ class _DeliveryExpensesScreenState extends State<DeliveryExpensesScreen> {
 
   @override
   void dispose() {
+    _pagination.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -71,7 +85,7 @@ class _DeliveryExpensesScreenState extends State<DeliveryExpensesScreen> {
 
     final results = await Future.wait([
       provider.fetchExpenseCategories(),
-      provider.fetchExpenses(submittedBy: userId),
+      provider.fetchExpenses(pagination: _pagination, submittedBy: userId),
     ]);
 
     return _ExpensePageData(
@@ -220,6 +234,18 @@ class _DeliveryExpensesScreenState extends State<DeliveryExpensesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _pagination.filters = {
+      'search': _searchController.text,
+      if (_statusFilter != 'All') 'status': _statusFilter.toLowerCase(),
+    };
+    if (_pagination.observe(
+      [_searchController.text, _statusFilter].join('|'),
+    )) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _refresh();
+      });
+    }
+
     final useSalesManagerShell = isSalesManagerSession(context);
     final textScaler = MediaQuery.textScalerOf(
       context,
@@ -235,9 +261,23 @@ class _DeliveryExpensesScreenState extends State<DeliveryExpensesScreen> {
             : const DeliveryPartnerSidebar(
                 currentRoute: AppRoutes.deliveryExpenses,
               ),
-        bottomNavigationBar: useSalesManagerShell
-            ? null
-            : const DeliveryBottomNavigation(currentIndex: -1),
+        bottomNavigationBar: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListPaginationBar(
+              pagination: _pagination,
+              loading: false,
+              onChanged: _changeListPage,
+            ),
+            if ((useSalesManagerShell
+                    ? null
+                    : const DeliveryBottomNavigation(currentIndex: -1)) !=
+                null)
+              (useSalesManagerShell
+                  ? null
+                  : const DeliveryBottomNavigation(currentIndex: -1))!,
+          ],
+        ),
         body: SafeArea(
           bottom: false,
           child: Column(

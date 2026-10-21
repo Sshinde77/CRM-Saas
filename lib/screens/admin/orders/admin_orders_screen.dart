@@ -1,3 +1,5 @@
+import '../../../models/list_pagination.dart';
+import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
@@ -8,7 +10,6 @@ import '../../../utils/product_image_url.dart';
 import '../../../widgets/admin/app_drawer.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/app_calendar_date_picker.dart';
-import '../../../widgets/app_pagination.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_bottom_navigation.dart';
@@ -48,6 +49,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
   String _selectedSource = 'All sources';
   DateTime? _fromDate;
   DateTime? _toDate;
+  final _pagination = ListPagination();
   int _currentPage = 1;
   int _pageSize = 10;
   int _totalItems = 0;
@@ -304,21 +306,6 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     return _tabs[_selectedTab].toLowerCase().replaceAll(' ', '_');
   }
 
-  Future<void> _goToPage(int page) async {
-    if (_isLoading || page < 1) return;
-    setState(() => _currentPage = page);
-    await _loadOrders();
-  }
-
-  Future<void> _changePageSize(int size) async {
-    if (_isLoading || size == _pageSize) return;
-    setState(() {
-      _pageSize = size;
-      _currentPage = 1;
-    });
-    await _loadOrders();
-  }
-
   Future<void> _reloadFirstPage() async {
     setState(() => _currentPage = 1);
     await _loadOrders();
@@ -346,6 +333,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
 
   @override
   void dispose() {
+    _pagination.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -571,9 +559,14 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
               onSelect: _handleSalesManagerSidebarSelection,
             )
           : const AppDrawer(activeItem: 'Orders'),
-      bottomNavigationBar: widget.useSalesManagerShell
-          ? const SalesManagerBottomNavigation(currentIndex: 3)
-          : null,
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _paginationBar(),
+          if (widget.useSalesManagerShell)
+            const SalesManagerBottomNavigation(currentIndex: 3),
+        ],
+      ),
       body: SafeArea(
         bottom: false,
         child: LayoutBuilder(
@@ -891,7 +884,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
   }
 
   Widget _buildMobileContent(List<_OrderRecord> orders) {
-    final shownOrders = orders.take(8).toList();
+    final shownOrders = orders;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1077,7 +1070,6 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
           ],
           if (!_isLoading && _errorMessage == null && orders.isNotEmpty) ...[
             const SizedBox(height: 10),
-            _paginationBar(),
           ],
         ],
       ),
@@ -1085,18 +1077,20 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
   }
 
   Widget _paginationBar() {
-    final totalPages = _hasNextPage && _totalPages <= _currentPage
+    _pagination.page = _currentPage;
+    _pagination.pageSize = _pageSize;
+    _pagination.total = _totalItems;
+    _pagination.totalPages = _hasNextPage && _totalPages <= _currentPage
         ? _currentPage + 1
-        : (_totalPages < 1 ? 1 : _totalPages);
-    return AppPagination(
-      page: _currentPage,
-      pageSize: _pageSize,
-      total: _totalItems,
-      totalPages: totalPages,
-      isLoading: _isLoading,
-      pageSizeOptions: const [10, 20, 50],
-      onPageChanged: _goToPage,
-      onPageSizeChanged: _changePageSize,
+        : _totalPages;
+    return ListPaginationBar(
+      pagination: _pagination,
+      loading: _isLoading,
+      onChanged: () {
+        _currentPage = _pagination.page;
+        _pageSize = _pagination.pageSize;
+        _loadOrders();
+      },
     );
   }
 

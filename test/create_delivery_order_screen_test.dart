@@ -1,3 +1,4 @@
+import 'package:crm_saas/models/list_pagination.dart';
 import 'dart:convert';
 
 import 'package:crm_saas/models/auth_models.dart';
@@ -81,6 +82,7 @@ class _OrderProvider extends ApiProvider {
 
   @override
   Future<List<CustomerModel>> fetchCustomers({
+    ListPagination? pagination,
     String? search,
     String? category,
     bool? isActive,
@@ -108,6 +110,7 @@ class _OrderProvider extends ApiProvider {
 
   @override
   Future<List<Map<String, dynamic>>> fetchProducts({
+    ListPagination? pagination,
     String? search,
     String? categoryId,
     bool? isActive,

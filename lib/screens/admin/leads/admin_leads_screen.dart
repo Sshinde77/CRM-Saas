@@ -1,3 +1,5 @@
+import '../../../models/list_pagination.dart';
+import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
@@ -37,6 +39,18 @@ class AdminLeadsScreen extends StatefulWidget {
 }
 
 class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
+  final _pagination = ListPagination();
+  int _listRequest = 0;
+  Future<void> _changeListPage() async {
+    if (_pagination.isLoading) return;
+    setState(() => _pagination.isLoading = true);
+    try {
+      await _loadLeads();
+    } finally {
+      if (mounted) setState(() => _pagination.isLoading = false);
+    }
+  }
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
 
@@ -78,21 +92,32 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
 
   @override
   void dispose() {
+    _pagination.dispose();
     _searchController.dispose();
     super.dispose();
   }
 
   Future<void> _loadLeads() async {
+    final listRequest = ++_listRequest;
+    _pagination.filter(
+      [
+        _searchController.text,
+        _statusFilter,
+        _sourceFilter,
+        _teamFilter,
+      ].join('|'),
+    );
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
     try {
       final items = await _apiProvider.fetchLeads(
+        pagination: _pagination,
         status: _statusFilter == 'All Status' ? null : _statusFilter,
       );
       final leads = items.map(_LeadRecord.fromJson).toList();
-      if (!mounted) return;
+      if (!mounted || listRequest != _listRequest) return;
       setState(() {
         _leads = leads;
         _statusOptions = [
@@ -119,7 +144,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
         _isLoading = false;
       });
     } catch (error) {
-      if (!mounted) return;
+      if (!mounted || listRequest != _listRequest) return;
       setState(() {
         _errorMessage = error.toString();
         _isLoading = false;
@@ -565,6 +590,25 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _pagination.filters = {
+      'search': _searchController.text,
+      if (_statusFilter != 'All Status') 'status': _statusFilter,
+      if (_sourceFilter != 'All Sources') 'source': _sourceFilter,
+      if (_teamFilter != 'All Team') 'assigned_to': _teamFilter,
+    };
+    if (_pagination.observe(
+      [
+        _searchController.text,
+        _statusFilter,
+        _sourceFilter,
+        _teamFilter,
+      ].join('|'),
+    )) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _loadLeads();
+      });
+    }
+
     final textScaler = MediaQuery.textScalerOf(
       context,
     ).clamp(minScaleFactor: 0.9, maxScaleFactor: 1.2);
@@ -582,9 +626,18 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                 onSelect: _handleSalesManagerSidebarSelection,
               )
             : const AppDrawer(activeItem: 'Leads'),
-        bottomNavigationBar: widget.useSalesManagerShell
-            ? const SalesManagerBottomNavigation(currentIndex: 1)
-            : null,
+        bottomNavigationBar: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListPaginationBar(
+              pagination: _pagination,
+              loading: _isLoading,
+              onChanged: _changeListPage,
+            ),
+            if (widget.useSalesManagerShell)
+              const SalesManagerBottomNavigation(currentIndex: 1),
+          ],
+        ),
         body: SafeArea(
           child: Column(
             children: [

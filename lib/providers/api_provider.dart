@@ -1,3 +1,4 @@
+import '../models/list_pagination.dart';
 import 'dart:typed_data';
 
 import 'package:flutter/widgets.dart';
@@ -174,6 +175,7 @@ class ApiProvider extends ChangeNotifier {
       _apiService.fetchDeliveryPartners();
 
   Future<List<CustomerModel>> fetchCustomers({
+    ListPagination? pagination,
     String? search,
     String? category,
     bool? isActive,
@@ -184,6 +186,7 @@ class ApiProvider extends ChangeNotifier {
 
     try {
       final customers = await _apiService.fetchCustomers(
+        pagination: pagination,
         search: search,
         category: category,
         isActive: isActive,
@@ -216,20 +219,27 @@ class ApiProvider extends ChangeNotifier {
     assignedSalesOfficerId: assignedSalesOfficerId,
   );
 
-  Future<List<Map<String, dynamic>>> fetchLeads({String? status}) {
-    return _apiService.fetchLeads(status: status);
+  Future<List<Map<String, dynamic>>> fetchLeads({
+    ListPagination? pagination,
+    String? status,
+  }) {
+    return _apiService.fetchLeads(pagination: pagination, status: status);
   }
 
   Future<List<Map<String, dynamic>>> fetchDeliveryPartnerDeliveries({
+    ListPagination? pagination,
     required String deliveryPartnerId,
   }) {
     return _apiService.fetchDeliveryPartnerDeliveries(
+      pagination: pagination,
       deliveryPartnerId: deliveryPartnerId,
     );
   }
 
-  Future<List<Map<String, dynamic>>> fetchDeliveryCollections() {
-    return _apiService.fetchDeliveryCollections();
+  Future<List<Map<String, dynamic>>> fetchDeliveryCollections({
+    ListPagination? pagination,
+  }) {
+    return _apiService.fetchDeliveryCollections(pagination: pagination);
   }
 
   Future<Map<String, dynamic>> recordCustomerCollection({
@@ -271,6 +281,7 @@ class ApiProvider extends ChangeNotifier {
   }
 
   Future<List<Map<String, dynamic>>> fetchDeliveryPartnerCompanyOrders({
+    ListPagination? pagination,
     String? status,
     String? fulfilmentStatus,
     String? customerId,
@@ -279,6 +290,7 @@ class ApiProvider extends ChangeNotifier {
     int offset = 0,
   }) {
     return _apiService.fetchDeliveryPartnerCompanyOrders(
+      pagination: pagination,
       status: status,
       fulfilmentStatus: fulfilmentStatus,
       customerId: customerId,
@@ -426,10 +438,12 @@ class ApiProvider extends ChangeNotifier {
   }
 
   Future<List<Map<String, dynamic>>> fetchVehicleStockSessions({
+    ListPagination? pagination,
     String? status,
     String? deliveryPartnerId,
   }) {
     return _apiService.fetchVehicleStockSessions(
+      pagination: pagination,
       status: status,
       deliveryPartnerId: deliveryPartnerId,
     );
@@ -480,16 +494,20 @@ class ApiProvider extends ChangeNotifier {
     );
   }
 
-  Future<List<Map<String, dynamic>>> fetchMyAttendance() {
-    return _apiService.fetchMyAttendance();
+  Future<List<Map<String, dynamic>>> fetchMyAttendance({
+    ListPagination? pagination,
+  }) {
+    return _apiService.fetchMyAttendance(pagination: pagination);
   }
 
   Future<Map<String, dynamic>> checkInAttendance(String type) {
     return _apiService.checkInAttendance(type);
   }
 
-  Future<List<Map<String, dynamic>>> fetchMyLeaves() {
-    return _apiService.fetchMyLeaves();
+  Future<List<Map<String, dynamic>>> fetchMyLeaves({
+    ListPagination? pagination,
+  }) {
+    return _apiService.fetchMyLeaves(pagination: pagination);
   }
 
   Future<Map<String, dynamic>> createLeave({
@@ -530,8 +548,14 @@ class ApiProvider extends ChangeNotifier {
     return _apiService.fetchExpenseCategories();
   }
 
-  Future<List<DeliveryExpense>> fetchExpenses({String? submittedBy}) {
-    return _apiService.fetchExpenses(submittedBy: submittedBy);
+  Future<List<DeliveryExpense>> fetchExpenses({
+    ListPagination? pagination,
+    String? submittedBy,
+  }) {
+    return _apiService.fetchExpenses(
+      pagination: pagination,
+      submittedBy: submittedBy,
+    );
   }
 
   Future<DeliveryExpense> createExpense(DeliveryExpenseRequest request) {
@@ -598,8 +622,10 @@ class ApiProvider extends ChangeNotifier {
     return _apiService.createVisitFollowUp(visitId: visitId, request: request);
   }
 
-  Future<List<Map<String, dynamic>>> fetchQuotations() {
-    return _apiService.fetchQuotations();
+  Future<List<Map<String, dynamic>>> fetchQuotations({
+    ListPagination? pagination,
+  }) {
+    return _apiService.fetchQuotations(pagination: pagination);
   }
 
   Future<Map<String, dynamic>> createQuotation({
@@ -645,11 +671,13 @@ class ApiProvider extends ChangeNotifier {
   }
 
   Future<List<Map<String, dynamic>>> fetchSuppliers({
+    ListPagination? pagination,
     String? search,
     String? category,
     bool? isActive,
   }) {
     return _apiService.fetchSuppliers(
+      pagination: pagination,
       search: search,
       category: category,
       isActive: isActive,
@@ -670,8 +698,11 @@ class ApiProvider extends ChangeNotifier {
     isActive: isActive,
   );
 
-  Future<List<Map<String, dynamic>>> fetchCategories({String? search}) {
-    return _apiService.fetchCategories(search: search);
+  Future<List<Map<String, dynamic>>> fetchCategories({
+    ListPagination? pagination,
+    String? search,
+  }) {
+    return _apiService.fetchCategories(pagination: pagination, search: search);
   }
 
   Future<List<Map<String, dynamic>>> fetchBrands({String? search}) {
@@ -679,12 +710,14 @@ class ApiProvider extends ChangeNotifier {
   }
 
   Future<List<Map<String, dynamic>>> fetchProducts({
+    ListPagination? pagination,
     String? search,
     String? categoryId,
     bool? isActive,
     String? barcode,
   }) {
     return _apiService.fetchProducts(
+      pagination: pagination,
       search: search,
       categoryId: categoryId,
       isActive: isActive,
@@ -711,12 +744,14 @@ class ApiProvider extends ChangeNotifier {
   }
 
   Future<List<Map<String, dynamic>>> fetchStockBoard({
+    ListPagination? pagination,
     String? search,
     String? categoryId,
     bool? isActive,
     String? warehouseId,
   }) {
     return _apiService.fetchStockBoard(
+      pagination: pagination,
       search: search,
       categoryId: categoryId,
       isActive: isActive,

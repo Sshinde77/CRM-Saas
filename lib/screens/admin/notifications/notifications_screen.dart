@@ -1,3 +1,5 @@
+import '../../../models/list_pagination.dart';
+import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
@@ -11,6 +13,13 @@ class NotificationsScreen extends StatefulWidget {
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
+  final _pagination = ListPagination();
+  @override
+  void dispose() {
+    _pagination.dispose();
+    super.dispose();
+  }
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   static const Color textPrimary = AppColors.textPrimary;
@@ -62,7 +71,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final pageItems = _pagination.local(_items);
     return Scaffold(
+      bottomNavigationBar: ListPaginationBar(
+        pagination: _pagination,
+        loading: false,
+        onChanged: () => setState(() {}),
+      ),
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -93,10 +108,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         ),
                       )
                     else
-                      ..._items.asMap().entries.map(
+                      ...pageItems.asMap().entries.map(
                         (entry) => Padding(
                           padding: const EdgeInsets.only(bottom: 14),
-                          child: _notificationCard(entry.key, entry.value),
+                          child: _notificationCard(
+                            _items.indexOf(entry.value),
+                            entry.value,
+                          ),
                         ),
                       ),
                   ],

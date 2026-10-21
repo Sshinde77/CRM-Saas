@@ -1,3 +1,4 @@
+import '../models/list_pagination.dart';
 import 'dart:async';
 import 'dart:convert';
 
@@ -554,11 +555,13 @@ class ApiService {
   }
 
   Future<List<CustomerModel>> fetchCustomers({
+    ListPagination? pagination,
     String? search,
     String? category,
     bool? isActive,
     String? assignedSalesOfficerId,
   }) async {
+    final paginationKey = pagination?.requestKey;
     final query = CustomerListQuery(
       search: search,
       category: category,
@@ -569,6 +572,7 @@ class ApiService {
     query['page_size'] = '100';
 
     final response = await _send(
+      pagination: pagination,
       method: 'GET',
       endpoint: ApiEndpoints.customersList,
       requiresAuth: true,
@@ -578,11 +582,12 @@ class ApiService {
     final decoded = _tryDecodeBody(response.body.trim());
     final rawCustomers = _extractCustomersList(decoded);
 
-    return rawCustomers
+    final items = rawCustomers
         .whereType<Map<String, dynamic>>()
         .map(CustomerModel.fromJson)
         .where((customer) => customer.name.trim().isNotEmpty)
         .toList();
+    return pagination?.read(decoded, items, requestKey: paginationKey) ?? items;
   }
 
   Future<PaginatedResult<CustomerModel>> fetchPaginatedCustomers({
@@ -616,6 +621,7 @@ class ApiService {
   }
 
   Future<List<Map<String, dynamic>>> fetchRawList({
+    ListPagination? pagination,
     required String endpoint,
     Map<String, String>? queryParameters,
     List<String> candidateKeys = const ['data', 'items', 'results'],
@@ -624,6 +630,7 @@ class ApiService {
     bool retryOnTimeout = false,
   }) async {
     final result = await fetchPaginatedRawList(
+      pagination: pagination,
       endpoint: endpoint,
       queryParameters: {'page': '1', 'page_size': '100', ...?queryParameters},
       candidateKeys: candidateKeys,
@@ -635,6 +642,7 @@ class ApiService {
   }
 
   Future<PaginatedResult<Map<String, dynamic>>> fetchPaginatedRawList({
+    ListPagination? pagination,
     required String endpoint,
     Map<String, String>? queryParameters,
     List<String> candidateKeys = const ['data', 'items', 'results'],
@@ -642,7 +650,10 @@ class ApiService {
     Duration? timeout,
     bool retryOnTimeout = false,
   }) async {
+    final paginationKey = pagination?.requestKey;
+    queryParameters = {...?queryParameters, ...?pagination?.query};
     final response = await _send(
+      pagination: pagination,
       method: 'GET',
       endpoint: endpoint,
       requiresAuth: true,
@@ -657,12 +668,14 @@ class ApiService {
       fallbackMessage: fallbackMessage,
     );
     final items = rawItems.whereType<Map<String, dynamic>>().toList();
+    final pageItems =
+        pagination?.read(decoded, items, requestKey: paginationKey) ?? items;
     final meta = decoded is Map<String, dynamic>
         ? _extractPaginationMeta(decoded)
         : const <String, dynamic>{};
-    final requestedPage = int.tryParse(queryParameters?['page'] ?? '') ?? 1;
+    final requestedPage = int.tryParse(queryParameters['page'] ?? '') ?? 1;
     final requestedPageSize =
-        int.tryParse(queryParameters?['page_size'] ?? '') ?? items.length;
+        int.tryParse(queryParameters['page_size'] ?? '') ?? items.length;
     final total = _readMetaInt(meta, const ['total', 'count'], items.length);
     final pageSize = _readMetaInt(meta, const [
       'page_size',
@@ -672,7 +685,7 @@ class ApiService {
       'limit',
     ], requestedPageSize);
     return PaginatedResult<Map<String, dynamic>>(
-      items: items,
+      items: pageItems,
       page: _readMetaInt(meta, const ['page', 'current_page'], requestedPage),
       pageSize: pageSize,
       total: total,
@@ -737,6 +750,7 @@ class ApiService {
   }
 
   Future<List<Map<String, dynamic>>> fetchDeliveryPartnerCompanyOrders({
+    ListPagination? pagination,
     String? status,
     String? fulfilmentStatus,
     String? customerId,
@@ -749,14 +763,16 @@ class ApiService {
       'fulfilment_status': fulfilmentStatus,
       'customer_id': customerId,
       'search': search,
-      'limit': '$limit',
-      'offset': '$offset',
+      'limit': '${pagination?.pageSize ?? limit}',
+      'offset':
+          '${pagination == null ? offset : (pagination.page - 1) * pagination.pageSize}',
     });
     const candidateKeys = ['orders', 'data', 'items', 'results'];
     const fallbackMessage = 'Invalid delivery partner company orders response.';
 
     try {
       return await fetchRawList(
+        pagination: pagination,
         endpoint: ApiEndpoints.deliveryPartnerDashboardOrders,
         queryParameters: queryParameters,
         candidateKeys: candidateKeys,
@@ -765,6 +781,7 @@ class ApiService {
     } on ApiException catch (error) {
       if (error.statusCode != 404) rethrow;
       return fetchRawList(
+        pagination: pagination,
         endpoint: '${ApiEndpoints.deliveryPartnerDashboardOrders}/',
         queryParameters: queryParameters,
         candidateKeys: candidateKeys,
@@ -774,9 +791,11 @@ class ApiService {
   }
 
   Future<List<Map<String, dynamic>>> fetchDeliveryPartnerDeliveries({
+    ListPagination? pagination,
     required String deliveryPartnerId,
   }) {
     return fetchRawList(
+      pagination: pagination,
       endpoint: ApiEndpoints.deliveriesList,
       queryParameters: _cleanQuery({'delivery_partner_id': deliveryPartnerId}),
       candidateKeys: const ['deliveries', 'data', 'items', 'results'],
@@ -786,8 +805,11 @@ class ApiService {
     );
   }
 
-  Future<List<Map<String, dynamic>>> fetchDeliveryCollections() {
+  Future<List<Map<String, dynamic>>> fetchDeliveryCollections({
+    ListPagination? pagination,
+  }) {
     return fetchRawList(
+      pagination: pagination,
       endpoint: ApiEndpoints.deliveryCollections,
       candidateKeys: const ['collections', 'data', 'items', 'results'],
       fallbackMessage: 'Invalid delivery collections response.',
@@ -1038,8 +1060,6 @@ class ApiService {
       requiresAuth: true,
       queryParameters: _cleanQuery({
         'page': '$page',
-        'limit': '$limit',
-        'per_page': '$limit',
         'page_size': '$limit',
         'status': status,
         'fulfilment_status': fulfilmentStatus,
@@ -1240,10 +1260,13 @@ class ApiService {
   }
 
   Future<List<Map<String, dynamic>>> fetchVehicleStockSessions({
+    ListPagination? pagination,
     String? status,
     String? deliveryPartnerId,
   }) async {
+    final paginationKey = pagination?.requestKey;
     final response = await _send(
+      pagination: pagination,
       method: 'GET',
       endpoint: ApiEndpoints.vehicleStock,
       requiresAuth: true,
@@ -1254,7 +1277,12 @@ class ApiService {
     );
     final decoded = _tryDecodeBody(response.body.trim());
     if (decoded is List) {
-      return decoded.whereType<Map<String, dynamic>>().toList();
+      return pagination?.read(
+            decoded,
+            decoded.whereType<Map<String, dynamic>>().toList(),
+            requestKey: paginationKey,
+          ) ??
+          decoded.whereType<Map<String, dynamic>>().toList();
     }
     if (decoded is Map<String, dynamic>) {
       for (final key in const [
@@ -1267,10 +1295,16 @@ class ApiService {
       ]) {
         final value = decoded[key];
         if (value is List) {
-          return value.whereType<Map<String, dynamic>>().toList();
+          return pagination?.read(
+                decoded,
+                value.whereType<Map<String, dynamic>>().toList(),
+                requestKey: paginationKey,
+              ) ??
+              value.whereType<Map<String, dynamic>>().toList();
         }
       }
-      return [decoded];
+      return pagination?.read(decoded, [decoded], requestKey: paginationKey) ??
+          [decoded];
     }
     throw const ApiException(message: 'Invalid vehicle stock response.');
   }
@@ -1440,8 +1474,12 @@ class ApiService {
     );
   }
 
-  Future<List<Map<String, dynamic>>> fetchMyAttendance() async {
+  Future<List<Map<String, dynamic>>> fetchMyAttendance({
+    ListPagination? pagination,
+  }) async {
+    final paginationKey = pagination?.requestKey;
     final response = await _send(
+      pagination: pagination,
       method: 'GET',
       endpoint: ApiEndpoints.attendanceMe,
       requiresAuth: true,
@@ -1449,7 +1487,12 @@ class ApiService {
     );
     final decoded = _tryDecodeBody(response.body.trim());
     if (decoded is List) {
-      return decoded.whereType<Map<String, dynamic>>().toList();
+      return pagination?.read(
+            decoded,
+            decoded.whereType<Map<String, dynamic>>().toList(),
+            requestKey: paginationKey,
+          ) ??
+          decoded.whereType<Map<String, dynamic>>().toList();
     }
     if (decoded is Map<String, dynamic>) {
       for (final key in const [
@@ -1461,13 +1504,22 @@ class ApiService {
       ]) {
         final value = decoded[key];
         if (value is List) {
-          return value.whereType<Map<String, dynamic>>().toList();
+          return pagination?.read(
+                decoded,
+                value.whereType<Map<String, dynamic>>().toList(),
+                requestKey: paginationKey,
+              ) ??
+              value.whereType<Map<String, dynamic>>().toList();
         }
         if (value is Map<String, dynamic>) {
-          return [value];
+          return pagination?.read(decoded, [
+                value,
+              ], requestKey: paginationKey) ??
+              [value];
         }
       }
-      return [decoded];
+      return pagination?.read(decoded, [decoded], requestKey: paginationKey) ??
+          [decoded];
     }
     throw const ApiException(message: 'Invalid attendance response.');
   }
@@ -1495,8 +1547,11 @@ class ApiService {
     return const <String, dynamic>{};
   }
 
-  Future<List<Map<String, dynamic>>> fetchMyLeaves() {
+  Future<List<Map<String, dynamic>>> fetchMyLeaves({
+    ListPagination? pagination,
+  }) {
     return fetchRawList(
+      pagination: pagination,
       endpoint: ApiEndpoints.leavesMe,
       candidateKeys: const ['leaves', 'data', 'items', 'results'],
       fallbackMessage: 'Invalid leaves response.',
@@ -1589,8 +1644,13 @@ class ApiService {
     return _extractExpenseCategories(decoded);
   }
 
-  Future<List<DeliveryExpense>> fetchExpenses({String? submittedBy}) async {
+  Future<List<DeliveryExpense>> fetchExpenses({
+    ListPagination? pagination,
+    String? submittedBy,
+  }) async {
+    final paginationKey = pagination?.requestKey;
     final response = await _send(
+      pagination: pagination,
       method: 'GET',
       endpoint: ApiEndpoints.expensesList,
       requiresAuth: true,
@@ -1601,9 +1661,10 @@ class ApiService {
       }),
     );
     final decoded = _tryDecodeBody(response.body.trim());
-    return _extractExpensesList(
+    final items = _extractExpensesList(
       decoded,
     ).map((item) => DeliveryExpense.fromJson(item)).toList();
+    return pagination?.read(decoded, items, requestKey: paginationKey) ?? items;
   }
 
   Future<DeliveryExpense> createExpense(DeliveryExpenseRequest request) async {
@@ -1660,8 +1721,12 @@ class ApiService {
     return _extractUploadedUrl(_tryDecodeBody(response.body.trim()));
   }
 
-  Future<List<Map<String, dynamic>>> fetchLeads({String? status}) {
+  Future<List<Map<String, dynamic>>> fetchLeads({
+    ListPagination? pagination,
+    String? status,
+  }) {
     return fetchRawList(
+      pagination: pagination,
       endpoint: ApiEndpoints.leadsList,
       queryParameters: _cleanQuery({'status': status}),
       candidateKeys: const ['leads', 'data', 'items', 'results'],
@@ -1806,8 +1871,11 @@ class ApiService {
     );
   }
 
-  Future<List<Map<String, dynamic>>> fetchQuotations() {
+  Future<List<Map<String, dynamic>>> fetchQuotations({
+    ListPagination? pagination,
+  }) {
     return fetchRawList(
+      pagination: pagination,
       endpoint: ApiEndpoints.quotationsList,
       candidateKeys: const ['quotations', 'data', 'items', 'results'],
       fallbackMessage: 'Invalid quotations response.',
@@ -1934,11 +2002,13 @@ class ApiService {
   }
 
   Future<List<Map<String, dynamic>>> fetchSuppliers({
+    ListPagination? pagination,
     String? search,
     String? category,
     bool? isActive,
   }) {
     return fetchRawList(
+      pagination: pagination,
       endpoint: ApiEndpoints.suppliersList,
       queryParameters: _cleanQuery({
         'search': search,
@@ -1971,8 +2041,12 @@ class ApiService {
     );
   }
 
-  Future<List<Map<String, dynamic>>> fetchCategories({String? search}) {
+  Future<List<Map<String, dynamic>>> fetchCategories({
+    ListPagination? pagination,
+    String? search,
+  }) {
     return fetchRawList(
+      pagination: pagination,
       endpoint: ApiEndpoints.categoriesList,
       queryParameters: _cleanQuery({'search': search}),
       candidateKeys: const ['categories', 'data', 'items', 'results'],
@@ -1990,12 +2064,14 @@ class ApiService {
   }
 
   Future<List<Map<String, dynamic>>> fetchProducts({
+    ListPagination? pagination,
     String? search,
     String? categoryId,
     bool? isActive,
     String? barcode,
   }) {
     return fetchRawList(
+      pagination: pagination,
       endpoint: ApiEndpoints.productsList,
       queryParameters: _cleanQuery({
         'search': search,
@@ -2032,12 +2108,14 @@ class ApiService {
   }
 
   Future<List<Map<String, dynamic>>> fetchStockBoard({
+    ListPagination? pagination,
     String? search,
     String? categoryId,
     bool? isActive,
     String? warehouseId,
   }) {
     return fetchRawList(
+      pagination: pagination,
       endpoint: ApiEndpoints.inventoryList,
       queryParameters: _cleanQuery({
         'search': search,
@@ -2250,8 +2328,10 @@ class ApiService {
     );
   }
 
-  Future<List<AppUser>> fetchUsers() async {
+  Future<List<AppUser>> fetchUsers({ListPagination? pagination}) async {
+    final paginationKey = pagination?.requestKey;
     final response = await _send(
+      pagination: pagination,
       method: 'GET',
       endpoint: ApiEndpoints.usersList,
       requiresAuth: true,
@@ -2261,13 +2341,14 @@ class ApiService {
     final decoded = _tryDecodeBody(response.body.trim());
     final rawUsers = _extractUsersList(decoded);
 
-    return rawUsers
+    final items = rawUsers
         .whereType<Map<String, dynamic>>()
         .map(AppUser.fromJson)
         .where(
           (user) => user.name.trim().isNotEmpty || user.email.trim().isNotEmpty,
         )
         .toList();
+    return pagination?.read(decoded, items, requestKey: paginationKey) ?? items;
   }
 
   Future<List<AppUser>> fetchDeliveryPartners() async {
@@ -2995,6 +3076,7 @@ class ApiService {
   }
 
   Future<http.Response> _send({
+    ListPagination? pagination,
     required String method,
     required String endpoint,
     bool requiresAuth = false,
@@ -3003,6 +3085,7 @@ class ApiService {
     Duration? timeout,
     bool retryOnTimeout = false,
   }) async {
+    queryParameters = {...?queryParameters, ...?pagination?.query};
     final normalizedMethod = method.toUpperCase();
     if (normalizedMethod != 'GET') {
       final response = await _sendUncached(

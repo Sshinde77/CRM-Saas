@@ -1,3 +1,5 @@
+import '../../../models/list_pagination.dart';
+import '../../../widgets/list_pagination_bar.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -13,7 +15,6 @@ import 'customer_details_screen.dart';
 import 'add_customer_screen.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
-import '../../../widgets/app_pagination.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
 import '../../sales_manager/attendance/sales_manager_attendance_screen.dart';
@@ -37,6 +38,18 @@ class CustomersScreen extends StatefulWidget {
 }
 
 class _CustomersScreenState extends State<CustomersScreen> {
+  final _pagination = ListPagination();
+  int _listRequest = 0;
+  Future<void> _changeListPage() async {
+    if (_pagination.isLoading) return;
+    setState(() => _pagination.isLoading = true);
+    try {
+      await _loadCustomers();
+    } finally {
+      if (mounted) setState(() => _pagination.isLoading = false);
+    }
+  }
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
 
@@ -51,10 +64,6 @@ class _CustomersScreenState extends State<CustomersScreen> {
   String? _category;
   bool? _isActive;
   String? _assignedSalesOfficerId;
-  int _currentPage = 1;
-  int _pageSize = 10;
-  int _totalItems = 0;
-  int _totalPages = 0;
 
   List<CustomerModel> _customers = const [];
 
@@ -75,12 +84,17 @@ class _CustomersScreenState extends State<CustomersScreen> {
 
   @override
   void dispose() {
+    _pagination.dispose();
     _searchDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
 
   Future<void> _loadCustomers() async {
+    final listRequest = ++_listRequest;
+    _pagination.filter(
+      [_search, _category, _isActive, _assignedSalesOfficerId].join('|'),
+    );
     final assignedSalesOfficerId = widget.useSalesManagerShell
         ? _apiProvider.currentUser?.id
         : _assignedSalesOfficerId;
@@ -91,26 +105,21 @@ class _CustomersScreenState extends State<CustomersScreen> {
     });
 
     try {
-      final result = await _apiProvider.fetchPaginatedCustomers(
-        page: _currentPage,
-        pageSize: _pageSize,
+      final customers = await _apiProvider.fetchCustomers(
+        pagination: _pagination,
         search: _search,
         category: _category,
         isActive: _isActive,
         assignedSalesOfficerId: assignedSalesOfficerId,
       );
 
-      if (!mounted) return;
+      if (!mounted || listRequest != _listRequest) return;
       setState(() {
-        _customers = result.items;
-        _currentPage = result.page;
-        _pageSize = result.pageSize;
-        _totalItems = result.total;
-        _totalPages = result.totalPages;
+        _customers = customers;
         _isLoading = false;
       });
     } catch (error) {
-      if (!mounted) return;
+      if (!mounted || listRequest != _listRequest) return;
       setState(() {
         _customers = const [];
         _isLoading = false;
@@ -121,7 +130,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
 
   void _scheduleSearchReload(String value) {
     _search = value.trim();
-    _currentPage = 1;
+    _pagination.reset();
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
       if (!mounted) return;
@@ -427,7 +436,20 @@ class _CustomersScreenState extends State<CustomersScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_pagination.observe(
+      [_search, _category, _isActive, _assignedSalesOfficerId].join('|'),
+    )) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _loadCustomers();
+      });
+    }
+
     return Scaffold(
+      bottomNavigationBar: ListPaginationBar(
+        pagination: _pagination,
+        loading: _isLoading,
+        onChanged: _changeListPage,
+      ),
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       drawer: widget.useSalesManagerShell
@@ -482,24 +504,20 @@ class _CustomersScreenState extends State<CustomersScreen> {
                           ),
                         ),
                       const SizedBox(height: 8),
-                      if (!_isLoading && _errorMessage == null)
-                        AppPagination(
-                          page: _currentPage,
-                          pageSize: _pageSize,
-                          total: _totalItems,
-                          totalPages: _totalPages,
-                          onPageChanged: (page) {
-                            setState(() => _currentPage = page);
-                            _loadCustomers();
-                          },
-                          onPageSizeChanged: (size) {
-                            setState(() {
-                              _pageSize = size;
-                              _currentPage = 1;
-                            });
-                            _loadCustomers();
-                          },
+                      Text.rich(
+                        TextSpan(
+                          text: 'Total Customers: ',
+                          children: [
+                            TextSpan(
+                              text: '${_pagination.total}',
+                              style: const TextStyle(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ],
                         ),
+                      ),
                     ],
                   ),
                 ),

@@ -1,3 +1,5 @@
+import '../../../models/list_pagination.dart';
+import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
@@ -31,6 +33,8 @@ class SalesManagerFollowUpsScreen extends StatefulWidget {
 
 class _SalesManagerFollowUpsScreenState
     extends State<SalesManagerFollowUpsScreen> {
+  final _pagination = ListPagination();
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
   String _selectedFilter = 'All';
@@ -76,6 +80,7 @@ class _SalesManagerFollowUpsScreenState
 
   @override
   void dispose() {
+    _pagination.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -214,13 +219,21 @@ class _SalesManagerFollowUpsScreenState
 
   @override
   Widget build(BuildContext context) {
-    final visibleItems = _visibleItems;
+    final visibleItems = _pagination.local(
+      _visibleItems,
+      filterKey: _searchController.text + _selectedFilter,
+    );
     final textScaler = MediaQuery.textScalerOf(
       context,
     ).clamp(minScaleFactor: 0.9, maxScaleFactor: 1.2);
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: textScaler),
       child: Scaffold(
+        bottomNavigationBar: ListPaginationBar(
+          pagination: _pagination,
+          loading: false,
+          onChanged: () => setState(() {}),
+        ),
         key: _scaffoldKey,
         backgroundColor: AppColors.deliveryBackground,
         drawer: SalesManagerSidebarDrawer(

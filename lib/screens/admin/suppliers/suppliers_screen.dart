@@ -1,3 +1,5 @@
+import '../../../models/list_pagination.dart';
+import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
@@ -6,7 +8,6 @@ import '../../../constants/app_colors.dart';
 import '../../../providers/api_provider.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
-import '../../../widgets/app_pagination.dart';
 import 'add_supplier_screen.dart';
 
 class SuppliersScreen extends StatefulWidget {
@@ -17,6 +18,18 @@ class SuppliersScreen extends StatefulWidget {
 }
 
 class _SuppliersScreenState extends State<SuppliersScreen> {
+  final _pagination = ListPagination();
+  int _listRequest = 0;
+  Future<void> _changeListPage() async {
+    if (_pagination.isLoading) return;
+    setState(() => _pagination.isLoading = true);
+    try {
+      await _loadSuppliers();
+    } finally {
+      if (mounted) setState(() => _pagination.isLoading = false);
+    }
+  }
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
 
@@ -26,10 +39,6 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
   bool _providerReady = false;
   bool _isLoading = true;
   String? _errorMessage;
-  int _currentPage = 1;
-  int _pageSize = 10;
-  int _totalItems = 0;
-  int _totalPages = 0;
 
   static const List<String> _tabs = ['All', 'Active', 'Inactive'];
   List<String> _categories = const [
@@ -68,26 +77,23 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
 
   @override
   void dispose() {
+    _pagination.dispose();
     _searchController.dispose();
     super.dispose();
   }
 
   Future<void> _loadSuppliers() async {
+    final listRequest = ++_listRequest;
+    _pagination.filter(
+      [_searchController.text, _selectedTab, _selectedCategory].join('|'),
+    );
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
     try {
-      final result = await _apiProvider.fetchPaginatedSuppliers(
-        page: _currentPage,
-        pageSize: _pageSize,
-        search: _searchController.text.trim(),
-        category: _selectedCategory == 'All categories'
-            ? null
-            : _selectedCategory,
-        isActive: _selectedTab == 'All' ? null : _selectedTab == 'Active',
-      );
-      final suppliers = result.items.map(_SupplierRecord.fromJson).toList();
+      final items = await _apiProvider.fetchSuppliers(pagination: _pagination);
+      final suppliers = items.map(_SupplierRecord.fromJson).toList();
       final categories =
           suppliers
               .map((supplier) => supplier.category)
@@ -95,13 +101,9 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
               .toSet()
               .toList()
             ..sort();
-      if (!mounted) return;
+      if (!mounted || listRequest != _listRequest) return;
       setState(() {
         _suppliers = suppliers;
-        _currentPage = result.page;
-        _pageSize = result.pageSize;
-        _totalItems = result.total;
-        _totalPages = result.totalPages;
         _categories = ['All categories', ...categories];
         if (!_categories.contains(_selectedCategory)) {
           _selectedCategory = 'All categories';
@@ -109,7 +111,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
         _isLoading = false;
       });
     } catch (error) {
-      if (!mounted) return;
+      if (!mounted || listRequest != _listRequest) return;
       setState(() {
         _errorMessage = error.toString();
         _isLoading = false;
@@ -155,9 +157,27 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _pagination.filters = {
+      'search': _searchController.text,
+      if (_selectedTab != 'All') 'is_active': '${_selectedTab == 'Active'}',
+      if (_selectedCategory != 'All categories') 'category': _selectedCategory,
+    };
+    if (_pagination.observe(
+      [_searchController.text, _selectedTab, _selectedCategory].join('|'),
+    )) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _loadSuppliers();
+      });
+    }
+
     final suppliers = _filteredSuppliers();
 
     return Scaffold(
+      bottomNavigationBar: ListPaginationBar(
+        pagination: _pagination,
+        loading: _isLoading,
+        onChanged: _changeListPage,
+      ),
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       drawer: const AppDrawer(activeItem: 'Suppliers'),
@@ -215,7 +235,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                                             onTap: () {
                                               setState(() {
                                                 _selectedTab = tab;
-                                                _currentPage = 1;
+                                                _pagination.reset();
                                               });
                                               _loadSuppliers();
                                             },
@@ -272,27 +292,6 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                                 ? _errorState(_errorMessage!, _loadSuppliers)
                                 : _buildTable(suppliers),
                           ),
-                          const Divider(height: 1, color: Color(0xFFE5E7EB)),
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
-                            child: AppPagination(
-                              page: _currentPage,
-                              pageSize: _pageSize,
-                              total: _totalItems,
-                              totalPages: _totalPages,
-                              onPageChanged: (page) {
-                                setState(() => _currentPage = page);
-                                _loadSuppliers();
-                              },
-                              onPageSizeChanged: (size) {
-                                setState(() {
-                                  _pageSize = size;
-                                  _currentPage = 1;
-                                });
-                                _loadSuppliers();
-                              },
-                            ),
-                          ),
                         ],
                       ),
                     ),
@@ -313,7 +312,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
         controller: _searchController,
         onChanged: (_) => setState(() {}),
         onSubmitted: (_) {
-          setState(() => _currentPage = 1);
+          setState(() => _pagination.reset());
           _loadSuppliers();
         },
         decoration: InputDecoration(
@@ -429,7 +428,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
         if (value == null) return;
         setState(() {
           _selectedCategory = value;
-          _currentPage = 1;
+          _pagination.reset();
         });
         _loadSuppliers();
       },
