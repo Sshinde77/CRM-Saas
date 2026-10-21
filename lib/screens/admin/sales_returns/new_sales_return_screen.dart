@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:crm_saas/core/theme/app_text_styles.dart';
+
 import '../../../constants/app_colors.dart';
 import '../../../widgets/admin/app_drawer.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
@@ -507,11 +509,7 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
   InputDecoration _fieldDecoration({required String hintText}) {
     return InputDecoration(
       hintText: hintText,
-      hintStyle: const TextStyle(
-        color: Color(0xFF94A3B8),
-        fontSize: 14,
-        fontWeight: FontWeight.w400,
-      ),
+      hintStyle: AppTextStyles.inputHint,
       filled: true,
       fillColor: const Color(0xFFF8FAFC),
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),

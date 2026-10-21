@@ -500,11 +500,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
             ),
             decoration: InputDecoration(
               hintText: 'Enter notes, client feedback or next steps...',
-              hintStyle: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-              ),
+              hintStyle: AppTextStyles.inputHint,
               filled: true,
               fillColor: AppColors.deliveryCardSoft,
               border: OutlineInputBorder(
@@ -2880,14 +2876,7 @@ class _ConvertLeadSheetState extends State<_ConvertLeadSheet> {
 Widget _fieldLabel(String label) {
   return Padding(
     padding: const EdgeInsets.only(bottom: 6),
-    child: Text(
-      label,
-      style: const TextStyle(
-        color: AppColors.deliveryInk,
-        fontSize: 12,
-        fontWeight: FontWeight.w700,
-      ),
-    ),
+    child: Text(label, style: AppTextStyles.fieldLabel),
   );
 }
 
@@ -2908,11 +2897,7 @@ Widget _inputField(
     ),
     decoration: InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(
-        color: AppColors.textSecondary,
-        fontSize: 14,
-        fontWeight: FontWeight.w400,
-      ),
+      hintStyle: AppTextStyles.inputHint,
       filled: true,
       fillColor: AppColors.deliveryCardSoft,
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),

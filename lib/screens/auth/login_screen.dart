@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:crm_saas/core/theme/app_text_styles.dart';
+
 import '../../constants/app_colors.dart';
 import '../../providers/api_provider.dart';
 import '../../services/api_service.dart';
@@ -521,7 +523,7 @@ class _LoginScreenState extends State<LoginScreen> {
   InputDecoration _pillDecoration({required String hint, Widget? suffixIcon}) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(color: lightMutedText, fontSize: 14),
+      hintStyle: AppTextStyles.inputHint,
       suffixIcon: suffixIcon,
       filled: true,
       fillColor: Colors.white,
@@ -557,14 +559,7 @@ class _FieldLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: const TextStyle(
-        color: _LoginScreenState.headingText,
-        fontWeight: FontWeight.w700,
-        fontSize: 14,
-      ),
-    );
+    return Text(text, style: AppTextStyles.fieldLabel);
   }
 }
 

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:crm_saas/core/theme/app_text_styles.dart';
+
 import '../../constants/app_colors.dart';
 import '../../models/auth_models.dart';
 import '../../providers/api_provider.dart';
@@ -285,14 +287,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: headingText,
-            fontWeight: FontWeight.w700,
-            fontSize: 14,
-          ),
-        ),
+        Text(label, style: AppTextStyles.fieldLabel),
         const SizedBox(height: 8),
         child,
       ],
@@ -302,7 +297,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   InputDecoration _pillDecoration({String? hint, Widget? suffixIcon}) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(color: AppColors.textLightMuted, fontSize: 14),
+      hintStyle: AppTextStyles.inputHint,
       suffixIcon: suffixIcon,
       filled: true,
       fillColor: Colors.white,

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:crm_saas/core/theme/app_text_styles.dart';
+
 import '../../../constants/app_colors.dart';
 import '../../../providers/api_provider.dart';
 import '../../../utils/product_image_url.dart';
@@ -407,15 +409,8 @@ class _SectionHeader extends StatelessWidget {
             color: AppColors.deliveryGreen,
           ),
           const SizedBox(width: 8),
-          const Expanded(
-            child: Text(
-              'Order Summary',
-              style: TextStyle(
-                color: AppColors.deliveryInk,
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
+          Expanded(
+            child: Text('Order Summary', style: AppTextStyles.sectionHeading),
           ),
           Text(
             '$itemCount ${itemCount == 1 ? 'item' : 'items'}',

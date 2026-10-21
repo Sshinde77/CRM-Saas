@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:crm_saas/core/theme/app_text_styles.dart';
+
 import '../../../../constants/app_colors.dart';
 import '../../../../models/end_of_day_return_models.dart';
 import 'end_of_day_shared.dart';
@@ -146,10 +148,7 @@ class _StockReconciliationFormState extends State<StockReconciliationForm> {
                 maxLines: 5,
                 decoration: InputDecoration(
                   hintText: 'e.g. 2 units missing/damaged',
-                  hintStyle: const TextStyle(
-                    color: AppColors.textMuted,
-                    fontSize: 14,
-                  ),
+                  hintStyle: AppTextStyles.inputHint,
                   filled: true,
                   fillColor: Colors.white,
                   border: OutlineInputBorder(

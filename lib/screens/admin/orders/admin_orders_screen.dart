@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:crm_saas/core/theme/app_text_styles.dart';
+
 import '../../../constants/app_colors.dart';
 import '../../../providers/api_provider.dart';
 import '../../../utils/product_image_url.dart';
@@ -639,11 +641,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                   filled: true,
                   fillColor: AppColors.surface,
                   hintText: 'Search by order, customer or status...',
-                  hintStyle: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                  ),
+                  hintStyle: AppTextStyles.inputHint,
                   prefixIcon: const Icon(
                     Icons.search_rounded,
                     color: AppColors.textSecondary,
@@ -766,9 +764,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                 maxLines: 1,
                 softWrap: false,
                 style: TextStyle(
-                  color: selected
-                      ? AppColors.surface
-                      : AppColors.textSecondary,
+                  color: selected ? AppColors.surface : AppColors.textSecondary,
                   fontSize: 12,
                   height: 1.05,
                   fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
@@ -1248,7 +1244,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
             size: 18,
           ),
           hintText: 'Search order # or customer',
-          hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+          hintStyle: AppTextStyles.inputHint,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:crm_saas/core/theme/app_text_styles.dart';
+
 import '../../../widgets/delivery/delivery_bottom_navigation.dart';
 
 import '../../../constants/app_colors.dart';
@@ -1017,24 +1019,14 @@ class _CardTitle extends StatelessWidget {
                 title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 16,
-                  height: 1.2,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.deliveryInk,
-                ),
+                style: AppTextStyles.cardTitle,
               ),
               const SizedBox(height: 2),
               Text(
                 subtitle,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 12,
-                  height: 1.25,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.textMuted,
-                ),
+                style: AppTextStyles.subtitle,
               ),
             ],
           ),

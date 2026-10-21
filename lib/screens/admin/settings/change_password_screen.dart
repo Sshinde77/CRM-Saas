@@ -298,7 +298,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         filled: true,
         fillColor: _fieldBg,
         hintText: hintText,
-        hintStyle: const TextStyle(color: Color(0xFF98A2B3), fontSize: 14),
+        hintStyle: AppTextStyles.inputHint,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 14,

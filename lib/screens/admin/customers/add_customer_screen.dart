@@ -3,6 +3,8 @@ import 'dart:typed_data';
 
 import 'package:csc_picker/csc_picker.dart';
 import 'package:flutter/material.dart';
+
+import 'package:crm_saas/core/theme/app_text_styles.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart' as latlong;
 
@@ -2773,14 +2775,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           ),
         ),
         const SizedBox(width: 10),
-        Text(
-          title,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
+        Text(title, style: AppTextStyles.sectionHeading),
       ],
     );
   }
@@ -2849,7 +2844,10 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           key: ValueKey<String?>('sales-${selected?.id}'),
           initialValue: selected?.id,
           isExpanded: true,
-          hint: const Text('Select sales officer'),
+          hint: const Text(
+            'Select sales officer',
+            style: AppTextStyles.inputHint,
+          ),
           decoration: _inputDecoration('Select sales officer'),
           items: items
               .map(
@@ -2930,10 +2928,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
               Icons.keyboard_arrow_down_rounded,
               color: AppColors.textLightMuted,
             ),
-            hint: Text(
-              hintText,
-              style: const TextStyle(color: AppColors.textLightMuted),
-            ),
+            hint: Text(hintText, style: AppTextStyles.inputHint),
             decoration: _inputDecoration(''),
             dropdownColor: Colors.white,
             borderRadius: BorderRadius.circular(16),
@@ -3020,10 +3015,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             Icons.keyboard_arrow_down_rounded,
             color: AppColors.textLightMuted,
           ),
-          hint: Text(
-            hintText,
-            style: const TextStyle(color: AppColors.textLightMuted),
-          ),
+          hint: Text(hintText, style: AppTextStyles.inputHint),
           decoration: _inputDecoration(''),
           dropdownColor: Colors.white,
           borderRadius: BorderRadius.circular(16),

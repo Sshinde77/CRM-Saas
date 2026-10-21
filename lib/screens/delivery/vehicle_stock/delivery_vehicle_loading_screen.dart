@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import 'package:crm_saas/core/theme/app_text_styles.dart';
 import 'package:flutter/services.dart';
 
 import '../../../constants/app_colors.dart';
@@ -2021,11 +2023,7 @@ class _FieldLabel extends StatelessWidget {
       label,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      style: const TextStyle(
-        color: Color(0xFF4B5668),
-        fontSize: 14,
-        fontWeight: FontWeight.w700,
-      ),
+      style: AppTextStyles.fieldLabel.copyWith(color: const Color(0xFF4B5668)),
     );
   }
 }
@@ -2114,11 +2112,7 @@ class _SectionHeader extends StatelessWidget {
             title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: AppColors.deliveryInk,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.sectionHeading,
           ),
         ),
         ?trailing,
@@ -2365,11 +2359,7 @@ InputDecoration _inputDecoration({required String hint, IconData? icon}) {
     prefixIcon: icon == null
         ? null
         : Icon(icon, color: const Color(0xFF718096)),
-    hintStyle: const TextStyle(
-      color: AppColors.textSecondary,
-      fontSize: 14,
-      fontWeight: FontWeight.w400,
-    ),
+    hintStyle: AppTextStyles.inputHint,
     filled: true,
     fillColor: Colors.white,
     contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),

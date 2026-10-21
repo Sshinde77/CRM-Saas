@@ -54,11 +54,7 @@ class PaginatedOrdersResult extends PaginatedResult<Map<String, dynamic>> {
     required super.pageSize,
     required int totalItems,
     required super.totalPages,
-  }) : super(
-         items: orders,
-         page: currentPage,
-         total: totalItems,
-       );
+  }) : super(items: orders, page: currentPage, total: totalItems);
 
   List<Map<String, dynamic>> get orders => items;
   int get currentPage => page;
@@ -76,9 +72,12 @@ class ApiService {
 
   final http.Client _client;
   final String baseUrl;
-  final Map<String, _CachedApiResponse> _responseCache = {};
-  final Map<String, Future<http.Response>> _inFlightGets = {};
-  int _cacheGeneration = 0;
+  // API services are created by both the app-level provider and a handful of
+  // individual screens. Keep GET responses shared so disposing a screen does
+  // not throw away data that another screen (or a later visit) can reuse.
+  static final Map<String, _CachedApiResponse> _responseCache = {};
+  static final Map<String, Future<http.Response>> _inFlightGets = {};
+  static int _cacheGeneration = 0;
 
   static const Duration _responseCacheTtl = Duration(seconds: 20);
   static const Duration _staleResponseTtl = Duration(minutes: 10);
@@ -99,9 +98,49 @@ class ApiService {
   }
 
   void close() {
-    _responseCache.clear();
-    _inFlightGets.clear();
     _client.close();
+  }
+
+  Future<Uint8List?> fetchRemoteBytes(String url) async {
+    final uri = Uri.tryParse(url.trim());
+    if (uri == null || !uri.hasScheme || uri.host.isEmpty) return null;
+
+    final cacheKey = 'asset|$uri';
+    final now = DateTime.now();
+    final cached = _responseCache[cacheKey];
+    if (cached != null && now.difference(cached.storedAt) < _staleResponseTtl) {
+      return cached.response.bodyBytes;
+    }
+    if (cached != null) _responseCache.remove(cacheKey);
+
+    final existingRequest = _inFlightGets[cacheKey];
+    if (existingRequest != null) {
+      try {
+        final response = await existingRequest;
+        if (response.statusCode < 200 || response.statusCode >= 300) {
+          return null;
+        }
+        return response.bodyBytes;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    final requestGeneration = _cacheGeneration;
+    final request = _client.get(uri).timeout(ApiConstants.requestTimeout);
+    _inFlightGets[cacheKey] = request;
+    try {
+      final response = await request;
+      if (response.statusCode < 200 || response.statusCode >= 300) return null;
+      if (requestGeneration == _cacheGeneration) {
+        _storeCachedResponse(cacheKey, response);
+      }
+      return response.bodyBytes;
+    } catch (_) {
+      return null;
+    } finally {
+      _inFlightGets.remove(cacheKey);
+    }
   }
 
   Future<String> fetchHealthStatus() async {
@@ -144,6 +183,7 @@ class ApiService {
     }
     final refreshToken = _extractRefreshToken(decoded);
 
+    _invalidateResponseCache();
     _accessToken = token;
     _refreshToken = refreshToken?.trim();
     _savedRole = _extractSavedRole(
@@ -2501,10 +2541,15 @@ class ApiService {
   static String? get refreshToken => _refreshToken;
   static String? get savedRole => _savedRole;
   static void clearAccessToken() => _clearTokens();
-  static void setAccessToken(String? token) => _accessToken = token?.trim();
+  static void setAccessToken(String? token) {
+    _invalidateResponseCache();
+    _accessToken = token?.trim();
+  }
+
   static void setRefreshToken(String? token) => _refreshToken = token?.trim();
 
   static Future<bool> restorePersistedAuthState() async {
+    _invalidateResponseCache();
     final prefs = await SharedPreferences.getInstance();
     final accessToken = prefs.getString(_prefsAccessTokenKey)?.trim();
     final refreshToken = prefs.getString(_prefsRefreshTokenKey)?.trim();
@@ -2517,6 +2562,7 @@ class ApiService {
   }
 
   static void _clearTokens() {
+    _invalidateResponseCache();
     _accessToken = null;
     _refreshToken = null;
     _savedRole = null;
@@ -3147,7 +3193,7 @@ class ApiService {
     _responseCache[key] = _CachedApiResponse(response: response, storedAt: now);
   }
 
-  void _invalidateResponseCache() {
+  static void _invalidateResponseCache() {
     _cacheGeneration++;
     _responseCache.clear();
   }

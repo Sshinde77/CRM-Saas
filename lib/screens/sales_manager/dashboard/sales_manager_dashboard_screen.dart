@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:crm_saas/core/theme/app_text_styles.dart';
+
 import '../../../constants/app_colors.dart';
 import '../../../models/customer_model.dart';
 import '../../../providers/api_provider.dart';
@@ -186,85 +188,90 @@ class _SalesManagerDashboardScreenState
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: textScaler),
       child: Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: AppColors.deliveryBackground,
-      drawer: SalesManagerSidebarDrawer(
-        onSelect: _handleSidebarSelection,
-        currentPage: 'Dashboard',
-      ),
-      bottomNavigationBar: const SalesManagerBottomNavigation(currentIndex: 0),
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            SalesManagerTopBar(
-              title: 'Dashboard',
+        key: _scaffoldKey,
+        backgroundColor: AppColors.deliveryBackground,
+        drawer: SalesManagerSidebarDrawer(
+          onSelect: _handleSidebarSelection,
+          currentPage: 'Dashboard',
+        ),
+        bottomNavigationBar: const SalesManagerBottomNavigation(
+          currentIndex: 0,
+        ),
+        body: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              SalesManagerTopBar(
+                title: 'Dashboard',
                 titleFontWeight: FontWeight.w400,
                 titleFontSize: 20,
-              onNotificationTap: () => _showSnack('Notifications'),
-            ),
-            Expanded(
-              child: FutureBuilder<_DashboardData>(
-                future: _future,
-                builder: (context, snapshot) {
-                  final isLoading =
-                      snapshot.connectionState == ConnectionState.waiting &&
-                      !snapshot.hasData;
-                  if (isLoading) return const _LoadingState();
-                  if (snapshot.hasError) {
-                    return _ErrorState(
-                      message: _cleanError(snapshot.error),
-                      onRetry: _refresh,
-                    );
-                  }
+                onNotificationTap: () => _showSnack('Notifications'),
+              ),
+              Expanded(
+                child: FutureBuilder<_DashboardData>(
+                  future: _future,
+                  builder: (context, snapshot) {
+                    final isLoading =
+                        snapshot.connectionState == ConnectionState.waiting &&
+                        !snapshot.hasData;
+                    if (isLoading) return const _LoadingState();
+                    if (snapshot.hasError) {
+                      return _ErrorState(
+                        message: _cleanError(snapshot.error),
+                        onRetry: _refresh,
+                      );
+                    }
 
-                  final data = snapshot.data ?? _DashboardData.empty();
-                  return RefreshIndicator(
-                    color: AppColors.primary,
-                    onRefresh: _refresh,
-                    child: SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(
-                        parent: BouncingScrollPhysics(),
-                      ),
-                      child: Column(
-                        children: [
-                          _SalesDashboardHero(data: data),
-                          Center(
-                            child: ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 980),
-                              child: Padding(
-                                padding: const EdgeInsets.fromLTRB(
-                                  12,
-                                  10,
-                                  12,
-                                  18,
+                    final data = snapshot.data ?? _DashboardData.empty();
+                    return RefreshIndicator(
+                      color: AppColors.primary,
+                      onRefresh: _refresh,
+                      child: SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(
+                          parent: BouncingScrollPhysics(),
+                        ),
+                        child: Column(
+                          children: [
+                            _SalesDashboardHero(data: data),
+                            Center(
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(
+                                  maxWidth: 980,
                                 ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                              _SalesTargetCard(data: data),
-                              const SizedBox(height: 10),
-                              _PrioritiesCard(
-                                data: data,
-                                onFollowUps: _openFollowUps,
-                                onVisits: _openVisits,
-                                onQuotations: _openQuotations,
-                              ),
-                                  ],
+                                child: Padding(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    12,
+                                    10,
+                                    12,
+                                    18,
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      _SalesTargetCard(data: data),
+                                      const SizedBox(height: 10),
+                                      _PrioritiesCard(
+                                        data: data,
+                                        onFollowUps: _openFollowUps,
+                                        onVisits: _openVisits,
+                                        onQuotations: _openQuotations,
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -362,10 +369,7 @@ class _SalesDashboardHero extends StatelessWidget {
         Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _SalesIdentityHeader(
-              data: data,
-              bottomPadding: 32 + _statsOverlap,
-            ),
+            _SalesIdentityHeader(data: data, bottomPadding: 32 + _statsOverlap),
             const SizedBox(height: _StatsGrid.gridHeight - _statsOverlap),
           ],
         ),
@@ -492,8 +496,18 @@ class _SalesDatePill extends StatelessWidget {
   Widget build(BuildContext context) {
     final now = DateTime.now();
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return Container(
       padding: EdgeInsets.symmetric(
@@ -1339,11 +1353,7 @@ class _SectionTitle extends StatelessWidget {
             title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.sectionHeading,
           ),
         ),
         TextButton.icon(

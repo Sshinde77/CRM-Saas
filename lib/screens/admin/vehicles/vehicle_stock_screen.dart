@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:crm_saas/core/theme/app_text_styles.dart';
+
 import '../../../constants/app_colors.dart';
 import '../../../constants/api_constants.dart';
 import '../../../core/theme/app_sizes.dart';
@@ -478,11 +480,7 @@ class _DeliveryHistoryToolbar extends StatelessWidget {
               style: const TextStyle(fontSize: 13),
               decoration: InputDecoration(
                 hintText: 'Search history',
-                hintStyle: const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                ),
+                hintStyle: AppTextStyles.inputHint,
                 prefixIcon: const Icon(Icons.search_rounded, size: 20),
                 suffixIcon: controller.text.isEmpty
                     ? null
@@ -1290,11 +1288,7 @@ class _DeliveryStockProductsState extends State<_DeliveryStockProducts> {
             style: const TextStyle(fontSize: 13),
             decoration: InputDecoration(
               hintText: 'Search products by name or SKU',
-              hintStyle: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-              ),
+              hintStyle: AppTextStyles.inputHint,
               prefixIcon: const Icon(Icons.search_rounded, size: 20),
               filled: true,
               fillColor: const Color(0xFFF9FBFA),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:crm_saas/core/theme/app_text_styles.dart';
+
 import '../../constants/app_colors.dart';
 import '../../models/customer_model.dart';
 import 'voice_input_sheet.dart';
@@ -8,7 +10,7 @@ class CustomerSearchDialog extends StatefulWidget {
   const CustomerSearchDialog({
     super.key,
     required this.customers,
-    required this.onCreateCustomer,
+    this.onCreateCustomer,
     this.selectedCustomerId,
     this.onViewLocation,
     this.showOutstandingAmount = false,
@@ -17,7 +19,7 @@ class CustomerSearchDialog extends StatefulWidget {
 
   final List<CustomerModel> customers;
   final String? selectedCustomerId;
-  final Future<CustomerModel?> Function() onCreateCustomer;
+  final Future<CustomerModel?> Function()? onCreateCustomer;
   final ValueChanged<CustomerModel>? onViewLocation;
   final bool showOutstandingAmount;
   final String? emptyMessage;
@@ -52,9 +54,11 @@ class _CustomerSearchDialogState extends State<CustomerSearchDialog> {
   }
 
   Future<void> _createCustomer() async {
+    final onCreateCustomer = widget.onCreateCustomer;
+    if (onCreateCustomer == null) return;
     setState(() => _creating = true);
     try {
-      final customer = await widget.onCreateCustomer();
+      final customer = await onCreateCustomer();
       if (mounted && customer != null) Navigator.of(context).pop(customer);
     } finally {
       if (mounted) setState(() => _creating = false);
@@ -141,11 +145,7 @@ class _CustomerSearchDialogState extends State<CustomerSearchDialog> {
                   ),
                   hintText:
                       'Search by customer name, business name, ID or phone number...',
-                  hintStyle: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                  ),
+                  hintStyle: AppTextStyles.inputHint,
                   prefixIcon: const Icon(Icons.search, color: _muted),
                   suffixIcon: IconButton(
                     tooltip: 'Search by voice',
@@ -192,31 +192,35 @@ class _CustomerSearchDialogState extends State<CustomerSearchDialog> {
                           _customerCard(customers[index]),
                     ),
             ),
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: const BoxDecoration(
-                border: Border(top: BorderSide(color: _border)),
-              ),
-              child: SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: _accent,
-                    foregroundColor: AppColors.surface,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+            if (widget.onCreateCustomer != null)
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: const BoxDecoration(
+                  border: Border(top: BorderSide(color: _border)),
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: _accent,
+                      foregroundColor: AppColors.surface,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                  ),
-                  onPressed: _creating ? null : _createCustomer,
-                  icon: const Icon(Icons.add, size: 22),
-                  label: const Text(
-                    'Create Customer',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                    onPressed: _creating ? null : _createCustomer,
+                    icon: const Icon(Icons.add, size: 22),
+                    label: const Text(
+                      'Create Customer',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
           ],
         ),
       ),

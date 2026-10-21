@@ -6,7 +6,23 @@ import 'package:speech_to_text/speech_to_text.dart';
 import '../../constants/app_colors.dart';
 
 class VoiceInputSheet extends StatefulWidget {
-  const VoiceInputSheet({super.key});
+  const VoiceInputSheet({
+    super.key,
+    this.title = 'Voice customer details',
+    this.instruction =
+        'Speak like this: "Shop name Sharma Traders, contact person Rajesh, mobile number 9876543210, city Bangalore, pincode 560034".',
+    this.hintText = 'Your transcript will appear here. You can edit it.',
+    this.actionLabel = 'Extract',
+    this.minimumLength = 8,
+    this.initialText,
+  });
+
+  final String title;
+  final String instruction;
+  final String hintText;
+  final String actionLabel;
+  final int minimumLength;
+  final String? initialText;
 
   @override
   State<VoiceInputSheet> createState() => _VoiceInputSheetState();
@@ -23,6 +39,8 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
   bool _holdingMic = false;
   bool _listening = false;
   String? _error;
+  List<LocaleName> _locales = const [];
+  String? _selectedLocaleId;
 
   @override
   void initState() {
@@ -33,6 +51,7 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
       lowerBound: 0.92,
       upperBound: 1.08,
     );
+    _transcriptController.text = widget.initialText ?? '';
     _initializeSpeech();
   }
 
@@ -81,9 +100,15 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
       },
     );
 
+    final locales = available ? await _speech.locales() : <LocaleName>[];
+    final systemLocale = available ? await _speech.systemLocale() : null;
     if (!mounted) return;
     setState(() {
       _speechReady = available;
+      _locales = locales;
+      _selectedLocaleId =
+          systemLocale?.localeId ??
+          (locales.isEmpty ? null : locales.first.localeId);
       _initializing = false;
       _error = available ? null : 'Speech recognition is unavailable.';
     });
@@ -97,6 +122,7 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
     await _speech.listen(
       onResult: _onSpeechResult,
       listenOptions: SpeechListenOptions(
+        localeId: _selectedLocaleId,
         partialResults: true,
         listenFor: const Duration(minutes: 2),
         pauseFor: const Duration(minutes: 2),
@@ -124,7 +150,7 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
     await _stopHoldListening();
     final transcript = _transcriptController.text.trim();
     if (!mounted) return;
-    if (transcript.length < 8) {
+    if (transcript.length < widget.minimumLength) {
       setState(() => _error = "Didn't catch that, please try again.");
       return;
     }
@@ -134,7 +160,8 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
-    final canUse = _transcriptController.text.trim().length >= 8;
+    final canUse =
+        _transcriptController.text.trim().length >= widget.minimumLength;
     final micDisabled = _initializing || !_speechReady;
 
     return Padding(
@@ -145,10 +172,13 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
         children: [
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'Voice customer details',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                  widget.title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
               IconButton(
@@ -168,8 +198,8 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
                 color: AppColors.deliveryGreen.withValues(alpha: 0.18),
               ),
             ),
-            child: const Text(
-              'Speak like this: "Shop name Sharma Traders, contact person Rajesh, mobile number 9876543210, city Bangalore, pincode 560034".',
+            child: Text(
+              widget.instruction,
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: AppColors.deliveryDashboardHeaderEnd,
@@ -178,6 +208,41 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
               ),
             ),
           ),
+          if (_locales.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              initialValue: _selectedLocaleId,
+              isExpanded: true,
+              decoration: InputDecoration(
+                labelText: 'Voice language',
+                prefixIcon: const Icon(Icons.language_rounded, size: 20),
+                filled: true,
+                fillColor: AppColors.surfaceSoft,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              items: _locales
+                  .map(
+                    (locale) => DropdownMenuItem<String>(
+                      value: locale.localeId,
+                      child: Text(
+                        locale.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  )
+                  .toList(),
+              onChanged: _listening
+                  ? null
+                  : (value) => setState(() => _selectedLocaleId = value),
+            ),
+          ],
           const SizedBox(height: 14),
           Center(
             child: ScaleTransition(
@@ -231,7 +296,7 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
                 ? 'Preparing speech recognition...'
                 : _listening
                 ? 'Listening... release the mic to stop.'
-                : 'Hold the mic, speak the customer details, then release.',
+                : 'Hold the mic, speak in the selected language, then release.',
             textAlign: TextAlign.center,
             style: const TextStyle(
               color: AppColors.textSecondary,
@@ -257,7 +322,7 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
             maxLines: 6,
             onChanged: (_) => setState(() {}),
             decoration: InputDecoration(
-              hintText: 'Your transcript will appear here. You can edit it.',
+              hintText: widget.hintText,
               filled: true,
               fillColor: AppColors.surfaceSoft,
               border: OutlineInputBorder(
@@ -279,7 +344,7 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
                 child: FilledButton.icon(
                   onPressed: canUse ? _useTranscript : null,
                   icon: const Icon(Icons.auto_fix_high_rounded, size: 18),
-                  label: const Text('Extract'),
+                  label: Text(widget.actionLabel),
                 ),
               ),
             ],

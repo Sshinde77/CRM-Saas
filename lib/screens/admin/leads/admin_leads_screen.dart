@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import 'package:crm_saas/core/theme/app_text_styles.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -1006,11 +1008,7 @@ class _SearchCard extends StatelessWidget {
                 ),
                 decoration: InputDecoration(
                   hintText: 'Search by name, company, mobile...',
-                  hintStyle: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                  ),
+                  hintStyle: AppTextStyles.inputHint,
                   prefixIcon: const Icon(
                     Icons.search_rounded,
                     color: AppColors.deliveryGreen,
@@ -1196,14 +1194,7 @@ class _SectionHeader extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 2),
       child: Row(
         children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: AppColors.deliveryInk,
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
+          Text(title, style: AppTextStyles.sectionHeading),
           const SizedBox(width: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),

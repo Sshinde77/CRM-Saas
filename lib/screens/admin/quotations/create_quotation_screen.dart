@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:crm_saas/core/theme/app_text_styles.dart';
+
 import '../../../constants/app_colors.dart';
 import '../../../models/app_user.dart';
 import '../../../models/customer_model.dart';
@@ -1264,14 +1266,7 @@ class _SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: const TextStyle(
-        color: AppColors.textPrimary,
-        fontSize: 14,
-        fontWeight: FontWeight.w700,
-      ),
-    );
+    return Text(text, style: AppTextStyles.sectionHeading);
   }
 }
 
@@ -1490,14 +1485,7 @@ class _FieldLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      label,
-      style: const TextStyle(
-        color: AppColors.textPrimary,
-        fontSize: 14,
-        fontWeight: FontWeight.w700,
-      ),
-    );
+    return Text(label, style: AppTextStyles.fieldLabel);
   }
 }
 
@@ -2071,7 +2059,7 @@ class _QuoteItem {
 InputDecoration _inputDecoration(String hint, {IconData? prefixIcon}) {
   return InputDecoration(
     hintText: hint,
-    hintStyle: const TextStyle(color: AppColors.textLightMuted, fontSize: 14),
+    hintStyle: AppTextStyles.inputHint,
     prefixIcon: prefixIcon == null ? null : Icon(prefixIcon, size: 18),
     filled: true,
     fillColor: const Color(0xFFF8FAFC),

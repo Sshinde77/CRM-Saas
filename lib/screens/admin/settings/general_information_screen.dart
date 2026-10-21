@@ -3,8 +3,9 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+
+import 'package:crm_saas/core/theme/app_text_styles.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:http/http.dart' as http;
 
 import '../../../constants/app_colors.dart';
 import '../../../models/auth_models.dart';
@@ -1100,15 +1101,7 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
   }
 
   Future<Uint8List?> _loadRemoteBytes(String url) async {
-    try {
-      final response = await http.get(Uri.parse(url));
-      if (response.statusCode >= 200 && response.statusCode < 300) {
-        return response.bodyBytes;
-      }
-    } catch (_) {
-      // Ignore preview loading failures.
-    }
-    return null;
+    return _apiService.fetchRemoteBytes(url);
   }
 
   Widget _fieldBlock({
@@ -1168,7 +1161,7 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
       icon: const Icon(Icons.expand_more_rounded, color: Color(0xFF98A2B3)),
       hint: hintText == null
           ? null
-          : Text(hintText, style: const TextStyle(color: Color(0xFFB5BCC6))),
+          : Text(hintText, style: AppTextStyles.inputHint),
       style: const TextStyle(fontSize: 14, color: kGeneralInfoTitleColor),
       decoration: _fieldDecoration(),
       dropdownColor: Colors.white,
@@ -1196,7 +1189,7 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
       filled: true,
       fillColor: _fieldBg,
       hintText: hintText,
-      hintStyle: const TextStyle(color: Color(0xFFB5BCC6), fontSize: 14),
+      hintStyle: AppTextStyles.inputHint,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(18),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:crm_saas/core/theme/app_text_styles.dart';
+
 import '../../../constants/app_colors.dart';
 import '../../../providers/api_provider.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
@@ -329,11 +331,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         onChanged: (_) => setState(() {}),
         decoration: InputDecoration(
           hintText: 'Search categories',
-          hintStyle: const TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 14,
-            fontWeight: FontWeight.w400,
-          ),
+          hintStyle: AppTextStyles.inputHint,
           prefixIcon: const Icon(Icons.search_rounded, size: 20),
           filled: true,
           fillColor: Colors.white,

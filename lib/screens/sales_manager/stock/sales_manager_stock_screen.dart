@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
+import 'package:crm_saas/core/theme/app_text_styles.dart';
+
 import '../../../constants/app_colors.dart';
 import '../../../providers/api_provider.dart';
+import '../../../utils/product_image_url.dart';
 import '../../admin/customers/customers_screen.dart';
 import '../../admin/leads/admin_leads_screen.dart';
 import '../../admin/orders/admin_orders_screen.dart';
@@ -487,47 +490,35 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
             },
           ),
           const SizedBox(height: 14),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: SizedBox(
-              width: 1240,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHeaderRow(),
-                  const SizedBox(height: 8),
-                  if (_isLoading)
-                    const _StockStatePanel(
-                      icon: Icons.hourglass_empty_rounded,
-                      title: 'Loading stock board...',
-                    )
-                  else if (_errorMessage != null)
-                    _StockStatePanel(
-                      icon: Icons.cloud_off_rounded,
-                      title: 'Could not load stock',
-                      subtitle: _errorMessage!,
-                      actionLabel: 'Retry',
-                      onAction: _loadStock,
-                    )
-                  else if (items.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 40),
-                      child: Center(
-                        child: Text(
-                          'No stock items match the current filters.',
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ),
-                    )
-                  else
-                    ...items.map((item) => _StockTableRow(item: item)),
-                ],
+          if (_isLoading)
+            const _StockStatePanel(
+              icon: Icons.hourglass_empty_rounded,
+              title: 'Loading stock board...',
+            )
+          else if (_errorMessage != null)
+            _StockStatePanel(
+              icon: Icons.cloud_off_rounded,
+              title: 'Could not load stock',
+              subtitle: _errorMessage!,
+              actionLabel: 'Retry',
+              onAction: _loadStock,
+            )
+          else if (items.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 40),
+              child: Center(
+                child: Text(
+                  'No stock items match the current filters.',
+                  style: AppTextStyles.subtitle,
+                ),
               ),
+            )
+          else
+            Column(
+              children: [
+                for (final item in items) _StockProductCard(item: item),
+              ],
             ),
-          ),
         ],
       ),
     );
@@ -564,10 +555,7 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
                 border: InputBorder.none,
                 isDense: true,
                 hintText: 'Search products, brands, SKU',
-                hintStyle: TextStyle(
-                  color: AppColors.textLightMuted,
-                  fontSize: 14,
-                ),
+                hintStyle: AppTextStyles.inputHint,
                 filled: true,
                 fillColor: Colors.white,
               ),
@@ -669,26 +657,6 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
       ),
     );
   }
-
-  Widget _buildHeaderRow() {
-    const labelStyle = TextStyle(
-      color: Color(0xFF8F9AB0),
-      fontSize: 14,
-      fontWeight: FontWeight.w700,
-      letterSpacing: 1.1,
-    );
-
-    return Row(
-      children: const [
-        Expanded(flex: 6, child: Text('PRODUCT', style: labelStyle)),
-        Expanded(flex: 3, child: Text('SKU', style: labelStyle)),
-        Expanded(flex: 2, child: Text('INVENTORY', style: labelStyle)),
-        Expanded(flex: 1, child: Text('VARIANTS', style: labelStyle)),
-        Expanded(flex: 2, child: Text('CURRENT STOCK', style: labelStyle)),
-        Expanded(flex: 2, child: Text('STATUS', style: labelStyle)),
-      ],
-    );
-  }
 }
 
 class _SummaryCard extends StatelessWidget {
@@ -764,180 +732,149 @@ class _SummaryCard extends StatelessWidget {
   }
 }
 
-class _StockTableRow extends StatelessWidget {
+class _StockProductCard extends StatelessWidget {
   final _StockItem item;
 
-  const _StockTableRow({required this.item});
+  const _StockProductCard({required this.item});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 14),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: AppColors.border.withValues(alpha: 0.4)),
-        ),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(
-            width: 4,
-            height: 38,
-            decoration: BoxDecoration(
-              color: item.accentColor,
-              borderRadius: BorderRadius.circular(999),
-            ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 600;
+        final imageSize = compact ? 72.0 : 96.0;
+
+        return Container(
+          width: double.infinity,
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.border.withValues(alpha: 0.9)),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.textPrimary.withValues(alpha: 0.05),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-          const SizedBox(width: 10),
-          Expanded(
-            flex: 6,
-            child: Row(
-              children: [
-                Container(
-                  width: 34,
-                  height: 34,
-                  decoration: BoxDecoration(
-                    color: item.iconColor.withValues(alpha: 0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(item.icon, color: item.iconColor, size: 18),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                        ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              _StockProductImage(item: item, size: imageSize),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 16,
+                        height: 1.25,
+                        fontWeight: FontWeight.w700,
                       ),
-                      if (item.brand.isNotEmpty) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          item.brand,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'SKU: ${item.sku}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.textLightMuted,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Availability: ${item.stock}',
+                      style: TextStyle(
+                        color: item.stock <= 0
+                            ? AppColors.red
+                            : AppColors.orange,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text.rich(
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      TextSpan(
+                        children: [
+                          TextSpan(
+                            text: item.price > 0
+                                ? '\u20B9 ${item.price.toStringAsFixed(2)}'
+                                : '--',
+                            style: const TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
-                        ),
-                      ],
-                    ],
-                  ),
+                          TextSpan(
+                            text: ' / ${item.unit}',
+                            style: const TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-          Expanded(
-            flex: 3,
-            child: Text(
-              item.sku,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: AppColors.primary,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
               ),
-            ),
+            ],
           ),
-          Expanded(
-            flex: 2,
-            child: Text(
-              '${item.totalInventory}',
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 1,
-            child: Text(
-              '${item.variants}',
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 2,
-            child: Text(
-              '${item.stock}',
-              style: TextStyle(
-                color: item.stock <= 0 ? AppColors.red : AppColors.textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 2,
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Wrap(
-                spacing: 6,
-                runSpacing: 6,
-                children: [
-                  if (!item.isActive)
-                    const _StatusPill(
-                      label: 'Inactive',
-                      color: AppColors.orange,
-                    ),
-                  if (item.stock <= 0)
-                    const _StatusPill(
-                      label: 'Out of Stock',
-                      color: AppColors.red,
-                    ),
-                  if (item.isActive && item.stock > 0)
-                    const _StatusPill(
-                      label: 'In Stock',
-                      color: AppColors.green,
-                    ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
 
-class _StatusPill extends StatelessWidget {
-  final String label;
-  final Color color;
+class _StockProductImage extends StatelessWidget {
+  final _StockItem item;
+  final double size;
 
-  const _StatusPill({required this.label, required this.color});
+  const _StockProductImage({required this.item, required this.size});
 
   @override
   Widget build(BuildContext context) {
+    final bytes = productImageBytes(item.imageUrl);
+    final fallback = Center(
+      child: Icon(item.icon, color: item.iconColor, size: 28),
+    );
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      width: size,
+      height: size,
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(999),
+        color: item.iconColor.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.65)),
       ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: color,
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
+      child: bytes != null
+          ? Image.memory(
+              bytes,
+              fit: BoxFit.contain,
+              errorBuilder: (_, _, _) => fallback,
+            )
+          : item.imageUrl != null
+          ? Image.network(
+              item.imageUrl!,
+              fit: BoxFit.contain,
+              errorBuilder: (_, _, _) => fallback,
+            )
+          : fallback,
     );
   }
 }
@@ -1009,6 +946,9 @@ class _StockItem {
   final int totalInventory;
   final int variants;
   final int stock;
+  final double price;
+  final String unit;
+  final String? imageUrl;
   final String category;
   final String? categoryId;
   final String status;
@@ -1026,6 +966,9 @@ class _StockItem {
     required this.totalInventory,
     required this.variants,
     required this.stock,
+    this.price = 0,
+    this.unit = 'Piece',
+    this.imageUrl,
     required this.category,
     this.categoryId,
     required this.status,
@@ -1099,6 +1042,21 @@ class _StockItem {
       totalInventory: totalInventory > 0 ? totalInventory : stock,
       variants: _readList(source, const ['variations', 'variants']).length,
       stock: stock,
+      price: _readDouble(source, const [
+        'selling_price',
+        'sellingPrice',
+        'unit_price',
+        'unitPrice',
+        'price',
+        'mrp',
+      ]),
+      unit: _readString(source, const [
+        'uom',
+        'unit',
+        'base_unit',
+        'baseUnit',
+      ], fallback: 'Piece'),
+      imageUrl: productImageUrlFromJson(source),
       category: _firstNonEmpty([
         _readString(source, const [
           'product_type',
@@ -1134,6 +1092,9 @@ class _StockItem {
       totalInventory: totalInventory,
       variants: variants,
       stock: stock,
+      price: price,
+      unit: unit,
+      imageUrl: imageUrl,
       category: category,
       categoryId: categoryId,
       status: status,
@@ -1191,6 +1152,20 @@ int _readInt(Map<String, dynamic> source, List<String> keys) {
     if (value is num) return value.toInt();
     if (value is String) {
       final parsed = int.tryParse(value.replaceAll(RegExp(r'[^0-9\-]'), ''));
+      if (parsed != null) return parsed;
+    }
+  }
+  return 0;
+}
+
+double _readDouble(Map<String, dynamic> source, List<String> keys) {
+  for (final key in keys) {
+    final value = source[key];
+    if (value is num) return value.toDouble();
+    if (value is String) {
+      final parsed = double.tryParse(
+        value.replaceAll(RegExp(r'[^0-9.\-]'), ''),
+      );
       if (parsed != null) return parsed;
     }
   }

@@ -142,6 +142,50 @@ class _OrderProvider extends ApiProvider {
 }
 
 void main() {
+  testWidgets('payment options are left aligned within their columns', (
+    tester,
+  ) async {
+    final provider = _OrderProvider()..warehouseFails = false;
+    addTearDown(provider.dispose);
+    await tester.pumpWidget(
+      ApiProviderScope(
+        notifier: provider,
+        child: MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: const CreateDeliveryOrderScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.text('Payment Type *'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+
+    final titleLeft = tester.getTopLeft(find.text('Payment Type *')).dx;
+    final cashLeft = tester
+        .getTopLeft(find.widgetWithText(ChoiceChip, 'Cash'))
+        .dx;
+    final otherLeft = tester
+        .getTopLeft(find.widgetWithText(ChoiceChip, 'Other'))
+        .dx;
+    final phonePeLeft = tester
+        .getTopLeft(find.widgetWithText(ChoiceChip, 'Phone Pe'))
+        .dx;
+    final googlePayLeft = tester
+        .getTopLeft(find.widgetWithText(ChoiceChip, 'Google Pay'))
+        .dx;
+
+    expect(cashLeft, closeTo(titleLeft, 1));
+    expect(otherLeft, closeTo(cashLeft, 1));
+    expect(googlePayLeft, closeTo(phonePeLeft, 1));
+    expect(phonePeLeft, greaterThan(cashLeft));
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('customer popup filters results and closes without selection', (
     tester,
   ) async {

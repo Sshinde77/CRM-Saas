@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:crm_saas/core/theme/app_text_styles.dart';
+
 import '../../../constants/app_colors.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
@@ -290,14 +292,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
           ),
         ),
         const SizedBox(width: 10),
-        Text(
-          title,
-          style: const TextStyle(
-            color: Color(0xFF111827),
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
+        Text(title, style: AppTextStyles.sectionHeading),
       ],
     );
   }

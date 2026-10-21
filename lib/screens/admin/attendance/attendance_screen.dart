@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:crm_saas/core/theme/app_text_styles.dart';
+
 import '../../../constants/app_colors.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
@@ -502,11 +504,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         onChanged: (value) => setState(() => _query = value),
         decoration: InputDecoration(
           hintText: 'Search by name or ID...',
-          hintStyle: const TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 14,
-            fontWeight: FontWeight.w400,
-          ),
+          hintStyle: AppTextStyles.inputHint,
           prefixIcon: const Icon(Icons.search_rounded, size: 20),
           prefixIconConstraints: const BoxConstraints(minWidth: 44),
           filled: true,

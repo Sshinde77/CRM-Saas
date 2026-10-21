@@ -1,6 +1,6 @@
 {
-    "name": "crm_saas",
-    "short_name": "crm_saas",
+    "name": "Beassuite",
+    "short_name": "Beassuite",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

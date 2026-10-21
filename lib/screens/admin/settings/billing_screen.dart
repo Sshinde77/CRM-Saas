@@ -3,8 +3,8 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:crm_saas/core/theme/app_text_styles.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:http/http.dart' as http;
 
 import '../../../constants/app_colors.dart';
 import '../../../models/auth_models.dart';
@@ -186,15 +186,7 @@ class _BillingScreenState extends State<BillingScreen> {
   }
 
   Future<Uint8List?> _loadRemoteBytes(String url) async {
-    try {
-      final response = await http.get(Uri.parse(url));
-      if (response.statusCode >= 200 && response.statusCode < 300) {
-        return response.bodyBytes;
-      }
-    } catch (_) {
-      // Ignore preview loading failures.
-    }
-    return null;
+    return _apiService.fetchRemoteBytes(url);
   }
 
   @override
@@ -430,7 +422,7 @@ class _BillingScreenState extends State<BillingScreen> {
       icon: const Icon(Icons.expand_more_rounded, color: Color(0xFF98A2B3)),
       hint: hintText == null
           ? null
-          : Text(hintText, style: const TextStyle(color: Color(0xFFB5BCC6))),
+          : Text(hintText, style: AppTextStyles.inputHint),
       style: const TextStyle(fontSize: 14, color: _titleColor),
       decoration: _fieldDecoration(),
       dropdownColor: Colors.white,

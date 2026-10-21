@@ -519,7 +519,7 @@ class _SearchRow extends StatelessWidget {
             color: AppColors.textLightMuted,
           ),
           hintText: 'Search organizations...',
-          hintStyle: TextStyle(color: AppColors.textLightMuted, fontSize: 14),
+          hintStyle: AppTextStyles.inputHint,
           border: InputBorder.none,
           contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         ),
@@ -858,10 +858,7 @@ class _OrganizationsCard extends StatelessWidget {
                         color: AppColors.textLightMuted,
                       ),
                       hintText: 'Search organizations...',
-                      hintStyle: TextStyle(
-                        color: AppColors.textLightMuted,
-                        fontSize: 14,
-                      ),
+                      hintStyle: AppTextStyles.inputHint,
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.symmetric(
                         horizontal: 14,
@@ -2148,11 +2145,7 @@ class _DialogField extends StatelessWidget {
             hintText: hintText,
             filled: true,
             fillColor: Colors.white,
-            hintStyle: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-            ),
+            hintStyle: AppTextStyles.inputHint,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: AppColors.border),

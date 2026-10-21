@@ -1738,14 +1738,7 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-            color: AppColors.deliveryInk,
-          ),
-        ),
+        Text(title, style: AppTextStyles.sectionHeading),
         const Spacer(),
         if (trailingText != null && trailingText!.trim().isNotEmpty) ...[
           Flexible(

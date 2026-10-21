@@ -12,10 +12,7 @@ import '../../screens/sales_manager/visits/sales_manager_visits_screen.dart';
 class SalesManagerBottomNavigation extends StatelessWidget {
   final int currentIndex;
 
-  const SalesManagerBottomNavigation({
-    required this.currentIndex,
-    super.key,
-  });
+  const SalesManagerBottomNavigation({required this.currentIndex, super.key});
 
   void _navigate(BuildContext context, int index) {
     if (index == 2) {
@@ -32,9 +29,9 @@ class SalesManagerBottomNavigation extends StatelessWidget {
       _ => null,
     };
     if (destination == null) return;
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => destination),
-    );
+    Navigator.of(
+      context,
+    ).pushReplacement(MaterialPageRoute(builder: (_) => destination));
   }
 
   Future<void> _showCreateActions(BuildContext context) async {
@@ -89,8 +86,7 @@ class SalesManagerBottomNavigation extends StatelessWidget {
                             background: AppColors.deliveryKpiAquaBg,
                             label: 'Create Customer',
                             scale: scale,
-                            onTap: () =>
-                                Navigator.pop(menuContext, 'customer'),
+                            onTap: () => Navigator.pop(menuContext, 'customer'),
                           ),
                         ),
                         SizedBox(width: 6 * scale),
@@ -134,9 +130,9 @@ class SalesManagerBottomNavigation extends StatelessWidget {
       _ => null,
     };
     if (destination != null) {
-      await Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => destination),
-      );
+      await Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => destination));
     }
   }
 
@@ -322,7 +318,10 @@ class _CreateActionTile extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(14 * scale),
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 3 * scale, vertical: 7 * scale),
+        padding: EdgeInsets.symmetric(
+          horizontal: 3 * scale,
+          vertical: 7 * scale,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -411,7 +410,10 @@ class _NavItem extends StatelessWidget {
         height: double.infinity,
         constraints: BoxConstraints(minHeight: 48 * scale),
         margin: EdgeInsets.symmetric(horizontal: 2 * scale),
-        padding: EdgeInsets.symmetric(horizontal: 3 * scale, vertical: 6 * scale),
+        padding: EdgeInsets.symmetric(
+          horizontal: 3 * scale,
+          vertical: 6 * scale,
+        ),
         decoration: BoxDecoration(
           color: selected
               ? AppColors.deliveryDashboardNavActive

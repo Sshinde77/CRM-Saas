@@ -1433,10 +1433,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                     Icons.keyboard_arrow_down_rounded,
                     color: AppColors.textLightMuted,
                   ),
-                  hint: const Text(
-                    'Select...',
-                    style: TextStyle(color: AppColors.textLightMuted),
-                  ),
+                  hint: const Text('Select...', style: AppTextStyles.inputHint),
                   decoration: _inputDecoration(''),
                   dropdownColor: Colors.white,
                   borderRadius: BorderRadius.circular(16),
@@ -2375,12 +2372,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
     return requiredMark
         ? RichText(
             text: TextSpan(
-              style: const TextStyle(
-                fontFamily: AppTextStyles.fontFamily,
-                color: AppColors.textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-              ),
+              style: AppTextStyles.fieldLabel,
               children: [
                 TextSpan(text: cleaned),
                 const TextSpan(
@@ -2526,10 +2518,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
         Icons.keyboard_arrow_down_rounded,
         color: AppColors.textLightMuted,
       ),
-      hint: const Text(
-        'Select...',
-        style: TextStyle(color: AppColors.textLightMuted),
-      ),
+      hint: const Text('Select...', style: AppTextStyles.inputHint),
       decoration: _inputDecoration(''),
       dropdownColor: Colors.white,
       borderRadius: BorderRadius.circular(16),
@@ -2576,10 +2565,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
         Icons.keyboard_arrow_down_rounded,
         color: AppColors.textLightMuted,
       ),
-      hint: const Text(
-        'Select...',
-        style: TextStyle(color: AppColors.textLightMuted),
-      ),
+      hint: const Text('Select...', style: AppTextStyles.inputHint),
       decoration: _inputDecoration(''),
       dropdownColor: Colors.white,
       borderRadius: BorderRadius.circular(16),

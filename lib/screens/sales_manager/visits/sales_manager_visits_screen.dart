@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../models/customer_model.dart';
+import '../../../providers/api_provider.dart';
+import '../../../widgets/completion_feedback_sheet.dart';
+import '../../../widgets/delivery/customer_search_dialog.dart';
 import '../../admin/customers/customers_screen.dart';
 import '../../admin/leads/admin_leads_screen.dart';
 import '../../admin/orders/admin_orders_screen.dart';
@@ -27,16 +31,20 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _customerNameController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
+  List<CustomerModel> _customers = const [];
+  CustomerModel? _selectedCustomer;
+  bool _loadingCustomers = true;
+  String? _customerLoadError;
 
-  final List<_VisitEntry> _visits = const [
-    _VisitEntry(
+  final List<_VisitEntry> _visits = [
+    const _VisitEntry(
       customer: 'Rajesh Kumar',
       inTime: '2024-07-17 10:30 AM',
       outTime: '2024-07-17 11:15 AM',
       notes: 'Discussed new product range, placed order for 100 units',
       status: 'Completed',
     ),
-    _VisitEntry(
+    const _VisitEntry(
       customer: 'Priya Desai',
       inTime: '2024-07-16 02:00 PM',
       outTime: '2024-07-16 02:45 PM',
@@ -44,6 +52,55 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
       status: 'Completed',
     ),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadCustomers());
+  }
+
+  Future<void> _loadCustomers() async {
+    if (!mounted) return;
+    setState(() {
+      _loadingCustomers = true;
+      _customerLoadError = null;
+    });
+    try {
+      final customers = await ApiProviderScope.of(context).fetchCustomers();
+      if (!mounted) return;
+      setState(() {
+        _customers = customers;
+        _loadingCustomers = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _loadingCustomers = false;
+        _customerLoadError = 'Unable to load customers';
+      });
+    }
+  }
+
+  Future<void> _selectCustomer() async {
+    if (_loadingCustomers) return;
+    if (_customerLoadError != null) {
+      await _loadCustomers();
+      if (!mounted || _customerLoadError != null) return;
+    }
+    final customer = await showDialog<CustomerModel>(
+      context: context,
+      builder: (_) => CustomerSearchDialog(
+        customers: _customers,
+        selectedCustomerId: _selectedCustomer?.id,
+        emptyMessage: 'No customers available.',
+      ),
+    );
+    if (!mounted || customer == null) return;
+    setState(() {
+      _selectedCustomer = customer;
+      _customerNameController.text = customer.name;
+    });
+  }
 
   @override
   void dispose() {
@@ -144,12 +201,61 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
     final customer = _customerNameController.text.trim();
     final notes = _notesController.text.trim();
 
-    final message = customer.isEmpty
-        ? 'Check in is not wired yet'
-        : 'Check in saved for $customer${notes.isEmpty ? '' : ' with notes'}';
+    if (customer.isEmpty || _selectedCustomer == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select a customer before checking in.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _visits.insert(
+        0,
+        _VisitEntry(
+          customer: customer,
+          inTime: _formatVisitTime(DateTime.now()),
+          outTime: '—',
+          notes: notes.isEmpty ? 'No check-in notes.' : notes,
+          status: 'In Progress',
+        ),
+      );
+      _selectedCustomer = null;
+      _customerNameController.clear();
+      _notesController.clear();
+    });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
+      SnackBar(
+        content: Text('Checked in at $customer.'),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  Future<void> _closeVisit(int index) async {
+    if (index < 0 || index >= _visits.length) return;
+    final visit = _visits[index];
+    final feedback = await showCompletionFeedbackSheet(
+      context: context,
+      title: 'Close visit',
+      subjectLabel: visit.customer,
+    );
+    if (!mounted || feedback == null) return;
+    setState(() {
+      _visits[index] = visit.copyWith(
+        outTime: _formatVisitTime(DateTime.now()),
+        notes: '${visit.notes}\n\nClosing feedback: $feedback',
+        status: 'Completed',
+      );
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Visit closed successfully.'),
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 
@@ -176,10 +282,16 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
                     final wide = constraints.maxWidth >= 840;
                     final leftPanel = _CheckInCard(
                       customerNameController: _customerNameController,
+                      loadingCustomers: _loadingCustomers,
+                      customerLoadError: _customerLoadError,
+                      onSelectCustomer: _selectCustomer,
                       notesController: _notesController,
                       onCheckIn: _handleCheckIn,
                     );
-                    final rightPanel = _VisitHistoryPanel(visits: _visits);
+                    final rightPanel = _VisitHistoryPanel(
+                      visits: _visits,
+                      onCloseVisit: _closeVisit,
+                    );
 
                     return Center(
                       child: ConstrainedBox(
@@ -314,11 +426,17 @@ class _VisitsOverview extends StatelessWidget {
 
 class _CheckInCard extends StatefulWidget {
   final TextEditingController customerNameController;
+  final bool loadingCustomers;
+  final String? customerLoadError;
+  final VoidCallback onSelectCustomer;
   final TextEditingController notesController;
   final VoidCallback onCheckIn;
 
   const _CheckInCard({
     required this.customerNameController,
+    required this.loadingCustomers,
+    required this.customerLoadError,
+    required this.onSelectCustomer,
     required this.notesController,
     required this.onCheckIn,
   });
@@ -392,26 +510,42 @@ class _CheckInCardState extends State<_CheckInCard> {
             ),
           ),
           const SizedBox(height: 8),
-          _FieldContainer(
-            focused: _customerFocused,
-            child: TextField(
-              controller: widget.customerNameController,
-              focusNode: _customerFocusNode,
-              cursorColor: AppColors.primary,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-              decoration: const InputDecoration(
-                filled: true,
-                fillColor: Colors.white,
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.symmetric(vertical: 10),
-                hintText: '',
+          GestureDetector(
+            onTap: widget.onSelectCustomer,
+            child: _FieldContainer(
+              focused: _customerFocused,
+              child: TextField(
+                controller: widget.customerNameController,
+                focusNode: _customerFocusNode,
+                readOnly: true,
+                onTap: widget.onSelectCustomer,
+                cursorColor: AppColors.primary,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                  hintText: widget.loadingCustomers
+                      ? 'Loading customers...'
+                      : widget.customerLoadError ?? 'Select customer',
+                  suffixIcon: widget.loadingCustomers
+                      ? const Padding(
+                          padding: EdgeInsets.all(12),
+                          child: SizedBox.square(
+                            dimension: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        )
+                      : const Icon(Icons.keyboard_arrow_down_rounded, size: 22),
+                ),
               ),
             ),
           ),
@@ -511,8 +645,9 @@ class _FieldContainer extends StatelessWidget {
 
 class _VisitHistoryPanel extends StatelessWidget {
   final List<_VisitEntry> visits;
+  final ValueChanged<int> onCloseVisit;
 
-  const _VisitHistoryPanel({required this.visits});
+  const _VisitHistoryPanel({required this.visits, required this.onCloseVisit});
 
   @override
   Widget build(BuildContext context) {
@@ -531,7 +666,7 @@ class _VisitHistoryPanel extends StatelessWidget {
           ),
         ),
         for (var i = 0; i < visits.length; i++) ...[
-          _VisitHistoryCard(record: visits[i]),
+          _VisitHistoryCard(record: visits[i], onClose: () => onCloseVisit(i)),
           if (i != visits.length - 1) const SizedBox(height: 12),
         ],
       ],
@@ -541,8 +676,9 @@ class _VisitHistoryPanel extends StatelessWidget {
 
 class _VisitHistoryCard extends StatelessWidget {
   final _VisitEntry record;
+  final VoidCallback onClose;
 
-  const _VisitHistoryCard({required this.record});
+  const _VisitHistoryCard({required this.record, required this.onClose});
 
   @override
   Widget build(BuildContext context) {
@@ -595,6 +731,24 @@ class _VisitHistoryCard extends StatelessWidget {
             record.notes,
             style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
           ),
+          if (record.status != 'Completed') ...[
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              height: 40,
+              child: FilledButton.icon(
+                onPressed: onClose,
+                icon: const Icon(Icons.logout_rounded, size: 18),
+                label: const Text('Close Visit'),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -671,4 +825,25 @@ class _VisitEntry {
     required this.notes,
     required this.status,
   });
+
+  _VisitEntry copyWith({String? outTime, String? notes, String? status}) {
+    return _VisitEntry(
+      customer: customer,
+      inTime: inTime,
+      outTime: outTime ?? this.outTime,
+      notes: notes ?? this.notes,
+      status: status ?? this.status,
+    );
+  }
+}
+
+String _formatVisitTime(DateTime value) {
+  final hour = value.hour == 0
+      ? 12
+      : (value.hour > 12 ? value.hour - 12 : value.hour);
+  final minute = value.minute.toString().padLeft(2, '0');
+  final day = value.day.toString().padLeft(2, '0');
+  final month = value.month.toString().padLeft(2, '0');
+  final period = value.hour >= 12 ? 'PM' : 'AM';
+  return '${value.year}-$month-$day ${hour.toString().padLeft(2, '0')}:$minute $period';
 }

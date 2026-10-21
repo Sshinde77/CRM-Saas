@@ -4,10 +4,8 @@ import '../../constants/app_colors.dart';
 import '../../core/theme/app_sizes.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_text_styles.dart';
-import '../../providers/api_provider.dart';
 import '../../routes/app_router.dart';
-import '../../screens/auth/login_screen.dart';
-import '../../services/api_service.dart';
+import '../sidebar_logout_button.dart';
 
 class DeliveryPartnerSidebar extends StatelessWidget {
   final String currentRoute;
@@ -16,8 +14,6 @@ class DeliveryPartnerSidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bottomPadding = MediaQuery.of(context).padding.bottom;
-
     return Drawer(
       backgroundColor: const Color(0xFFF7F9FC),
       child: SafeArea(
@@ -50,76 +46,12 @@ class DeliveryPartnerSidebar extends StatelessWidget {
                 ],
               ),
             ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(
-                AppSpacing.md,
-                0,
-                AppSpacing.md,
-                AppSpacing.md + bottomPadding,
-              ),
-              child: ListTile(
-                key: const Key('delivery_logout'),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppSizes.cardRadius),
-                ),
-                leading: const Icon(
-                  Icons.logout_rounded,
-                  color: Color(0xFFB4232D),
-                ),
-                title: const Text(
-                  'Logout',
-                  style: TextStyle(
-                    color: Color(0xFFB4232D),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                onTap: () => _handleLogout(context),
-              ),
-            ),
+            const Divider(height: 1, color: AppColors.border),
+            const SidebarLogoutButton(),
           ],
         ),
       ),
     );
-  }
-
-  Future<void> _handleLogout(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Confirm Logout'),
-        content: const Text('Are you sure you want to sign out?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Sign Out'),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true || !context.mounted) return;
-
-    try {
-      await ApiProviderScope.of(context).logout();
-      if (!context.mounted) return;
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-        (route) => false,
-      );
-    } on ApiException catch (error) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(error.message)));
-    } catch (error) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text('Logout failed: $error')));
-    }
   }
 
   void _handleNavigation(BuildContext context, _DeliveryMenuItem item) {

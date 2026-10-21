@@ -36,7 +36,7 @@ class AppTextStyles {
     fontFamily: fontFamily,
     fontSize: 14,
     height: 1.35,
-    fontWeight: FontWeight.w600,
+    fontWeight: FontWeight.w400,
     color: AppColors.textPrimary,
   );
 
@@ -44,15 +44,15 @@ class AppTextStyles {
     fontFamily: fontFamily,
     fontSize: 14,
     height: 1.35,
-    fontWeight: FontWeight.w700,
+    fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
   );
 
   static const TextStyle secondary = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 14,
+    fontSize: 13,
     height: 1.35,
-    fontWeight: FontWeight.w600,
+    fontWeight: FontWeight.w400,
     color: AppColors.textMuted,
   );
 
@@ -66,25 +66,25 @@ class AppTextStyles {
 
   static const TextStyle secondaryStrong = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 14,
+    fontSize: 13,
     height: 1.35,
-    fontWeight: FontWeight.w700,
+    fontWeight: FontWeight.w500,
     color: AppColors.textMuted,
   );
 
   static const TextStyle small = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 14,
+    fontSize: 12,
     height: 1.3,
-    fontWeight: FontWeight.w600,
+    fontWeight: FontWeight.w400,
     color: AppColors.textMuted,
   );
 
   static const TextStyle smallStrong = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 14,
+    fontSize: 12,
     height: 1.3,
-    fontWeight: FontWeight.w700,
+    fontWeight: FontWeight.w500,
     color: AppColors.textMuted,
   );
 
@@ -98,15 +98,15 @@ class AppTextStyles {
 
   static const TextStyle bottomNavLabel = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 14,
+    fontSize: 12,
     height: 1.2,
-    fontWeight: FontWeight.w700,
+    fontWeight: FontWeight.w600,
     color: AppColors.textMuted,
   );
 
   static const TextStyle cardTitle = TextStyle(
     fontFamily: headingFontFamily,
-    fontSize: 14,
+    fontSize: 16,
     height: 1.25,
     fontWeight: FontWeight.w700,
     color: AppColors.textPrimary,
@@ -114,9 +114,33 @@ class AppTextStyles {
 
   static const TextStyle cardBody = TextStyle(
     fontFamily: fontFamily,
+    fontSize: 13,
+    height: 1.35,
+    fontWeight: FontWeight.w400,
+    color: AppColors.textSecondary,
+  );
+
+  static const TextStyle fieldLabel = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 14,
+    height: 1.3,
+    fontWeight: FontWeight.w500,
+    color: AppColors.textPrimary,
+  );
+
+  static const TextStyle fieldValue = TextStyle(
+    fontFamily: fontFamily,
     fontSize: 14,
     height: 1.35,
-    fontWeight: FontWeight.w500,
+    fontWeight: FontWeight.w400,
+    color: AppColors.textPrimary,
+  );
+
+  static const TextStyle subtitle = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 13,
+    height: 1.35,
+    fontWeight: FontWeight.w400,
     color: AppColors.textSecondary,
   );
 

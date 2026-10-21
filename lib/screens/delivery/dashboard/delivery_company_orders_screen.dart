@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:crm_saas/core/theme/app_text_styles.dart';
+
 import '../../../constants/app_colors.dart';
 import '../../../core/theme/app_sizes.dart';
 import '../../../providers/api_provider.dart';
@@ -185,11 +187,7 @@ class _FiltersCard extends StatelessWidget {
                 filled: true,
                 fillColor: const Color(0xFFF8FAFC),
                 hintText: 'Search order number',
-                hintStyle: const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                ),
+                hintStyle: AppTextStyles.inputHint,
                 prefixIcon: const Icon(
                   Icons.search_rounded,
                   color: AppColors.textMuted,

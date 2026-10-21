@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:crm_saas/core/theme/app_text_styles.dart';
+
 import '../../../constants/app_colors.dart';
 import '../../../constants/api_constants.dart';
 import '../../../models/app_user.dart';
@@ -524,11 +526,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
               ),
               decoration: InputDecoration(
                 hintText: 'Search staff',
-                hintStyle: const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                ),
+                hintStyle: AppTextStyles.inputHint,
                 prefixIcon: const Padding(
                   padding: EdgeInsets.only(left: 10, right: 4),
                   child: Icon(
@@ -1337,13 +1335,6 @@ class _ResetPasswordDialogState extends State<_ResetPasswordDialog> {
   }
 
   Widget _fieldLabel(String label) {
-    return Text(
-      label,
-      style: const TextStyle(
-        color: AppColors.textPrimary,
-        fontSize: 14,
-        fontWeight: FontWeight.w700,
-      ),
-    );
+    return Text(label, style: AppTextStyles.fieldLabel);
   }
 }

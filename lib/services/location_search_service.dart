@@ -68,7 +68,7 @@ class LocationSearchService {
           ),
           headers: const {
             'Accept': 'application/json',
-            'User-Agent': 'CRM-SaaS customer location search',
+            'User-Agent': 'Beassuite customer location search',
           },
         )
         .timeout(const Duration(seconds: 12));
@@ -120,7 +120,7 @@ class LocationSearchService {
           ),
           headers: const {
             'Accept': 'application/json',
-            'User-Agent': 'CRM-SaaS customer location search',
+            'User-Agent': 'Beassuite customer location search',
           },
         )
         .timeout(const Duration(seconds: 12));

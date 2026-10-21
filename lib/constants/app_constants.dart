@@ -1,5 +1,5 @@
 class AppConstants {
   const AppConstants._();
 
-  static const String appName = 'CRM SaaS';
+  static const String appName = 'Beassuite';
 }

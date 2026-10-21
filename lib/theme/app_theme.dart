@@ -121,10 +121,10 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.surface,
-        labelStyle: AppTextStyles.body,
-        floatingLabelStyle: AppTextStyles.bodyStrong,
+        labelStyle: AppTextStyles.fieldLabel,
+        floatingLabelStyle: AppTextStyles.fieldLabel,
         hintStyle: AppTextStyles.inputHint,
-        helperStyle: AppTextStyles.small,
+        helperStyle: AppTextStyles.subtitle,
         errorStyle: AppTextStyles.small.copyWith(color: AppColors.red),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppSizes.inputRadius),

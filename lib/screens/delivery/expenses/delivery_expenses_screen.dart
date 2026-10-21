@@ -1,6 +1,8 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+
+import 'package:crm_saas/core/theme/app_text_styles.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../constants/api_constants.dart';
@@ -593,11 +595,7 @@ class _FiltersCard extends StatelessWidget {
             style: const TextStyle(fontSize: 13, color: AppColors.textPrimary),
             decoration: InputDecoration(
               hintText: 'Search category, purpose, or claim id',
-              hintStyle: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-              ),
+              hintStyle: AppTextStyles.inputHint,
               prefixIcon: const Icon(Icons.search_rounded, size: 20),
               isDense: true,
               contentPadding: const EdgeInsets.symmetric(
@@ -1492,11 +1490,7 @@ class _SectionHeader extends StatelessWidget {
             '$title ($count)',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: AppColors.deliveryInk,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.sectionHeading,
           ),
         ),
         Icon(trailingIcon, color: AppColors.deliveryGreen, size: 20),

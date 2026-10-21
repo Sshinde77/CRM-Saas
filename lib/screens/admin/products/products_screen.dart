@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:crm_saas/core/theme/app_text_styles.dart';
+
 import '../../../constants/app_colors.dart';
 import '../../../providers/api_provider.dart';
 import '../../../utils/product_image_url.dart';
@@ -494,7 +496,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
             style: const TextStyle(color: textPrimary, fontSize: 14),
             decoration: InputDecoration(
               hintText: 'Search products...',
-              hintStyle: const TextStyle(color: AppColors.textLightMuted),
+              hintStyle: AppTextStyles.inputHint,
               prefixIcon: const Icon(
                 Icons.search_rounded,
                 color: AppColors.textMuted,
@@ -1573,14 +1575,7 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
   Widget _fieldLabel(String label) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        label,
-        style: const TextStyle(
-          color: textPrimary,
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
+      child: Text(label, style: AppTextStyles.fieldLabel),
     );
   }
 

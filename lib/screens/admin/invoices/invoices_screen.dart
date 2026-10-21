@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:crm_saas/core/theme/app_text_styles.dart';
+
 import '../../../constants/app_colors.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
@@ -297,7 +299,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
                               hintText: isSales
                                   ? 'Search sales invoices'
                                   : 'Search purchase invoices',
-                              hintStyle: const TextStyle(color: textSecondary),
+                              hintStyle: AppTextStyles.inputHint,
                               filled: true,
                               fillColor: AppColors.surfaceSoft,
                               border: OutlineInputBorder(

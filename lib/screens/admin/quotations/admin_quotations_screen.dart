@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:crm_saas/core/theme/app_text_styles.dart';
+
 import '../../../constants/app_colors.dart';
 import '../../../providers/api_provider.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
@@ -616,7 +618,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
       onChanged: (_) => setState(() {}),
       decoration: InputDecoration(
         hintText: 'Search quotations',
-        hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+        hintStyle: AppTextStyles.inputHint,
         prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF94A3B8)),
         filled: true,
         fillColor: Colors.white,

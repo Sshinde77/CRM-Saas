@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import 'package:crm_saas/core/theme/app_text_styles.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../constants/app_colors.dart';
@@ -480,11 +482,7 @@ class _SearchCard extends StatelessWidget {
           ),
           decoration: InputDecoration(
             hintText: 'Search by name, phone, ID or city',
-            hintStyle: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-            ),
+            hintStyle: AppTextStyles.inputHint,
             prefixIcon: const Icon(
               Icons.search_rounded,
               color: AppColors.deliveryGreen,
@@ -863,11 +861,7 @@ class _SectionHeader extends StatelessWidget {
             '$title ($count)',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: AppColors.deliveryInk,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.sectionHeading,
           ),
         ),
         Icon(trailingIcon, color: AppColors.deliveryGreen, size: 20),

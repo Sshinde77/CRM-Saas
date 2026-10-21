@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 
+import 'package:crm_saas/core/theme/app_text_styles.dart';
+
 import '../../../constants/app_colors.dart';
 import '../../../models/auth_models.dart';
 import '../../../providers/api_provider.dart';
@@ -1542,7 +1544,7 @@ class _AccountScreenState extends State<AccountScreen> {
       icon: const Icon(Icons.expand_more_rounded, color: Color(0xFF98A2B3)),
       hint: hintText == null
           ? null
-          : Text(hintText, style: const TextStyle(color: Color(0xFF98A2B3))),
+          : Text(hintText, style: AppTextStyles.inputHint),
       style: const TextStyle(fontSize: 14, color: _titleColor),
       decoration: _fieldDecoration(),
       dropdownColor: Colors.white,

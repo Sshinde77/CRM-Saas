@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:crm_saas/core/theme/app_text_styles.dart';
+
 import '../../../constants/app_colors.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 
@@ -211,14 +213,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
   Widget _fieldLabel(String label) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        label,
-        style: const TextStyle(
-          color: textPrimary,
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
+      child: Text(label, style: AppTextStyles.fieldLabel),
     );
   }
 

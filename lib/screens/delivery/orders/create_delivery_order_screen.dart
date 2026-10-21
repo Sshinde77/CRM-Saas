@@ -717,6 +717,9 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                                         ),
                                     child: Text(
                                       _customer?.name ?? 'Select customer',
+                                      style: _customer == null
+                                          ? AppTextStyles.inputHint
+                                          : null,
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
@@ -804,6 +807,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                                     value: _allWarehousesId,
                                     child: Text(
                                       'All warehouses',
+                                      style: AppTextStyles.inputHint,
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
@@ -1085,35 +1089,43 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                                             .map(
                                               (p) => SizedBox(
                                                 width: itemWidth,
-                                                child: ChoiceChip(
-                                                  avatar: Icon(
-                                                    _payment == p
-                                                        ? Icons
-                                                              .radio_button_checked
-                                                        : Icons
-                                                              .radio_button_off,
-                                                    color: _green,
-                                                    size: 18,
-                                                  ),
-                                                  label: Text(p),
-                                                  labelStyle: TextStyle(
-                                                    color: _payment == p
-                                                        ? AppColors.primary
-                                                        : AppColors.textPrimary,
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
-                                                  selected: _payment == p,
-                                                  showCheckmark: false,
-                                                  selectedColor: _green
-                                                      .withValues(alpha: 0.12),
-                                                  side: BorderSide(
-                                                    color: _payment == p
-                                                        ? _green
-                                                        : AppColors.border,
-                                                    width: 0.7,
-                                                  ),
-                                                  onSelected: (_) => setState(
-                                                    () => _payment = p,
+                                                child: Align(
+                                                  alignment:
+                                                      Alignment.centerLeft,
+                                                  child: ChoiceChip(
+                                                    avatar: Icon(
+                                                      _payment == p
+                                                          ? Icons
+                                                                .radio_button_checked
+                                                          : Icons
+                                                                .radio_button_off,
+                                                      color: _green,
+                                                      size: 18,
+                                                    ),
+                                                    label: Text(p),
+                                                    labelStyle: TextStyle(
+                                                      color: _payment == p
+                                                          ? AppColors.primary
+                                                          : AppColors
+                                                                .textPrimary,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
+                                                    selected: _payment == p,
+                                                    showCheckmark: false,
+                                                    selectedColor: _green
+                                                        .withValues(
+                                                          alpha: 0.12,
+                                                        ),
+                                                    side: BorderSide(
+                                                      color: _payment == p
+                                                          ? _green
+                                                          : AppColors.border,
+                                                      width: 0.7,
+                                                    ),
+                                                    onSelected: (_) => setState(
+                                                      () => _payment = p,
+                                                    ),
                                                   ),
                                                 ),
                                               ),
@@ -1464,21 +1476,11 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
 
   Widget _heading(String text) => Padding(
     padding: const EdgeInsets.only(bottom: 10),
-    child: Text(
-      text,
-      style: const TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w700,
-        color: AppColors.deliveryDashboardHeaderEnd,
-      ),
-    ),
+    child: Text(text, style: AppTextStyles.sectionHeading),
   );
   Widget _label(String text) => Padding(
     padding: const EdgeInsets.only(bottom: 6),
-    child: Text(
-      text,
-      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-    ),
+    child: Text(text, style: AppTextStyles.fieldLabel),
   );
   Widget _dateField(String title, DateTime date, bool delivery) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1491,7 +1493,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
           decoration: _decoration('').copyWith(
             suffixIcon: const Icon(Icons.calendar_month_outlined, size: 18),
           ),
-          child: Text(_date(date), style: const TextStyle(fontSize: 14)),
+          child: Text(_date(date), style: AppTextStyles.fieldValue),
         ),
       ),
     ],
@@ -1550,7 +1552,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
   );
   InputDecoration _decoration(String hint, {IconData? icon}) => InputDecoration(
     hintText: hint,
-    hintStyle: const TextStyle(fontSize: 14),
+    hintStyle: AppTextStyles.inputHint,
     prefixIcon: icon == null ? null : Icon(icon, color: _green, size: 20),
     filled: true,
     fillColor: AppColors.surface,

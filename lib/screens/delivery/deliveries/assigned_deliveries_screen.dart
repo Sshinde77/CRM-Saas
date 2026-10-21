@@ -666,11 +666,7 @@ class _SearchAndFilterBar extends StatelessWidget {
               filled: true,
               fillColor: AppColors.surface,
               hintText: 'Search by order, customer or status...',
-              hintStyle: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-              ),
+              hintStyle: AppTextStyles.inputHint,
               prefixIcon: const Icon(
                 Icons.search_rounded,
                 color: AppColors.textSecondary,

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import 'package:crm_saas/core/theme/app_text_styles.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../widgets/delivery/delivery_bottom_navigation.dart';
@@ -749,14 +751,7 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-            color: AppColors.deliveryInk,
-          ),
-        ),
+        Text(title, style: AppTextStyles.sectionHeading),
         const Spacer(),
         if (trailingIcon != null)
           Icon(trailingIcon, size: 18, color: AppColors.deliveryBlue),

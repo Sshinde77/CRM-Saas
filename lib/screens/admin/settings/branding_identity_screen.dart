@@ -4,7 +4,6 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:http/http.dart' as http;
 
 import '../../../constants/app_colors.dart';
 import '../../../models/auth_models.dart';
@@ -182,15 +181,7 @@ class _BrandingIdentityScreenState extends State<BrandingIdentityScreen> {
   }
 
   Future<Uint8List?> _loadRemoteBytes(String url) async {
-    try {
-      final response = await http.get(Uri.parse(url));
-      if (response.statusCode >= 200 && response.statusCode < 300) {
-        return response.bodyBytes;
-      }
-    } catch (_) {
-      // Ignore preview loading failures.
-    }
-    return null;
+    return _apiService.fetchRemoteBytes(url);
   }
 
   Future<String?> _uploadAsset(

@@ -7,14 +7,14 @@ import 'theme/app_theme.dart';
 import 'services/api_service.dart';
 import 'screens/role_home_screen.dart';
 
-class CrmSaasApp extends StatefulWidget {
-  const CrmSaasApp({super.key});
+class BeassuiteApp extends StatefulWidget {
+  const BeassuiteApp({super.key});
 
   @override
-  State<CrmSaasApp> createState() => _CrmSaasAppState();
+  State<BeassuiteApp> createState() => _BeassuiteAppState();
 }
 
-class _CrmSaasAppState extends State<CrmSaasApp> {
+class _BeassuiteAppState extends State<BeassuiteApp> {
   late final ApiProvider _apiProvider;
 
   static const double _baseMobileWidth = 375;
@@ -43,7 +43,7 @@ class _CrmSaasAppState extends State<CrmSaasApp> {
       notifier: _apiProvider,
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'CRM SaaS',
+        title: 'Beassuite',
         theme: AppTheme.lightTheme,
         builder: (context, child) {
           final mediaQuery = MediaQuery.of(context);

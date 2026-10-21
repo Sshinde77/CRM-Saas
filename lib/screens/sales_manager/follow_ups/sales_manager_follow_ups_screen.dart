@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 
+import 'package:crm_saas/core/theme/app_text_styles.dart';
+
 import '../../../constants/app_colors.dart';
+import '../../../models/customer_model.dart';
+import '../../../providers/api_provider.dart';
 import '../../../widgets/app_calendar_date_picker.dart';
+import '../../../widgets/completion_feedback_sheet.dart';
+import '../../../widgets/delivery/customer_search_dialog.dart';
 import '../../admin/customers/customers_screen.dart';
 import '../../admin/leads/admin_leads_screen.dart';
 import '../../admin/orders/admin_orders_screen.dart';
@@ -458,11 +464,7 @@ class _FollowUpSearch extends StatelessWidget {
       style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
       decoration: InputDecoration(
         hintText: 'Search customer, contact, or note',
-        hintStyle: const TextStyle(
-          color: AppColors.textSecondary,
-          fontSize: 14,
-          fontWeight: FontWeight.w400,
-        ),
+        hintStyle: AppTextStyles.inputHint,
         prefixIcon: const Icon(
           Icons.search_rounded,
           color: AppColors.primary,
@@ -804,9 +806,19 @@ class _FollowUpDetailScreenState extends State<_FollowUpDetailScreen> {
     _item = widget.item;
   }
 
-  void _markCompleted() {
+  Future<void> _markCompleted() async {
+    final feedback = await showCompletionFeedbackSheet(
+      context: context,
+      title: 'Complete follow-up',
+      subjectLabel: _item.customerName,
+    );
+    if (!mounted || feedback == null) return;
     setState(() {
-      _item = _item.copyWith(status: 'Done', color: AppColors.primary);
+      _item = _item.copyWith(
+        status: 'Done',
+        color: AppColors.primary,
+        note: '${_item.note}\n\nCompletion feedback: $feedback',
+      );
     });
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -1246,6 +1258,56 @@ class _AddFollowUpSheetState extends State<_AddFollowUpSheet> {
 
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
+  List<CustomerModel> _customers = const [];
+  CustomerModel? _selectedCustomer;
+  bool _loadingCustomers = true;
+  String? _customerLoadError;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadCustomers());
+  }
+
+  Future<void> _loadCustomers() async {
+    try {
+      final customers = await ApiProviderScope.of(context).fetchCustomers();
+      if (!mounted) return;
+      setState(() {
+        _customers = customers;
+        _loadingCustomers = false;
+        _customerLoadError = null;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _loadingCustomers = false;
+        _customerLoadError = 'Unable to load customers';
+      });
+    }
+  }
+
+  Future<void> _pickCustomer() async {
+    if (_loadingCustomers) return;
+    if (_customerLoadError != null) {
+      setState(() => _loadingCustomers = true);
+      await _loadCustomers();
+      if (!mounted || _customerLoadError != null) return;
+    }
+    final customer = await showDialog<CustomerModel>(
+      context: context,
+      builder: (_) => CustomerSearchDialog(
+        customers: _customers,
+        selectedCustomerId: _selectedCustomer?.id,
+        emptyMessage: 'No customers available.',
+      ),
+    );
+    if (!mounted || customer == null) return;
+    setState(() {
+      _selectedCustomer = customer;
+      _customerController.text = customer.name;
+    });
+  }
 
   @override
   void dispose() {
@@ -1289,10 +1351,10 @@ class _AddFollowUpSheetState extends State<_AddFollowUpSheet> {
     final timeLabel = _timeController.text.trim();
     final note = _noteController.text.trim();
 
-    if (customerName.isEmpty || dateLabel.isEmpty || timeLabel.isEmpty) {
+    if (_selectedCustomer == null || dateLabel.isEmpty || timeLabel.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please fill customer name, date, and time.'),
+          content: Text('Please select a customer, date, and time.'),
         ),
       );
       return;
@@ -1344,9 +1406,12 @@ class _AddFollowUpSheetState extends State<_AddFollowUpSheet> {
               const SizedBox(height: 16),
               _FieldLabel('Customer Name'),
               const SizedBox(height: 8),
-              _InputBox(
+              _TapInputBox(
                 controller: _customerController,
-                hintText: 'Enter customer name',
+                hintText: _loadingCustomers
+                    ? 'Loading customers...'
+                    : _customerLoadError ?? 'Select customer',
+                onTap: _pickCustomer,
               ),
               const SizedBox(height: 14),
               _FieldLabel('Date'),
@@ -1424,14 +1489,7 @@ class _FieldLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      label,
-      style: const TextStyle(
-        color: AppColors.textPrimary,
-        fontSize: 14,
-        fontWeight: FontWeight.w700,
-      ),
-    );
+    return Text(label, style: AppTextStyles.fieldLabel);
   }
 }
 
@@ -1452,19 +1510,12 @@ class _InputBox extends StatelessWidget {
       controller: controller,
       maxLines: maxLines,
       cursorColor: AppColors.primary,
-      style: const TextStyle(
-        color: AppColors.textPrimary,
-        fontSize: 14,
-        fontWeight: FontWeight.w600,
-      ),
+      style: AppTextStyles.fieldValue,
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.white,
         hintText: hintText,
-        hintStyle: const TextStyle(
-          color: AppColors.textLightMuted,
-          fontSize: 14,
-        ),
+        hintStyle: AppTextStyles.inputHint,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 14,
           vertical: 12,
@@ -1534,12 +1585,12 @@ class _FollowUpItem {
     required this.followUpType,
   });
 
-  _FollowUpItem copyWith({String? status, Color? color}) {
+  _FollowUpItem copyWith({String? status, Color? color, String? note}) {
     return _FollowUpItem(
       customerName: customerName,
       dateLabel: dateLabel,
       timeLabel: timeLabel,
-      note: note,
+      note: note ?? this.note,
       status: status ?? this.status,
       color: color ?? this.color,
       priority: priority,
