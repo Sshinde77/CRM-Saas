@@ -50,13 +50,7 @@ class ApiProvider extends ChangeNotifier {
       final session = await _apiService.login(
         request: LoginRequest(email: email, password: password),
       );
-      _session = session;
-      _currentUser = session.user;
-      final authMe = await _apiService.fetchAuthMeDetails();
-      _authMe = authMe;
-      _currentUser = authMe.user ?? session.user;
-      notifyListeners();
-      return session;
+      return await _completeLogin(session);
     } catch (error) {
       _errorMessage = error.toString();
       notifyListeners();
@@ -64,6 +58,31 @@ class ApiProvider extends ChangeNotifier {
     } finally {
       _setLoading(false);
     }
+  }
+
+  Future<AuthSession> loginWithGoogle({required String idToken}) async {
+    _setLoading(true);
+    _errorMessage = null;
+    try {
+      final session = await _apiService.loginWithGoogle(idToken: idToken);
+      return await _completeLogin(session);
+    } catch (error) {
+      _errorMessage = error.toString();
+      notifyListeners();
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<AuthSession> _completeLogin(AuthSession session) async {
+    _session = session;
+    _currentUser = session.user;
+    final authMe = await _apiService.fetchAuthMeDetails();
+    _authMe = authMe;
+    _currentUser = authMe.user ?? session.user;
+    notifyListeners();
+    return session;
   }
 
   Future<ApiResponse<void>> registerOrganization({

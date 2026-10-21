@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:crm_saas/core/theme/app_text_styles.dart';
 
 import '../../constants/app_colors.dart';
+import '../../models/auth_models.dart';
 import '../../providers/api_provider.dart';
 import '../../services/api_service.dart';
+import '../../services/google_auth_service.dart';
 import '../role_home_screen.dart';
 import 'register_screen.dart';
 
@@ -79,6 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleSignIn() async {
+    if (_isLoading) return;
     if (!_isPhoneTab && !_formKey.currentState!.validate()) return;
 
     if (_isPhoneTab) {
@@ -98,20 +101,7 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text,
       );
 
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(session.message)));
-      await Future.delayed(const Duration(milliseconds: 700));
-      if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => RoleHomeScreen.forRole(
-            apiProvider.currentUser?.role ?? session.user?.role,
-          ),
-        ),
-      );
+      _finishSignIn(apiProvider, session);
     } on ApiException catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(
@@ -127,6 +117,54 @@ class _LoginScreenState extends State<LoginScreen> {
         setState(() => _isLoading = false);
       }
     }
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    if (_isLoading) return;
+    setState(() => _isLoading = true);
+    try {
+      final idToken = await GoogleAuthService().signIn();
+      if (idToken == null || !mounted) return;
+      final apiProvider = ApiProviderScope.of(context);
+      final session = await apiProvider.loginWithGoogle(idToken: idToken);
+      _finishSignIn(apiProvider, session);
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            error is ApiException
+                ? error.message
+                : 'Google sign-in failed. Please try again.',
+          ),
+          action: error is ApiException && error.code == 'registration_required'
+              ? SnackBarAction(
+                  label: 'Register',
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                  ),
+                )
+              : null,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  void _finishSignIn(ApiProvider apiProvider, AuthSession session) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(session.message)));
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => RoleHomeScreen.forRole(
+          apiProvider.currentUser?.role ?? session.user?.role,
+        ),
+      ),
+    );
   }
 
   @override
@@ -382,11 +420,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            _SocialCircleButton(label: 'G', onTap: () {}),
-                            const SizedBox(width: 15),
-                            _SocialCircleButton(
-                              icon: Icons.apple,
-                              onTap: () {},
+                            Semantics(
+                              label: 'Sign in with Google',
+                              button: true,
+                              child: _SocialCircleButton(
+                                label: 'G',
+                                onTap: _isLoading ? null : _handleGoogleSignIn,
+                              ),
                             ),
                           ],
                         ),
@@ -611,11 +651,10 @@ class _PrimaryButton extends StatelessWidget {
 }
 
 class _SocialCircleButton extends StatelessWidget {
-  final String? label;
-  final IconData? icon;
-  final VoidCallback onTap;
+  final String label;
+  final VoidCallback? onTap;
 
-  const _SocialCircleButton({this.label, this.icon, required this.onTap});
+  const _SocialCircleButton({required this.label, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -631,16 +670,14 @@ class _SocialCircleButton extends StatelessWidget {
           border: Border.all(color: _LoginScreenState.border, width: 1.4),
         ),
         child: Center(
-          child: label != null
-              ? Text(
-                  label!,
-                  style: const TextStyle(
-                    color: _LoginScreenState.headingText,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                  ),
-                )
-              : Icon(icon, color: _LoginScreenState.headingText, size: 18),
+          child: Text(
+            label,
+            style: const TextStyle(
+              color: _LoginScreenState.headingText,
+              fontWeight: FontWeight.w700,
+              fontSize: 14,
+            ),
+          ),
         ),
       ),
     );

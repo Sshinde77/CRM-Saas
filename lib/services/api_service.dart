@@ -8,6 +8,7 @@ import 'package:http_parser/http_parser.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../constants/api_constants.dart';
+import '../constants/google_auth_config.dart';
 import '../models/api_response.dart';
 import '../models/admin_dashboard_model.dart';
 import '../models/customer_activity_models.dart';
@@ -22,8 +23,9 @@ import '../models/role_model.dart';
 class ApiException implements Exception {
   final int? statusCode;
   final String message;
+  final String? code;
 
-  const ApiException({this.statusCode, required this.message});
+  const ApiException({this.statusCode, required this.message, this.code});
 
   @override
   String toString() => message;
@@ -172,6 +174,46 @@ class ApiService {
       retryOnTimeout: true,
     );
 
+    return _saveLoginResponse(response);
+  }
+
+  Future<AuthSession> loginWithGoogle({required String idToken}) async {
+    if (idToken.trim().isEmpty) {
+      throw const ApiException(message: 'Google identity token is missing.');
+    }
+    try {
+      final response = await _send(
+        method: 'POST',
+        endpoint: GoogleAuthConfig.loginEndpoint,
+        requiresAuth: false,
+        body: {'credential': idToken},
+        timeout: ApiConstants.loginRequestTimeout,
+      );
+      if (_extractErrorCode(response.body) == 'registration_required') {
+        throw const ApiException(code: 'registration_required', message: '');
+      }
+      return await _saveLoginResponse(response);
+    } on ApiException catch (error) {
+      final message = error.code == 'registration_required'
+          ? 'No CRM account was found. Complete registration to continue.'
+          : switch (error.statusCode) {
+              409 =>
+                'This Google account conflicts with an existing CRM account. Contact your administrator.',
+              403 =>
+                'Your CRM account is deactivated. Contact your administrator.',
+              503 =>
+                'Google sign-in is currently unavailable. Please use email sign-in or try again later.',
+              _ => error.message,
+            };
+      throw ApiException(
+        statusCode: error.statusCode,
+        code: error.code,
+        message: message,
+      );
+    }
+  }
+
+  Future<AuthSession> _saveLoginResponse(http.Response response) async {
     final responseBody = response.body.trim();
     final decoded = _requireDecodedMap(
       responseBody,
@@ -3206,6 +3248,7 @@ class ApiService {
 
           throw ApiException(
             statusCode: response.statusCode,
+            code: _extractErrorCode(response.body),
             message: _extractErrorMessage(response.body.trim()),
           );
         }
@@ -3478,6 +3521,11 @@ class ApiService {
       final newRefreshToken = _extractRefreshToken(decoded);
       _accessToken = newAccessToken;
       _refreshToken = (newRefreshToken ?? refreshToken).trim();
+      await _persistAuthState(
+        accessToken: _accessToken!,
+        refreshToken: _refreshToken,
+        role: _savedRole,
+      );
       return true;
     } on TimeoutException catch (error) {
       _logTransportError(method: 'POST', uri: uri, error: error, attempt: 1);
@@ -3639,6 +3687,27 @@ class ApiService {
         .replace(userInfo: '', queryParameters: query.isEmpty ? null : query)
         .removeFragment()
         .toString();
+  }
+
+  String? _extractErrorCode(String body) {
+    final decoded = _tryDecodeBody(body);
+    if (decoded is! Map<String, dynamic>) return null;
+    String? readCode(Map<String, dynamic> value) {
+      if (value['registration_required'] == true) {
+        return 'registration_required';
+      }
+      for (final key in const ['code', 'status', 'error', 'detail']) {
+        final field = value[key];
+        if (field is String && field == 'registration_required') return field;
+        if (field is Map<String, dynamic>) {
+          final nested = readCode(field);
+          if (nested != null) return nested;
+        }
+      }
+      return value['code'] is String ? value['code'] as String : null;
+    }
+
+    return readCode(decoded);
   }
 
   String _extractErrorMessage(String body) {

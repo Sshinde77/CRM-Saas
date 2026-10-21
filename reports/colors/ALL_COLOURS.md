@@ -1,0 +1,317 @@
+# All explicit app color codes
+
+Codes use **#AARRGGBB** (alpha first): `#FF0D1F42` means opaque `#0D1F42`. `#00000000` is transparent. These are base colors before opacity adjustments; image pixels and runtime-generated theme colors are excluded.
+
+| Color code | AppColors constants | Used outside AppColors |
+| --- | --- | --- |
+| `#00000000` | — | Yes |
+| `#080F172A` | — | Yes |
+| `#0D000000` | — | Yes |
+| `#0F24352A` | — | Yes |
+| `#10000000` | — | Yes |
+| `#12063B00` | — | Yes |
+| `#14063B00` | — | Yes |
+| `#22000000` | — | Yes |
+| `#33005225` | — | Yes |
+| `#330B4A06` | — | Yes |
+| `#3DFFFFFF` | — | Yes |
+| `#42000000` | — | Yes |
+| `#8A000000` | — | Yes |
+| `#B3FFFFFF` | — | Yes |
+| `#FF000000` | — | Yes |
+| `#FF00451F` | — | Yes |
+| `#FF00662F` | — | Yes |
+| `#FF009688` | — | Yes |
+| `#FF0284C7` | — | Yes |
+| `#FF04844B` | — | Yes |
+| `#FF061431` | primary950, deliveryHeroEnd, deliveryHeroShadow, deliveryCheckInButtonShadow | No |
+| `#FF064B26` | — | Yes |
+| `#FF065F1B` | — | Yes |
+| `#FF06783D` | — | Yes |
+| `#FF087333` | — | Yes |
+| `#FF08733A` | — | Yes |
+| `#FF08763A` | — | Yes |
+| `#FF08783D` | — | Yes |
+| `#FF0A3C02` | — | Yes |
+| `#FF0A8F3D` | — | Yes |
+| `#FF0D1F42` | primary, statusActiveText, statusActiveIcon, teal, green, blue, deliveryBlue, deliveryGreen, deliveryDashboardHeaderMid, deliveryDashboardHeaderEnd, deliveryDashboardNavEnd, deliveryDashboardOnlineDot, deliveryDashboardText, deliveryKpiMintIcon, deliveryKpiGreenIcon, deliveryKpiAquaIcon, deliveryCheckInButton, deliveryCustomerSales | Yes |
+| `#FF0D7A24` | — | Yes |
+| `#FF0D8C28` | — | Yes |
+| `#FF0F172A` | — | Yes |
+| `#FF0F5A00` | — | Yes |
+| `#FF0F766E` | — | Yes |
+| `#FF107C41` | — | Yes |
+| `#FF111411` | — | Yes |
+| `#FF111827` | textPrimary, deliveryInk | Yes |
+| `#FF112548` | secondary, primary900, purple, deliveryViolet, deliveryHeroStart, deliveryDashboardHeaderStart, deliveryDashboardNavStart | No |
+| `#FF1234D8` | — | Yes |
+| `#FF123D28` | — | Yes |
+| `#FF1256F3` | — | Yes |
+| `#FF1479E8` | deliveryCustomerLocation, deliveryCustomerOrders | No |
+| `#FF15191F` | — | Yes |
+| `#FF155EC7` | — | Yes |
+| `#FF15803D` | — | Yes |
+| `#FF16A34A` | — | Yes |
+| `#FF172033` | — | Yes |
+| `#FF174F28` | — | Yes |
+| `#FF19652D` | — | Yes |
+| `#FF1E9C90` | — | Yes |
+| `#FF1F6D2A` | — | Yes |
+| `#FF213B50` | — | Yes |
+| `#FF21854A` | — | Yes |
+| `#FF22C55E` | — | Yes |
+| `#FF246936` | — | Yes |
+| `#FF24713A` | — | Yes |
+| `#FF2563EB` | — | Yes |
+| `#FF25D366` | — | Yes |
+| `#FF284BFF` | — | Yes |
+| `#FF30343B` | — | Yes |
+| `#FF303746` | — | Yes |
+| `#FF313846` | — | Yes |
+| `#FF31394D` | — | Yes |
+| `#FF31536B` | — | Yes |
+| `#FF3168FF` | — | Yes |
+| `#FF334155` | — | Yes |
+| `#FF35566B` | — | Yes |
+| `#FF356B4B` | — | Yes |
+| `#FF357343` | — | Yes |
+| `#FF3775D6` | — | Yes |
+| `#FF39A04D` | — | Yes |
+| `#FF40536A` | — | Yes |
+| `#FF475569` | — | Yes |
+| `#FF4A546B` | — | Yes |
+| `#FF4B515B` | — | Yes |
+| `#FF4B5563` | textSecondary | No |
+| `#FF4B5668` | — | Yes |
+| `#FF4F46E5` | — | Yes |
+| `#FF4F5870` | — | Yes |
+| `#FF536074` | — | Yes |
+| `#FF5479E4` | — | Yes |
+| `#FF567F19` | — | Yes |
+| `#FF56D36F` | — | Yes |
+| `#FF586176` | — | Yes |
+| `#FF64748B` | — | Yes |
+| `#FF667085` | — | Yes |
+| `#FF6B7280` | accentGrey, textMuted | Yes |
+| `#FF6D35D7` | — | Yes |
+| `#FF6D6D6D` | — | Yes |
+| `#FF718096` | — | Yes |
+| `#FF7C3AED` | — | Yes |
+| `#FF7C3EFF` | — | Yes |
+| `#FF7C8491` | — | Yes |
+| `#FF8A50D1` | — | Yes |
+| `#FF8A8F00` | deliveryKpiYellowIcon | No |
+| `#FF8CAD84` | — | Yes |
+| `#FF94A3B8` | — | Yes |
+| `#FF98A2B3` | — | Yes |
+| `#FF991B1B` | — | Yes |
+| `#FF9AA0B1` | — | Yes |
+| `#FF9AA1AC` | textLightMuted | No |
+| `#FF9AB99B` | — | Yes |
+| `#FF9CA3AF` | — | Yes |
+| `#FFA3B896` | — | Yes |
+| `#FFB00000` | — | Yes |
+| `#FFB45309` | — | Yes |
+| `#FFB7791F` | — | Yes |
+| `#FFBFE8CC` | — | Yes |
+| `#FFC53030` | — | Yes |
+| `#FFC9CED6` | — | Yes |
+| `#FFCBD5E1` | — | Yes |
+| `#FFCDD3DC` | — | Yes |
+| `#FFCDECD7` | — | Yes |
+| `#FFD1D5DB` | borderStrong | Yes |
+| `#FFD38B16` | — | Yes |
+| `#FFD44A4A` | — | Yes |
+| `#FFD4DAE2` | — | Yes |
+| `#FFD4E8FF` | — | Yes |
+| `#FFD4EFD3` | — | Yes |
+| `#FFD6E6FF` | — | Yes |
+| `#FFD7DCE4` | — | Yes |
+| `#FFD7DEE8` | — | Yes |
+| `#FFD8DFD8` | — | Yes |
+| `#FFD8DFE6` | — | Yes |
+| `#FFD8DFE8` | — | Yes |
+| `#FFD8E4DC` | — | Yes |
+| `#FFD8EEDD` | — | Yes |
+| `#FFD93838` | — | Yes |
+| `#FFD9DEE8` | — | Yes |
+| `#FFDB8A00` | — | Yes |
+| `#FFDC2626` | statusInactiveText, red, deliveryRed | Yes |
+| `#FFDCEEE1` | — | Yes |
+| `#FFDCFCE7` | — | Yes |
+| `#FFDDE3EA` | — | Yes |
+| `#FFDDE6F5` | activeMenuBg, statusActiveBg, deliveryHeroIcon, deliveryGreenSoft, deliveryDashboardNavActive, deliveryKpiMintBg, deliveryKpiGreenBg, deliveryKpiAquaBg, deliveryProfileAvatarBg, deliveryCustomerSalesSoft | No |
+| `#FFDDE8D8` | — | Yes |
+| `#FFDDEFE4` | — | Yes |
+| `#FFE0E7FF` | — | Yes |
+| `#FFE0F2FE` | — | Yes |
+| `#FFE11D35` | deliveryKpiRedIcon | No |
+| `#FFE1E4E8` | — | Yes |
+| `#FFE1E5E8` | — | Yes |
+| `#FFE1E6EE` | — | Yes |
+| `#FFE1E6EF` | — | Yes |
+| `#FFE1F6EA` | — | Yes |
+| `#FFE2D2FF` | — | Yes |
+| `#FFE2E6EA` | — | Yes |
+| `#FFE2E7F0` | — | Yes |
+| `#FFE2E8F0` | — | Yes |
+| `#FFE2EDE6` | — | Yes |
+| `#FFE2EFD8` | — | Yes |
+| `#FFE3E7EC` | — | Yes |
+| `#FFE4E6E9` | border | No |
+| `#FFE4EAF3` | — | Yes |
+| `#FFE4F7F4` | — | Yes |
+| `#FFE5E7EB` | — | Yes |
+| `#FFE5EAF1` | — | Yes |
+| `#FFE5F6E7` | — | Yes |
+| `#FFE6ECD9` | — | Yes |
+| `#FFE6F1FF` | — | Yes |
+| `#FFE6F7F1` | — | Yes |
+| `#FFE7EAEF` | — | Yes |
+| `#FFE7EBEE` | — | Yes |
+| `#FFE7EBEF` | — | Yes |
+| `#FFE7EBF3` | deliverySurfaceBorder | No |
+| `#FFE7FFFB` | — | Yes |
+| `#FFE8ECEF` | — | Yes |
+| `#FFE8EDF2` | — | Yes |
+| `#FFE8F1FF` | — | Yes |
+| `#FFE8F6E5` | — | Yes |
+| `#FFE8F7E8` | — | Yes |
+| `#FFE8F8EE` | — | Yes |
+| `#FFE91E63` | — | Yes |
+| `#FFE9EDF0` | — | Yes |
+| `#FFE9EDF2` | — | Yes |
+| `#FFE9EDF5` | deliveryCardBorder | Yes |
+| `#FFE9F7EA` | — | Yes |
+| `#FFE9F7F2` | — | Yes |
+| `#FFE9F8EF` | — | Yes |
+| `#FFEAF0FF` | — | Yes |
+| `#FFEAF2FF` | — | Yes |
+| `#FFEAF3FF` | — | Yes |
+| `#FFEAF5D9` | — | Yes |
+| `#FFEAF5E9` | — | Yes |
+| `#FFEAF5EA` | — | Yes |
+| `#FFEAF7EC` | — | Yes |
+| `#FFEAF7ED` | — | Yes |
+| `#FFEAF7EE` | — | Yes |
+| `#FFECF3FF` | — | Yes |
+| `#FFECF8F2` | — | Yes |
+| `#FFEDF6FF` | deliveryCustomerLocationSoft, deliveryCustomerOrdersSoft | No |
+| `#FFEDFBF0` | — | Yes |
+| `#FFEF4444` | — | Yes |
+| `#FFEFF6EE` | — | Yes |
+| `#FFEFF6FF` | — | Yes |
+| `#FFEFF7EA` | — | Yes |
+| `#FFEFF8F2` | — | Yes |
+| `#FFF0C6C6` | — | Yes |
+| `#FFF0E9FF` | — | Yes |
+| `#FFF0F3F2` | — | Yes |
+| `#FFF0F5F7` | — | Yes |
+| `#FFF0F7E9` | — | Yes |
+| `#FFF0F7EC` | — | Yes |
+| `#FFF0F7ED` | — | Yes |
+| `#FFF0FDF4` | — | Yes |
+| `#FFF18A1A` | — | Yes |
+| `#FFF1F2F4` | borderLight | No |
+| `#FFF1F4F8` | — | Yes |
+| `#FFF1F5F9` | — | Yes |
+| `#FFF1F5FB` | — | Yes |
+| `#FFF1F6EF` | — | Yes |
+| `#FFF1F7EF` | — | Yes |
+| `#FFF1F7F3` | — | Yes |
+| `#FFF1F8EC` | — | Yes |
+| `#FFF26B12` | — | Yes |
+| `#FFF2E6FF` | — | Yes |
+| `#FFF2F3F6` | — | Yes |
+| `#FFF2F4F3` | — | Yes |
+| `#FFF2F4F7` | — | Yes |
+| `#FFF2F5FA` | adminSidebarBg, surfaceSoft, deliveryBackground, deliveryBlueSoft, deliveryVioletSoft, deliveryVioletBadge, deliveryBlueBadge | Yes |
+| `#FFF3E8FF` | — | Yes |
+| `#FFF3F4F6` | — | Yes |
+| `#FFF3F5F2` | — | Yes |
+| `#FFF3F5F8` | — | Yes |
+| `#FFF3FAF0` | — | Yes |
+| `#FFF3FBF4` | — | Yes |
+| `#FFF44336` | — | Yes |
+| `#FFF49326` | deliveryCustomerPending | No |
+| `#FFF4F5F7` | — | Yes |
+| `#FFF4F6F8` | — | Yes |
+| `#FFF4F7F5` | — | Yes |
+| `#FFF4FBF1` | — | Yes |
+| `#FFF59E0B` | amber, deliveryYellow | Yes |
+| `#FFF6C7C7` | — | Yes |
+| `#FFF6F8F3` | — | Yes |
+| `#FFF6F8FB` | — | Yes |
+| `#FFF6F8FC` | — | Yes |
+| `#FFF7F9FC` | — | Yes |
+| `#FFF7FAF8` | — | Yes |
+| `#FFF7FBF4` | — | Yes |
+| `#FFF7FBF8` | — | Yes |
+| `#FFF8FAF7` | — | Yes |
+| `#FFF8FAF9` | — | Yes |
+| `#FFF8FAFB` | — | Yes |
+| `#FFF8FAFC` | — | Yes |
+| `#FFF8FBF8` | — | Yes |
+| `#FFF97316` | orange, deliveryOrange | Yes |
+| `#FFF9FBFA` | — | Yes |
+| `#FFFAFAFA` | — | Yes |
+| `#FFFAFBFC` | — | Yes |
+| `#FFFBFBFB` | — | Yes |
+| `#FFFBFCFB` | — | Yes |
+| `#FFFBFCFD` | — | Yes |
+| `#FFFBFCFE` | — | Yes |
+| `#FFFBFCFF` | deliveryCardSoft | No |
+| `#FFFBFEFA` | — | Yes |
+| `#FFFDECEC` | — | Yes |
+| `#FFFDFDFD` | — | Yes |
+| `#FFFECACA` | statusInactiveBorder | Yes |
+| `#FFFEE2E2` | — | Yes |
+| `#FFFEF2F2` | statusInactiveBg, deliveryRedSoft | Yes |
+| `#FFFEF3C7` | — | Yes |
+| `#FFFF4358` | — | Yes |
+| `#FFFF4B4B` | — | Yes |
+| `#FFFF4D4F` | — | Yes |
+| `#FFFF4D6D` | — | Yes |
+| `#FFFF5722` | — | Yes |
+| `#FFFF6B6B` | — | Yes |
+| `#FFFF9F1C` | — | Yes |
+| `#FFFFB020` | — | Yes |
+| `#FFFFB4B4` | — | Yes |
+| `#FFFFD2D8` | — | Yes |
+| `#FFFFDDB6` | — | Yes |
+| `#FFFFE0A8` | — | Yes |
+| `#FFFFE2A8` | — | Yes |
+| `#FFFFE2E6` | deliveryKpiRedBg | No |
+| `#FFFFE4E8` | — | Yes |
+| `#FFFFE8EA` | — | Yes |
+| `#FFFFEBEB` | — | Yes |
+| `#FFFFECEE` | — | Yes |
+| `#FFFFECEF` | — | Yes |
+| `#FFFFEDD5` | — | Yes |
+| `#FFFFEEF0` | — | Yes |
+| `#FFFFF0D9` | — | Yes |
+| `#FFFFF1DF` | — | Yes |
+| `#FFFFF1F1` | — | Yes |
+| `#FFFFF2E7` | — | Yes |
+| `#FFFFF3A8` | deliveryKpiYellowBg | No |
+| `#FFFFF3E8` | — | Yes |
+| `#FFFFF4E5` | — | Yes |
+| `#FFFFF5F6` | — | Yes |
+| `#FFFFF7E6` | — | Yes |
+| `#FFFFF7EC` | deliveryCustomerPendingSoft | No |
+| `#FFFFF7ED` | — | Yes |
+| `#FFFFF8E7` | — | Yes |
+| `#FFFFF9E8` | — | Yes |
+| `#FFFFFBFA` | — | Yes |
+| `#FFFFFFF2` | surfaceOverlay, deliveryOrangeSoft, deliveryOrangeBadge, deliveryYellowSoft | No |
+| `#FFFFFFFF` | background, surface, deliveryProfileAvatarBorder | Yes |
+
+## Platform and web colors
+
+| Location | Color |
+| --- | --- |
+| [android/app/src/main/res/drawable/launch_background.xml:4](../../android/app/src/main/res/drawable/launch_background.xml#L4) | `@android:color/white` |
+| [ios/Runner/Base.lproj/LaunchScreen.storyboard:22](../../ios/Runner/Base.lproj/LaunchScreen.storyboard#L22) | `<color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>` |
+| [ios/Runner/Base.lproj/Main.storyboard:19](../../ios/Runner/Base.lproj/Main.storyboard#L19) | `<color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>` |
+| [web/manifest.json:6](../../web/manifest.json#L6) | `#0175C2` |
+| [web/manifest.json:7](../../web/manifest.json#L7) | `#0175C2` |
