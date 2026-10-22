@@ -126,11 +126,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     final categories = _filteredCategories();
 
     return Scaffold(
-      bottomNavigationBar: ListPaginationBar(
-        pagination: _pagination,
-        loading: _isLoading,
-        onChanged: _changeListPage,
-      ),
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       drawer: const AppDrawer(activeItem: 'Categories'),
@@ -288,6 +283,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                                 ),
                               ],
                             ),
+                          ),
+                          ListPaginationBar(
+                            pagination: _pagination,
+                            loading: _isLoading,
+                            onChanged: _changeListPage,
                           ),
                         ],
                       ),

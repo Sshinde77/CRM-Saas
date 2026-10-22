@@ -274,17 +274,7 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
         onSelect: _handleSidebarSelection,
         currentPage: 'Visits',
       ),
-      bottomNavigationBar: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListPaginationBar(
-            pagination: _pagination,
-            loading: false,
-            onChanged: () => setState(() {}),
-          ),
-          const SalesManagerBottomNavigation(currentIndex: 4),
-        ],
-      ),
+      bottomNavigationBar: const SalesManagerBottomNavigation(currentIndex: 4),
       body: SafeArea(
         child: Column(
           children: [
@@ -331,6 +321,10 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
                                   Expanded(child: rightPanel),
                                 ],
                               ),
+                            ListPaginationBar(
+                              pagination: _pagination,
+                              onChanged: () => setState(() {}),
+                            ),
                           ],
                         ),
                       ),

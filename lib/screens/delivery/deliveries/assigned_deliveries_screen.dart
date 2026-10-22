@@ -61,7 +61,9 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
     super.didChangeDependencies();
     if (!_didStartLoad) {
       _didStartLoad = true;
-      _loadDeliveries();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _loadDeliveries();
+      });
     }
   }
 
@@ -533,29 +535,12 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
           : const DeliveryPartnerSidebar(
               currentRoute: AppRoutes.deliveryDeliveries,
             ),
-      bottomNavigationBar: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListPaginationBar(
-            pagination: _pagination,
-            loading: _isLoading,
-            onChanged: _changeListPage,
-          ),
-          if ((useSalesManagerShell
-                  ? null
-                  : DeliveryBottomNavigation(
-                      currentIndex: 1,
-                      onCollectionCreated: _loadDeliveries,
-                    )) !=
-              null)
-            (useSalesManagerShell
-                ? null
-                : DeliveryBottomNavigation(
-                    currentIndex: 1,
-                    onCollectionCreated: _loadDeliveries,
-                  ))!,
-        ],
-      ),
+      bottomNavigationBar: useSalesManagerShell
+          ? null
+          : DeliveryBottomNavigation(
+              currentIndex: 1,
+              onCollectionCreated: _loadDeliveries,
+            ),
       body: SafeArea(
         bottom: false,
         child: RefreshIndicator(
@@ -675,6 +660,13 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
                     },
                   ),
                 ),
+              SliverToBoxAdapter(
+                child: ListPaginationBar(
+                  pagination: _pagination,
+                  loading: _isLoading,
+                  onChanged: _changeListPage,
+                ),
+              ),
             ],
           ),
         ),

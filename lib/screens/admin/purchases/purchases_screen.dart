@@ -168,11 +168,6 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
   Widget build(BuildContext context) {
     final pageInvoices = _pagination.local(_invoices);
     return Scaffold(
-      bottomNavigationBar: ListPaginationBar(
-        pagination: _pagination,
-        loading: false,
-        onChanged: () => setState(() {}),
-      ),
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       drawer: const AppDrawer(activeItem: 'Purchases'),
@@ -259,6 +254,10 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                           child: _invoiceCard(invoice, index),
                         );
                       }),
+                    ListPaginationBar(
+                      pagination: _pagination,
+                      onChanged: () => setState(() {}),
+                    ),
                   ],
                 ),
               ),

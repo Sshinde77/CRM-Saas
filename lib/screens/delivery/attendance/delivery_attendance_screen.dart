@@ -1,5 +1,3 @@
-import '../../../models/list_pagination.dart';
-import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
@@ -25,23 +23,7 @@ class DeliveryAttendanceScreen extends StatefulWidget {
 }
 
 class _DeliveryAttendanceScreenState extends State<DeliveryAttendanceScreen> {
-  final _pagination = ListPagination();
   DeliveryAttendanceRecord? _todayAttendance;
-  @override
-  void dispose() {
-    _pagination.dispose();
-    super.dispose();
-  }
-
-  Future<void> _changeListPage() async {
-    if (_pagination.isLoading) return;
-    setState(() => _pagination.isLoading = true);
-    try {
-      await _refresh();
-    } finally {
-      if (mounted) setState(() => _pagination.isLoading = false);
-    }
-  }
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   Future<List<DeliveryAttendanceRecord>>? _future;
@@ -61,12 +43,10 @@ class _DeliveryAttendanceScreenState extends State<DeliveryAttendanceScreen> {
   Future<List<DeliveryAttendanceRecord>> _loadAttendance() async {
     final rows = await ApiProviderScope.of(
       context,
-    ).fetchMyAttendance(pagination: _pagination);
+    ).fetchMyAttendance();
     final records = rows.map(DeliveryAttendanceRecord.fromJson).toList()
       ..sort((a, b) => b.date.compareTo(a.date));
-    if (_pagination.page == 1) {
-      _todayAttendance = DeliveryAttendanceRecord.todayFrom(records);
-    }
+    _todayAttendance = DeliveryAttendanceRecord.todayFrom(records);
     return records;
   }
 
@@ -108,29 +88,12 @@ class _DeliveryAttendanceScreenState extends State<DeliveryAttendanceScreen> {
           : const DeliveryPartnerSidebar(
               currentRoute: AppRoutes.deliveryAttendance,
             ),
-      bottomNavigationBar: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListPaginationBar(
-            pagination: _pagination,
-            loading: false,
-            onChanged: _changeListPage,
-          ),
-          if ((useSalesManagerShell
-                  ? null
-                  : DeliveryBottomNavigation(
-                      currentIndex: 3,
-                      onCollectionCreated: _refresh,
-                    )) !=
-              null)
-            (useSalesManagerShell
-                ? null
-                : DeliveryBottomNavigation(
-                    currentIndex: 3,
-                    onCollectionCreated: _refresh,
-                  ))!,
-        ],
-      ),
+      bottomNavigationBar: useSalesManagerShell
+          ? null
+          : DeliveryBottomNavigation(
+              currentIndex: 3,
+              onCollectionCreated: _refresh,
+            ),
       body: SafeArea(
         bottom: false,
         child: FutureBuilder<List<DeliveryAttendanceRecord>>(

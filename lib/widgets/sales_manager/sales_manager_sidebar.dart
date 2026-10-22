@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../constants/app_colors.dart';
+import '../../screens/admin/customers/customers_screen.dart';
 import '../../screens/delivery/attendance/delivery_attendance_screen.dart';
-import '../../screens/delivery/customers/delivery_customers_screen.dart';
 import '../../screens/delivery/deliveries/assigned_deliveries_screen.dart';
 import '../../screens/delivery/expenses/delivery_expenses_screen.dart';
 import '../../screens/delivery/leaves/delivery_leaves_screen.dart';
@@ -172,8 +172,8 @@ class SalesManagerSidebar extends StatelessWidget {
   }
 
   void _handleTap(BuildContext context, String action) {
-    final Widget? sharedDeliveryScreen = switch (action) {
-      'Customers' => const DeliveryCustomersScreen(),
+    final Widget? destinationScreen = switch (action) {
+      'Customers' => const CustomersScreen(useSalesManagerShell: true),
       'Deliveries' => const AssignedDeliveriesScreen(),
       'Attendance' => const DeliveryAttendanceScreen(),
       'Leaves' => const DeliveryLeavesScreen(),
@@ -181,7 +181,7 @@ class SalesManagerSidebar extends StatelessWidget {
       _ => null,
     };
 
-    if (sharedDeliveryScreen == null) {
+    if (destinationScreen == null) {
       onSelect(action);
       return;
     }
@@ -189,7 +189,7 @@ class SalesManagerSidebar extends StatelessWidget {
     Navigator.of(context).pop();
     Navigator.of(
       context,
-    ).push(MaterialPageRoute(builder: (_) => sharedDeliveryScreen));
+    ).push(MaterialPageRoute(builder: (_) => destinationScreen));
   }
 
   bool _isSelected(_SidebarItem item, String currentPage) {

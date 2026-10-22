@@ -158,11 +158,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     );
 
     return Scaffold(
-      bottomNavigationBar: ListPaginationBar(
-        pagination: _pagination,
-        loading: false,
-        onChanged: () => setState(() {}),
-      ),
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       drawer: const AppDrawer(activeItem: 'Attendance'),
@@ -293,6 +288,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                     const Spacer(),
                                   ],
                                 ),
+                              ),
+                              ListPaginationBar(
+                                pagination: _pagination,
+                                onChanged: () => setState(() {}),
                               ),
                             ],
                           ),

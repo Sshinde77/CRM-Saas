@@ -1,8 +1,8 @@
-import '../../../models/list_pagination.dart';
-import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../models/delivery_attendance_record.dart';
+import '../../../providers/api_provider.dart';
 import '../../admin/customers/customers_screen.dart';
 import '../../admin/leads/admin_leads_screen.dart';
 import '../../admin/orders/admin_orders_screen.dart';
@@ -15,6 +15,7 @@ import '../follow_ups/sales_manager_follow_ups_screen.dart';
 import '../performance/sales_manager_performance_screen.dart';
 import '../stock/sales_manager_stock_screen.dart';
 import '../visits/sales_manager_visits_screen.dart';
+import '../../delivery/attendance/delivery_attendance_calendar_screen.dart';
 
 class SalesManagerAttendanceScreen extends StatefulWidget {
   const SalesManagerAttendanceScreen({super.key});
@@ -26,14 +27,33 @@ class SalesManagerAttendanceScreen extends StatefulWidget {
 
 class _SalesManagerAttendanceScreenState
     extends State<SalesManagerAttendanceScreen> {
-  final _pagination = ListPagination();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  Future<List<DeliveryAttendanceRecord>>? _attendanceFuture;
+  bool _didStartLoad = false;
+
   @override
-  void dispose() {
-    _pagination.dispose();
-    super.dispose();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_didStartLoad) {
+      _attendanceFuture = _loadAttendance();
+      _didStartLoad = true;
+    }
   }
 
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  Future<List<DeliveryAttendanceRecord>> _loadAttendance() async {
+    final rows = await ApiProviderScope.of(context).fetchMyAttendance();
+    final records = rows.map(DeliveryAttendanceRecord.fromJson).toList()
+      ..sort((a, b) => b.date.compareTo(a.date));
+    return records;
+  }
+
+  void _openAttendanceCalendar(List<DeliveryAttendanceRecord> records) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => DeliveryAttendanceCalendarScreen(records: records),
+      ),
+    );
+  }
 
   final List<_CheckpointCardData> _checkpoints = const [
     _CheckpointCardData(
@@ -58,21 +78,6 @@ class _SalesManagerAttendanceScreenState
     ),
   ];
   final List<bool> _checkpointRecorded = List<bool>.filled(4, false);
-
-  final List<_AttendanceRecord> _records = const [
-    _AttendanceRecord(
-      date: '2026-08-17',
-      status: 'Present',
-      checkIn: '04:33 PM',
-      checkOut: '04:34 PM',
-    ),
-    _AttendanceRecord(
-      date: '2026-08-16',
-      status: 'Present',
-      checkIn: '10:03 PM',
-      checkOut: '-',
-    ),
-  ];
 
   void _showSnack(String action) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -165,11 +170,6 @@ class _SalesManagerAttendanceScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar: ListPaginationBar(
-        pagination: _pagination,
-        loading: false,
-        onChanged: () => setState(() {}),
-      ),
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       drawer: SalesManagerSidebarDrawer(
@@ -192,7 +192,31 @@ class _SalesManagerAttendanceScreenState
                       children: [
                         _buildCheckpointSection(),
                         const SizedBox(height: 22),
-                        _buildHistorySection(),
+                        FutureBuilder<List<DeliveryAttendanceRecord>>(
+                          future: _attendanceFuture,
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                    ConnectionState.waiting &&
+                                !snapshot.hasData) {
+                              return const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 48),
+                                child: Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              );
+                            }
+                            if (snapshot.hasError) {
+                              return _AttendanceLoadError(
+                                onRetry: () => setState(
+                                  () => _attendanceFuture = _loadAttendance(),
+                                ),
+                              );
+                            }
+                            return _buildHistorySection(
+                              snapshot.data ?? const <DeliveryAttendanceRecord>[],
+                            );
+                          },
+                        ),
                       ],
                     ),
                   ),
@@ -277,7 +301,7 @@ class _SalesManagerAttendanceScreenState
     );
   }
 
-  Widget _buildHistorySection() {
+  Widget _buildHistorySection(List<DeliveryAttendanceRecord> records) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
@@ -296,20 +320,45 @@ class _SalesManagerAttendanceScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Attendance History',
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
+          Row(
+            children: [
+              const Expanded(
+                child: Text(
+                  'Attendance History',
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () => _openAttendanceCalendar(records),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.green,
+                  backgroundColor: AppColors.green.withValues(alpha: 0.12),
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  minimumSize: const Size(0, 32),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  'View All',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           const _AttendanceHeaderRow(),
           const Divider(height: 1, color: Color(0xFFE5E7EB)),
-          for (var i = 0; i < _pagination.local(_records).length; i++) ...[
-            _AttendanceRow(record: _pagination.local(_records)[i]),
-            if (i != _pagination.local(_records).length - 1)
+          for (var i = 0; i < records.length; i++) ...[
+            _AttendanceRow(record: records[i]),
+            if (i != records.length - 1)
               const Divider(height: 1, color: Color(0xFFE5E7EB)),
           ],
         ],
@@ -440,7 +489,7 @@ class _AttendanceHeaderRow extends StatelessWidget {
 }
 
 class _AttendanceRow extends StatelessWidget {
-  final _AttendanceRecord record;
+  final DeliveryAttendanceRecord record;
 
   const _AttendanceRow({required this.record});
 
@@ -453,7 +502,7 @@ class _AttendanceRow extends StatelessWidget {
           Expanded(
             flex: 3,
             child: Text(
-              record.date,
+              formatAttendanceDate(record.date),
               style: const TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 14,
@@ -463,12 +512,15 @@ class _AttendanceRow extends StatelessWidget {
           ),
           Expanded(
             flex: 2,
-            child: _StatusPill(label: record.status, color: AppColors.green),
+            child: _StatusPill(
+              label: record.status == 'present' ? 'Present' : 'Absent',
+              color: record.isPresent ? AppColors.green : AppColors.red,
+            ),
           ),
           Expanded(
             flex: 2,
             child: Text(
-              record.checkIn,
+              formatAttendanceTime(record.checkIn),
               style: const TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 14,
@@ -479,7 +531,7 @@ class _AttendanceRow extends StatelessWidget {
           Expanded(
             flex: 2,
             child: Text(
-              record.checkOut,
+              formatAttendanceTime(record.checkOut),
               style: const TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 14,
@@ -542,16 +594,22 @@ class _CheckpointCardData {
   });
 }
 
-class _AttendanceRecord {
-  final String date;
-  final String status;
-  final String checkIn;
-  final String checkOut;
+class _AttendanceLoadError extends StatelessWidget {
+  final VoidCallback onRetry;
 
-  const _AttendanceRecord({
-    required this.date,
-    required this.status,
-    required this.checkIn,
-    required this.checkOut,
-  });
+  const _AttendanceLoadError({required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 32),
+      child: Center(
+        child: OutlinedButton.icon(
+          onPressed: onRetry,
+          icon: const Icon(Icons.refresh_rounded, size: 18),
+          label: const Text('Retry attendance'),
+        ),
+      ),
+    );
+  }
 }

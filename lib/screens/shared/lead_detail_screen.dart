@@ -1145,7 +1145,7 @@ class _ProfileCard extends StatelessWidget {
                 onTap: onCall,
               ),
               _RoundAction(
-                icon: FontAwesomeIcons.whatsapp,
+                icon: FontAwesomeIcons.whatsapp.data,
                 color: Colors.white,
                 background: Colors.white.withValues(alpha: 0.14),
                 enabled: lead.phone.trim().isNotEmpty && lead.phone != '-',

@@ -459,7 +459,10 @@ class _MetricCard extends StatelessWidget {
               ),
             ],
           ),
-          const Spacer(),
+          // The cards are laid out inside a Wrap in a scrollable column, so
+          // their height is intentionally shrink-wrapped. A flex spacer
+          // cannot be used with those unbounded vertical constraints.
+          const SizedBox(height: 16),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [

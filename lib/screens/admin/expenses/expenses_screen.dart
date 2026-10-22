@@ -189,11 +189,6 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
     );
 
     return Scaffold(
-      bottomNavigationBar: ListPaginationBar(
-        pagination: _pagination,
-        loading: false,
-        onChanged: () => setState(() {}),
-      ),
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       drawer: const AppDrawer(activeItem: 'Expenses'),
@@ -379,6 +374,10 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                             ),
                         ],
                       ),
+                    ),
+                    ListPaginationBar(
+                      pagination: _pagination,
+                      onChanged: () => setState(() {}),
                     ),
                   ],
                 ),

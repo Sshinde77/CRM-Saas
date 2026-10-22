@@ -259,23 +259,9 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
               currentRoute: AppRoutes.deliveryVehicleStock,
             )
           : const AppDrawer(activeItem: 'Vehicle Stock'),
-      bottomNavigationBar: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListPaginationBar(
-            pagination: _pagination,
-            loading: false,
-            onChanged: _changeListPage,
-          ),
-          if ((_isDelivery
-                  ? const DeliveryBottomNavigation(currentIndex: -1)
-                  : null) !=
-              null)
-            (_isDelivery
-                ? const DeliveryBottomNavigation(currentIndex: -1)
-                : null)!,
-        ],
-      ),
+      bottomNavigationBar: _isDelivery
+          ? const DeliveryBottomNavigation(currentIndex: -1)
+          : null,
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -328,7 +314,7 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
                         12,
                         12,
                         12,
-                        _isDelivery ? 116 : 24,
+                        24,
                       ),
                       child: Center(
                         child: ConstrainedBox(
@@ -399,6 +385,10 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
                                     ),
                                   ),
                                 ),
+                              ListPaginationBar(
+                                pagination: _pagination,
+                                onChanged: _changeListPage,
+                              ),
                             ],
                           ),
                         ),

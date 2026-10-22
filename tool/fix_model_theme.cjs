@@ -1,0 +1,11 @@
+const fs=require('fs');
+let p='lib/screens/delivery/attendance/delivery_attendance_calendar_screen.dart',s=fs.readFileSync(p,'utf8');
+s=s.replace("present('Present', context.colors.primary)","present('Present')").replace("absent('Absent', context.colors.error)","absent('Absent')").replace("holiday('Holiday', context.colors.warning)","holiday('Holiday')").replace("notRecorded('Not Recorded', context.colors.textSecondary)","notRecorded('Not Recorded')");
+s=s.replace('  final Color color;\n\n  const _DayStatus(this.label, this.color);','  const _DayStatus(this.label);\n  Color color(AppColorsExt colors) => switch (this) {\n    _DayStatus.present => colors.primaryInk,\n    _DayStatus.absent => colors.error,\n    _DayStatus.holiday => colors.warning,\n    _DayStatus.notRecorded => colors.textSecondary,\n  };');
+s=s.replace(/\b(status|dayStatus)\.color\b/g,'$1.color(context.colors)');fs.writeFileSync(p,s);
+p='lib/screens/delivery/deliveries/assigned_deliveries_screen.dart';s=fs.readFileSync(p,'utf8').replace('factory _StatusTone.forStatus(String status)', 'factory _StatusTone.forStatus(BuildContext context, String status)').replace(/_StatusTone\.forStatus\((?!BuildContext|context)/g,'_StatusTone.forStatus(context, ');fs.writeFileSync(p,s);
+p='lib/screens/admin/products/products_screen.dart';s=fs.readFileSync(p,'utf8').replace(/List<_ProductItem> get _products =>/,'List<_ProductItem> _products =');
+s=s.replace(/^\s*accent: context\.colors\.\w+,\r?\n/gm,'').replace('  final Color accent;','  Color accent(BuildContext context) => context.colors.primaryInk;').replace(/^\s*required this\.accent,\r?\n/gm,'').replace(/product\.accent\b/g,'product.accent(context)');fs.writeFileSync(p,s);
+p='lib/screens/admin/suppliers/suppliers_screen.dart';s=fs.readFileSync(p,'utf8').replace('List<_SupplierRecord> get _suppliers =>','List<_SupplierRecord> _suppliers =');
+for(const name of ['statusColor','statusBg'])s=s.replace(new RegExp('^\\s*final Color '+name+';\\r?\\n','gm'),'').replace(new RegExp('^\\s*required this\\.'+name+',\\r?\\n','gm'),'').replace(new RegExp('^\\s*'+name+': [^\\n]+\\r?\\n','gm'),'');
+s=s.replace(/supplier\.statusColor\b/g,"(supplier.status == 'active' ? context.colors.primaryInk : context.colors.error)").replace(/supplier\.statusBg\b/g,'context.colors.surfaceVariant');fs.writeFileSync(p,s);

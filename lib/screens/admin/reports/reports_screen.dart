@@ -101,11 +101,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
   Widget build(BuildContext context) {
     final reports = _pagination.local(_reports);
     return Scaffold(
-      bottomNavigationBar: ListPaginationBar(
-        pagination: _pagination,
-        loading: false,
-        onChanged: () => setState(() {}),
-      ),
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       drawer: const AppDrawer(activeItem: 'Reports'),
@@ -224,6 +219,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
                               .toList(),
                         );
                       },
+                    ),
+                    ListPaginationBar(
+                      pagination: _pagination,
+                      onChanged: () => setState(() {}),
                     ),
                   ],
                 ),

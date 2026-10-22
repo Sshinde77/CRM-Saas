@@ -30,13 +30,15 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  provider: ^6.1.5+1
+  flutter_colorpicker: ^1.1.0
   flutter_svg: ^2.2.0
   image_picker: ^1.1.2
   http: ^1.6.0
   http_parser: ^4.1.2
   shared_preferences: ^2.3.2
   url_launcher: ^6.3.1
-  font_awesome_flutter: ^10.8.0
+  font_awesome_flutter: 11.0.0
   google_maps_flutter: ^2.10.0
   geolocator: ^14.0.2
   speech_to_text: ^7.0.0
@@ -53,6 +55,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  analyzer: ^7.4.5
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

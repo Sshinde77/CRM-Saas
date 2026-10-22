@@ -8,13 +8,13 @@ import '../../../providers/api_provider.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_bottom_navigation.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
+import '../../admin/customers/customers_screen.dart';
 import '../../admin/leads/admin_leads_screen.dart';
 import '../../admin/orders/admin_orders_screen.dart';
 import '../../admin/orders/new_admin_order_screen.dart';
 import '../../admin/quotations/admin_quotations_screen.dart';
 import '../../admin/quotations/create_quotation_screen.dart';
 import '../../delivery/attendance/delivery_attendance_screen.dart';
-import '../../delivery/customers/delivery_customers_screen.dart';
 import '../follow_ups/sales_manager_follow_ups_screen.dart';
 import '../performance/sales_manager_performance_screen.dart';
 import '../stock/sales_manager_stock_screen.dart';
@@ -279,7 +279,11 @@ class _SalesManagerDashboardScreenState
   void _openCustomers() {
     Navigator.of(
       context,
-    ).push(MaterialPageRoute(builder: (_) => const DeliveryCustomersScreen()));
+    ).push(
+      MaterialPageRoute(
+        builder: (_) => const CustomersScreen(useSalesManagerShell: true),
+      ),
+    );
   }
 
   void _openLeads() {

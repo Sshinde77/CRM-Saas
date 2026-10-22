@@ -559,14 +559,9 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
               onSelect: _handleSalesManagerSidebarSelection,
             )
           : const AppDrawer(activeItem: 'Orders'),
-      bottomNavigationBar: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _paginationBar(),
-          if (widget.useSalesManagerShell)
-            const SalesManagerBottomNavigation(currentIndex: 3),
-        ],
-      ),
+      bottomNavigationBar: widget.useSalesManagerShell
+          ? const SalesManagerBottomNavigation(currentIndex: 3)
+          : null,
       body: SafeArea(
         bottom: false,
         child: LayoutBuilder(
@@ -601,11 +596,17 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                             : 14,
                         widget.useSalesManagerShell ? 96 : 14,
                       ),
-                      child: widget.useSalesManagerShell
-                          ? _buildSalesManagerOrders(orders)
-                          : isMobile
-                          ? _buildMobileContent(orders)
-                          : _buildDesktopContent(orders),
+                      child: Column(
+                        children: [
+                          if (widget.useSalesManagerShell)
+                            _buildSalesManagerOrders(orders)
+                          else if (isMobile)
+                            _buildMobileContent(orders)
+                          else
+                            _buildDesktopContent(orders),
+                          _paginationBar(),
+                        ],
+                      ),
                     ),
                   ),
                 ),

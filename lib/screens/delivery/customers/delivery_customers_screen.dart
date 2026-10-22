@@ -167,23 +167,9 @@ class _DeliveryCustomersScreenState extends State<DeliveryCustomersScreen> {
             : const DeliveryPartnerSidebar(
                 currentRoute: AppRoutes.deliveryCustomers,
               ),
-        bottomNavigationBar: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListPaginationBar(
-              pagination: _pagination,
-              loading: _loading,
-              onChanged: _changeListPage,
-            ),
-            if ((useSalesManagerShell
-                    ? null
-                    : const DeliveryBottomNavigation(currentIndex: -1)) !=
-                null)
-              (useSalesManagerShell
-                  ? null
-                  : const DeliveryBottomNavigation(currentIndex: -1))!,
-          ],
-        ),
+        bottomNavigationBar: useSalesManagerShell
+            ? null
+            : const DeliveryBottomNavigation(currentIndex: -1),
         body: SafeArea(
           bottom: false,
           child: Column(
@@ -220,7 +206,7 @@ class _DeliveryCustomersScreenState extends State<DeliveryCustomersScreen> {
                             AppSpacing.screenSmall,
                             AppSpacing.md,
                             AppSpacing.screenSmall,
-                            AppSpacing.xl + 92,
+                            AppSpacing.xl,
                           ),
                           children: [
                             Center(
@@ -249,6 +235,11 @@ class _DeliveryCustomersScreenState extends State<DeliveryCustomersScreen> {
                                       title: 'Customer List',
                                       count: customers.length,
                                       trailingIcon: Icons.groups_2_outlined,
+                                      trailing: ListPaginationPageSize(
+                                        pagination: _pagination,
+                                        loading: _loading,
+                                        onChanged: _changeListPage,
+                                      ),
                                     ),
                                     const SizedBox(height: AppSpacing.sm),
                                     if (customers.isEmpty)
@@ -272,6 +263,11 @@ class _DeliveryCustomersScreenState extends State<DeliveryCustomersScreen> {
                                           ),
                                         ),
                                       ),
+                                    ListPaginationBar(
+                                      pagination: _pagination,
+                                      loading: _loading,
+                                      onChanged: _changeListPage,
+                                    ),
                                   ],
                                 ),
                               ),
@@ -887,11 +883,13 @@ class _SectionHeader extends StatelessWidget {
   final String title;
   final int count;
   final IconData trailingIcon;
+  final Widget? trailing;
 
   const _SectionHeader({
     required this.title,
     required this.count,
     required this.trailingIcon,
+    this.trailing,
   });
 
   @override
@@ -906,7 +904,7 @@ class _SectionHeader extends StatelessWidget {
             style: AppTextStyles.sectionHeading,
           ),
         ),
-        Icon(trailingIcon, color: AppColors.deliveryGreen, size: 20),
+        if (trailing != null) trailing!,
       ],
     );
   }

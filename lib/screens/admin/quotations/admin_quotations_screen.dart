@@ -348,11 +348,6 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
     final quotations = _filteredQuotations();
 
     return Scaffold(
-      bottomNavigationBar: ListPaginationBar(
-        pagination: _pagination,
-        loading: _isLoading,
-        onChanged: _changeListPage,
-      ),
       key: _scaffoldKey,
       backgroundColor: AppColors.deliveryBackground,
       drawer: widget.useSalesManagerShell
@@ -426,6 +421,11 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
                                   : _errorMessage != null
                                   ? _errorState(_errorMessage!, _loadQuotations)
                                   : _buildDesktopContent(quotations),
+                            ),
+                            ListPaginationBar(
+                              pagination: _pagination,
+                              loading: _isLoading,
+                              onChanged: _changeListPage,
                             ),
                           ],
                         ),

@@ -112,11 +112,6 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
     final roles = _pagination.local(_filteredRoles, filterKey: _query);
 
     return Scaffold(
-      bottomNavigationBar: ListPaginationBar(
-        pagination: _pagination,
-        loading: false,
-        onChanged: () => setState(() {}),
-      ),
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       drawer: const AppDrawer(activeItem: 'Roles & Permissions'),
@@ -271,6 +266,10 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
                                 ),
                               ],
                             ),
+                          ),
+                          ListPaginationBar(
+                            pagination: _pagination,
+                            onChanged: () => setState(() {}),
                           ),
                         ],
                       ),

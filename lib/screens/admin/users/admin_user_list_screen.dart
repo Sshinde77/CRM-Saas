@@ -426,11 +426,6 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
     }
 
     return Scaffold(
-      bottomNavigationBar: ListPaginationBar(
-        pagination: _pagination,
-        loading: false,
-        onChanged: _changeListPage,
-      ),
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       drawer: const AppDrawer(activeItem: 'Staff', activeSubItem: 'Users'),
@@ -474,6 +469,10 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
                         _buildUsersError(snapshot.error.toString())
                       else
                         _buildStaffList(users),
+                      ListPaginationBar(
+                        pagination: _pagination,
+                        onChanged: _changeListPage,
+                      ),
                     ],
                   );
                 },

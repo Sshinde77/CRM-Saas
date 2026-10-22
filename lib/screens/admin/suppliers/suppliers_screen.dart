@@ -173,11 +173,6 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
     final suppliers = _filteredSuppliers();
 
     return Scaffold(
-      bottomNavigationBar: ListPaginationBar(
-        pagination: _pagination,
-        loading: _isLoading,
-        onChanged: _changeListPage,
-      ),
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       drawer: const AppDrawer(activeItem: 'Suppliers'),
@@ -291,6 +286,11 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                                 : _errorMessage != null
                                 ? _errorState(_errorMessage!, _loadSuppliers)
                                 : _buildTable(suppliers),
+                          ),
+                          ListPaginationBar(
+                            pagination: _pagination,
+                            loading: _isLoading,
+                            onChanged: _changeListPage,
                           ),
                         ],
                       ),

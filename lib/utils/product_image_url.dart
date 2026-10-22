@@ -5,6 +5,10 @@ import '../constants/api_constants.dart';
 
 String? productImageUrlFromJson(Map<String, dynamic> json) {
   final direct = _assetText(json, const [
+    // Inventory responses expose the product image as `cover_image`.
+    // Prefer it before legacy image aliases when both are present.
+    'cover_image',
+    'coverImage',
     'product_image_url',
     'productImageUrl',
     'image_url',
@@ -19,8 +23,6 @@ String? productImageUrlFromJson(Map<String, dynamic> json) {
     'thumbnail',
     'photo',
     'picture',
-    'cover_image',
-    'coverImage',
   ]);
   final normalized = normalizeProductImageUrl(direct);
   if (normalized != null) return normalized;

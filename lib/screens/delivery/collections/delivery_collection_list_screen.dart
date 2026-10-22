@@ -117,19 +117,9 @@ class _DeliveryCollectionListScreenState
         drawer: const DeliveryPartnerSidebar(
           currentRoute: AppRoutes.deliveryCollections,
         ),
-        bottomNavigationBar: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListPaginationBar(
-              pagination: _pagination,
-              loading: false,
-              onChanged: _changeListPage,
-            ),
-            DeliveryBottomNavigation(
-              currentIndex: 4,
-              onCollectionCreated: _refresh,
-            ),
-          ],
+        bottomNavigationBar: DeliveryBottomNavigation(
+          currentIndex: 4,
+          onCollectionCreated: _refresh,
         ),
         body: SafeArea(
           bottom: false,
@@ -168,7 +158,7 @@ class _DeliveryCollectionListScreenState
                           AppSpacing.screenSmall,
                           AppSpacing.md,
                           AppSpacing.screenSmall,
-                          AppSpacing.xl + 92,
+                          AppSpacing.xl,
                         ),
                         children: [
                           Center(
@@ -202,6 +192,17 @@ class _DeliveryCollectionListScreenState
                                       onCollect: _openPaymentCollection,
                                     ),
                             ),
+                          ),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: ListPaginationPageSize(
+                              pagination: _pagination,
+                              onChanged: _changeListPage,
+                            ),
+                          ),
+                          ListPaginationBar(
+                            pagination: _pagination,
+                            onChanged: _changeListPage,
                           ),
                         ],
                       ),
@@ -794,8 +795,6 @@ class _SectionHeader extends StatelessWidget {
       children: [
         Text(title, style: AppTextStyles.sectionHeading),
         const Spacer(),
-        if (trailingIcon != null)
-          Icon(trailingIcon, size: 18, color: AppColors.deliveryBlue),
       ],
     );
   }

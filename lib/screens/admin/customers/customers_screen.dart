@@ -445,11 +445,6 @@ class _CustomersScreenState extends State<CustomersScreen> {
     }
 
     return Scaffold(
-      bottomNavigationBar: ListPaginationBar(
-        pagination: _pagination,
-        loading: _isLoading,
-        onChanged: _changeListPage,
-      ),
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       drawer: widget.useSalesManagerShell
@@ -483,6 +478,14 @@ class _CustomersScreenState extends State<CustomersScreen> {
                       const SizedBox(height: 10),
                       _filterChips(),
                       const SizedBox(height: 10),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: ListPaginationPageSize(
+                          pagination: _pagination,
+                          loading: _isLoading,
+                          onChanged: _changeListPage,
+                        ),
+                      ),
                       if (_isLoading)
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 80),
@@ -517,6 +520,11 @@ class _CustomersScreenState extends State<CustomersScreen> {
                             ),
                           ],
                         ),
+                      ),
+                      ListPaginationBar(
+                        pagination: _pagination,
+                        loading: _isLoading,
+                        onChanged: _changeListPage,
                       ),
                     ],
                   ),

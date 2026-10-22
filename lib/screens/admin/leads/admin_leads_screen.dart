@@ -626,18 +626,9 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                 onSelect: _handleSalesManagerSidebarSelection,
               )
             : const AppDrawer(activeItem: 'Leads'),
-        bottomNavigationBar: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListPaginationBar(
-              pagination: _pagination,
-              loading: _isLoading,
-              onChanged: _changeListPage,
-            ),
-            if (widget.useSalesManagerShell)
-              const SalesManagerBottomNavigation(currentIndex: 1),
-          ],
-        ),
+        bottomNavigationBar: widget.useSalesManagerShell
+            ? const SalesManagerBottomNavigation(currentIndex: 1)
+            : null,
         body: SafeArea(
           child: Column(
             children: [
@@ -732,10 +723,24 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                                       },
                                     ),
                                     const SizedBox(height: AppSpacing.md),
-                                    _SectionHeader(
-                                      title: 'Lead List',
-                                      count: leads.length,
-                                      trailingIcon: Icons.leaderboard_outlined,
+                                    Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Expanded(
+                                          child: _SectionHeader(
+                                            title: 'Lead List',
+                                            count: leads.length,
+                                            trailingIcon:
+                                                Icons.leaderboard_outlined,
+                                          ),
+                                        ),
+                                        ListPaginationPageSize(
+                                          pagination: _pagination,
+                                          loading: _isLoading,
+                                          onChanged: _changeListPage,
+                                        ),
+                                      ],
                                     ),
                                     const SizedBox(height: AppSpacing.sm),
                                     if (leads.isEmpty)
@@ -761,6 +766,11 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                                           ),
                                         ),
                                       ),
+                                    ListPaginationBar(
+                                      pagination: _pagination,
+                                      loading: _isLoading,
+                                      onChanged: _changeListPage,
+                                    ),
                                   ],
                                 ),
                               ),
@@ -1266,7 +1276,6 @@ class _SectionHeader extends StatelessWidget {
             ),
           ),
           const Spacer(),
-          Icon(trailingIcon, color: AppColors.textMuted, size: 18),
         ],
       ),
     );
@@ -1455,7 +1464,7 @@ class _LeadCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 6),
                         _CircularActionButton(
-                          icon: FontAwesomeIcons.whatsapp,
+                          icon: FontAwesomeIcons.whatsapp.data,
                           color: const Color(0xFF25D366),
                           background: const Color(0xFFEDFBF0),
                           onTap: onWhatsApp,
