@@ -261,23 +261,9 @@ class _DeliveryExpensesScreenState extends State<DeliveryExpensesScreen> {
             : const DeliveryPartnerSidebar(
                 currentRoute: AppRoutes.deliveryExpenses,
               ),
-        bottomNavigationBar: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListPaginationBar(
-              pagination: _pagination,
-              loading: false,
-              onChanged: _changeListPage,
-            ),
-            if ((useSalesManagerShell
-                    ? null
-                    : const DeliveryBottomNavigation(currentIndex: -1)) !=
-                null)
-              (useSalesManagerShell
-                  ? null
-                  : const DeliveryBottomNavigation(currentIndex: -1))!,
-          ],
-        ),
+        bottomNavigationBar: useSalesManagerShell
+            ? null
+            : const DeliveryBottomNavigation(currentIndex: -1),
         body: SafeArea(
           bottom: false,
           child: Column(
@@ -325,7 +311,7 @@ class _DeliveryExpensesScreenState extends State<DeliveryExpensesScreen> {
                               AppSpacing.screenSmall,
                               AppSpacing.md,
                               AppSpacing.screenSmall,
-                              AppSpacing.xl + 92,
+                              AppSpacing.xl,
                             ),
                             children: [
                               Center(
@@ -352,6 +338,13 @@ class _DeliveryExpensesScreenState extends State<DeliveryExpensesScreen> {
                                         trailingIcon:
                                             Icons.receipt_long_outlined,
                                       ),
+                                      Align(
+                                        alignment: Alignment.centerRight,
+                                        child: ListPaginationPageSize(
+                                          pagination: _pagination,
+                                          onChanged: _changeListPage,
+                                        ),
+                                      ),
                                       const SizedBox(height: AppSpacing.sm),
                                       _FiltersCard(
                                         selectedStatus: _statusFilter,
@@ -377,6 +370,10 @@ class _DeliveryExpensesScreenState extends State<DeliveryExpensesScreen> {
                                             ),
                                           ),
                                         ),
+                                      ListPaginationBar(
+                                        pagination: _pagination,
+                                        onChanged: _changeListPage,
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -1533,7 +1530,6 @@ class _SectionHeader extends StatelessWidget {
             style: AppTextStyles.sectionHeading,
           ),
         ),
-        Icon(trailingIcon, color: AppColors.deliveryGreen, size: 20),
       ],
     );
   }

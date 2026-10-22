@@ -199,11 +199,6 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
       filteredPurchases = _pagination.local(filteredPurchases);
     }
     return Scaffold(
-      bottomNavigationBar: ListPaginationBar(
-        pagination: _pagination,
-        loading: false,
-        onChanged: () => setState(() {}),
-      ),
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       drawer: const AppDrawer(activeItem: 'Invoices'),
@@ -353,6 +348,10 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
                             _buildSalesList(filteredSales)
                           else
                             _buildPurchaseList(filteredPurchases),
+                          ListPaginationBar(
+                            pagination: _pagination,
+                            onChanged: () => setState(() {}),
+                          ),
                         ],
                       ),
                     ),

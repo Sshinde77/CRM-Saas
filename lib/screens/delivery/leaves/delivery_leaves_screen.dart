@@ -224,23 +224,9 @@ class _DeliveryLeavesScreenState extends State<DeliveryLeavesScreen> {
             : const DeliveryPartnerSidebar(
                 currentRoute: AppRoutes.deliveryLeaves,
               ),
-        bottomNavigationBar: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListPaginationBar(
-              pagination: _pagination,
-              loading: _isLoading,
-              onChanged: _changeListPage,
-            ),
-            if ((useSalesManagerShell
-                    ? null
-                    : const DeliveryBottomNavigation(currentIndex: -1)) !=
-                null)
-              (useSalesManagerShell
-                  ? null
-                  : const DeliveryBottomNavigation(currentIndex: -1))!,
-          ],
-        ),
+        bottomNavigationBar: useSalesManagerShell
+            ? null
+            : const DeliveryBottomNavigation(currentIndex: -1),
         floatingActionButton: SizedBox(
           height: 48,
           child: FloatingActionButton.extended(
@@ -288,7 +274,7 @@ class _DeliveryLeavesScreenState extends State<DeliveryLeavesScreen> {
                       AppSpacing.screenSmall,
                       AppSpacing.md,
                       AppSpacing.screenSmall,
-                      AppSpacing.xl + 92,
+                      AppSpacing.xl,
                     ),
                     children: [
                       Center(
@@ -305,6 +291,14 @@ class _DeliveryLeavesScreenState extends State<DeliveryLeavesScreen> {
                                   setState(() => _statusFilter = value);
                                 },
                               ),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: ListPaginationPageSize(
+                                  pagination: _pagination,
+                                  loading: _isLoading,
+                                  onChanged: _changeListPage,
+                                ),
+                              ),
                               const SizedBox(height: AppSpacing.md),
                               _LeavesPanel(
                                 isLoading: _isLoading,
@@ -318,6 +312,11 @@ class _DeliveryLeavesScreenState extends State<DeliveryLeavesScreen> {
                                 },
                                 onDetails: _showDetails,
                                 onCancel: _cancelLeave,
+                              ),
+                              ListPaginationBar(
+                                pagination: _pagination,
+                                loading: _isLoading,
+                                onChanged: _changeListPage,
                               ),
                             ],
                           ),
@@ -1656,8 +1655,6 @@ class _SectionHeader extends StatelessWidget {
       children: [
         Text(title, style: AppTextStyles.sectionHeading),
         const Spacer(),
-        if (trailingIcon != null)
-          Icon(trailingIcon, size: 18, color: AppColors.deliveryGreen),
       ],
     );
   }

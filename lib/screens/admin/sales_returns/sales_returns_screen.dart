@@ -154,11 +154,6 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
     );
 
     return Scaffold(
-      bottomNavigationBar: ListPaginationBar(
-        pagination: _pagination,
-        loading: false,
-        onChanged: () => setState(() {}),
-      ),
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       drawer: const AppDrawer(activeItem: 'Sales Returns'),
@@ -265,6 +260,10 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
                           ),
                         ],
                       ),
+                    ),
+                    ListPaginationBar(
+                      pagination: _pagination,
+                      onChanged: () => setState(() {}),
                     ),
                   ],
                 ),

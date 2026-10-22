@@ -229,11 +229,6 @@ class _SalesManagerFollowUpsScreenState
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: textScaler),
       child: Scaffold(
-        bottomNavigationBar: ListPaginationBar(
-          pagination: _pagination,
-          loading: false,
-          onChanged: () => setState(() {}),
-        ),
         key: _scaffoldKey,
         backgroundColor: AppColors.deliveryBackground,
         drawer: SalesManagerSidebarDrawer(
@@ -323,7 +318,7 @@ class _SalesManagerFollowUpsScreenState
                         )
                       else
                         SliverPadding(
-                          padding: const EdgeInsets.fromLTRB(16, 4, 16, 96),
+                          padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
                           sliver: SliverList.separated(
                             itemCount: visibleItems.length,
                             separatorBuilder: (_, _) =>
@@ -344,6 +339,12 @@ class _SalesManagerFollowUpsScreenState
                             },
                           ),
                         ),
+                      SliverToBoxAdapter(
+                        child: ListPaginationBar(
+                          pagination: _pagination,
+                          onChanged: () => setState(() {}),
+                        ),
+                      ),
                     ],
                   ),
                 ),

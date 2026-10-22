@@ -270,11 +270,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
     );
 
     return Scaffold(
-      bottomNavigationBar: ListPaginationBar(
-        pagination: _pagination,
-        loading: false,
-        onChanged: () => setState(() {}),
-      ),
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       drawer: const AppDrawer(activeItem: 'Inventory'),
@@ -328,6 +323,13 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
                     const SizedBox(height: 24),
                     _buildSearchBar(filtered.length),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: ListPaginationPageSize(
+                        pagination: _pagination,
+                        onChanged: () => setState(() {}),
+                      ),
+                    ),
 
                     const SizedBox(height: 16),
                     if (filtered.isEmpty)
@@ -350,6 +352,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
                           child: _inventoryCard(item),
                         ),
                       ),
+                    ListPaginationBar(
+                      pagination: _pagination,
+                      onChanged: () => setState(() {}),
+                    ),
                   ],
                 ),
               ),

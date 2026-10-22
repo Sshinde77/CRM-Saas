@@ -40,11 +40,14 @@ class ListPaginationBar extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) => ListenableBuilder(
-    listenable: pagination,
-    builder: (context, _) => LayoutBuilder(
-      builder: (context, constraints) =>
-          _buildBar(context, constraints.maxWidth),
+  Widget build(BuildContext context) => SizedBox(
+    width: double.infinity,
+    child: ListenableBuilder(
+      listenable: pagination,
+      builder: (context, _) => LayoutBuilder(
+        builder: (context, constraints) =>
+            _buildBar(context, constraints.maxWidth),
+      ),
     ),
   );
 
@@ -86,11 +89,14 @@ class ListPaginationBar extends StatelessWidget {
               padding: EdgeInsets.zero,
               backgroundColor: selected
                   ? AppColors.primary
-                  : AppColors.surfaceSoft,
+                  : Colors.transparent,
               foregroundColor: selected ? Colors.white : AppColors.primary,
               disabledForegroundColor: AppColors.textLightMuted,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
+                side: selected
+                    ? BorderSide.none
+                    : const BorderSide(color: AppColors.border),
               ),
             ),
             child: Tooltip(message: label, child: child),
@@ -100,20 +106,20 @@ class ListPaginationBar extends StatelessWidget {
     }
 
     return Material(
-      color: AppColors.surface,
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Wrap(
-                alignment: WrapAlignment.center,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: 16,
-                runSpacing: 6,
-                children: [
+      color: Colors.transparent,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+              SizedBox(
+                width: double.infinity,
+                child: Wrap(
+                  alignment: WrapAlignment.start,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 16,
+                  runSpacing: 6,
+                  children: [
                   Text(
                     'Showing $first–$last of ${pagination.total}',
                     style: const TextStyle(
@@ -121,7 +127,8 @@ class ListPaginationBar extends StatelessWidget {
                       fontSize: 12,
                     ),
                   ),
-                  Row(
+                  if (false)
+                    Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Text(
@@ -164,12 +171,18 @@ class ListPaginationBar extends StatelessWidget {
                       ),
                     ],
                   ),
-                ],
+                  ],
+                ),
               ),
               const SizedBox(height: 8),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
+              SizedBox(
+                width: width,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minWidth: width),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     button(
@@ -207,12 +220,71 @@ class ListPaginationBar extends StatelessWidget {
                           : () => go(pagination.page + 1),
                     ),
                   ],
+                    ),
+                  ),
                 ),
               ),
-            ],
-          ),
+          ],
         ),
       ),
     );
   }
+}
+
+/// Compact page-size selector intended to sit beside a list heading.
+class ListPaginationPageSize extends StatelessWidget {
+  final ListPagination pagination;
+  final VoidCallback onChanged;
+  final bool loading;
+
+  const ListPaginationPageSize({
+    super.key,
+    required this.pagination,
+    required this.onChanged,
+    this.loading = false,
+  });
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: pagination,
+    builder: (context, _) {
+      final busy = loading || pagination.isLoading;
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text(
+            'Per page:',
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+          ),
+          const SizedBox(width: 4),
+          DropdownButton<int>(
+            value: pagination.pageSize,
+            isDense: true,
+            underline: const SizedBox.shrink(),
+            style: const TextStyle(
+              color: AppColors.primary,
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+            ),
+            items: ({10, 25, 50, 100, pagination.pageSize}.toList()..sort())
+                .map(
+                  (size) => DropdownMenuItem(
+                    value: size,
+                    child: Text('$size'),
+                  ),
+                )
+                .toList(),
+            onChanged: busy
+                ? null
+                : (size) {
+                    if (size == null || size == pagination.pageSize) return;
+                    pagination.pageSize = size;
+                    pagination.reset();
+                    onChanged();
+                  },
+          ),
+        ],
+      );
+    },
+  );
 }

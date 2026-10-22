@@ -117,17 +117,9 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
             : _searchController.text.trim(),
         categoryId: _selectedCategoryId,
       );
-      final createdAtByProduct = await _loadProductCreatedAtMap();
       if (!mounted || listRequest != _listRequest) return;
       setState(() {
-        _apiItems = rows
-            .map(_StockItem.fromJson)
-            .map(
-              (item) => item.copyWith(
-                createdAt: item.createdAt ?? createdAtByProduct[item.id],
-              ),
-            )
-            .toList();
+        _apiItems = rows.map(_StockItem.fromJson).toList();
         for (final item in _apiItems) {
           if (item.category.trim().isNotEmpty) {
             _knownCategories[item.category] = _StockCategory(
@@ -145,28 +137,6 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
         _errorMessage = error.toString();
         _isLoading = false;
       });
-    }
-  }
-
-  Future<Map<String, DateTime>> _loadProductCreatedAtMap() async {
-    try {
-      final products = await _apiProvider.fetchProducts(
-        search: _searchController.text.trim().isEmpty
-            ? null
-            : _searchController.text.trim(),
-        categoryId: _selectedCategoryId,
-      );
-      return {
-        for (final product in products)
-          if (_readString(product, const ['id', '_id']).isNotEmpty)
-            _readString(product, const ['id', '_id']):
-                _readDate(
-                  _readString(product, const ['created_at', 'createdAt']),
-                ) ??
-                DateTime(1900),
-      };
-    } catch (_) {
-      return const {};
     }
   }
 
@@ -325,11 +295,6 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
     final items = _filteredItems;
 
     return Scaffold(
-      bottomNavigationBar: ListPaginationBar(
-        pagination: _pagination,
-        loading: _isLoading,
-        onChanged: _changeListPage,
-      ),
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       drawer: SalesManagerSidebarDrawer(
@@ -356,6 +321,11 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
                           _buildSummaryGrid(),
                           const SizedBox(height: 10),
                           _buildMainPanel(items),
+                          ListPaginationBar(
+                            pagination: _pagination,
+                            loading: _isLoading,
+                            onChanged: _changeListPage,
+                          ),
                         ],
                       ),
                     ),
@@ -1114,28 +1084,6 @@ class _StockItem {
     );
   }
 
-  _StockItem copyWith({DateTime? createdAt}) {
-    return _StockItem(
-      id: id,
-      name: name,
-      sku: sku,
-      brand: brand,
-      totalInventory: totalInventory,
-      variants: variants,
-      stock: stock,
-      price: price,
-      unit: unit,
-      imageUrl: imageUrl,
-      category: category,
-      categoryId: categoryId,
-      status: status,
-      isActive: isActive,
-      createdAt: createdAt ?? this.createdAt,
-      icon: icon,
-      iconColor: iconColor,
-      accentColor: accentColor,
-    );
-  }
 }
 
 String _readDirectString(Map<String, dynamic> source, String key) {

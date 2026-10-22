@@ -180,11 +180,6 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
     );
 
     return Scaffold(
-      bottomNavigationBar: ListPaginationBar(
-        pagination: _pagination,
-        loading: false,
-        onChanged: () => setState(() {}),
-      ),
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       drawer: const AppDrawer(activeItem: 'Deliveries'),
@@ -372,6 +367,10 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                             ),
                         ],
                       ),
+                    ),
+                    ListPaginationBar(
+                      pagination: _pagination,
+                      onChanged: () => setState(() {}),
                     ),
                   ],
                 ),

@@ -84,11 +84,6 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
     );
 
     return Scaffold(
-      bottomNavigationBar: ListPaginationBar(
-        pagination: _pagination,
-        loading: false,
-        onChanged: () => setState(() {}),
-      ),
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       drawer: const AppDrawer(activeItem: 'Audit Logs'),
@@ -134,6 +129,10 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
                           child: _auditCard(entry.value),
                         ),
                       ),
+                    ListPaginationBar(
+                      pagination: _pagination,
+                      onChanged: () => setState(() {}),
+                    ),
                   ],
                 ),
               ),

@@ -406,11 +406,6 @@ class _ProductsScreenState extends State<ProductsScreen> {
     final filtered = _filteredProducts;
 
     return Scaffold(
-      bottomNavigationBar: ListPaginationBar(
-        pagination: _pagination,
-        loading: _isLoading,
-        onChanged: _changeListPage,
-      ),
       key: _scaffoldKey,
       backgroundColor: AppColors.background,
       drawer: const AppDrawer(activeItem: 'Products'),
@@ -433,6 +428,14 @@ class _ProductsScreenState extends State<ProductsScreen> {
                     _buildSearchRow(),
                     const SizedBox(height: 18),
                     _buildCountAndSortRow(filtered.length),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: ListPaginationPageSize(
+                        pagination: _pagination,
+                        loading: _isLoading,
+                        onChanged: _changeListPage,
+                      ),
+                    ),
                     const SizedBox(height: 16),
                     if (_isLoading)
                       const Padding(
@@ -459,6 +462,11 @@ class _ProductsScreenState extends State<ProductsScreen> {
                         );
                       }),
                     if (filtered.isNotEmpty) ...[const SizedBox(height: 8)],
+                    ListPaginationBar(
+                      pagination: _pagination,
+                      loading: _isLoading,
+                      onChanged: _changeListPage,
+                    ),
                   ],
                 ),
               ),

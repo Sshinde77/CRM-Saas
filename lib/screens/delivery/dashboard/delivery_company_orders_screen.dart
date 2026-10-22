@@ -92,11 +92,6 @@ class _DeliveryCompanyOrdersScreenState
     }
 
     return Scaffold(
-      bottomNavigationBar: ListPaginationBar(
-        pagination: _pagination,
-        loading: false,
-        onChanged: _changeListPage,
-      ),
       backgroundColor: const Color(0xFFF8FAF9),
       body: SafeArea(
         bottom: false,
@@ -169,6 +164,10 @@ class _DeliveryCompanyOrdersScreenState
                                         ),
                                     ],
                                   ),
+                                ListPaginationBar(
+                                  pagination: _pagination,
+                                  onChanged: _changeListPage,
+                                ),
                               ],
                             ),
                           ),
