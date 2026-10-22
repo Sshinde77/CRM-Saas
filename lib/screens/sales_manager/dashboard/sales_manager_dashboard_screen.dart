@@ -99,6 +99,7 @@ class _SalesManagerDashboardScreenState
       userName: user?.name.trim().isNotEmpty == true
           ? user!.name.trim()
           : 'User',
+      profilePhoto: user?.profilePhoto,
       customers: customers,
       orders: orders,
       quotations: quotations,
@@ -444,10 +445,9 @@ class _SalesIdentityHeader extends StatelessWidget {
                         width: 1.5,
                       ),
                     ),
-                    child: Icon(
-                      Icons.person_rounded,
-                      color: AppColors.deliveryDashboardHeaderEnd,
-                      size: compact ? 39 : 44,
+                    child: _ProfilePhoto(
+                      url: data.profilePhoto,
+                      fallbackIconSize: compact ? 39 : 44,
                     ),
                   ),
                   SizedBox(width: compact ? 10 : 14),
@@ -1604,8 +1604,42 @@ class _ErrorState extends StatelessWidget {
   }
 }
 
+class _ProfilePhoto extends StatelessWidget {
+  final String? url;
+  final double fallbackIconSize;
+
+  const _ProfilePhoto({required this.url, required this.fallbackIconSize});
+
+  @override
+  Widget build(BuildContext context) {
+    final photoUrl = url?.trim();
+    if (photoUrl == null || photoUrl.isEmpty) {
+      return _fallback();
+    }
+
+    return ClipOval(
+      child: Image.network(
+        photoUrl,
+        width: double.infinity,
+        height: double.infinity,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => _fallback(),
+      ),
+    );
+  }
+
+  Widget _fallback() {
+    return Icon(
+      Icons.person_rounded,
+      color: AppColors.deliveryDashboardHeaderEnd,
+      size: fallbackIconSize,
+    );
+  }
+}
+
 class _DashboardData {
   final String userName;
+  final String? profilePhoto;
   final List<CustomerModel> customers;
   final List<_DashboardOrder> orders;
   final List<_DashboardQuotation> quotations;
@@ -1614,6 +1648,7 @@ class _DashboardData {
 
   const _DashboardData({
     required this.userName,
+    required this.profilePhoto,
     required this.customers,
     required this.orders,
     required this.quotations,
@@ -1624,6 +1659,7 @@ class _DashboardData {
   factory _DashboardData.empty() {
     return const _DashboardData(
       userName: 'User',
+      profilePhoto: null,
       customers: [],
       orders: [],
       quotations: [],
