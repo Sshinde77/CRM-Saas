@@ -21,7 +21,7 @@ import '../../sales_manager/performance/sales_manager_performance_screen.dart';
 import '../../sales_manager/stock/sales_manager_stock_screen.dart';
 import '../../sales_manager/visits/sales_manager_visits_screen.dart';
 import '../../delivery/orders/delivery_customer_order_detail_screen.dart';
-import '../customers/customers_screen.dart';
+import '../../delivery/customers/delivery_customers_screen.dart';
 import '../leads/admin_leads_screen.dart';
 import '../quotations/admin_quotations_screen.dart';
 import '../quotations/quotation_detail_screen.dart';
@@ -479,7 +479,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     if (action == 'Customers') {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => const CustomersScreen(useSalesManagerShell: true),
+          builder: (_) => const DeliveryCustomersScreen(),
         ),
       );
       return;

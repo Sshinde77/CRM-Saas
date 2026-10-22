@@ -10,7 +10,7 @@ import '../../../providers/api_provider.dart';
 import '../../../widgets/app_calendar_date_picker.dart';
 import '../../../widgets/completion_feedback_sheet.dart';
 import '../../../widgets/delivery/customer_search_dialog.dart';
-import '../../admin/customers/customers_screen.dart';
+import '../../delivery/customers/delivery_customers_screen.dart';
 import '../../admin/leads/admin_leads_screen.dart';
 import '../../admin/orders/admin_orders_screen.dart';
 import '../../admin/orders/new_admin_order_screen.dart';
@@ -132,7 +132,7 @@ class _SalesManagerFollowUpsScreenState
     if (action == 'Customers') {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => const CustomersScreen(useSalesManagerShell: true),
+          builder: (_) => const DeliveryCustomersScreen(),
         ),
       );
       return;

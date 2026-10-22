@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../constants/app_colors.dart';
-import '../../screens/admin/customers/customers_screen.dart';
 import '../../screens/delivery/attendance/delivery_attendance_screen.dart';
 import '../../screens/delivery/deliveries/assigned_deliveries_screen.dart';
 import '../../screens/delivery/expenses/delivery_expenses_screen.dart';
 import '../../screens/delivery/leaves/delivery_leaves_screen.dart';
+import '../../routes/app_router.dart';
 import '../sidebar_logout_button.dart';
 
 class SalesManagerSidebarDrawer extends StatelessWidget {
@@ -172,8 +172,13 @@ class SalesManagerSidebar extends StatelessWidget {
   }
 
   void _handleTap(BuildContext context, String action) {
+    if (action == 'Customers') {
+      Navigator.of(context).pop();
+      Navigator.of(context).pushNamed(AppRoutes.deliveryCustomers);
+      return;
+    }
+
     final Widget? destinationScreen = switch (action) {
-      'Customers' => const CustomersScreen(useSalesManagerShell: true),
       'Deliveries' => const AssignedDeliveriesScreen(),
       'Attendance' => const DeliveryAttendanceScreen(),
       'Leaves' => const DeliveryLeavesScreen(),

@@ -15,7 +15,7 @@ import '../../widgets/admin/app_drawer.dart';
 import '../../widgets/app_calendar_date_picker.dart';
 import '../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../widgets/sales_manager/sales_manager_top_bar.dart';
-import '../admin/customers/customers_screen.dart';
+import '../delivery/customers/delivery_customers_screen.dart';
 import '../admin/customers/customer_details_screen.dart';
 import '../admin/leads/admin_leads_screen.dart';
 import '../admin/orders/admin_orders_screen.dart';
@@ -131,7 +131,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
     if (action == 'Customers') {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => const CustomersScreen(useSalesManagerShell: true),
+          builder: (_) => const DeliveryCustomersScreen(),
         ),
       );
       return;

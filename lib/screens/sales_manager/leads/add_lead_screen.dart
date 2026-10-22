@@ -8,7 +8,7 @@ import '../../../providers/api_provider.dart';
 import '../../../services/api_service.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
-import '../../admin/customers/customers_screen.dart';
+import '../../delivery/customers/delivery_customers_screen.dart';
 import '../../admin/orders/admin_orders_screen.dart';
 import '../../admin/orders/new_admin_order_screen.dart';
 import '../../admin/quotations/admin_quotations_screen.dart';
@@ -362,7 +362,7 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
     if (action == 'Customers') {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => const CustomersScreen(useSalesManagerShell: true),
+          builder: (_) => const DeliveryCustomersScreen(),
         ),
       );
       return;

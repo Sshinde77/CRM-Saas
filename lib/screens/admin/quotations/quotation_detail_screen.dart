@@ -13,7 +13,7 @@ import '../../sales_manager/follow_ups/sales_manager_follow_ups_screen.dart';
 import '../../sales_manager/performance/sales_manager_performance_screen.dart';
 import '../../sales_manager/stock/sales_manager_stock_screen.dart';
 import '../../sales_manager/visits/sales_manager_visits_screen.dart';
-import '../customers/customers_screen.dart';
+import '../../delivery/customers/delivery_customers_screen.dart';
 import '../leads/admin_leads_screen.dart';
 import '../orders/admin_orders_screen.dart';
 import '../orders/new_admin_order_screen.dart';
@@ -222,7 +222,7 @@ class _QuotationDetailScreenState extends State<QuotationDetailScreen> {
     if (action == 'Customers') {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => const CustomersScreen(useSalesManagerShell: true),
+          builder: (_) => const DeliveryCustomersScreen(),
         ),
       );
       return;
