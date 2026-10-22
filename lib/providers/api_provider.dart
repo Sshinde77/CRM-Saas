@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import '../models/list_pagination.dart';
 import 'dart:typed_data';
 
@@ -11,6 +13,7 @@ import '../models/delivery_expense_model.dart';
 import '../models/app_user.dart';
 import '../models/auth_models.dart';
 import '../services/api_service.dart';
+import '../services/push_notification_service.dart';
 import '../models/role_model.dart';
 
 class ApiProvider extends ChangeNotifier {
@@ -82,6 +85,8 @@ class ApiProvider extends ChangeNotifier {
     _authMe = authMe;
     _currentUser = authMe.user ?? session.user;
     notifyListeners();
+    // Registration is best-effort and must not block the login flow.
+    unawaited(PushNotificationService.instance.registerForSignedInUser());
     return session;
   }
 
@@ -1072,6 +1077,7 @@ class ApiProvider extends ChangeNotifier {
     _errorMessage = null;
 
     try {
+      await PushNotificationService.instance.unregisterForSignedOutUser();
       await _apiService.logout();
       _session = null;
       _currentUser = null;

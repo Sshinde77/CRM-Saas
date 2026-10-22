@@ -8,6 +8,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../models/delivery_schedule.dart';
 import '../../../providers/api_provider.dart';
+import '../../../services/api_service.dart';
 import '../../../routes/app_router.dart';
 import '../../../widgets/delivery/delivery_partner_sidebar.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
@@ -22,6 +23,11 @@ class DeliveryDashboardScreen extends StatefulWidget {
 }
 
 class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
+  static const Duration _dashboardCacheTtl = Duration(minutes: 5);
+  static Future<_DashboardData>? _cachedDashboardFuture;
+  static DateTime? _cachedDashboardAt;
+  static String? _cachedSessionKey;
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late Future<_DashboardData> _dashboardFuture;
   bool _didStartLoad = false;
@@ -32,8 +38,28 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
     super.didChangeDependencies();
     if (!_didStartLoad) {
       _didStartLoad = true;
-      _dashboardFuture = Future<_DashboardData>.microtask(_loadDashboard);
+      _dashboardFuture = _getDashboardFuture();
     }
+  }
+
+  String get _sessionCacheKey => ApiService.accessToken ?? 'anonymous';
+
+  Future<_DashboardData> _getDashboardFuture({bool force = false}) {
+    final now = DateTime.now();
+    final cacheIsValid =
+        !force &&
+        _cachedDashboardFuture != null &&
+        _cachedDashboardAt != null &&
+        _cachedSessionKey == _sessionCacheKey &&
+        now.difference(_cachedDashboardAt!) < _dashboardCacheTtl;
+
+    if (cacheIsValid) return _cachedDashboardFuture!;
+
+    final request = _loadDashboard();
+    _cachedDashboardFuture = request;
+    _cachedDashboardAt = now;
+    _cachedSessionKey = _sessionCacheKey;
+    return request;
   }
 
   Future<_DashboardData> _loadDashboard() async {
@@ -88,7 +114,7 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
   }
 
   Future<void> _refresh() async {
-    final nextFuture = _loadDashboard();
+    final nextFuture = _getDashboardFuture(force: true);
     setState(() => _dashboardFuture = nextFuture);
     await nextFuture;
   }
@@ -220,7 +246,8 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
                                       message: snapshot.error.toString(),
                                       onRetry: () {
                                         setState(() {
-                                          _dashboardFuture = _loadDashboard();
+                                          _dashboardFuture =
+                                              _getDashboardFuture(force: true);
                                         });
                                       },
                                     )

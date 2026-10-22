@@ -310,12 +310,7 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
                       physics: const AlwaysScrollableScrollPhysics(
                         parent: BouncingScrollPhysics(),
                       ),
-                      padding: EdgeInsets.fromLTRB(
-                        12,
-                        12,
-                        12,
-                        24,
-                      ),
+                      padding: EdgeInsets.fromLTRB(12, 12, 12, 24),
                       child: Center(
                         child: ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 920),

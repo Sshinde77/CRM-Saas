@@ -15,7 +15,8 @@ import '../../admin/quotations/admin_quotations_screen.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_bottom_navigation.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
-import '../attendance/sales_manager_attendance_screen.dart';
+import '../../../widgets/shared/management_page_summary.dart';
+import '../../delivery/attendance/delivery_attendance_screen.dart';
 import '../dashboard/sales_manager_dashboard_screen.dart';
 import '../follow_ups/sales_manager_follow_ups_screen.dart';
 import '../performance/sales_manager_performance_screen.dart';
@@ -142,9 +143,7 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
     }
     if (action == 'Customers') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const DeliveryCustomersScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const DeliveryCustomersScreen()),
       );
       return;
     }
@@ -195,7 +194,7 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
     }
     if (action == 'Attendance') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const SalesManagerAttendanceScreen()),
+        MaterialPageRoute(builder: (_) => const DeliveryAttendanceScreen()),
       );
       return;
     }
@@ -306,7 +305,44 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
                         constraints: const BoxConstraints(maxWidth: 920),
                         child: Column(
                           children: [
-                            _VisitsOverview(totalVisits: _visits.length),
+                            ManagementPageSummary(
+                              title: 'Visits',
+                              subtitle: '${_visits.length} customer visits',
+                              icon: Icons.location_on_outlined,
+                              kpis: [
+                                ManagementKpiData(
+                                  label: 'Total Visits',
+                                  value: '${_visits.length}',
+                                  icon: Icons.location_on_outlined,
+                                  color: AppColors.deliveryBlue,
+                                  background: AppColors.deliveryBlueSoft,
+                                ),
+                                ManagementKpiData(
+                                  label: 'Completed',
+                                  value:
+                                      '${_visits.where((visit) => visit.status == 'Completed').length}',
+                                  icon: Icons.check_circle_outline_rounded,
+                                  color: AppColors.deliveryGreen,
+                                  background: AppColors.deliveryGreenSoft,
+                                ),
+                                ManagementKpiData(
+                                  label: 'In Progress',
+                                  value:
+                                      '${_visits.where((visit) => visit.status == 'In Progress').length}',
+                                  icon: Icons.timelapse_rounded,
+                                  color: AppColors.deliveryOrange,
+                                  background: AppColors.deliveryOrangeSoft,
+                                ),
+                                ManagementKpiData(
+                                  label: 'Customers',
+                                  value: '${_customers.length}',
+                                  icon: Icons.groups_2_outlined,
+                                  color: AppColors.deliveryCustomerOrders,
+                                  background:
+                                      AppColors.deliveryCustomerOrdersSoft,
+                                ),
+                              ],
+                            ),
                             const SizedBox(height: 16),
                             if (!wide) ...[
                               leftPanel,

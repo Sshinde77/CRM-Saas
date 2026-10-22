@@ -10,7 +10,8 @@ import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
-import '../../sales_manager/attendance/sales_manager_attendance_screen.dart';
+import '../../../widgets/shared/management_page_summary.dart';
+import '../../delivery/attendance/delivery_attendance_screen.dart';
 import '../../sales_manager/dashboard/sales_manager_dashboard_screen.dart';
 import '../../sales_manager/follow_ups/sales_manager_follow_ups_screen.dart';
 import '../../sales_manager/performance/sales_manager_performance_screen.dart';
@@ -267,9 +268,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
     }
     if (action == 'Customers') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const DeliveryCustomersScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const DeliveryCustomersScreen()),
       );
       return;
     }
@@ -311,7 +310,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
     }
     if (action == 'Attendance') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const SalesManagerAttendanceScreen()),
+        MaterialPageRoute(builder: (_) => const DeliveryAttendanceScreen()),
       );
       return;
     }
@@ -384,9 +383,46 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
                         constraints: const BoxConstraints(maxWidth: 920),
                         child: Column(
                           children: [
-                            _QuotationPageHero(
-                              total: _quotations.length,
-                              visible: quotations.length,
+                            ManagementPageSummary(
+                              title: 'Quotations',
+                              subtitle:
+                                  '${_quotations.length} quotations in your workspace',
+                              icon: Icons.request_quote_outlined,
+                              onAdd: _openCreateQuotationScreen,
+                              kpis: [
+                                ManagementKpiData(
+                                  label: 'Total',
+                                  value: '${_quotations.length}',
+                                  icon: Icons.receipt_long_outlined,
+                                  color: AppColors.deliveryBlue,
+                                  background: AppColors.deliveryBlueSoft,
+                                ),
+                                ManagementKpiData(
+                                  label: 'Draft',
+                                  value:
+                                      '${_quotations.where((item) => item.status == 'Draft').length}',
+                                  icon: Icons.edit_note_rounded,
+                                  color: AppColors.deliveryOrange,
+                                  background: AppColors.deliveryOrangeSoft,
+                                ),
+                                ManagementKpiData(
+                                  label: 'Sent',
+                                  value:
+                                      '${_quotations.where((item) => item.status == 'Sent').length}',
+                                  icon: Icons.send_outlined,
+                                  color: AppColors.deliveryCustomerOrders,
+                                  background:
+                                      AppColors.deliveryCustomerOrdersSoft,
+                                ),
+                                ManagementKpiData(
+                                  label: 'Accepted',
+                                  value:
+                                      '${_quotations.where((item) => item.status == 'Accepted').length}',
+                                  icon: Icons.check_circle_outline_rounded,
+                                  color: AppColors.deliveryGreen,
+                                  background: AppColors.deliveryGreenSoft,
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 12),
                             Container(
@@ -449,38 +485,9 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
           padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
           child: Row(
             children: [
-              Expanded(
-                child: Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    _searchField(width: 350),
-                    _statusDropdown(width: 200),
-                  ],
-                ),
-              ),
+              Expanded(child: _searchField(width: double.infinity)),
               const SizedBox(width: 12),
-              ElevatedButton.icon(
-                onPressed: _openCreateQuotationScreen,
-                icon: const Icon(Icons.add, size: 18),
-                label: const Text('New Quotation'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0D1F42),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 14,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  textStyle: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
+              _statusDropdown(width: 220),
             ],
           ),
         ),
@@ -556,32 +563,9 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
                 ],
               ),
               const SizedBox(height: 12),
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: [
-                  _statusDropdown(width: 180),
-                  ElevatedButton.icon(
-                    onPressed: _openCreateQuotationScreen,
-                    icon: const Icon(Icons.add, size: 18),
-                    label: const Text('New Quotation'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0D1F42),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 13,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      textStyle: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ],
+              SizedBox(
+                width: double.infinity,
+                child: _statusDropdown(width: double.infinity),
               ),
             ],
           ),
@@ -655,8 +639,22 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
         hintText: 'Search quotations',
         hintStyle: AppTextStyles.inputHint,
         prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF94A3B8)),
+        suffixIcon: _searchController.text.isEmpty
+            ? null
+            : IconButton(
+                tooltip: 'Clear search',
+                onPressed: () {
+                  _searchController.clear();
+                  setState(() {});
+                },
+                icon: const Icon(
+                  Icons.close_rounded,
+                  color: Color(0xFF94A3B8),
+                  size: 19,
+                ),
+              ),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: AppColors.deliveryCardSoft,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 14,
           vertical: 12,
@@ -693,8 +691,13 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
       },
       isExpanded: true,
       decoration: InputDecoration(
+        prefixIcon: const Icon(
+          Icons.filter_list_rounded,
+          color: Color(0xFF94A3B8),
+          size: 20,
+        ),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: AppColors.deliveryCardSoft,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 14,
           vertical: 11,

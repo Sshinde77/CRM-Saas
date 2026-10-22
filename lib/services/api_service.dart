@@ -83,7 +83,10 @@ class ApiService {
   static int _cacheGeneration = 0;
 
   static const Duration _responseCacheTtl = Duration(seconds: 20);
-  static const Duration _staleResponseTtl = Duration(minutes: 10);
+  // Keep loaded list/detail/page responses available for the active app
+  // session. Once fresh data expires, callers still receive the cached
+  // response immediately while a background GET refreshes it.
+  static const Duration _staleResponseTtl = Duration(hours: 1);
   static const int _responseCacheLimit = 100;
 
   ApiService({http.Client? client, String? baseUrl})
@@ -175,6 +178,40 @@ class ApiService {
     );
 
     return _saveLoginResponse(response);
+  }
+
+  Future<Map<String, dynamic>> registerPushDevice({
+    required String token,
+    required String platform,
+    String? label,
+  }) async {
+    final response = await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.pushDevicesRegister,
+      requiresAuth: true,
+      body: {
+        'token': token.trim(),
+        'platform': platform,
+        if (label != null && label.trim().isNotEmpty) 'label': label.trim(),
+      },
+    );
+    final decoded = _tryDecodeBody(response.body.trim());
+    if (decoded is! Map<String, dynamic>) {
+      throw const ApiException(message: 'Invalid push device response.');
+    }
+    return decoded;
+  }
+
+  Future<void> unregisterPushDevice(String deviceId) async {
+    try {
+      await _send(
+        method: 'DELETE',
+        endpoint: ApiEndpoints.pushDeviceDelete(deviceId),
+        requiresAuth: true,
+      );
+    } on ApiException catch (error) {
+      if (error.statusCode != 404) rethrow;
+    }
   }
 
   Future<AuthSession> loginWithGoogle({required String idToken}) async {

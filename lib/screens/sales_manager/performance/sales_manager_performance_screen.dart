@@ -8,7 +8,8 @@ import '../../admin/orders/new_admin_order_screen.dart';
 import '../../admin/quotations/admin_quotations_screen.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
-import '../attendance/sales_manager_attendance_screen.dart';
+import '../../../widgets/shared/management_page_summary.dart';
+import '../../delivery/attendance/delivery_attendance_screen.dart';
 import '../dashboard/sales_manager_dashboard_screen.dart';
 import '../follow_ups/sales_manager_follow_ups_screen.dart';
 import '../stock/sales_manager_stock_screen.dart';
@@ -98,9 +99,7 @@ class _SalesManagerPerformanceScreenState
     }
     if (action == 'Customers') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const DeliveryCustomersScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const DeliveryCustomersScreen()),
       );
       return;
     }
@@ -157,7 +156,7 @@ class _SalesManagerPerformanceScreenState
     }
     if (action == 'Attendance') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const SalesManagerAttendanceScreen()),
+        MaterialPageRoute(builder: (_) => const DeliveryAttendanceScreen()),
       );
       return;
     }
@@ -193,7 +192,21 @@ class _SalesManagerPerformanceScreenState
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const _PerformanceOverview(overallScore: 0.88),
+                          ManagementPageSummary(
+                            title: 'My Performance',
+                            subtitle: 'Track your current sales performance',
+                            icon: Icons.insights_outlined,
+                            kpis: [
+                              for (final metric in _metrics.take(4))
+                                ManagementKpiData(
+                                  label: metric.title,
+                                  value: metric.achieved,
+                                  icon: metric.icon,
+                                  color: AppColors.deliveryBlue,
+                                  background: AppColors.deliveryBlueSoft,
+                                ),
+                            ],
+                          ),
                           const SizedBox(height: 16),
                           _buildMetricGrid(),
                           const SizedBox(height: 16),

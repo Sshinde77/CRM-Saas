@@ -41,9 +41,7 @@ class _DeliveryAttendanceScreenState extends State<DeliveryAttendanceScreen> {
   }
 
   Future<List<DeliveryAttendanceRecord>> _loadAttendance() async {
-    final rows = await ApiProviderScope.of(
-      context,
-    ).fetchMyAttendance();
+    final rows = await ApiProviderScope.of(context).fetchMyAttendance();
     final records = rows.map(DeliveryAttendanceRecord.fromJson).toList()
       ..sort((a, b) => b.date.compareTo(a.date));
     _todayAttendance = DeliveryAttendanceRecord.todayFrom(records);

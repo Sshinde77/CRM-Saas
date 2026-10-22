@@ -17,7 +17,7 @@ import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
-import '../../sales_manager/attendance/sales_manager_attendance_screen.dart';
+import '../../delivery/attendance/delivery_attendance_screen.dart';
 import '../../sales_manager/dashboard/sales_manager_dashboard_screen.dart';
 import '../../sales_manager/follow_ups/sales_manager_follow_ups_screen.dart';
 import '../../sales_manager/performance/sales_manager_performance_screen.dart';
@@ -200,7 +200,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
     }
     if (action == 'Attendance') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const SalesManagerAttendanceScreen()),
+        MaterialPageRoute(builder: (_) => const DeliveryAttendanceScreen()),
       );
       return;
     }

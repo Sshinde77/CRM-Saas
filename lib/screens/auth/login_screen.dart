@@ -7,6 +7,7 @@ import '../../models/auth_models.dart';
 import '../../providers/api_provider.dart';
 import '../../services/api_service.dart';
 import '../../services/google_auth_service.dart';
+import '../../services/push_notification_service.dart';
 import '../role_home_screen.dart';
 import 'register_screen.dart';
 
@@ -95,6 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() => _isLoading = true);
     try {
+      await PushNotificationService.instance.requestPermissionBeforeLogin();
       final apiProvider = ApiProviderScope.of(context);
       final session = await apiProvider.login(
         email: _emailController.text.trim(),
@@ -123,6 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_isLoading) return;
     setState(() => _isLoading = true);
     try {
+      await PushNotificationService.instance.requestPermissionBeforeLogin();
       final idToken = await GoogleAuthService().signIn();
       if (idToken == null || !mounted) return;
       final apiProvider = ApiProviderScope.of(context);
@@ -430,34 +433,37 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 18),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              'New organization? ',
-                              style: TextStyle(color: mutedText, fontSize: 14),
-                            ),
-                            GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => const RegisterScreen(),
-                                  ),
-                                );
-                              },
-                              child: const Text(
-                                'Register here',
-                                style: TextStyle(
-                                  color: primary,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                        // Registration link is intentionally hidden from the
+                        // login page for now. The registration screen remains
+                        // available for future use.
+                        // const SizedBox(height: 18),
+                        // Row(
+                        //   mainAxisAlignment: MainAxisAlignment.center,
+                        //   children: [
+                        //     const Text(
+                        //       'New organization? ',
+                        //       style: TextStyle(color: mutedText, fontSize: 14),
+                        //     ),
+                        //     GestureDetector(
+                        //       onTap: () {
+                        //         Navigator.push(
+                        //           context,
+                        //           MaterialPageRoute(
+                        //             builder: (_) => const RegisterScreen(),
+                        //           ),
+                        //         );
+                        //       },
+                        //       child: const Text(
+                        //         'Register here',
+                        //         style: TextStyle(
+                        //           color: primary,
+                        //           fontWeight: FontWeight.w700,
+                        //           fontSize: 14,
+                        //         ),
+                        //       ),
+                        //     ),
+                        //   ],
+                        // ),
                       ],
                     ),
                   ),

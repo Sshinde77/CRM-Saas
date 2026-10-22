@@ -22,7 +22,7 @@ import '../admin/orders/admin_orders_screen.dart';
 import '../admin/orders/new_admin_order_screen.dart';
 import '../admin/quotations/admin_quotations_screen.dart';
 import '../sales_manager/leads/add_lead_screen.dart';
-import '../sales_manager/attendance/sales_manager_attendance_screen.dart';
+import '../delivery/attendance/delivery_attendance_screen.dart';
 import '../sales_manager/dashboard/sales_manager_dashboard_screen.dart';
 import '../sales_manager/follow_ups/sales_manager_follow_ups_screen.dart';
 import '../sales_manager/performance/sales_manager_performance_screen.dart';
@@ -130,9 +130,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
     }
     if (action == 'Customers') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const DeliveryCustomersScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const DeliveryCustomersScreen()),
       );
       return;
     }
@@ -175,7 +173,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
     }
     if (action == 'Attendance') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const SalesManagerAttendanceScreen()),
+        MaterialPageRoute(builder: (_) => const DeliveryAttendanceScreen()),
       );
       return;
     }

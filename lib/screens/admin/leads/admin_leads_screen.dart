@@ -16,8 +16,9 @@ import '../../../widgets/admin/app_drawer.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_bottom_navigation.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
+import '../../../widgets/shared/management_page_summary.dart';
 import '../../shared/lead_detail_screen.dart';
-import '../../sales_manager/attendance/sales_manager_attendance_screen.dart';
+import '../../delivery/attendance/delivery_attendance_screen.dart';
 import '../../sales_manager/dashboard/sales_manager_dashboard_screen.dart';
 import '../../sales_manager/follow_ups/sales_manager_follow_ups_screen.dart';
 import '../../sales_manager/leads/add_lead_screen.dart';
@@ -273,9 +274,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
     }
     if (action == 'Customers') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const DeliveryCustomersScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const DeliveryCustomersScreen()),
       );
       return;
     }
@@ -318,7 +317,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
     }
     if (action == 'Attendance') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const SalesManagerAttendanceScreen()),
+        MaterialPageRoute(builder: (_) => const DeliveryAttendanceScreen()),
       );
       return;
     }
@@ -692,18 +691,48 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    _HeaderCard(
-                                      total: _leads.length,
+                                    ManagementPageSummary(
+                                      title: 'Sales Leads',
+                                      subtitle:
+                                          '${_leads.length} leads in your sales pipeline',
+                                      icon: Icons.leaderboard_outlined,
                                       onAdd: _openAddLeadPage,
-                                    ),
-                                    const SizedBox(height: AppSpacing.md),
-                                    _MetricsGrid(
-                                      total: _leads.length,
-                                      newCount: _countByStatus('New'),
-                                      followUpCount: _countByStatus(
-                                        'Follow Up',
-                                      ),
-                                      hotCount: _countByStatus('Hot'),
+                                      kpis: [
+                                        ManagementKpiData(
+                                          label: 'Total Leads',
+                                          value: '${_leads.length}',
+                                          icon: Icons.groups_rounded,
+                                          color: AppColors.deliveryBlue,
+                                          background:
+                                              AppColors.deliveryBlueSoft,
+                                        ),
+                                        ManagementKpiData(
+                                          label: 'New Leads',
+                                          value: '${_countByStatus('New')}',
+                                          icon: Icons.trending_up_rounded,
+                                          color: AppColors.deliveryGreen,
+                                          background:
+                                              AppColors.deliveryGreenSoft,
+                                        ),
+                                        ManagementKpiData(
+                                          label: 'Follow Ups',
+                                          value:
+                                              '${_countByStatus('Follow Up')}',
+                                          icon: Icons.access_time_rounded,
+                                          color:
+                                              AppColors.deliveryCustomerOrders,
+                                          background: AppColors
+                                              .deliveryCustomerOrdersSoft,
+                                        ),
+                                        ManagementKpiData(
+                                          label: 'Hot Leads',
+                                          value: '${_countByStatus('Hot')}',
+                                          icon: Icons
+                                              .local_fire_department_rounded,
+                                          color: AppColors.deliveryRed,
+                                          background: AppColors.deliveryRedSoft,
+                                        ),
+                                      ],
                                     ),
                                     const SizedBox(height: AppSpacing.md),
                                     _SearchCard(

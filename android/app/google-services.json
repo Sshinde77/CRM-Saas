@@ -1,1 +1,29 @@
-{"installed":{"client_id":"927283577805-jur6jhjf77aa0kie28ql0aim339s3nq0.apps.googleusercontent.com","project_id":"crm-backend-506508","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs"}}
+{
+  "project_info": {
+    "project_number": "135113948977",
+    "project_id": "crm-saas-platform-671a7",
+    "storage_bucket": "crm-saas-platform-671a7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:135113948977:android:8ecb54018dcb9d19c7fa10",
+        "android_client_info": {
+          "package_name": "com.beassuite.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGpyB5T9YkVo_f9BukTZIVVyqkFHYR0A4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

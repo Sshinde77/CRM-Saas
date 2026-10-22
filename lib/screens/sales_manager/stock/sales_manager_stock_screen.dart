@@ -14,7 +14,8 @@ import '../../admin/orders/new_admin_order_screen.dart';
 import '../../admin/quotations/admin_quotations_screen.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
-import '../attendance/sales_manager_attendance_screen.dart';
+import '../../../widgets/shared/management_page_summary.dart';
+import '../../delivery/attendance/delivery_attendance_screen.dart';
 import '../dashboard/sales_manager_dashboard_screen.dart';
 import '../follow_ups/sales_manager_follow_ups_screen.dart';
 import '../performance/sales_manager_performance_screen.dart';
@@ -170,9 +171,7 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
         return;
       case 'Customers':
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (_) => const DeliveryCustomersScreen(),
-          ),
+          MaterialPageRoute(builder: (_) => const DeliveryCustomersScreen()),
         );
         return;
       case 'Leads':
@@ -221,9 +220,7 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
         return;
       case 'Attendance':
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (_) => const SalesManagerAttendanceScreen(),
-          ),
+          MaterialPageRoute(builder: (_) => const DeliveryAttendanceScreen()),
         );
         return;
       case 'My Performance':
@@ -318,7 +315,44 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildSummaryGrid(),
+                          ManagementPageSummary(
+                            title: 'Stock Overview',
+                            subtitle: '${items.length} products tracked',
+                            icon: Icons.inventory_2_outlined,
+                            kpis: [
+                              ManagementKpiData(
+                                label: 'Tracked Products',
+                                value: '${items.length}',
+                                icon: Icons.inventory_2_outlined,
+                                color: AppColors.deliveryBlue,
+                                background: AppColors.deliveryBlueSoft,
+                              ),
+                              ManagementKpiData(
+                                label: 'Total Inventory',
+                                value:
+                                    '${items.fold<int>(0, (sum, item) => sum + item.totalInventory)}',
+                                icon: Icons.warehouse_outlined,
+                                color: AppColors.deliveryGreen,
+                                background: AppColors.deliveryGreenSoft,
+                              ),
+                              ManagementKpiData(
+                                label: 'Out of Stock',
+                                value:
+                                    '${items.where((item) => item.stock <= 0).length}',
+                                icon: Icons.cancel_outlined,
+                                color: AppColors.deliveryRed,
+                                background: AppColors.deliveryRedSoft,
+                              ),
+                              ManagementKpiData(
+                                label: 'Inactive',
+                                value:
+                                    '${items.where((item) => !item.isActive).length}',
+                                icon: Icons.visibility_off_outlined,
+                                color: AppColors.deliveryOrange,
+                                background: AppColors.deliveryOrangeSoft,
+                              ),
+                            ],
+                          ),
                           const SizedBox(height: 10),
                           _buildMainPanel(items),
                           ListPaginationBar(
@@ -472,9 +506,13 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
                   children: [
                     _searchField(),
                     const SizedBox(height: 10),
-                    _categoryField(),
-                    const SizedBox(height: 10),
-                    _sortField(),
+                    Row(
+                      children: [
+                        Expanded(child: _categoryField()),
+                        const SizedBox(width: 10),
+                        Expanded(child: _sortField()),
+                      ],
+                    ),
                   ],
                 );
               }
@@ -526,50 +564,65 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
   }
 
   Widget _searchField() {
-    return Container(
-      height: 36,
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border.withValues(alpha: 0.8)),
-      ),
-      child: Row(
-        children: [
-          const Icon(
-            Icons.search_rounded,
-            color: AppColors.textLightMuted,
-            size: 18,
+    return SizedBox(
+      height: 40,
+      child: TextField(
+        controller: _searchController,
+        onChanged: (_) => _loadStock(),
+        cursorColor: AppColors.primary,
+        style: const TextStyle(
+          color: AppColors.textPrimary,
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
+        decoration: InputDecoration(
+          hintText: 'Search products, brands, SKU',
+          hintStyle: AppTextStyles.inputHint,
+          filled: true,
+          fillColor: AppColors.surfaceSoft,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 10,
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: TextField(
-              controller: _searchController,
-              onChanged: (_) => _loadStock(),
-              cursorColor: AppColors.primary,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-              decoration: const InputDecoration(
-                border: InputBorder.none,
-                isDense: true,
-                hintText: 'Search products, brands, SKU',
-                hintStyle: AppTextStyles.inputHint,
-                filled: true,
-                fillColor: Colors.white,
-              ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(
+              color: AppColors.border.withValues(alpha: 0.8),
             ),
           ),
-        ],
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(
+              color: AppColors.border.withValues(alpha: 0.8),
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.primary, width: 1.2),
+          ),
+          suffixIcon: _searchController.text.isEmpty
+              ? null
+              : IconButton(
+                  tooltip: 'Clear search',
+                  onPressed: () {
+                    _searchController.clear();
+                    _loadStock();
+                    setState(() {});
+                  },
+                  icon: const Icon(
+                    Icons.close_rounded,
+                    color: AppColors.textLightMuted,
+                    size: 17,
+                  ),
+                ),
+        ),
       ),
     );
   }
 
   Widget _categoryField() {
     return Container(
-      height: 36,
+      height: 40,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
         color: AppColors.surfaceSoft,
@@ -619,7 +672,7 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
 
   Widget _sortField() {
     return Container(
-      height: 36,
+      height: 40,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
         color: AppColors.surfaceSoft,
@@ -1083,7 +1136,6 @@ class _StockItem {
       accentColor: statusColor,
     );
   }
-
 }
 
 String _readDirectString(Map<String, dynamic> source, String key) {

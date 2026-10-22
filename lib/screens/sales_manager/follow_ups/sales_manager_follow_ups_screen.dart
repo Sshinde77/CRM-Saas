@@ -17,7 +17,8 @@ import '../../admin/orders/new_admin_order_screen.dart';
 import '../../admin/quotations/admin_quotations_screen.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
-import '../attendance/sales_manager_attendance_screen.dart';
+import '../../../widgets/shared/management_page_summary.dart';
+import '../../delivery/attendance/delivery_attendance_screen.dart';
 import '../dashboard/sales_manager_dashboard_screen.dart';
 import '../performance/sales_manager_performance_screen.dart';
 import '../stock/sales_manager_stock_screen.dart';
@@ -131,9 +132,7 @@ class _SalesManagerFollowUpsScreenState
     }
     if (action == 'Customers') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const DeliveryCustomersScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const DeliveryCustomersScreen()),
       );
       return;
     }
@@ -186,7 +185,7 @@ class _SalesManagerFollowUpsScreenState
     }
     if (action == 'Attendance') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const SalesManagerAttendanceScreen()),
+        MaterialPageRoute(builder: (_) => const DeliveryAttendanceScreen()),
       );
       return;
     }
@@ -235,16 +234,6 @@ class _SalesManagerFollowUpsScreenState
           onSelect: _handleSidebarSelection,
           currentPage: 'Follow-Ups',
         ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: _openAddFollowUpSheet,
-          backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
-          icon: const Icon(Icons.add_rounded, size: 22),
-          label: const Text(
-            'New follow-up',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-          ),
-        ),
         body: SafeArea(
           child: Column(
             children: [
@@ -268,9 +257,47 @@ class _SalesManagerFollowUpsScreenState
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const _FollowUpPageIntro(),
-                                  const SizedBox(height: 16),
-                                  _FollowUpSummary(items: _items),
+                                  ManagementPageSummary(
+                                    title: 'Follow-Ups',
+                                    subtitle:
+                                        '${_items.length} customer follow-ups',
+                                    icon: Icons.assignment_outlined,
+                                    onAdd: _openAddFollowUpSheet,
+                                    kpis: [
+                                      ManagementKpiData(
+                                        label: 'Upcoming',
+                                        value:
+                                            '${_items.where((item) => item.status == 'Pending').length}',
+                                        icon: Icons.schedule_rounded,
+                                        color: AppColors.deliveryBlue,
+                                        background: AppColors.deliveryBlueSoft,
+                                      ),
+                                      ManagementKpiData(
+                                        label: 'Completed',
+                                        value:
+                                            '${_items.where((item) => item.status == 'Done').length}',
+                                        icon: Icons.task_alt_rounded,
+                                        color: AppColors.deliveryGreen,
+                                        background: AppColors.deliveryGreenSoft,
+                                      ),
+                                      ManagementKpiData(
+                                        label: 'High Priority',
+                                        value:
+                                            '${_items.where((item) => item.priority == 'High').length}',
+                                        icon: Icons.flag_outlined,
+                                        color: AppColors.deliveryRed,
+                                        background: AppColors.deliveryRedSoft,
+                                      ),
+                                      ManagementKpiData(
+                                        label: 'Total',
+                                        value: '${_items.length}',
+                                        icon: Icons.list_alt_rounded,
+                                        color: AppColors.deliveryOrange,
+                                        background:
+                                            AppColors.deliveryOrangeSoft,
+                                      ),
+                                    ],
+                                  ),
                                   const SizedBox(height: 16),
                                   _FollowUpSearch(
                                     controller: _searchController,

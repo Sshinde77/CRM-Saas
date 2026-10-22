@@ -51,6 +51,10 @@ class ApiEndpoints {
   static const String authMe = '/auth/me';
   static const String authRefresh = '/auth/refresh';
   static const String authLogout = '/auth/logout';
+  static const String pushDevicesRegister = '/notifications/devices/register';
+  static String pushDeviceDelete(String deviceId) =>
+      '/notifications/devices/$deviceId';
+  static const String pushDevicesTest = '/notifications/devices/test';
   static const String authChangePassword = '/auth/change-password';
   static const String plansList = '/plans';
   static const String rolesList = '/roles';

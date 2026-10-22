@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../widgets/admin/app_drawer.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../delivery/orders/create_delivery_order_screen.dart';
-import '../../sales_manager/attendance/sales_manager_attendance_screen.dart';
+import '../../delivery/attendance/delivery_attendance_screen.dart';
 import '../../sales_manager/dashboard/sales_manager_dashboard_screen.dart';
 import '../../sales_manager/follow_ups/sales_manager_follow_ups_screen.dart';
 import '../../sales_manager/performance/sales_manager_performance_screen.dart';
@@ -34,7 +34,7 @@ class NewAdminOrderScreen extends StatelessWidget {
       'Quotation' => const AdminQuotationsScreen(useSalesManagerShell: true),
       'Stock' => const SalesManagerStockScreen(),
       'Follow-ups' || 'Follow-Ups' => const SalesManagerFollowUpsScreen(),
-      'Attendance' => const SalesManagerAttendanceScreen(),
+      'Attendance' => const DeliveryAttendanceScreen(),
       'Visits' => const SalesManagerVisitsScreen(),
       'My Performance' => const SalesManagerPerformanceScreen(),
       _ => null,

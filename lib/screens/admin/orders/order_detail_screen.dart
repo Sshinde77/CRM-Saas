@@ -9,7 +9,7 @@ import '../../../widgets/delivery/delivery_top_bar.dart';
 import '../../../widgets/delivery/order_progress_tracker.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
-import '../../sales_manager/attendance/sales_manager_attendance_screen.dart';
+import '../../delivery/attendance/delivery_attendance_screen.dart';
 import '../../sales_manager/dashboard/sales_manager_dashboard_screen.dart';
 import '../../sales_manager/follow_ups/sales_manager_follow_ups_screen.dart';
 import '../../sales_manager/performance/sales_manager_performance_screen.dart';
@@ -197,9 +197,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     }
     if (action == 'Customers') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const DeliveryCustomersScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const DeliveryCustomersScreen()),
       );
       return;
     }
@@ -225,7 +223,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     }
     if (action == 'Attendance') {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const SalesManagerAttendanceScreen()),
+        MaterialPageRoute(builder: (_) => const DeliveryAttendanceScreen()),
       );
       return;
     }

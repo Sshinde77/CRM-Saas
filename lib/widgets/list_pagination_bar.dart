@@ -112,14 +112,14 @@ class ListPaginationBar extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-              SizedBox(
-                width: double.infinity,
-                child: Wrap(
-                  alignment: WrapAlignment.start,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  spacing: 16,
-                  runSpacing: 6,
-                  children: [
+            SizedBox(
+              width: double.infinity,
+              child: Wrap(
+                alignment: WrapAlignment.start,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 16,
+                runSpacing: 6,
+                children: [
                   Text(
                     'Showing $first–$last of ${pagination.total}',
                     style: const TextStyle(
@@ -129,101 +129,101 @@ class ListPaginationBar extends StatelessWidget {
                   ),
                   if (false)
                     Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          'Per page: ',
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 12,
+                          ),
+                        ),
+                        DropdownButton<int>(
+                          value: pagination.pageSize,
+                          isDense: true,
+                          underline: const SizedBox.shrink(),
+                          style: const TextStyle(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13,
+                          ),
+                          items:
+                              ({10, 25, 50, 100, pagination.pageSize}.toList()
+                                    ..sort())
+                                  .map(
+                                    (size) => DropdownMenuItem(
+                                      value: size,
+                                      child: Text('$size'),
+                                    ),
+                                  )
+                                  .toList(),
+                          onChanged: busy
+                              ? null
+                              : (size) {
+                                  if (size == null ||
+                                      size == pagination.pageSize) {
+                                    return;
+                                  }
+                                  pagination.pageSize = size;
+                                  pagination.reset();
+                                  onChanged();
+                                },
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: width,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minWidth: width),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text(
-                        'Per page: ',
-                        style: TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 12,
-                        ),
-                      ),
-                      DropdownButton<int>(
-                        value: pagination.pageSize,
-                        isDense: true,
-                        underline: const SizedBox.shrink(),
-                        style: const TextStyle(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13,
-                        ),
-                        items:
-                            ({10, 25, 50, 100, pagination.pageSize}.toList()
-                                  ..sort())
-                                .map(
-                                  (size) => DropdownMenuItem(
-                                    value: size,
-                                    child: Text('$size'),
-                                  ),
-                                )
-                                .toList(),
-                        onChanged: busy
+                      button(
+                        child: const Icon(Icons.chevron_left_rounded),
+                        label: 'Previous page',
+                        onPressed: busy || pagination.page <= 1
                             ? null
-                            : (size) {
-                                if (size == null ||
-                                    size == pagination.pageSize) {
-                                  return;
-                                }
-                                pagination.pageSize = size;
-                                pagination.reset();
-                                onChanged();
-                              },
+                            : () => go(pagination.page - 1),
+                      ),
+                      for (final p in pageNumbers(
+                        pagination.page,
+                        pagination.totalPages,
+                      )) ...[
+                        SizedBox(width: compact ? 3 : 5),
+                        if (p == null)
+                          SizedBox(
+                            width: compact ? 16 : 20,
+                            child: const Center(child: Text('…')),
+                          )
+                        else
+                          button(
+                            child: Text('$p'),
+                            label: 'Page $p',
+                            selected: p == pagination.page,
+                            onPressed: busy ? null : () => go(p),
+                          ),
+                      ],
+                      SizedBox(width: compact ? 3 : 5),
+                      button(
+                        child: const Icon(Icons.chevron_right_rounded),
+                        label: 'Next page',
+                        onPressed:
+                            busy || pagination.page >= pagination.totalPages
+                            ? null
+                            : () => go(pagination.page + 1),
                       ),
                     ],
                   ),
-                  ],
                 ),
               ),
-              const SizedBox(height: 8),
-              SizedBox(
-                width: width,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(minWidth: width),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    button(
-                      child: const Icon(Icons.chevron_left_rounded),
-                      label: 'Previous page',
-                      onPressed: busy || pagination.page <= 1
-                          ? null
-                          : () => go(pagination.page - 1),
-                    ),
-                    for (final p in pageNumbers(
-                      pagination.page,
-                      pagination.totalPages,
-                    )) ...[
-                      SizedBox(width: compact ? 3 : 5),
-                      if (p == null)
-                        SizedBox(
-                          width: compact ? 16 : 20,
-                          child: const Center(child: Text('…')),
-                        )
-                      else
-                        button(
-                          child: Text('$p'),
-                          label: 'Page $p',
-                          selected: p == pagination.page,
-                          onPressed: busy ? null : () => go(p),
-                        ),
-                    ],
-                    SizedBox(width: compact ? 3 : 5),
-                    button(
-                      child: const Icon(Icons.chevron_right_rounded),
-                      label: 'Next page',
-                      onPressed:
-                          busy || pagination.page >= pagination.totalPages
-                          ? null
-                          : () => go(pagination.page + 1),
-                    ),
-                  ],
-                    ),
-                  ),
-                ),
-              ),
+            ),
           ],
         ),
       ),
@@ -268,10 +268,7 @@ class ListPaginationPageSize extends StatelessWidget {
             ),
             items: ({10, 25, 50, 100, pagination.pageSize}.toList()..sort())
                 .map(
-                  (size) => DropdownMenuItem(
-                    value: size,
-                    child: Text('$size'),
-                  ),
+                  (size) => DropdownMenuItem(value: size, child: Text('$size')),
                 )
                 .toList(),
             onChanged: busy

@@ -5,6 +5,7 @@ import 'package:crm_saas/core/theme/app_text_styles.dart';
 import '../../../constants/app_colors.dart';
 import '../../../models/customer_model.dart';
 import '../../../providers/api_provider.dart';
+import '../../../services/api_service.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_bottom_navigation.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
@@ -31,6 +32,10 @@ class SalesManagerDashboardScreen extends StatefulWidget {
 class _SalesManagerDashboardScreenState
     extends State<SalesManagerDashboardScreen> {
   static const double _monthlyTarget = 80000;
+  static const Duration _dashboardCacheTtl = Duration(minutes: 5);
+  static Future<_DashboardData>? _cachedDashboardFuture;
+  static DateTime? _cachedDashboardAt;
+  static String? _cachedSessionKey;
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   Future<_DashboardData>? _future;
@@ -65,13 +70,28 @@ class _SalesManagerDashboardScreenState
     super.didChangeDependencies();
     if (!_didStartLoad) {
       _didStartLoad = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        setState(() {
-          _future = _loadDashboard();
-        });
-      });
+      _future = _getDashboardFuture();
     }
+  }
+
+  String get _sessionCacheKey => ApiService.accessToken ?? 'anonymous';
+
+  Future<_DashboardData> _getDashboardFuture({bool force = false}) {
+    final now = DateTime.now();
+    final cacheIsValid =
+        !force &&
+        _cachedDashboardFuture != null &&
+        _cachedDashboardAt != null &&
+        _cachedSessionKey == _sessionCacheKey &&
+        now.difference(_cachedDashboardAt!) < _dashboardCacheTtl;
+
+    if (cacheIsValid) return _cachedDashboardFuture!;
+
+    final request = _loadDashboard();
+    _cachedDashboardFuture = request;
+    _cachedDashboardAt = now;
+    _cachedSessionKey = _sessionCacheKey;
+    return request;
   }
 
   Future<_DashboardData> _loadDashboard() async {
@@ -123,7 +143,7 @@ class _SalesManagerDashboardScreenState
   }
 
   Future<void> _refresh() async {
-    final request = _loadDashboard();
+    final request = _getDashboardFuture(force: true);
     setState(() {
       _future = request;
     });
@@ -280,11 +300,7 @@ class _SalesManagerDashboardScreenState
   void _openCustomers() {
     Navigator.of(
       context,
-    ).push(
-      MaterialPageRoute(
-        builder: (_) => const DeliveryCustomersScreen(),
-      ),
-    );
+    ).push(MaterialPageRoute(builder: (_) => const DeliveryCustomersScreen()));
   }
 
   void _openLeads() {
