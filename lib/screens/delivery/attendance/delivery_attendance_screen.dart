@@ -833,24 +833,19 @@ class _HistoryCardState extends State<_HistoryCard> {
             icon: Icons.event_available_rounded,
             title: 'Attendance History',
             subtitle: 'Your recent attendance records',
-            trailing: widget.records.length > 5
-                ? TextButton(
-                    onPressed: widget.onViewAll,
-                    style: TextButton.styleFrom(
-                      foregroundColor: AppColors.deliveryGreen,
-                      backgroundColor: AppColors.deliveryGreenSoft,
-                      padding: const EdgeInsets.symmetric(horizontal: 9),
-                      minimumSize: const Size(0, 28),
-                    ),
-                    child: Text(
-                      'View All',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  )
-                : null,
+            trailing: TextButton(
+              onPressed: widget.onViewAll,
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.deliveryGreen,
+                backgroundColor: AppColors.deliveryGreenSoft,
+                padding: const EdgeInsets.symmetric(horizontal: 9),
+                minimumSize: const Size(0, 28),
+              ),
+              child: const Text(
+                'View All',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+              ),
+            ),
           ),
           const SizedBox(height: 10),
           if (widget.isLoading)

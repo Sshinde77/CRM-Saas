@@ -5,6 +5,7 @@ import '../../models/auth_models.dart';
 import '../../providers/api_provider.dart';
 import '../../screens/auth/login_screen.dart';
 import '../../services/api_service.dart';
+import '../../routes/app_router.dart';
 
 class DeliveryTopBar extends StatefulWidget {
   final String title;
@@ -44,6 +45,8 @@ class DeliveryTopBar extends StatefulWidget {
 
 class _DeliveryTopBarState extends State<DeliveryTopBar> {
   late Future<CurrentUserProfile?> _profileFuture;
+  int _unreadNotificationCount = 0;
+  bool _didLoadUnreadCount = false;
 
   @override
   void initState() {
@@ -57,6 +60,28 @@ class _DeliveryTopBarState extends State<DeliveryTopBar> {
     if (widget.showProfile) {
       _profileFuture = _loadProfile();
     }
+    if (widget.showNotification && !_didLoadUnreadCount) {
+      _didLoadUnreadCount = true;
+      _loadUnreadNotificationCount();
+    }
+  }
+
+  Future<void> _loadUnreadNotificationCount() async {
+    if ((ApiService.accessToken ?? '').trim().isEmpty) return;
+    try {
+      final provider = ApiProviderScope.maybeOf(context);
+      final count = provider == null
+          ? await ApiService().fetchUnreadNotificationCount()
+          : await provider.service.fetchUnreadNotificationCount();
+      if (mounted) setState(() => _unreadNotificationCount = count);
+    } catch (_) {
+      // The notification icon remains available even if the badge request fails.
+    }
+  }
+
+  Future<void> _openNotifications() async {
+    await Navigator.of(context).pushNamed(AppRoutes.notifications);
+    if (mounted) await _loadUnreadNotificationCount();
   }
 
   Future<CurrentUserProfile?> _loadProfile() async {
@@ -206,20 +231,21 @@ class _DeliveryTopBarState extends State<DeliveryTopBar> {
                   children: [
                     _TopBarIconButton(
                       icon: Icons.notifications_none_rounded,
-                      onTap: widget.onNotificationTap,
+                      onTap: widget.onNotificationTap ?? _openNotifications,
                     ),
-                    Positioned(
-                      right: 3,
-                      top: 3,
-                      child: Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          color: AppColors.deliveryRed,
-                          shape: BoxShape.circle,
+                    if (_unreadNotificationCount > 0)
+                      Positioned(
+                        right: 3,
+                        top: 3,
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: AppColors.deliveryRed,
+                            shape: BoxShape.circle,
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ],

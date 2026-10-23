@@ -9,7 +9,6 @@ import '../../../providers/api_provider.dart';
 import '../../../utils/product_image_url.dart';
 import '../../../widgets/admin/app_drawer.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
-import '../../../widgets/app_calendar_date_picker.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_bottom_navigation.dart';
@@ -47,8 +46,6 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
   String _selectedPayment = 'All payments';
   String _selectedDeliveryPartner = 'All delivery partners';
   String _selectedSource = 'All sources';
-  DateTime? _fromDate;
-  DateTime? _toDate;
   final _pagination = ListPagination();
   int _currentPage = 1;
   int _pageSize = 10;
@@ -338,57 +335,8 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     super.dispose();
   }
 
-  String _formatDate(DateTime date) {
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return '${date.day.toString().padLeft(2, '0')} ${months[date.month - 1]} ${date.year}';
-  }
-
-  static DateTime _startOfDay(DateTime date) {
-    return DateTime(date.year, date.month, date.day);
-  }
-
-  static DateTime _endOfDay(DateTime date) {
-    return DateTime(date.year, date.month, date.day, 23, 59, 59, 999);
-  }
-
   static String _normalizeStatus(String value) {
     return value.trim().toLowerCase().replaceAll('_', ' ').replaceAll('-', ' ');
-  }
-
-  Future<void> _pickDate({required bool isFrom}) async {
-    final initialDate = isFrom
-        ? (_fromDate ?? DateTime.now())
-        : (_toDate ?? _fromDate ?? DateTime.now());
-
-    final picked = await showAppCalendarDatePicker(
-      context: context,
-      initialDate: initialDate,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
-      title: isFrom ? 'From Date' : 'To Date',
-    );
-
-    if (picked == null) return;
-    setState(() {
-      if (isFrom) {
-        _fromDate = picked;
-      } else {
-        _toDate = picked;
-      }
-    });
   }
 
   Future<void> _openNewOrder() async {
@@ -770,19 +718,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
   }
 
   List<_OrderRecord> _filteredOrders() {
-    final source = _displayOrders.where((order) {
-      if (_fromDate != null &&
-          order.dateValue != null &&
-          order.dateValue!.isBefore(_startOfDay(_fromDate!))) {
-        return false;
-      }
-      if (_toDate != null &&
-          order.dateValue != null &&
-          order.dateValue!.isAfter(_endOfDay(_toDate!))) {
-        return false;
-      }
-      return true;
-    });
+    final source = _displayOrders;
 
     switch (_selectedTab) {
       case 1:
@@ -1154,22 +1090,6 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
           Expanded(child: _deliveryPartnerDropdown()),
           const SizedBox(width: 12),
           Expanded(child: _sourceDropdown()),
-          const SizedBox(width: 12),
-          Expanded(
-            child: _dateField(
-              'From date',
-              selectedDate: _fromDate,
-              onCalendarTap: () => _pickDate(isFrom: true),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: _dateField(
-              'To date',
-              selectedDate: _toDate,
-              onCalendarTap: () => _pickDate(isFrom: false),
-            ),
-          ),
         ],
       );
     }
@@ -1187,26 +1107,6 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
         ),
         const SizedBox(height: 10),
         _sourceDropdown(),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(
-              child: _dateField(
-                'From date',
-                selectedDate: _fromDate,
-                onCalendarTap: () => _pickDate(isFrom: true),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _dateField(
-                'To date',
-                selectedDate: _toDate,
-                onCalendarTap: () => _pickDate(isFrom: false),
-              ),
-            ),
-          ],
-        ),
       ],
     );
   }
@@ -1407,48 +1307,6 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _dateField(
-    String hint, {
-    required DateTime? selectedDate,
-    required VoidCallback onCalendarTap,
-  }) {
-    return Container(
-      height: 38,
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFD1D5DB)),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              selectedDate == null ? hint : _formatDate(selectedDate),
-              style: TextStyle(
-                color: selectedDate == null
-                    ? AppColors.textLightMuted
-                    : AppColors.textPrimary,
-                fontSize: 14,
-              ),
-            ),
-          ),
-          IconButton(
-            onPressed: onCalendarTap,
-            icon: const Icon(
-              Icons.calendar_month_outlined,
-              color: Color(0xFF94A3B8),
-              size: 18,
-            ),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints.tightFor(width: 28, height: 28),
-            splashRadius: 18,
-          ),
-        ],
       ),
     );
   }
@@ -1691,21 +1549,6 @@ class _SalesOrdersSummary extends StatelessWidget {
                 ),
               ],
             ),
-          ),
-          const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Sort by: Date',
-                style: TextStyle(
-                  color: Color(0xFF31394D),
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              SizedBox(width: 4),
-              Icon(Icons.expand_more_rounded, size: 18),
-            ],
           ),
         ],
       ),

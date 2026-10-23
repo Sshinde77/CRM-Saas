@@ -17,6 +17,7 @@ import '../../admin/orders/new_admin_order_screen.dart';
 import '../../admin/quotations/admin_quotations_screen.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
+import '../../../routes/app_router.dart';
 import '../../../widgets/shared/management_page_summary.dart';
 import '../../delivery/attendance/delivery_attendance_screen.dart';
 import '../dashboard/sales_manager_dashboard_screen.dart';
@@ -239,7 +240,8 @@ class _SalesManagerFollowUpsScreenState
             children: [
               SalesManagerTopBar(
                 title: 'Follow-Ups',
-                onNotificationTap: () => _showSnack('Notifications'),
+                onNotificationTap: () =>
+                    Navigator.of(context).pushNamed(AppRoutes.notifications),
               ),
               Expanded(
                 child: RefreshIndicator(

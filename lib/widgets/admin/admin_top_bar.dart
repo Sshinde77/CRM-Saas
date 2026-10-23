@@ -7,6 +7,7 @@ class AdminTopBar extends StatelessWidget {
   final IconData leadingIcon;
   final VoidCallback? onLeadingTap;
   final VoidCallback? onNotificationTap;
+  final bool showNotification;
   final List<Widget> actions;
   final Widget? trailingAvatar;
   final String? profileName;
@@ -19,6 +20,7 @@ class AdminTopBar extends StatelessWidget {
     required this.leadingIcon,
     this.onLeadingTap,
     this.onNotificationTap,
+    this.showNotification = true,
     this.actions = const [],
     this.trailingAvatar,
     this.profileName,
@@ -33,6 +35,7 @@ class AdminTopBar extends StatelessWidget {
       leadingIcon: leadingIcon,
       onLeadingTap: onLeadingTap,
       onNotificationTap: onNotificationTap,
+      showNotification: showNotification,
       actions: [...actions, ?trailingAvatar],
       profileName: profileName ?? 'Admin',
       profileRole: profileRole ?? 'Admin',

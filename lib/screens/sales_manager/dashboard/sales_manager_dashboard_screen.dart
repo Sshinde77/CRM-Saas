@@ -9,6 +9,7 @@ import '../../../services/api_service.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_bottom_navigation.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
+import '../../../routes/app_router.dart';
 import '../../delivery/customers/delivery_customers_screen.dart';
 import '../../admin/leads/admin_leads_screen.dart';
 import '../../admin/orders/admin_orders_screen.dart';
@@ -226,7 +227,8 @@ class _SalesManagerDashboardScreenState
                 title: 'Dashboard',
                 titleFontWeight: FontWeight.w400,
                 titleFontSize: 20,
-                onNotificationTap: () => _showSnack('Notifications'),
+                onNotificationTap: () =>
+                    Navigator.of(context).pushNamed(AppRoutes.notifications),
               ),
               Expanded(
                 child: FutureBuilder<_DashboardData>(
@@ -555,12 +557,6 @@ class _SalesDatePill extends StatelessWidget {
               fontSize: 12,
               fontWeight: FontWeight.w600,
             ),
-          ),
-          const SizedBox(width: 3),
-          const Icon(
-            Icons.keyboard_arrow_down_rounded,
-            color: AppColors.deliveryDashboardHeaderEnd,
-            size: 16,
           ),
         ],
       ),

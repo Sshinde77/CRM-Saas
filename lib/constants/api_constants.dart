@@ -55,6 +55,10 @@ class ApiEndpoints {
   static String pushDeviceDelete(String deviceId) =>
       '/notifications/devices/$deviceId';
   static const String pushDevicesTest = '/notifications/devices/test';
+  static const String notifications = '/notifications';
+  static const String notificationsUnreadCount = '/notifications/unread-count';
+  static String notificationRead(String id) => '/notifications/$id/read';
+  static const String notificationsReadAll = '/notifications/read-all';
   static const String authChangePassword = '/auth/change-password';
   static const String plansList = '/plans';
   static const String rolesList = '/roles';
@@ -96,6 +100,7 @@ class ApiEndpoints {
   static const String leadsConvertTemplate =
       '/leads/{lead_id}/convert-to-customer';
   static const String visitsList = '/visits';
+  static const String followUpsList = '/follow-ups';
   static const String visitFollowUpsTemplate = '/visits/{visit_id}/follow-ups';
   static const String deliveriesList = '/deliveries';
   static const String deliveryCollections = '/deliveries/collections';

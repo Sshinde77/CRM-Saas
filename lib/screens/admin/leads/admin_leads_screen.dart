@@ -63,7 +63,14 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
   bool _isLoading = true;
   String? _errorMessage;
 
-  List<String> _statusOptions = const ['All Status', 'New', 'Follow Up', 'Hot'];
+  List<String> _statusOptions = const [
+    'All Status',
+    'New',
+    'Contacted',
+    'Qualified',
+    'Won',
+    'Lost',
+  ];
   List<String> _sourceOptions = const [
     'All Sources',
     'Website',
@@ -100,6 +107,10 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
 
   Future<void> _loadLeads() async {
     final listRequest = ++_listRequest;
+    final apiStatus = _leadStatusValue(_statusFilter);
+    if (_statusFilter != 'All Status' && apiStatus == null) {
+      _statusFilter = 'All Status';
+    }
     _pagination.filter(
       [
         _searchController.text,
@@ -115,19 +126,12 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
     try {
       final items = await _apiProvider.fetchLeads(
         pagination: _pagination,
-        status: _statusFilter == 'All Status' ? null : _statusFilter,
+        status: apiStatus,
       );
       final leads = items.map(_LeadRecord.fromJson).toList();
       if (!mounted || listRequest != _listRequest) return;
       setState(() {
         _leads = leads;
-        _statusOptions = [
-          'All Status',
-          ...leads
-              .map((lead) => lead.status)
-              .where((v) => v.trim().isNotEmpty)
-              .toSet(),
-        ];
         _sourceOptions = [
           'All Sources',
           ...leads
@@ -209,10 +213,16 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
       return;
     }
     final uri = Uri(scheme: 'tel', path: sanitized);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
-      if (!mounted) return;
+    try {
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (launched) return;
+    } catch (_) {
+      // Show the same user-facing error below for platform launch failures.
+    }
+    if (mounted) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Unable to call $phone')));
@@ -220,7 +230,9 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
   }
 
   Future<void> _openWhatsApp(String phone) async {
-    final digits = phone.replaceAll(RegExp(r'[^0-9]'), '');
+    var digits = phone.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.startsWith('00')) digits = digits.substring(2);
+    if (digits.length == 10) digits = '91$digits';
     if (digits.isEmpty || digits == '-') {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -230,10 +242,16 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
       return;
     }
     final uri = Uri.parse('https://wa.me/$digits');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      if (!mounted) return;
+    try {
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (launched) return;
+    } catch (_) {
+      // Show the same user-facing error below for platform launch failures.
+    }
+    if (mounted) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Unable to open WhatsApp.')));
@@ -587,13 +605,24 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
         .length;
   }
 
+  String? _leadStatusValue(String value) {
+    return switch (value.trim().toLowerCase()) {
+      'new' => 'new',
+      'contacted' => 'contacted',
+      'qualified' => 'qualified',
+      'won' => 'won',
+      'lost' => 'lost',
+      _ => null,
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     _pagination.filters = {
       'search': _searchController.text,
-      if (_statusFilter != 'All Status') 'status': _statusFilter,
-      if (_sourceFilter != 'All Sources') 'source': _sourceFilter,
-      if (_teamFilter != 'All Team') 'assigned_to': _teamFilter,
+      if (_statusFilter != 'All Status' &&
+          _leadStatusValue(_statusFilter) != null)
+        'status': _leadStatusValue(_statusFilter)!,
     };
     if (_pagination.observe(
       [
@@ -715,9 +744,9 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                                               AppColors.deliveryGreenSoft,
                                         ),
                                         ManagementKpiData(
-                                          label: 'Follow Ups',
+                                          label: 'Contacted Leads',
                                           value:
-                                              '${_countByStatus('Follow Up')}',
+                                              '${_countByStatus('Contacted')}',
                                           icon: Icons.access_time_rounded,
                                           color:
                                               AppColors.deliveryCustomerOrders,
@@ -725,8 +754,9 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                                               .deliveryCustomerOrdersSoft,
                                         ),
                                         ManagementKpiData(
-                                          label: 'Hot Leads',
-                                          value: '${_countByStatus('Hot')}',
+                                          label: 'Qualified Leads',
+                                          value:
+                                              '${_countByStatus('Qualified')}',
                                           icon: Icons
                                               .local_fire_department_rounded,
                                           color: AppColors.deliveryRed,
@@ -916,14 +946,14 @@ class _HeaderCard extends StatelessWidget {
 class _MetricsGrid extends StatelessWidget {
   final int total;
   final int newCount;
-  final int followUpCount;
-  final int hotCount;
+  final int contactedCount;
+  final int qualifiedCount;
 
   const _MetricsGrid({
     required this.total,
     required this.newCount,
-    required this.followUpCount,
-    required this.hotCount,
+    required this.contactedCount,
+    required this.qualifiedCount,
   });
 
   @override
@@ -944,15 +974,15 @@ class _MetricsGrid extends StatelessWidget {
         AppColors.deliveryGreenSoft,
       ),
       _MetricInfo(
-        'Follow Ups',
-        followUpCount.toString(),
+        'Contacted Leads',
+        contactedCount.toString(),
         Icons.access_time_rounded,
         AppColors.deliveryCustomerOrders,
         AppColors.deliveryCustomerOrdersSoft,
       ),
       _MetricInfo(
-        'Hot Leads',
-        hotCount.toString(),
+        'Qualified Leads',
+        qualifiedCount.toString(),
         Icons.local_fire_department_rounded,
         AppColors.deliveryRed,
         AppColors.deliveryRedSoft,
@@ -1215,9 +1245,10 @@ class _QuickFiltersRow extends StatelessWidget {
     final filters = const [
       'All Status',
       'New',
-      'Follow Up',
-      'Hot',
+      'Contacted',
       'Qualified',
+      'Won',
+      'Lost',
     ];
 
     return SingleChildScrollView(

@@ -211,10 +211,16 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
       return;
     }
     final uri = Uri(scheme: 'tel', path: sanitized);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
-      if (!mounted) return;
+    try {
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (launched) return;
+    } catch (_) {
+      // Show the same user-facing error below for platform launch failures.
+    }
+    if (mounted) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Unable to call $phone')));
@@ -234,10 +240,16 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
       path: normalized,
       queryParameters: {'subject': 'Regarding your enquiry'},
     );
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
-      if (!mounted) return;
+    try {
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (launched) return;
+    } catch (_) {
+      // Show the same user-facing error below for platform launch failures.
+    }
+    if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Unable to open email client.')),
       );
@@ -245,7 +257,11 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
   }
 
   Future<void> _openWhatsApp(String phone) async {
-    final digits = phone.replaceAll(RegExp(r'[^0-9]'), '');
+    var digits = phone.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.startsWith('00')) digits = digits.substring(2);
+    // WhatsApp requires a country code. Lead phone numbers are stored as
+    // local Indian numbers in this app, so add India when it is omitted.
+    if (digits.length == 10) digits = '91$digits';
     if (digits.isEmpty || digits == '-') {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -255,10 +271,16 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
       return;
     }
     final uri = Uri.parse('https://wa.me/$digits');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      if (!mounted) return;
+    try {
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (launched) return;
+    } catch (_) {
+      // Show the same user-facing error below for platform launch failures.
+    }
+    if (mounted) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Unable to open WhatsApp.')));
@@ -591,10 +613,32 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
       barrierColor: Colors.black.withValues(alpha: 0.42),
       builder: (context) => _FollowUpSheet(staff: _assignableStaff),
     );
-    if (result != null && mounted) {
+    final lead = _lead;
+    if (result == null || lead == null) return;
+
+    try {
+      await _apiProvider.createFollowUp(
+        request: {
+          'lead_id': lead.id,
+          'title': result.title,
+          'description': result.description,
+          'due_date': _apiDate(result.dueAt),
+          'due_time':
+              '${result.dueAt.hour.toString().padLeft(2, '0')}:'
+              '${result.dueAt.minute.toString().padLeft(2, '0')}',
+          'priority': result.priority,
+          if (result.assigneeId != null) 'assigned_to_id': result.assigneeId,
+        },
+      );
+      if (!mounted) return;
       setState(() => _localFollowUps.insert(0, result));
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Follow-up scheduled successfully')),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to schedule follow-up: $error')),
       );
     }
   }
@@ -605,7 +649,20 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
       barrierColor: Colors.black.withValues(alpha: 0.42),
       builder: (context) => _VisitSheet(staff: _assignableStaff),
     );
-    if (result != null && mounted) {
+    if (result == null) return;
+
+    try {
+      await _apiProvider.createVisit(
+        request: {
+          'lead_id': lead.id,
+          'visit_type': result.visitType,
+          'purpose': result.purpose,
+          'notes': result.notes,
+          'outcome': result.outcome,
+          'status': 'completed',
+        },
+      );
+      if (!mounted) return;
       final visit = _LocalVisit(
         visitType: result.visitTypeLabel,
         purpose: result.purpose,
@@ -617,6 +674,11 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Visit logged successfully')),
       );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to log visit: $error')));
     }
   }
 
@@ -2545,6 +2607,7 @@ class _FollowUpSheetState extends State<_FollowUpSheet> {
                         description: _descriptionController.text.trim(),
                         dueAt: dueAt,
                         priority: _priority,
+                        assigneeId: _assigneeId,
                         assigneeName:
                             widget.staff
                                 .where((u) => u.id == _assigneeId)
@@ -2990,6 +3053,7 @@ class _LocalFollowUp {
   final String description;
   final DateTime dueAt;
   final String priority;
+  final String? assigneeId;
   final String assigneeName;
 
   const _LocalFollowUp({
@@ -2997,6 +3061,7 @@ class _LocalFollowUp {
     required this.description,
     required this.dueAt,
     required this.priority,
+    this.assigneeId,
     required this.assigneeName,
   });
 }

@@ -19,6 +19,7 @@ import '../models/auth_models.dart';
 import '../models/app_user.dart';
 import '../models/plan_model.dart';
 import '../models/role_model.dart';
+import '../models/notification_model.dart';
 
 class ApiException implements Exception {
   final int? statusCode;
@@ -212,6 +213,81 @@ class ApiService {
     } on ApiException catch (error) {
       if (error.statusCode != 404) rethrow;
     }
+  }
+
+  Future<PaginatedResult<NotificationModel>> fetchNotifications({
+    ListPagination? pagination,
+    bool unreadOnly = false,
+  }) async {
+    final raw = await fetchPaginatedRawList(
+      pagination: pagination,
+      endpoint: ApiEndpoints.notifications,
+      queryParameters: {'unread_only': '$unreadOnly'},
+      candidateKeys: const ['items', 'notifications', 'data', 'results'],
+      fallbackMessage: 'Invalid notifications response.',
+    );
+    return PaginatedResult<NotificationModel>(
+      items: raw.items.map(NotificationModel.fromJson).toList(),
+      page: raw.page,
+      pageSize: raw.pageSize,
+      total: raw.total,
+      totalPages: raw.totalPages,
+    );
+  }
+
+  Future<int> fetchUnreadNotificationCount() async {
+    final response = await _send(
+      method: 'GET',
+      endpoint: ApiEndpoints.notificationsUnreadCount,
+      requiresAuth: true,
+    );
+    final decoded = _tryDecodeBody(response.body.trim());
+    if (decoded is num) return decoded.toInt();
+    if (decoded is Map) {
+      for (final key in const ['count', 'unread_count', 'unreadCount']) {
+        final value = int.tryParse('${decoded[key]}');
+        if (value != null) return value;
+      }
+    }
+    return 0;
+  }
+
+  Future<void> markNotificationRead(String notificationId) async {
+    await _send(
+      method: 'PATCH',
+      endpoint: ApiEndpoints.notificationRead(notificationId),
+      requiresAuth: true,
+    );
+    _invalidateResponseCache();
+  }
+
+  Future<void> markAllNotificationsRead() async {
+    try {
+      await _send(
+        method: 'POST',
+        endpoint: ApiEndpoints.notificationsReadAll,
+        requiresAuth: true,
+      );
+    } on ApiException catch (error) {
+      // Older deployments only expose PATCH; the backend contract accepts both.
+      if (error.statusCode != 404 && error.statusCode != 405) rethrow;
+      await _send(
+        method: 'PATCH',
+        endpoint: ApiEndpoints.notificationsReadAll,
+        requiresAuth: true,
+      );
+    }
+    _invalidateResponseCache();
+  }
+
+  Future<Map<String, dynamic>> sendPushTest() async {
+    final response = await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.pushDevicesTest,
+      requiresAuth: true,
+    );
+    final decoded = _tryDecodeBody(response.body.trim());
+    return decoded is Map<String, dynamic> ? decoded : <String, dynamic>{};
   }
 
   Future<AuthSession> loginWithGoogle({required String idToken}) async {
@@ -1926,6 +2002,24 @@ class ApiService {
     );
   }
 
+  Future<Map<String, dynamic>> createFollowUp({
+    required Map<String, dynamic> request,
+  }) async {
+    final response = await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.followUpsList,
+      requiresAuth: true,
+      body: request,
+    );
+
+    final body = response.body.trim();
+    if (body.isEmpty) return const <String, dynamic>{};
+    return _requireDecodedMap(
+      body,
+      fallbackMessage: 'Invalid follow-up create response.',
+    );
+  }
+
   Future<Map<String, dynamic>> createVisitFollowUp({
     required String visitId,
     required Map<String, dynamic> request,
@@ -3251,6 +3345,7 @@ class ApiService {
         headers: headers,
         attempt: attempt,
         timeout: effectiveTimeout,
+        body: encodedBody,
       );
 
       try {
@@ -3266,6 +3361,7 @@ class ApiService {
           uri: uri,
           statusCode: response.statusCode,
           attempt: attempt,
+          body: response.body,
         );
 
         if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -3419,6 +3515,8 @@ class ApiService {
         headers: headers,
         attempt: attempt,
         timeout: effectiveTimeout,
+        fields: fields,
+        fileName: fileName,
       );
 
       try {
@@ -3444,6 +3542,7 @@ class ApiService {
           uri: uri,
           statusCode: response.statusCode,
           attempt: attempt,
+          body: response.body,
         );
 
         if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -3523,6 +3622,7 @@ class ApiService {
       headers: headers,
       attempt: 1,
       timeout: ApiConstants.requestTimeout,
+      body: body,
     );
 
     try {
@@ -3538,6 +3638,7 @@ class ApiService {
         uri: uri,
         statusCode: response.statusCode,
         attempt: 1,
+        body: response.body,
       );
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -3658,11 +3759,15 @@ class ApiService {
     required Map<String, String> headers,
     required int attempt,
     required Duration timeout,
+    String? body,
   }) {
     if (!kDebugMode) return;
     final safeUri = _safeUriForLog(uri);
     debugPrint(
-      '[API REQUEST] $method $safeUri (query: ${Uri.parse(safeUri).queryParameters}, attempt $attempt, timeout ${timeout.inSeconds}s)',
+      '[API REQUEST] $method $safeUri\n'
+      '  query: ${uri.queryParameters}\n'
+      '  body: ${_logPayload(body)}\n'
+      '  attempt: $attempt | timeout: ${timeout.inSeconds}s',
     );
     debugPrint(
       '[API AUTH] ${headers.containsKey(ApiConstants.authorizationHeader) ? 'Bearer attached' : 'none'}',
@@ -3675,10 +3780,15 @@ class ApiService {
     required Map<String, String> headers,
     required int attempt,
     required Duration timeout,
+    Map<String, String>? fields,
+    String? fileName,
   }) {
     if (!kDebugMode) return;
     debugPrint(
-      '[API REQUEST] $method ${_safeUriForLog(uri)} (multipart, attempt $attempt, timeout ${timeout.inSeconds}s)',
+      '[API REQUEST] $method ${_safeUriForLog(uri)}\n'
+      '  multipart file: ${fileName ?? '<unknown>'}\n'
+      '  fields: ${fields ?? const <String, String>{}}\n'
+      '  attempt: $attempt | timeout: ${timeout.inSeconds}s',
     );
     debugPrint(
       '[API AUTH] ${headers.containsKey(ApiConstants.authorizationHeader) ? 'Bearer attached' : 'none'}',
@@ -3690,11 +3800,44 @@ class ApiService {
     required Uri uri,
     required int statusCode,
     required int attempt,
+    String? body,
   }) {
     if (!kDebugMode) return;
     debugPrint(
-      '[API RESPONSE] $method ${_safeUriForLog(uri)} -> $statusCode (attempt $attempt)',
+      '[API RESPONSE] $method ${_safeUriForLog(uri)} -> $statusCode\n'
+      '  attempt: $attempt\n'
+      '  data: ${_logPayload(body)}',
     );
+  }
+
+  String _logPayload(String? payload) {
+    if (payload == null || payload.trim().isEmpty) return '<empty>';
+    try {
+      final decoded = jsonDecode(payload);
+      return const JsonEncoder.withIndent(
+        '  ',
+      ).convert(_redactLogValue(decoded));
+    } catch (_) {
+      return payload;
+    }
+  }
+
+  dynamic _redactLogValue(dynamic value) {
+    if (value is Map) {
+      return value.map((key, item) {
+        final name = key.toString().toLowerCase();
+        final sensitive =
+            name == 'password' ||
+            name == 'access_token' ||
+            name == 'refresh_token' ||
+            name == 'authorization' ||
+            name == 'api_key' ||
+            name == 'secret';
+        return MapEntry(key, sensitive ? '<redacted>' : _redactLogValue(item));
+      });
+    }
+    if (value is List) return value.map(_redactLogValue).toList();
+    return value;
   }
 
   void _logTransportError({

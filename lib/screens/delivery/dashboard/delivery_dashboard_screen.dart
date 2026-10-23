@@ -206,7 +206,9 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
                       leadingIcon: Icons.menu_rounded,
                       onLeadingTap: () =>
                           _scaffoldKey.currentState?.openDrawer(),
-                      onNotificationTap: () => _showComingSoon('Notifications'),
+                      onNotificationTap: () => Navigator.of(
+                        context,
+                      ).pushNamed(AppRoutes.notifications),
                     ),
                   ),
                   SliverToBoxAdapter(
@@ -514,12 +516,6 @@ class _DatePill extends StatelessWidget {
               fontSize: 12,
               fontWeight: FontWeight.w600,
             ),
-          ),
-          const SizedBox(width: 3),
-          const Icon(
-            Icons.keyboard_arrow_down_rounded,
-            color: AppColors.deliveryDashboardHeaderEnd,
-            size: 16,
           ),
         ],
       ),

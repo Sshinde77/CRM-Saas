@@ -86,11 +86,15 @@ class PushNotificationService {
             defaultTargetPlatform != TargetPlatform.iOS)) {
       return;
     }
+    debugPrint('[FCM] signed-in registration started');
     await initialize();
     final authorizationStatus = await requestPermissionBeforeLogin();
     if (authorizationStatus == AuthorizationStatus.denied) {
-      debugPrint('[FCM] notification permission denied');
-      return;
+      // Login must still succeed. Android can often issue an FCM token even
+      // when alerts are denied, so continue and attempt device registration.
+      debugPrint(
+        '[FCM] notification permission denied; continuing token registration',
+      );
     }
 
     // iOS may need a short delay before APNs returns its token.
@@ -102,7 +106,12 @@ class PushNotificationService {
     }
 
     final token = await _messaging.getToken();
-    if (token != null && token.trim().isNotEmpty) await _registerToken(token);
+    debugPrint('[FCM] getToken result: ${token == null ? '<null>' : token}');
+    if (token != null && token.trim().isNotEmpty) {
+      await _registerToken(token);
+    } else {
+      debugPrint('[FCM] no FCM token returned; registration API not called');
+    }
   }
 
   /// Requests notification permission before authentication starts.
@@ -132,10 +141,15 @@ class PushNotificationService {
       final platform = defaultTargetPlatform == TargetPlatform.iOS
           ? 'ios'
           : 'android';
+      debugPrint('[FCM] token: $token');
+      debugPrint(
+        '[FCM] POST /notifications/devices/register platform=$platform',
+      );
       final response = await ApiService().registerPushDevice(
         token: token,
         platform: platform,
       );
+      debugPrint('[FCM] device registration response: $response');
       final deviceId = response['id']?.toString().trim();
       if (deviceId == null || deviceId.isEmpty) return;
       final prefs = await SharedPreferences.getInstance();
@@ -156,7 +170,9 @@ class PushNotificationService {
         deviceId.isNotEmpty &&
         (ApiService.accessToken ?? '').trim().isNotEmpty) {
       try {
+        debugPrint('[FCM] DELETE /notifications/devices/$deviceId');
         await ApiService().unregisterPushDevice(deviceId);
+        debugPrint('[FCM] device unregister response: success');
       } catch (error) {
         debugPrint('[FCM] unregister failed: $error');
       }

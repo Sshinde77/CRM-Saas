@@ -4,6 +4,7 @@ import '../models/list_pagination.dart';
 import 'dart:typed_data';
 
 import 'package:flutter/widgets.dart';
+import 'package:flutter/foundation.dart';
 
 import '../models/api_response.dart';
 import '../models/customer_activity_models.dart';
@@ -86,6 +87,7 @@ class ApiProvider extends ChangeNotifier {
     _currentUser = authMe.user ?? session.user;
     notifyListeners();
     // Registration is best-effort and must not block the login flow.
+    debugPrint('[AUTH] login successful; starting FCM token registration');
     unawaited(PushNotificationService.instance.registerForSignedInUser());
     return session;
   }
@@ -637,6 +639,12 @@ class ApiProvider extends ChangeNotifier {
     required Map<String, dynamic> request,
   }) {
     return _apiService.createVisit(request: request);
+  }
+
+  Future<Map<String, dynamic>> createFollowUp({
+    required Map<String, dynamic> request,
+  }) {
+    return _apiService.createFollowUp(request: request);
   }
 
   Future<Map<String, dynamic>> createVisitFollowUp({
