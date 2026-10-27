@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../constants/api_constants.dart';
@@ -73,6 +74,9 @@ class ApiService {
   static const String _prefsAccessTokenKey = 'auth.access_token';
   static const String _prefsRefreshTokenKey = 'auth.refresh_token';
   static const String _prefsRoleKey = 'auth.role';
+  static const String _secureAccessTokenKey = 'auth.access_token';
+  static const String _secureRefreshTokenKey = 'auth.refresh_token';
+  static const FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
   final http.Client _client;
   final String baseUrl;
@@ -178,6 +182,37 @@ class ApiService {
       retryOnTimeout: true,
     );
 
+    return _saveLoginResponse(response);
+  }
+
+  Future<int> sendPhoneOtp({required String phone}) async {
+    final response = await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.authPhoneSendOtp,
+      requiresAuth: false,
+      body: {'phone': phone},
+      timeout: ApiConstants.loginRequestTimeout,
+    );
+    final decoded = _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid OTP response.',
+    );
+    final resendAfter = decoded['resend_after'];
+    if (resendAfter is num) return resendAfter.toInt();
+    return int.tryParse(resendAfter?.toString() ?? '') ?? 30;
+  }
+
+  Future<AuthSession> verifyPhoneOtp({
+    required String phone,
+    required String code,
+  }) async {
+    final response = await _send(
+      method: 'POST',
+      endpoint: ApiEndpoints.authPhoneVerifyOtp,
+      requiresAuth: false,
+      body: {'phone': phone, 'code': code},
+      timeout: ApiConstants.loginRequestTimeout,
+    );
     return _saveLoginResponse(response);
   }
 
@@ -2805,8 +2840,27 @@ class ApiService {
   static Future<bool> restorePersistedAuthState() async {
     _invalidateResponseCache();
     final prefs = await SharedPreferences.getInstance();
-    final accessToken = prefs.getString(_prefsAccessTokenKey)?.trim();
-    final refreshToken = prefs.getString(_prefsRefreshTokenKey)?.trim();
+    var accessToken = await _secureStorage.read(key: _secureAccessTokenKey);
+    var refreshToken = await _secureStorage.read(key: _secureRefreshTokenKey);
+    // Migrate tokens written by older app versions out of preferences.
+    accessToken ??= prefs.getString(_prefsAccessTokenKey);
+    refreshToken ??= prefs.getString(_prefsRefreshTokenKey);
+    if (accessToken != null && accessToken.trim().isNotEmpty) {
+      await _secureStorage.write(
+        key: _secureAccessTokenKey,
+        value: accessToken.trim(),
+      );
+      await prefs.remove(_prefsAccessTokenKey);
+    }
+    if (refreshToken != null && refreshToken.trim().isNotEmpty) {
+      await _secureStorage.write(
+        key: _secureRefreshTokenKey,
+        value: refreshToken.trim(),
+      );
+      await prefs.remove(_prefsRefreshTokenKey);
+    }
+    accessToken = accessToken?.trim();
+    refreshToken = refreshToken?.trim();
     final role = prefs.getString(_prefsRoleKey)?.trim();
 
     _accessToken = accessToken?.isEmpty == true ? null : accessToken;
@@ -2834,10 +2888,16 @@ class ApiService {
       return;
     }
 
-    await prefs.setString(_prefsAccessTokenKey, tokenValue);
+    await _secureStorage.write(key: _secureAccessTokenKey, value: tokenValue);
+    await prefs.remove(_prefsAccessTokenKey);
     if (refreshToken != null && refreshToken.trim().isNotEmpty) {
-      await prefs.setString(_prefsRefreshTokenKey, refreshToken.trim());
+      await _secureStorage.write(
+        key: _secureRefreshTokenKey,
+        value: refreshToken.trim(),
+      );
+      await prefs.remove(_prefsRefreshTokenKey);
     } else {
+      await _secureStorage.delete(key: _secureRefreshTokenKey);
       await prefs.remove(_prefsRefreshTokenKey);
     }
 
@@ -2850,6 +2910,8 @@ class ApiService {
 
   static Future<void> _clearPersistedAuthState() async {
     final prefs = await SharedPreferences.getInstance();
+    await _secureStorage.delete(key: _secureAccessTokenKey);
+    await _secureStorage.delete(key: _secureRefreshTokenKey);
     await prefs.remove(_prefsAccessTokenKey);
     await prefs.remove(_prefsRefreshTokenKey);
     await prefs.remove(_prefsRoleKey);
@@ -3904,6 +3966,14 @@ class ApiService {
         for (final candidate in candidates) {
           if (candidate is String && candidate.trim().isNotEmpty) {
             return candidate;
+          }
+          if (candidate is List) {
+            final messages = candidate
+                .whereType<Map>()
+                .map((item) => item['msg']?.toString().trim() ?? '')
+                .where((message) => message.isNotEmpty)
+                .toList();
+            if (messages.isNotEmpty) return messages.join('\n');
           }
         }
       }

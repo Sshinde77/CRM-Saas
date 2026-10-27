@@ -26,7 +26,9 @@ class PushNotificationService {
   static const _tokenKey = 'push.fcm_token';
   static const _channelId = 'crm_notifications';
 
-  final FirebaseMessaging _messaging = FirebaseMessaging.instance;
+  // Firebase Messaging is mobile-only in this app. Keep it lazy so merely
+  // accessing PushNotificationService on web does not require Firebase.app().
+  late final FirebaseMessaging _messaging;
   final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
 
@@ -41,6 +43,8 @@ class PushNotificationService {
       return;
     }
     if (_initialized) return;
+
+    _messaging = FirebaseMessaging.instance;
 
     await _localNotifications.initialize(
       const InitializationSettings(

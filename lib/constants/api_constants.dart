@@ -47,6 +47,8 @@ class ApiEndpoints {
       '/dashboard/delivery-partner/orders';
 
   static const String authLogin = '/auth/login';
+  static const String authPhoneSendOtp = '/auth/phone/send-otp';
+  static const String authPhoneVerifyOtp = '/auth/phone/verify-otp';
   static const String authRegister = '/auth/register';
   static const String authMe = '/auth/me';
   static const String authRefresh = '/auth/refresh';

@@ -79,6 +79,41 @@ class ApiProvider extends ChangeNotifier {
     }
   }
 
+  Future<int> sendPhoneOtp({required String phone}) async {
+    _setLoading(true);
+    _errorMessage = null;
+    try {
+      return await _apiService.sendPhoneOtp(phone: phone);
+    } catch (error) {
+      _errorMessage = error.toString();
+      notifyListeners();
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<AuthSession> loginWithPhoneOtp({
+    required String phone,
+    required String code,
+  }) async {
+    _setLoading(true);
+    _errorMessage = null;
+    try {
+      final session = await _apiService.verifyPhoneOtp(
+        phone: phone,
+        code: code,
+      );
+      return await _completeLogin(session);
+    } catch (error) {
+      _errorMessage = error.toString();
+      notifyListeners();
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   Future<AuthSession> _completeLogin(AuthSession session) async {
     _session = session;
     _currentUser = session.user;

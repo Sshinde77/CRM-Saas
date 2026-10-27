@@ -10,6 +10,7 @@ import '../../services/google_auth_service.dart';
 import '../../services/push_notification_service.dart';
 import '../role_home_screen.dart';
 import 'register_screen.dart';
+import 'phone_otp_screen.dart';
 
 class _CountryCode {
   final String iso;
@@ -52,11 +53,13 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
+  final ScrollController _countryScrollController = ScrollController();
 
   bool _isPhoneTab = false;
   bool _obscurePassword = true;
   bool _isLoading = false;
   bool _countryMenuOpen = false;
+  bool _phoneLoginUnavailable = false;
   _CountryCode _selectedCountry = _countryCodes.first;
 
   static const Color pageBg = AppColors.adminSidebarBg;
@@ -78,6 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     _phoneController.dispose();
+    _countryScrollController.dispose();
     super.dispose();
   }
 
@@ -86,11 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!_isPhoneTab && !_formKey.currentState!.validate()) return;
 
     if (_isPhoneTab) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Phone login is not connected yet. Use email sign-in.'),
-        ),
-      );
+      await _sendPhoneOtp();
       return;
     }
 
@@ -118,6 +118,63 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) {
         setState(() => _isLoading = false);
       }
+    }
+  }
+
+  String? _normalizedIndianPhone() {
+    if (_selectedCountry.iso != 'IN') return null;
+    final digits = _phoneController.text.replaceAll(RegExp(r'[^0-9]'), '');
+    var normalized = digits;
+    if (normalized.startsWith('0') && normalized.length == 11) {
+      normalized = normalized.substring(1);
+    } else if (normalized.startsWith('91') && normalized.length == 12) {
+      normalized = normalized.substring(2);
+    }
+    if (!RegExp(r'^[6-9][0-9]{9}$').hasMatch(normalized)) return null;
+    return normalized;
+  }
+
+  Future<void> _sendPhoneOtp() async {
+    final phone = _normalizedIndianPhone();
+    if (phone == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enter a valid 10-digit Indian mobile number.')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    try {
+      final apiProvider = ApiProviderScope.of(context);
+      final resendAfter = await apiProvider.sendPhoneOtp(phone: phone);
+      if (!mounted) return;
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => PhoneOtpScreen(
+            phone: phone,
+            resendAfter: resendAfter,
+            apiProvider: apiProvider,
+          ),
+        ),
+      );
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      if (error.statusCode == 503) {
+        setState(() {
+          _phoneLoginUnavailable = true;
+          _isPhoneTab = false;
+        });
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.message)),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not send OTP: $error')),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -223,9 +280,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           style: TextStyle(fontSize: 14, color: bodyText),
                         ),
                         const SizedBox(height: 22),
-                        _buildTabSwitcher(),
+                        if (!_phoneLoginUnavailable) _buildTabSwitcher(),
                         const SizedBox(height: 18),
-                        if (!_isPhoneTab) ...[
+                        if (!_isPhoneTab || _phoneLoginUnavailable) ...[
                           const _FieldLabel('Email'),
                           const SizedBox(height: 8),
                           TextFormField(
@@ -364,10 +421,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                 child: TextFormField(
                                   controller: _phoneController,
                                   keyboardType: TextInputType.phone,
+                                  maxLength: 14,
                                   style: const TextStyle(
                                     color: headingText,
                                     fontSize: 14,
                                   ),
+                                  buildCounter: (_, {required currentLength, required isFocused, maxLength}) => null,
                                   decoration: _pillDecoration(
                                     hint: '98450 11223',
                                   ),
@@ -492,7 +551,9 @@ class _LoginScreenState extends State<LoginScreen> {
         borderRadius: BorderRadius.circular(20),
         child: Scrollbar(
           thumbVisibility: true,
+          controller: _countryScrollController,
           child: ListView.builder(
+            controller: _countryScrollController,
             shrinkWrap: true,
             padding: const EdgeInsets.symmetric(vertical: 6),
             itemCount: _countryCodes.length,
@@ -542,6 +603,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _tabButton(String label, {required bool isActive}) {
     return GestureDetector(
       onTap: () {
+        if (label == 'Phone No' && _phoneLoginUnavailable) return;
         setState(() {
           _countryMenuOpen = false;
           _isPhoneTab = label == 'Phone No';
