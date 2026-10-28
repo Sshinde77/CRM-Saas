@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import '../../../widgets/app_skeleton.dart';
 
 import '../../../constants/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -334,9 +335,9 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
   }
 
   String? _priceError(String? text) {
-    final price = double.tryParse(text?.trim() ?? "");
+    final price = double.tryParse(text?.trim() ?? '');
     return price == null || !price.isFinite || price < 0
-        ? "Enter a valid amount"
+        ? 'Enter a valid amount'
         : null;
   }
 
@@ -616,592 +617,625 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
               child: Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 720),
-                  child: Form(
-                    key: _form,
-                    child: ListView(
-                      padding: const EdgeInsets.all(16),
-                      children: [
-                        if (_loading)
-                          const Padding(
-                            padding: EdgeInsets.only(bottom: 16),
-                            child: LinearProgressIndicator(color: _green),
-                          ),
-                        if (_loadErrors.isNotEmpty)
-                          Container(
-                            margin: const EdgeInsets.only(bottom: 16),
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: AppColors.surface,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: AppColors.border),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Some order details are unavailable',
-                                  style: TextStyle(fontWeight: FontWeight.w700),
-                                ),
-                                const SizedBox(height: 6),
-                                ..._loadErrors.entries.map(
-                                  (e) => Text('${e.key}: ${e.value}'),
-                                ),
-                                TextButton(
-                                  onPressed: _loading ? null : _load,
-                                  child: const Text('Retry'),
-                                ),
-                              ],
-                            ),
-                          ),
-                        _sectionSurface(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                  child: _loading
+                      ? const AppPageSkeleton(rows: 9, showHeader: false)
+                      : Form(
+                          key: _form,
+                          child: ListView(
+                            padding: const EdgeInsets.all(16),
                             children: [
-                              _label('Customer *'),
-                              FormField<CustomerModel>(
-                                initialValue: _customer,
-                                validator: (value) =>
-                                    value == null ? 'Select a customer' : null,
-                                builder: (field) => InkWell(
-                                  borderRadius: BorderRadius.circular(12),
-                                  onTap:
-                                      _loading ||
-                                          _loadErrors.containsKey('Customers')
-                                      ? null
-                                      : () async {
-                                          final customer =
-                                              await showDialog<CustomerModel>(
-                                                context: context,
-                                                builder: (_) =>
-                                                    CustomerSearchDialog(
-                                                      customers: _customers,
-                                                      selectedCustomerId:
-                                                          _customer?.id,
-                                                      onCreateCustomer: () =>
-                                                          Navigator.of(
-                                                            context,
-                                                          ).push<CustomerModel>(
-                                                            MaterialPageRoute(
-                                                              builder: (_) =>
-                                                                  const CreateDeliveryCustomerScreen(),
-                                                            ),
-                                                          ),
-                                                    ),
-                                              );
-                                          if (!mounted || customer == null) {
-                                            return;
-                                          }
-                                          setState(() {
-                                            if (!_customers.any(
-                                              (c) => c.id == customer.id,
-                                            )) {
-                                              _customers = [
-                                                ..._customers,
-                                                customer,
-                                              ];
-                                            }
-                                            _customer = customer;
-                                          });
-                                          field.didChange(customer);
-                                        },
-                                  child: InputDecorator(
-                                    decoration:
-                                        _decoration(
-                                          '',
-                                          icon: Icons.storefront_outlined,
-                                        ).copyWith(
-                                          errorText: field.errorText,
-                                          suffixIcon: const Icon(
-                                            Icons.keyboard_arrow_down,
-                                          ),
-                                        ),
-                                    child: Text(
-                                      _customer?.name ?? 'Select customer',
-                                      style: _customer == null
-                                          ? AppTextStyles.inputHint
-                                          : null,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
+                              if (_loadErrors.isNotEmpty)
+                                Container(
+                                  margin: const EdgeInsets.only(bottom: 16),
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.surface,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: AppColors.border),
                                   ),
-                                ),
-                              ),
-                              if (selectedCustomer != null)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 8),
-                                  child: Row(
+                                  child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      const Icon(
-                                        Icons.location_on_outlined,
-                                        size: 16,
-                                        color: _green,
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Expanded(
-                                        child: Text(
-                                          selectedCustomer.deliveryAddress ??
-                                              selectedCustomer.address ??
-                                              selectedCustomer.billingAddress ??
-                                              'No address available',
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            color: AppColors.textLightMuted,
-                                          ),
+                                      const Text(
+                                        'Some order details are unavailable',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w700,
                                         ),
                                       ),
-                                    ],
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        _sectionSurface(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _heading('Order Details'),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: _dateField(
-                                      'Order Date',
-                                      _orderDate,
-                                      false,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: _dateField(
-                                      'Delivery Date *',
-                                      _deliveryDate,
-                                      true,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              _label('Warehouse *'),
-                              DropdownButtonFormField<String>(
-                                key: ObjectKey(_warehouses),
-                                isExpanded: true,
-                                initialValue: _selectedWarehouseId,
-                                decoration:
-                                    _decoration(
-                                      !_loaded.contains('Warehouses') &&
-                                              _loading
-                                          ? 'Loading warehouses...'
-                                          : _loadErrors.containsKey(
-                                              'Warehouses',
-                                            )
-                                          ? 'Could not load warehouses'
-                                          : _warehouses.isEmpty
-                                          ? 'No warehouses available'
-                                          : 'Select warehouse',
-                                    ).copyWith(
-                                      errorText: _loadErrors['Warehouses'],
-                                    ),
-                                items: [
-                                  const DropdownMenuItem(
-                                    value: _allWarehousesId,
-                                    child: Text(
-                                      'All warehouses',
-                                      style: AppTextStyles.inputHint,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                  ..._warehouses.map(
-                                    (w) => DropdownMenuItem(
-                                      value: _text(w, ['id', 'warehouse_id']),
-                                      child: Text(
-                                        _warehouseLabel(w),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                                onChanged: _warehouses.isEmpty
-                                    ? null
-                                    : (v) {
-                                        setState(
-                                          () => _selectedWarehouseId = v,
-                                        );
-                                        _loadStockForWarehouse();
-                                      },
-                                validator: (v) =>
-                                    v == null ? 'Select a warehouse' : null,
-                              ),
-                              if (_loadErrors.containsKey('Warehouses'))
-                                Align(
-                                  alignment: Alignment.centerRight,
-                                  child: TextButton(
-                                    onPressed: _loading ? null : _load,
-                                    child: const Text('Retry warehouses'),
-                                  ),
-                                ),
-                              if (_stockError != null)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 6),
-                                  child: Text(
-                                    _stockError!,
-                                    style: const TextStyle(
-                                      color: AppColors.red,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        _sectionSurface(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _heading('Add products'),
-                              TextField(
-                                decoration: _decoration(
-                                  'Search products by name or SKU',
-                                  icon: Icons.search,
-                                ),
-                                onChanged: (v) => setState(
-                                  () => _query = v.toLowerCase().trim(),
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                child: Row(
-                                  children:
-                                      [
-                                            'All',
-                                            ..._products
-                                                .map((p) => p.category)
-                                                .where(
-                                                  (c) =>
-                                                      c.isNotEmpty &&
-                                                      c != 'All',
-                                                )
-                                                .toSet(),
-                                          ]
-                                          .map(
-                                            (c) => Padding(
-                                              padding: const EdgeInsets.only(
-                                                right: 8,
-                                              ),
-                                              child: ChoiceChip(
-                                                label: Text(c),
-                                                selected: _category == c,
-                                                showCheckmark: false,
-                                                selectedColor: _green,
-                                                side: BorderSide(
-                                                  color: _category == c
-                                                      ? _green
-                                                      : AppColors.border,
-                                                  width: 0.7,
-                                                ),
-                                                labelStyle: TextStyle(
-                                                  color: _category == c
-                                                      ? Colors.white
-                                                      : AppColors
-                                                            .textLightMuted,
-                                                ),
-                                                onSelected: (_) => setState(
-                                                  () => _category = c,
-                                                ),
-                                              ),
-                                            ),
-                                          )
-                                          .toList(),
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              ..._productList(),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        _sectionSurface(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _heading('Delivery Method'),
-                              IntrinsicHeight(
-                                child: Row(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    Expanded(
-                                      child: _choice(
-                                        'Takeaway / Self Pickup',
-                                        'Customer will collect the order.',
-                                        Icons.storefront_outlined,
-                                        !_homeDelivery,
-                                        () => _setHomeDelivery(false),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: _choice(
-                                        'Home Delivery',
-                                        'Deliver the order to the customer address.',
-                                        Icons.local_shipping_outlined,
-                                        _homeDelivery,
-                                        () => _setHomeDelivery(true),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              if (_homeDelivery) ...[
-                                const SizedBox(height: 12),
-                                _label('Delivery Partner *'),
-                                FormField<String>(
-                                  key: ValueKey(
-                                    _selectedPartnerId ?? 'no-partner',
-                                  ),
-                                  initialValue: _selectedPartnerId,
-                                  validator: (value) => value == null
-                                      ? 'Select a delivery partner'
-                                      : null,
-                                  builder: (field) {
-                                    final selectedPartner = _deliveryPartners
-                                        .where(
-                                          (partner) =>
-                                              partner.id == _selectedPartnerId,
-                                        )
-                                        .firstOrNull;
-                                    final disabled =
-                                        _partnersLoading ||
-                                        _deliveryPartners.isEmpty ||
-                                        _partnersError != null;
-                                    final label = _partnersLoading
-                                        ? 'Loading delivery partners...'
-                                        : _partnersError != null
-                                        ? 'Could not load delivery partners'
-                                        : _deliveryPartners.isEmpty
-                                        ? 'No delivery partners available'
-                                        : selectedPartner?.name ??
-                                              'Select delivery partner';
-
-                                    return InkWell(
-                                      borderRadius: BorderRadius.circular(12),
-                                      onTap: disabled
-                                          ? null
-                                          : () async {
-                                              final partner =
-                                                  await showDialog<AppUser>(
-                                                    context: context,
-                                                    builder: (_) =>
-                                                        DeliveryPartnerSearchDialog(
-                                                          partners:
-                                                              _deliveryPartners,
-                                                          selectedPartnerId:
-                                                              _selectedPartnerId,
-                                                        ),
-                                                  );
-                                              if (!mounted || partner == null) {
-                                                return;
-                                              }
-                                              setState(
-                                                () => _selectedPartnerId =
-                                                    partner.id,
-                                              );
-                                              field.didChange(partner.id);
-                                            },
-                                      child: InputDecorator(
-                                        decoration:
-                                            _decoration(
-                                              '',
-                                              icon: Icons
-                                                  .delivery_dining_outlined,
-                                            ).copyWith(
-                                              errorText: field.errorText,
-                                              suffixIcon: const Icon(
-                                                Icons.keyboard_arrow_down,
-                                              ),
-                                            ),
-                                        child: Text(
-                                          label,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            color:
-                                                selectedPartner == null &&
-                                                    !_partnersLoading
-                                                ? AppColors.textLightMuted
-                                                : AppColors.textPrimary,
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                                if (_partnersError != null)
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          _partnersError!,
-                                          style: const TextStyle(
-                                            color: AppColors.deliveryRed,
-                                          ),
-                                        ),
+                                      const SizedBox(height: 6),
+                                      ..._loadErrors.entries.map(
+                                        (e) => Text('${e.key}: ${e.value}'),
                                       ),
                                       TextButton(
-                                        onPressed: _partnersLoading
-                                            ? null
-                                            : () => _loadDeliveryPartners(
-                                                preserveSelectedPartner: !widget
-                                                    .assignDeliveryPartner,
-                                              ),
+                                        onPressed: _loading ? null : _load,
                                         child: const Text('Retry'),
                                       ),
                                     ],
                                   ),
-                              ],
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        _sectionSurface(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _heading('Payment Type *'),
-                              LayoutBuilder(
-                                builder: (context, constraints) {
-                                  const spacing = 8.0;
-                                  final itemWidth =
-                                      (constraints.maxWidth - spacing) / 2;
-
-                                  return Wrap(
-                                    spacing: spacing,
-                                    runSpacing: spacing,
-                                    children:
-                                        [
-                                              'Cash',
-                                              'Phone Pe',
-                                              'Other',
-                                              'Google Pay',
-                                            ]
-                                            .map(
-                                              (p) => SizedBox(
-                                                width: itemWidth,
-                                                child: Align(
-                                                  alignment:
-                                                      Alignment.centerLeft,
-                                                  child: ChoiceChip(
-                                                    avatar: Icon(
-                                                      _payment == p
-                                                          ? Icons
-                                                                .radio_button_checked
-                                                          : Icons
-                                                                .radio_button_off,
-                                                      color: _green,
-                                                      size: 18,
-                                                    ),
-                                                    label: Text(p),
-                                                    labelStyle: TextStyle(
-                                                      color: _payment == p
-                                                          ? AppColors.primary
-                                                          : AppColors
-                                                                .textPrimary,
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                    ),
-                                                    selected: _payment == p,
-                                                    showCheckmark: false,
-                                                    selectedColor: _green
-                                                        .withValues(
-                                                          alpha: 0.12,
-                                                        ),
-                                                    side: BorderSide(
-                                                      color: _payment == p
-                                                          ? _green
-                                                          : AppColors.border,
-                                                      width: 0.7,
-                                                    ),
-                                                    onSelected: (_) => setState(
-                                                      () => _payment = p,
-                                                    ),
-                                                  ),
+                                ),
+                              _sectionSurface(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _label('Customer *'),
+                                    FormField<CustomerModel>(
+                                      initialValue: _customer,
+                                      validator: (value) => value == null
+                                          ? 'Select a customer'
+                                          : null,
+                                      builder: (field) => InkWell(
+                                        borderRadius: BorderRadius.circular(12),
+                                        onTap:
+                                            _loading ||
+                                                _loadErrors.containsKey(
+                                                  'Customers',
+                                                )
+                                            ? null
+                                            : () async {
+                                                final customer =
+                                                    await showDialog<
+                                                      CustomerModel
+                                                    >(
+                                                      context: context,
+                                                      builder: (_) => CustomerSearchDialog(
+                                                        customers: _customers,
+                                                        selectedCustomerId:
+                                                            _customer?.id,
+                                                        onCreateCustomer: () =>
+                                                            Navigator.of(
+                                                              context,
+                                                            ).push<
+                                                              CustomerModel
+                                                            >(
+                                                              MaterialPageRoute(
+                                                                builder: (_) =>
+                                                                    const CreateDeliveryCustomerScreen(),
+                                                              ),
+                                                            ),
+                                                      ),
+                                                    );
+                                                if (!mounted ||
+                                                    customer == null) {
+                                                  return;
+                                                }
+                                                setState(() {
+                                                  if (!_customers.any(
+                                                    (c) => c.id == customer.id,
+                                                  )) {
+                                                    _customers = [
+                                                      ..._customers,
+                                                      customer,
+                                                    ];
+                                                  }
+                                                  _customer = customer;
+                                                });
+                                                field.didChange(customer);
+                                              },
+                                        child: InputDecorator(
+                                          decoration:
+                                              _decoration(
+                                                '',
+                                                icon: Icons.storefront_outlined,
+                                              ).copyWith(
+                                                errorText: field.errorText,
+                                                suffixIcon: const Icon(
+                                                  Icons.keyboard_arrow_down,
                                                 ),
                                               ),
-                                            )
-                                            .toList(),
-                                  );
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        _sectionSurface(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _heading('Order Summary'),
-                              _summary(),
-                              const SizedBox(height: 12),
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Expanded(
-                                    child: Padding(
-                                      padding: EdgeInsets.only(top: 12),
-                                      child: Text(
-                                        'Discount',
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                          color: AppColors.textSecondary,
+                                          child: Text(
+                                            _customer?.name ??
+                                                'Select customer',
+                                            style: _customer == null
+                                                ? AppTextStyles.inputHint
+                                                : null,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: TextFormField(
-                                      controller: _discount,
-                                      keyboardType:
-                                          const TextInputType.numberWithOptions(
-                                            decimal: true,
-                                          ),
-                                      textAlign: TextAlign.right,
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                      decoration: _decoration('0').copyWith(
-                                        prefixText: '₹ ',
-                                        prefixStyle: const TextStyle(
-                                          color: _green,
-                                          fontWeight: FontWeight.w700,
+                                    if (selectedCustomer != null)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 8),
+                                        child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Icon(
+                                              Icons.location_on_outlined,
+                                              size: 16,
+                                              color: _green,
+                                            ),
+                                            const SizedBox(width: 6),
+                                            Expanded(
+                                              child: Text(
+                                                selectedCustomer
+                                                        .deliveryAddress ??
+                                                    selectedCustomer.address ??
+                                                    selectedCustomer
+                                                        .billingAddress ??
+                                                    'No address available',
+                                                style: const TextStyle(
+                                                  fontSize: 14,
+                                                  color:
+                                                      AppColors.textLightMuted,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                      onChanged: (_) => setState(() {}),
-                                      validator: (v) {
-                                        final amount = double.tryParse(v ?? '');
-                                        return amount == null ||
-                                                !amount.isFinite ||
-                                                amount < 0 ||
-                                                amount > _subtotal
-                                            ? 'Enter 0–${_subtotal.toStringAsFixed(2)}'
-                                            : null;
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              _sectionSurface(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _heading('Order Details'),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: _dateField(
+                                            'Order Date',
+                                            _orderDate,
+                                            false,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: _dateField(
+                                            'Delivery Date *',
+                                            _deliveryDate,
+                                            true,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 12),
+                                    _label('Warehouse *'),
+                                    DropdownButtonFormField<String>(
+                                      key: ObjectKey(_warehouses),
+                                      isExpanded: true,
+                                      initialValue: _selectedWarehouseId,
+                                      decoration:
+                                          _decoration(
+                                            !_loaded.contains('Warehouses') &&
+                                                    _loading
+                                                ? 'Loading warehouses...'
+                                                : _loadErrors.containsKey(
+                                                    'Warehouses',
+                                                  )
+                                                ? 'Could not load warehouses'
+                                                : _warehouses.isEmpty
+                                                ? 'No warehouses available'
+                                                : 'Select warehouse',
+                                          ).copyWith(
+                                            errorText:
+                                                _loadErrors['Warehouses'],
+                                          ),
+                                      items: [
+                                        const DropdownMenuItem(
+                                          value: _allWarehousesId,
+                                          child: Text(
+                                            'All warehouses',
+                                            style: AppTextStyles.inputHint,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        ..._warehouses.map(
+                                          (w) => DropdownMenuItem(
+                                            value: _text(w, [
+                                              'id',
+                                              'warehouse_id',
+                                            ]),
+                                            child: Text(
+                                              _warehouseLabel(w),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                      onChanged: _warehouses.isEmpty
+                                          ? null
+                                          : (v) {
+                                              setState(
+                                                () => _selectedWarehouseId = v,
+                                              );
+                                              _loadStockForWarehouse();
+                                            },
+                                      validator: (v) => v == null
+                                          ? 'Select a warehouse'
+                                          : null,
+                                    ),
+                                    if (_loadErrors.containsKey('Warehouses'))
+                                      Align(
+                                        alignment: Alignment.centerRight,
+                                        child: TextButton(
+                                          onPressed: _loading ? null : _load,
+                                          child: const Text('Retry warehouses'),
+                                        ),
+                                      ),
+                                    if (_stockError != null)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 6),
+                                        child: Text(
+                                          _stockError!,
+                                          style: const TextStyle(
+                                            color: AppColors.red,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              _sectionSurface(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _heading('Add products'),
+                                    TextField(
+                                      decoration: _decoration(
+                                        'Search products by name or SKU',
+                                        icon: Icons.search,
+                                      ),
+                                      onChanged: (v) => setState(
+                                        () => _query = v.toLowerCase().trim(),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    SingleChildScrollView(
+                                      scrollDirection: Axis.horizontal,
+                                      child: Row(
+                                        children:
+                                            [
+                                                  'All',
+                                                  ..._products
+                                                      .map((p) => p.category)
+                                                      .where(
+                                                        (c) =>
+                                                            c.isNotEmpty &&
+                                                            c != 'All',
+                                                      )
+                                                      .toSet(),
+                                                ]
+                                                .map(
+                                                  (c) => Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                          right: 8,
+                                                        ),
+                                                    child: ChoiceChip(
+                                                      label: Text(c),
+                                                      selected: _category == c,
+                                                      showCheckmark: false,
+                                                      selectedColor: _green,
+                                                      side: BorderSide(
+                                                        color: _category == c
+                                                            ? _green
+                                                            : AppColors.border,
+                                                        width: 0.7,
+                                                      ),
+                                                      labelStyle: TextStyle(
+                                                        color: _category == c
+                                                            ? Colors.white
+                                                            : AppColors
+                                                                  .textLightMuted,
+                                                      ),
+                                                      onSelected: (_) =>
+                                                          setState(
+                                                            () => _category = c,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                )
+                                                .toList(),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    ..._productList(),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              _sectionSurface(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _heading('Delivery Method'),
+                                    IntrinsicHeight(
+                                      child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.stretch,
+                                        children: [
+                                          Expanded(
+                                            child: _choice(
+                                              'Takeaway / Self Pickup',
+                                              'Customer will collect the order.',
+                                              Icons.storefront_outlined,
+                                              !_homeDelivery,
+                                              () => _setHomeDelivery(false),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                            child: _choice(
+                                              'Home Delivery',
+                                              'Deliver the order to the customer address.',
+                                              Icons.local_shipping_outlined,
+                                              _homeDelivery,
+                                              () => _setHomeDelivery(true),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    if (_homeDelivery) ...[
+                                      const SizedBox(height: 12),
+                                      _label('Delivery Partner *'),
+                                      FormField<String>(
+                                        key: ValueKey(
+                                          _selectedPartnerId ?? 'no-partner',
+                                        ),
+                                        initialValue: _selectedPartnerId,
+                                        validator: (value) => value == null
+                                            ? 'Select a delivery partner'
+                                            : null,
+                                        builder: (field) {
+                                          final selectedPartner =
+                                              _deliveryPartners
+                                                  .where(
+                                                    (partner) =>
+                                                        partner.id ==
+                                                        _selectedPartnerId,
+                                                  )
+                                                  .firstOrNull;
+                                          final disabled =
+                                              _partnersLoading ||
+                                              _deliveryPartners.isEmpty ||
+                                              _partnersError != null;
+                                          final label = _partnersLoading
+                                              ? 'Loading delivery partners...'
+                                              : _partnersError != null
+                                              ? 'Could not load delivery partners'
+                                              : _deliveryPartners.isEmpty
+                                              ? 'No delivery partners available'
+                                              : selectedPartner?.name ??
+                                                    'Select delivery partner';
+
+                                          return InkWell(
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                            onTap: disabled
+                                                ? null
+                                                : () async {
+                                                    final partner = await showDialog<AppUser>(
+                                                      context: context,
+                                                      builder: (_) =>
+                                                          DeliveryPartnerSearchDialog(
+                                                            partners:
+                                                                _deliveryPartners,
+                                                            selectedPartnerId:
+                                                                _selectedPartnerId,
+                                                          ),
+                                                    );
+                                                    if (!mounted ||
+                                                        partner == null) {
+                                                      return;
+                                                    }
+                                                    setState(
+                                                      () => _selectedPartnerId =
+                                                          partner.id,
+                                                    );
+                                                    field.didChange(partner.id);
+                                                  },
+                                            child: InputDecorator(
+                                              decoration:
+                                                  _decoration(
+                                                    '',
+                                                    icon: Icons
+                                                        .delivery_dining_outlined,
+                                                  ).copyWith(
+                                                    errorText: field.errorText,
+                                                    suffixIcon: const Icon(
+                                                      Icons.keyboard_arrow_down,
+                                                    ),
+                                                  ),
+                                              child: Text(
+                                                label,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  color:
+                                                      selectedPartner == null &&
+                                                          !_partnersLoading
+                                                      ? AppColors.textLightMuted
+                                                      : AppColors.textPrimary,
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                      if (_partnersError != null)
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                _partnersError!,
+                                                style: const TextStyle(
+                                                  color: AppColors.deliveryRed,
+                                                ),
+                                              ),
+                                            ),
+                                            TextButton(
+                                              onPressed: _partnersLoading
+                                                  ? null
+                                                  : () => _loadDeliveryPartners(
+                                                      preserveSelectedPartner:
+                                                          !widget
+                                                              .assignDeliveryPartner,
+                                                    ),
+                                              child: const Text('Retry'),
+                                            ),
+                                          ],
+                                        ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              _sectionSurface(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _heading('Payment Type *'),
+                                    LayoutBuilder(
+                                      builder: (context, constraints) {
+                                        const spacing = 8.0;
+                                        final itemWidth =
+                                            (constraints.maxWidth - spacing) /
+                                            2;
+
+                                        return Wrap(
+                                          spacing: spacing,
+                                          runSpacing: spacing,
+                                          children:
+                                              [
+                                                    'Cash',
+                                                    'Phone Pe',
+                                                    'Other',
+                                                    'Google Pay',
+                                                  ]
+                                                  .map(
+                                                    (p) => SizedBox(
+                                                      width: itemWidth,
+                                                      child: Align(
+                                                        alignment: Alignment
+                                                            .centerLeft,
+                                                        child: ChoiceChip(
+                                                          avatar: Icon(
+                                                            _payment == p
+                                                                ? Icons
+                                                                      .radio_button_checked
+                                                                : Icons
+                                                                      .radio_button_off,
+                                                            color: _green,
+                                                            size: 18,
+                                                          ),
+                                                          label: Text(p),
+                                                          labelStyle: TextStyle(
+                                                            color: _payment == p
+                                                                ? AppColors
+                                                                      .primary
+                                                                : AppColors
+                                                                      .textPrimary,
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                          ),
+                                                          selected:
+                                                              _payment == p,
+                                                          showCheckmark: false,
+                                                          selectedColor: _green
+                                                              .withValues(
+                                                                alpha: 0.12,
+                                                              ),
+                                                          side: BorderSide(
+                                                            color: _payment == p
+                                                                ? _green
+                                                                : AppColors
+                                                                      .border,
+                                                            width: 0.7,
+                                                          ),
+                                                          onSelected: (_) =>
+                                                              setState(
+                                                                () => _payment =
+                                                                    p,
+                                                              ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  )
+                                                  .toList(),
+                                        );
                                       },
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
+                              const SizedBox(height: 12),
+                              _sectionSurface(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _heading('Order Summary'),
+                                    _summary(),
+                                    const SizedBox(height: 12),
+                                    Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const Expanded(
+                                          child: Padding(
+                                            padding: EdgeInsets.only(top: 12),
+                                            child: Text(
+                                              'Discount',
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w600,
+                                                color: AppColors.textSecondary,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: TextFormField(
+                                            controller: _discount,
+                                            keyboardType:
+                                                const TextInputType.numberWithOptions(
+                                                  decimal: true,
+                                                ),
+                                            textAlign: TextAlign.right,
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                            decoration: _decoration('0')
+                                                .copyWith(
+                                                  prefixText: '₹ ',
+                                                  prefixStyle: const TextStyle(
+                                                    color: _green,
+                                                    fontWeight: FontWeight.w700,
+                                                  ),
+                                                ),
+                                            onChanged: (_) => setState(() {}),
+                                            validator: (v) {
+                                              final amount = double.tryParse(
+                                                v ?? '',
+                                              );
+                                              return amount == null ||
+                                                      !amount.isFinite ||
+                                                      amount < 0 ||
+                                                      amount > _subtotal
+                                                  ? 'Enter 0–${_subtotal.toStringAsFixed(2)}'
+                                                  : null;
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 20),
                             ],
                           ),
                         ),
-                        const SizedBox(height: 20),
-                      ],
-                    ),
-                  ),
                 ),
               ),
             ),

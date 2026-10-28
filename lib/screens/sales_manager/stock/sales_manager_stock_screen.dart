@@ -1,6 +1,7 @@
 import '../../../models/list_pagination.dart';
 import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
+import '../../../widgets/app_skeleton.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
 
@@ -373,6 +374,7 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildSummaryGrid() {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -530,10 +532,7 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
           ),
           const SizedBox(height: 14),
           if (_isLoading)
-            const _StockStatePanel(
-              icon: Icons.hourglass_empty_rounded,
-              title: 'Loading stock board...',
-            )
+            const AppPageSkeleton(rows: 7, showHeader: false)
           else if (_errorMessage != null)
             _StockStatePanel(
               icon: Icons.cloud_off_rounded,

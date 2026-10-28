@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
 import '../../../models/auth_models.dart';
+import '../../../providers/api_provider.dart';
 import '../../../services/api_service.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 
@@ -29,7 +30,7 @@ class _OnlinePresenceScreenState extends State<OnlinePresenceScreen> {
   final TextEditingController _whatsappController = TextEditingController();
 
   bool _isEditing = false;
-  final ApiService _apiService = ApiService();
+  ApiService get _apiService => ApiProviderScope.of(context).service;
   @override
   void dispose() {
     _facebookController.dispose();

@@ -5,10 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../widgets/app_skeleton.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../models/app_user.dart';
 import '../../../models/auth_models.dart';
 import '../../../models/role_model.dart';
+import '../../../providers/api_provider.dart';
 import '../../../services/api_service.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/app_calendar_date_picker.dart';
@@ -27,7 +29,7 @@ class AddStaffScreen extends StatefulWidget {
 
 class _AddStaffScreenState extends State<AddStaffScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  final ApiService _apiService = ApiService();
+  ApiService get _apiService => ApiProviderScope.of(context).service;
   final ImagePicker _imagePicker = ImagePicker();
   Future<List<RoleModel>>? _rolesFuture;
   Future<List<AppUser>>? _usersFuture;
@@ -238,7 +240,6 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
 
   @override
   void dispose() {
-    _apiService.close();
     _nameController.dispose();
     _emailController.dispose();
     _usernameController.dispose();
@@ -1061,10 +1062,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             if (_isLoadingEditUser)
               const Padding(
                 padding: EdgeInsets.only(bottom: 14),
-                child: LinearProgressIndicator(
-                  color: AppColors.primary,
-                  minHeight: 2,
-                ),
+                child: AppSkeletonBox(height: 8),
               ),
             if (_editLoadError != null)
               Padding(
@@ -2494,14 +2492,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
           color: AppColors.borderStrong.withValues(alpha: 0.45),
         ),
       ),
-      child: const SizedBox(
-        width: 18,
-        height: 18,
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          color: AppColors.primary,
-        ),
-      ),
+      child: const AppSkeletonBox(width: 18, height: 18),
     );
   }
 

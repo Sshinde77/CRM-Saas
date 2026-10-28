@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../widgets/app_skeleton.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
 
@@ -1876,6 +1877,9 @@ class _CenteredState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (title.startsWith('Loading')) {
+      return const AppPageSkeleton(rows: 6);
+    }
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(28),

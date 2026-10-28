@@ -6,6 +6,7 @@ import '../../../models/app_user.dart';
 import '../../../models/customer_model.dart';
 import '../../../providers/api_provider.dart';
 import '../../../services/api_service.dart';
+import '../../../widgets/app_skeleton.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
 import '../../delivery/customers/delivery_customers_screen.dart';
@@ -416,10 +417,8 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
             ),
             Expanded(
               child: _isLoading
-                  ? const _CenteredState(
-                      icon: Icons.hourglass_empty_rounded,
-                      title: 'Loading lead form',
-                      message: 'Fetching customers and products...',
+                  ? const SingleChildScrollView(
+                      child: AppPageSkeleton(rows: 8, showHeader: false),
                     )
                   : _loadError != null
                   ? _CenteredState(

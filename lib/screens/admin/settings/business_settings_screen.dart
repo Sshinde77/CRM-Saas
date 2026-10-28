@@ -6,6 +6,7 @@ import 'package:crm_saas/core/theme/app_text_styles.dart';
 
 import '../../../constants/app_colors.dart';
 import '../../../models/auth_models.dart';
+import '../../../providers/api_provider.dart';
 import '../../../services/api_service.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 
@@ -29,7 +30,7 @@ class _BusinessSettingsScreenState extends State<BusinessSettingsScreen> {
   final TextEditingController _invoiceNotesController = TextEditingController();
 
   bool _isEditing = false;
-  final ApiService _apiService = ApiService();
+  ApiService get _apiService => ApiProviderScope.of(context).service;
   String _selectedFinancialYear = '2025-2026';
   String? _selectedCurrency;
   String? _selectedTimeZone;

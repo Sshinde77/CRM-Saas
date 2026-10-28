@@ -1,6 +1,7 @@
 import '../../../models/list_pagination.dart';
 import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
+import '../../../widgets/app_skeleton.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -904,7 +905,7 @@ class _SectionHeader extends StatelessWidget {
             style: AppTextStyles.sectionHeading,
           ),
         ),
-        if (trailing != null) trailing!,
+        ?trailing,
       ],
     );
   }
@@ -1006,6 +1007,13 @@ class _StateView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (loading) {
+      return const SingleChildScrollView(
+        physics: AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+        child: AppPageSkeleton(rows: 6, showHeader: false),
+      );
+    }
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.screenSmall),
@@ -1015,12 +1023,7 @@ class _StateView extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (loading)
-                  const CircularProgressIndicator(
-                    color: AppColors.deliveryGreen,
-                  )
-                else
-                  Icon(icon, color: AppColors.deliveryGreen, size: 48),
+                Icon(icon, color: AppColors.deliveryGreen, size: 48),
                 const SizedBox(height: 14),
                 Text(
                   title,

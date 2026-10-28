@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../widgets/app_skeleton.dart';
 
 import '../../../constants/app_colors.dart';
 import '../../../providers/api_provider.dart';
@@ -322,9 +323,7 @@ class _QuotationDetailScreenState extends State<QuotationDetailScreen> {
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
-      );
+      return const AppPageSkeleton(rows: 5);
     }
 
     if (_errorMessage != null) {
@@ -1170,23 +1169,46 @@ class _ItemMobileCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(10),
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.deliveryBackground,
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.borderLight),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.textPrimary.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            item.productName,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w700,
-            ),
+          Row(
+            children: [
+              const Icon(
+                Icons.inventory_2_outlined,
+                color: AppColors.primary,
+                size: 18,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  item.productName,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 7),
+          const SizedBox(height: 8),
+          const Divider(height: 1, color: AppColors.borderLight),
+          const SizedBox(height: 8),
           _DetailRow('Qty / UOM', '${item.quantityText} ${item.uom}'),
           _DetailRow('Unit Price', _formatMoney(item.unitPrice)),
           _DetailRow(

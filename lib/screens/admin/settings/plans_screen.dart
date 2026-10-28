@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import '../../../widgets/app_skeleton.dart';
 
 import '../../../constants/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../models/auth_models.dart';
 import '../../../models/plan_model.dart';
+import '../../../providers/api_provider.dart';
 import '../../../services/api_service.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
@@ -17,7 +19,7 @@ class PlansScreen extends StatefulWidget {
 
 class _PlansScreenState extends State<PlansScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  late final ApiService _apiService;
+  ApiService get _apiService => ApiProviderScope.of(context).service;
   late final PageController _pageController;
   late Future<_PlansPageData> _plansFuture;
 
@@ -27,7 +29,6 @@ class _PlansScreenState extends State<PlansScreen> {
   @override
   void initState() {
     super.initState();
-    _apiService = ApiService();
     _pageController = PageController(viewportFraction: 0.9);
     _plansFuture = _loadPlansPageData();
   }
@@ -35,7 +36,6 @@ class _PlansScreenState extends State<PlansScreen> {
   @override
   void dispose() {
     _pageController.dispose();
-    _apiService.close();
     super.dispose();
   }
 
@@ -76,11 +76,7 @@ class _PlansScreenState extends State<PlansScreen> {
                 future: _plansFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.primary,
-                      ),
-                    );
+                    return const AppPageSkeleton(rows: 5);
                   }
 
                   if (snapshot.hasError) {

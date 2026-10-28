@@ -27,7 +27,7 @@ class _AccountScreenState extends State<AccountScreen> {
   static const Color _mutedColor = Color(0xFF64748B);
   static const Color _cardBg = Colors.white;
   static const Color _accent = Color(0xFF0D1F42);
-  final ApiService _apiService = ApiService();
+  ApiService get _apiService => ApiProviderScope.of(context).service;
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   String? _currentUserId;

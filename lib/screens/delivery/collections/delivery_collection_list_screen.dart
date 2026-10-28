@@ -1,6 +1,7 @@
 import '../../../models/list_pagination.dart';
 import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
+import '../../../widgets/app_skeleton.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -861,14 +862,7 @@ class _LoadingPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const _SurfaceCard(
-      child: SizedBox(
-        height: 250,
-        child: Center(
-          child: CircularProgressIndicator(color: AppColors.deliveryBlue),
-        ),
-      ),
-    );
+    return const _SurfaceCard(child: AppPageSkeleton(rows: 5));
   }
 }
 
@@ -1146,7 +1140,7 @@ class _CollectionDelivery {
         paymentMode
             .split('_')
             .where((part) => part.isNotEmpty)
-            .map((part) => "${part[0].toUpperCase()}${part.substring(1)}")
+            .map((part) => '${part[0].toUpperCase()}${part.substring(1)}')
             .join(' '),
     };
   }

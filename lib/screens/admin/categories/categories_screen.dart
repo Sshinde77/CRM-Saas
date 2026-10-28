@@ -1,6 +1,7 @@
 import '../../../models/list_pagination.dart';
 import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
+import '../../../widgets/app_skeleton.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
 
@@ -246,7 +247,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                             padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
                             child: isCompact
                                 ? _isLoading
-                                      ? _loadingState()
+                                      ? const AppPageSkeleton(rows: 6)
                                       : _errorMessage != null
                                       ? _errorState(
                                           _errorMessage!,
@@ -254,7 +255,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                                         )
                                       : _buildCompactList(categories)
                                 : _isLoading
-                                ? _loadingState()
+                                ? const AppPageSkeleton(rows: 6)
                                 : _errorMessage != null
                                 ? _errorState(_errorMessage!, _loadCategories)
                                 : _buildTable(categories),
@@ -326,13 +327,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _loadingState() {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 56),
-      child: Center(child: CircularProgressIndicator(color: Color(0xFF0D1F42))),
     );
   }
 

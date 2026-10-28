@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../widgets/app_skeleton.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -428,11 +429,7 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
                   child:
                       delivery == null &&
                           snapshot.connectionState == ConnectionState.waiting
-                      ? const Center(
-                          child: CircularProgressIndicator(
-                            color: AppColors.deliveryGreen,
-                          ),
-                        )
+                      ? const AppPageSkeleton(rows: 6)
                       : delivery == null && snapshot.hasError
                       ? _ErrorState(
                           message: _cleanError(snapshot.error),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../widgets/app_skeleton.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
 import 'package:flutter/services.dart';
@@ -2269,14 +2270,7 @@ class _LoadingPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const _SurfaceCard(
-      child: SizedBox(
-        height: 260,
-        child: Center(
-          child: CircularProgressIndicator(color: AppColors.deliveryGreen),
-        ),
-      ),
-    );
+    return const _SurfaceCard(child: AppPageSkeleton(rows: 5));
   }
 }
 

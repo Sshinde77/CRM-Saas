@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../widgets/app_skeleton.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
 
@@ -849,14 +850,7 @@ class _HistoryCardState extends State<_HistoryCard> {
           ),
           const SizedBox(height: 10),
           if (widget.isLoading)
-            const SizedBox(
-              height: 180,
-              child: Center(
-                child: CircularProgressIndicator(
-                  color: AppColors.deliveryGreen,
-                ),
-              ),
-            )
+            const AppPageSkeleton(rows: 4, showHeader: false)
           else if (widget.error != null)
             _HistoryMessage(
               icon: Icons.error_outline_rounded,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../widgets/app_skeleton.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -836,11 +837,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
                       ),
                 Expanded(
                   child: _isLoading && lead == null
-                      ? const Center(
-                          child: CircularProgressIndicator(
-                            color: AppColors.primary,
-                          ),
-                        )
+                      ? const AppPageSkeleton(rows: 6)
                       : _errorMessage != null && lead == null
                       ? _buildErrorView()
                       : RefreshIndicator(
@@ -2397,6 +2394,7 @@ class _SheetShell extends StatelessWidget {
               ],
             ),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
@@ -2441,9 +2439,10 @@ class _SheetShell extends StatelessWidget {
                   height: 1,
                   color: AppColors.deliverySurfaceBorder,
                 ),
-                Expanded(
+                Flexible(
+                  fit: FlexFit.loose,
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
                     child: child,
                   ),
                 ),

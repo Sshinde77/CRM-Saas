@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import '../models/list_pagination.dart';
-import 'dart:typed_data';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter/foundation.dart';
@@ -341,6 +340,16 @@ class ApiProvider extends ChangeNotifier {
     return _apiService.fetchDeliveryPartnerDashboard();
   }
 
+  Future<Map<String, dynamic>> fetchSalesDashboard({String period = 'today'}) {
+    return _apiService.fetchSalesDashboard(period: period);
+  }
+
+  Future<Map<String, dynamic>> fetchDeliveryDashboard({
+    String period = 'today',
+  }) {
+    return _apiService.fetchDeliveryDashboard(period: period);
+  }
+
   Future<List<Map<String, dynamic>>> fetchDeliveryPartnerCompanyOrders({
     ListPagination? pagination,
     String? status,
@@ -429,7 +438,7 @@ class ApiProvider extends ChangeNotifier {
     );
   }
 
-  Future<PaginatedOrdersResult> fetchPaginatedOrders({
+  Future<PaginatedResult<Map<String, dynamic>>> fetchPaginatedOrders({
     int page = 1,
     int limit = 10,
     String? status,

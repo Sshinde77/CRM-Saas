@@ -315,6 +315,7 @@ class _SalesManagerPerformanceScreenState
   }
 }
 
+// ignore: unused_element
 class _PerformanceOverview extends StatelessWidget {
   final double overallScore;
 

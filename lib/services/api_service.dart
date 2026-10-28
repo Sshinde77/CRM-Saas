@@ -50,19 +50,6 @@ class PaginatedResult<T> {
 
   bool get hasPreviousPage => page > 1;
   bool get hasNextPage => page < totalPages;
-}
-
-class PaginatedOrdersResult extends PaginatedResult<Map<String, dynamic>> {
-  const PaginatedOrdersResult({
-    required List<Map<String, dynamic>> orders,
-    required int currentPage,
-    required super.pageSize,
-    required int totalItems,
-    required super.totalPages,
-  }) : super(items: orders, page: currentPage, total: totalItems);
-
-  List<Map<String, dynamic>> get orders => items;
-  int get currentPage => page;
   int get totalItems => total;
 }
 
@@ -71,8 +58,10 @@ class ApiService {
   static String? _refreshToken;
   static String? _savedRole;
 
-  static const String _prefsAccessTokenKey = 'auth.access_token';
-  static const String _prefsRefreshTokenKey = 'auth.refresh_token';
+  // Legacy keys are read only to migrate existing installs. New tokens are
+  // never written to SharedPreferences.
+  static const String _legacyPrefsAccessTokenKey = 'auth.access_token';
+  static const String _legacyPrefsRefreshTokenKey = 'auth.refresh_token';
   static const String _prefsRoleKey = 'auth.role';
   static const String _secureAccessTokenKey = 'auth.access_token';
   static const String _secureRefreshTokenKey = 'auth.refresh_token';
@@ -88,6 +77,7 @@ class ApiService {
   static int _cacheGeneration = 0;
 
   static const Duration _responseCacheTtl = Duration(seconds: 20);
+  static const Duration _dashboardCacheTtl = Duration(minutes: 5);
   // Keep loaded list/detail/page responses available for the active app
   // session. Once fresh data expires, callers still receive the cached
   // response immediately while a background GET refreshes it.
@@ -916,6 +906,48 @@ class ApiService {
     return AdminDashboardData.fromJson(decoded);
   }
 
+  Future<Map<String, dynamic>> fetchSalesDashboard({
+    String period = 'today',
+    String? dateFrom,
+    String? dateTo,
+  }) async {
+    final response = await _send(
+      method: 'GET',
+      endpoint: ApiEndpoints.salesDashboard,
+      requiresAuth: true,
+      queryParameters: _cleanQuery({
+        'period': period,
+        'date_from': dateFrom,
+        'date_to': dateTo,
+      }),
+    );
+    return _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid sales dashboard response.',
+    );
+  }
+
+  Future<Map<String, dynamic>> fetchDeliveryDashboard({
+    String period = 'today',
+    String? dateFrom,
+    String? dateTo,
+  }) async {
+    final response = await _send(
+      method: 'GET',
+      endpoint: ApiEndpoints.deliveryDashboard,
+      requiresAuth: true,
+      queryParameters: _cleanQuery({
+        'period': period,
+        'date_from': dateFrom,
+        'date_to': dateTo,
+      }),
+    );
+    return _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid delivery dashboard response.',
+    );
+  }
+
   Future<Map<String, dynamic>> fetchDeliveryPartnerDashboard() async {
     http.Response response;
     try {
@@ -1235,7 +1267,7 @@ class ApiService {
     );
   }
 
-  Future<PaginatedOrdersResult> fetchPaginatedOrders({
+  Future<PaginatedResult<Map<String, dynamic>>> fetchPaginatedOrders({
     int page = 1,
     int limit = 10,
     String? status,
@@ -1269,9 +1301,9 @@ class ApiService {
         ? _extractPaginationMeta(decoded)
         : const <String, dynamic>{};
 
-    return PaginatedOrdersResult(
-      orders: rawItems.whereType<Map<String, dynamic>>().toList(),
-      currentPage: _readMetaInt(meta, const [
+    return PaginatedResult<Map<String, dynamic>>(
+      items: rawItems.whereType<Map<String, dynamic>>().toList(),
+      page: _readMetaInt(meta, const [
         'page',
         'current_page',
         'currentPage',
@@ -1283,7 +1315,7 @@ class ApiService {
         'page_size',
         'pageSize',
       ], limit),
-      totalItems: _readMetaInt(meta, const [
+      total: _readMetaInt(meta, const [
         'total',
         'total_items',
         'totalItems',
@@ -2842,22 +2874,21 @@ class ApiService {
     final prefs = await SharedPreferences.getInstance();
     var accessToken = await _secureStorage.read(key: _secureAccessTokenKey);
     var refreshToken = await _secureStorage.read(key: _secureRefreshTokenKey);
-    // Migrate tokens written by older app versions out of preferences.
-    accessToken ??= prefs.getString(_prefsAccessTokenKey);
-    refreshToken ??= prefs.getString(_prefsRefreshTokenKey);
+    accessToken ??= prefs.getString(_legacyPrefsAccessTokenKey);
+    refreshToken ??= prefs.getString(_legacyPrefsRefreshTokenKey);
     if (accessToken != null && accessToken.trim().isNotEmpty) {
       await _secureStorage.write(
         key: _secureAccessTokenKey,
         value: accessToken.trim(),
       );
-      await prefs.remove(_prefsAccessTokenKey);
+      await prefs.remove(_legacyPrefsAccessTokenKey);
     }
     if (refreshToken != null && refreshToken.trim().isNotEmpty) {
       await _secureStorage.write(
         key: _secureRefreshTokenKey,
         value: refreshToken.trim(),
       );
-      await prefs.remove(_prefsRefreshTokenKey);
+      await prefs.remove(_legacyPrefsRefreshTokenKey);
     }
     accessToken = accessToken?.trim();
     refreshToken = refreshToken?.trim();
@@ -2889,16 +2920,13 @@ class ApiService {
     }
 
     await _secureStorage.write(key: _secureAccessTokenKey, value: tokenValue);
-    await prefs.remove(_prefsAccessTokenKey);
     if (refreshToken != null && refreshToken.trim().isNotEmpty) {
       await _secureStorage.write(
         key: _secureRefreshTokenKey,
         value: refreshToken.trim(),
       );
-      await prefs.remove(_prefsRefreshTokenKey);
     } else {
       await _secureStorage.delete(key: _secureRefreshTokenKey);
-      await prefs.remove(_prefsRefreshTokenKey);
     }
 
     if (role != null && role.trim().isNotEmpty) {
@@ -2912,8 +2940,8 @@ class ApiService {
     final prefs = await SharedPreferences.getInstance();
     await _secureStorage.delete(key: _secureAccessTokenKey);
     await _secureStorage.delete(key: _secureRefreshTokenKey);
-    await prefs.remove(_prefsAccessTokenKey);
-    await prefs.remove(_prefsRefreshTokenKey);
+    await prefs.remove(_legacyPrefsAccessTokenKey);
+    await prefs.remove(_legacyPrefsRefreshTokenKey);
     await prefs.remove(_prefsRoleKey);
   }
 
@@ -3340,7 +3368,8 @@ class ApiService {
     final cacheKey = _getCacheKey(uri, requiresAuth: requiresAuth);
     final now = DateTime.now();
     final cached = _responseCache[cacheKey];
-    if (cached != null && now.difference(cached.storedAt) < _responseCacheTtl) {
+    final cacheTtl = _cacheTtlForEndpoint(endpoint);
+    if (cached != null && now.difference(cached.storedAt) < cacheTtl) {
       return cached.response;
     }
     if (cached != null && now.difference(cached.storedAt) < _staleResponseTtl) {
@@ -3380,6 +3409,14 @@ class ApiService {
     } finally {
       _inFlightGets.remove(cacheKey);
     }
+  }
+
+  static Duration _cacheTtlForEndpoint(String endpoint) {
+    if (endpoint == ApiEndpoints.salesDashboard ||
+        endpoint == ApiEndpoints.deliveryDashboard) {
+      return _dashboardCacheTtl;
+    }
+    return _responseCacheTtl;
   }
 
   Future<http.Response> _sendUncached({

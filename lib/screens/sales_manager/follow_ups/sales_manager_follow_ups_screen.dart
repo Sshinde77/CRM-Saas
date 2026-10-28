@@ -5,11 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:crm_saas/core/theme/app_text_styles.dart';
 
 import '../../../constants/app_colors.dart';
-import '../../../models/customer_model.dart';
 import '../../../providers/api_provider.dart';
 import '../../../widgets/app_calendar_date_picker.dart';
 import '../../../widgets/completion_feedback_sheet.dart';
-import '../../../widgets/delivery/customer_search_dialog.dart';
 import '../../delivery/customers/delivery_customers_screen.dart';
 import '../../admin/leads/admin_leads_screen.dart';
 import '../../admin/orders/admin_orders_screen.dart';
@@ -199,22 +197,12 @@ class _SalesManagerFollowUpsScreenState
     _showSnack(action);
   }
 
-  Future<void> _openAddFollowUpSheet() async {
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (sheetContext) {
-        return _AddFollowUpSheet(
-          onSave: (value) {
-            setState(() {
-              _items.insert(0, value);
-            });
-            Navigator.of(sheetContext).pop();
-          },
-        );
-      },
+  Future<void> _openAddFollowUpDialog() async {
+    final result = await Navigator.of(context).push<_FollowUpItem>(
+      MaterialPageRoute(builder: (_) => const _CreateFollowUpPage()),
     );
+    if (result == null || !mounted) return;
+    setState(() => _items.insert(0, result));
   }
 
   @override
@@ -264,7 +252,7 @@ class _SalesManagerFollowUpsScreenState
                                     subtitle:
                                         '${_items.length} customer follow-ups',
                                     icon: Icons.assignment_outlined,
-                                    onAdd: _openAddFollowUpSheet,
+                                    onAdd: _openAddFollowUpDialog,
                                     kpis: [
                                       ManagementKpiData(
                                         label: 'Upcoming',
@@ -386,6 +374,7 @@ class _SalesManagerFollowUpsScreenState
   }
 }
 
+// ignore: unused_element
 class _FollowUpPageIntro extends StatelessWidget {
   const _FollowUpPageIntro();
 
@@ -416,6 +405,7 @@ class _FollowUpPageIntro extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _FollowUpSummary extends StatelessWidget {
   final List<_FollowUpItem> items;
 
@@ -1284,88 +1274,92 @@ class _DetailActionBar extends StatelessWidget {
   }
 }
 
-class _AddFollowUpSheet extends StatefulWidget {
-  final ValueChanged<_FollowUpItem> onSave;
-
-  const _AddFollowUpSheet({required this.onSave});
+class _CreateFollowUpPage extends StatefulWidget {
+  const _CreateFollowUpPage();
 
   @override
-  State<_AddFollowUpSheet> createState() => _AddFollowUpSheetState();
+  State<_CreateFollowUpPage> createState() => _CreateFollowUpPageState();
 }
 
-class _AddFollowUpSheetState extends State<_AddFollowUpSheet> {
-  final TextEditingController _customerController = TextEditingController();
-  final TextEditingController _noteController = TextEditingController();
-  final TextEditingController _dateController = TextEditingController();
-  final TextEditingController _timeController = TextEditingController();
+class _CreateFollowUpPageState extends State<_CreateFollowUpPage> {
+  final _titleController = TextEditingController(text: 'General Follow-up');
+  final _noteController = TextEditingController();
+  final _dateController = TextEditingController();
+  final _timeController = TextEditingController();
 
-  DateTime? _selectedDate;
-  TimeOfDay? _selectedTime;
-  List<CustomerModel> _customers = const [];
-  CustomerModel? _selectedCustomer;
-  bool _loadingCustomers = true;
-  String? _customerLoadError;
+  DateTime _selectedDate = DateTime.now().add(const Duration(days: 1));
+  TimeOfDay _selectedTime = const TimeOfDay(hour: 11, minute: 0);
+  String _priority = 'medium';
+  List<_LeadOption> _leads = const [];
+  _LeadOption? _selectedLead;
+  bool _loadingLookups = true;
+  String? _lookupError;
+  bool _didSetInitialTime = false;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadCustomers());
-  }
-
-  Future<void> _loadCustomers() async {
-    try {
-      final customers = await ApiProviderScope.of(context).fetchCustomers();
-      if (!mounted) return;
-      setState(() {
-        _customers = customers;
-        _loadingCustomers = false;
-        _customerLoadError = null;
-      });
-    } catch (_) {
-      if (!mounted) return;
-      setState(() {
-        _loadingCustomers = false;
-        _customerLoadError = 'Unable to load customers';
-      });
-    }
-  }
-
-  Future<void> _pickCustomer() async {
-    if (_loadingCustomers) return;
-    if (_customerLoadError != null) {
-      setState(() => _loadingCustomers = true);
-      await _loadCustomers();
-      if (!mounted || _customerLoadError != null) return;
-    }
-    final customer = await showDialog<CustomerModel>(
-      context: context,
-      builder: (_) => CustomerSearchDialog(
-        customers: _customers,
-        selectedCustomerId: _selectedCustomer?.id,
-        emptyMessage: 'No customers available.',
-      ),
-    );
-    if (!mounted || customer == null) return;
-    setState(() {
-      _selectedCustomer = customer;
-      _customerController.text = customer.name;
-    });
+    _dateController.text = _formatDate(_selectedDate);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadLookups());
   }
 
   @override
-  void dispose() {
-    _customerController.dispose();
-    _noteController.dispose();
-    _dateController.dispose();
-    _timeController.dispose();
-    super.dispose();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_didSetInitialTime) return;
+    _timeController.text = _selectedTime.format(context);
+    _didSetInitialTime = true;
+  }
+
+  Future<void> _loadLookups() async {
+    if (!mounted) return;
+    setState(() {
+      _loadingLookups = true;
+      _lookupError = null;
+    });
+    final provider = ApiProviderScope.of(context);
+
+    List<_LeadOption> leads = const [];
+    String? leadsError;
+
+    try {
+      final raw = await provider.fetchLeads();
+      leads = raw
+          .map(_LeadOption.fromJson)
+          .where((l) => l.id.isNotEmpty && l.name.isNotEmpty)
+          .toList();
+    } catch (_) {
+      leadsError = 'Unable to load leads. Tap to retry.';
+    }
+
+    if (!mounted) return;
+    setState(() {
+      _leads = leads;
+      _loadingLookups = false;
+      _lookupError = leadsError;
+    });
+  }
+
+  Future<void> _pickLead() async {
+    if (_loadingLookups) return;
+    if (_lookupError != null) {
+      await _loadLookups();
+      if (!mounted || _lookupError != null) return;
+    }
+    final lead = await showDialog<_LeadOption>(
+      context: context,
+      builder: (_) =>
+          _LeadSearchDialog(leads: _leads, selectedLeadId: _selectedLead?.id),
+    );
+    if (!mounted || lead == null) return;
+    setState(() => _selectedLead = lead);
   }
 
   Future<void> _pickDate() async {
     final picked = await showAppCalendarDatePicker(
       context: context,
-      initialDate: _selectedDate ?? DateTime.now(),
-      firstDate: DateTime(2020),
+      initialDate: _selectedDate,
+      firstDate: DateTime.now(),
       lastDate: DateTime(2100),
       title: 'Follow-up Date',
     );
@@ -1379,7 +1373,7 @@ class _AddFollowUpSheetState extends State<_AddFollowUpSheet> {
   Future<void> _pickTime() async {
     final picked = await showTimePicker(
       context: context,
-      initialTime: _selectedTime ?? TimeOfDay.now(),
+      initialTime: _selectedTime,
     );
     if (picked == null) return;
     setState(() {
@@ -1388,32 +1382,47 @@ class _AddFollowUpSheetState extends State<_AddFollowUpSheet> {
     });
   }
 
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _noteController.dispose();
+    _dateController.dispose();
+    _timeController.dispose();
+    super.dispose();
+  }
+
   void _save() {
-    final customerName = _customerController.text.trim();
+    final title = _titleController.text.trim();
     final dateLabel = _dateController.text.trim();
     final timeLabel = _timeController.text.trim();
     final note = _noteController.text.trim();
 
-    if (_selectedCustomer == null || dateLabel.isEmpty || timeLabel.isEmpty) {
+    if (_selectedLead == null ||
+        title.isEmpty ||
+        dateLabel.isEmpty ||
+        timeLabel.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please select a customer, date, and time.'),
+          content: Text('Please select a lead, and fill title, date and time.'),
+          behavior: SnackBarBehavior.floating,
         ),
       );
       return;
     }
 
-    widget.onSave(
+    final currentUser = ApiProviderScope.of(context).currentUser;
+    Navigator.of(context).pop(
       _FollowUpItem(
-        customerName: customerName,
+        title: title,
+        customerName: _selectedLead!.name,
         dateLabel: dateLabel,
         timeLabel: timeLabel,
         note: note.isEmpty ? 'No notes added.' : note,
         status: 'Pending',
         color: AppColors.orange,
-        priority: 'Medium',
+        priority: _priority[0].toUpperCase() + _priority.substring(1),
         phone: 'Not provided',
-        contactPerson: customerName,
+        contactPerson: currentUser?.name ?? 'Me',
         followUpType: 'Call',
       ),
     );
@@ -1421,106 +1430,472 @@ class _AddFollowUpSheetState extends State<_AddFollowUpSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-      ),
-      child: Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Add Follow Up',
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
+    return Scaffold(
+      backgroundColor: AppColors.deliveryBackground,
+      body: SafeArea(
+        child: Column(
+          children: [
+            SalesManagerTopBar(
+              title: 'New Follow-Up',
+              leadingIcon: Icons.arrow_back_rounded,
+              onLeadingTap: () => Navigator.of(context).pop(),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 600),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _FieldLabel('Lead *'),
+                        const SizedBox(height: 8),
+                        _LeadPickerCard(
+                          selected: _selectedLead,
+                          loading: _loadingLookups,
+                          error: _lookupError,
+                          onTap: _pickLead,
+                          onClear: _selectedLead == null
+                              ? null
+                              : () => setState(() => _selectedLead = null),
+                        ),
+                        const SizedBox(height: 18),
+                        _FieldLabel('Title *'),
+                        const SizedBox(height: 8),
+                        _InputBox(
+                          controller: _titleController,
+                          hintText: 'Follow-up title',
+                        ),
+                        const SizedBox(height: 18),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _FieldLabel('Date *'),
+                                  const SizedBox(height: 8),
+                                  _TapInputBox(
+                                    controller: _dateController,
+                                    hintText: 'Select date',
+                                    onTap: _pickDate,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _FieldLabel('Time *'),
+                                  const SizedBox(height: 8),
+                                  _TapInputBox(
+                                    controller: _timeController,
+                                    hintText: 'Select time',
+                                    onTap: _pickTime,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 18),
+                        _FieldLabel('Priority'),
+                        const SizedBox(height: 8),
+                        DropdownButtonFormField<String>(
+                          value: _priority,
+                          decoration: const InputDecoration(
+                            filled: true,
+                            fillColor: Colors.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(14),
+                              ),
+                              borderSide: BorderSide(color: AppColors.border),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(14),
+                              ),
+                              borderSide: BorderSide(color: AppColors.border),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(14),
+                              ),
+                              borderSide: BorderSide(
+                                color: AppColors.primary,
+                                width: 1.2,
+                              ),
+                            ),
+                          ),
+                          items: const [
+                            DropdownMenuItem(value: 'low', child: Text('Low')),
+                            DropdownMenuItem(
+                              value: 'medium',
+                              child: Text('Medium'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'high',
+                              child: Text('High'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'urgent',
+                              child: Text('Urgent'),
+                            ),
+                          ],
+                          onChanged: (value) {
+                            if (value != null)
+                              setState(() => _priority = value);
+                          },
+                        ),
+                        const SizedBox(height: 18),
+                        _FieldLabel('Description / Requirements'),
+                        const SizedBox(height: 8),
+                        _InputBox(
+                          controller: _noteController,
+                          hintText: 'Optional details...',
+                          maxLines: 4,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(height: 16),
-              _FieldLabel('Customer Name'),
-              const SizedBox(height: 8),
-              _TapInputBox(
-                controller: _customerController,
-                hintText: _loadingCustomers
-                    ? 'Loading customers...'
-                    : _customerLoadError ?? 'Select customer',
-                onTap: _pickCustomer,
-              ),
-              const SizedBox(height: 14),
-              _FieldLabel('Date'),
-              const SizedBox(height: 8),
-              _TapInputBox(
-                controller: _dateController,
-                hintText: 'Select date',
-                onTap: _pickDate,
-              ),
-              const SizedBox(height: 14),
-              _FieldLabel('Time'),
-              const SizedBox(height: 8),
-              _TapInputBox(
-                controller: _timeController,
-                hintText: 'Select time',
-                onTap: _pickTime,
-              ),
-              const SizedBox(height: 14),
-              _FieldLabel('Note'),
-              const SizedBox(height: 8),
-              _InputBox(
-                controller: _noteController,
-                hintText: 'Enter note',
-                maxLines: 4,
-              ),
-              const SizedBox(height: 18),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.textSecondary,
-                        side: const BorderSide(color: AppColors.border),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text('Cancel'),
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            border: Border(
+              top: BorderSide(color: AppColors.deliveryCardBorder),
+            ),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.textSecondary,
+                    side: const BorderSide(color: AppColors.border),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: _save,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        'Save',
-                        style: TextStyle(fontWeight: FontWeight.w700),
-                      ),
+                  child: const Text('Cancel'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 2,
+                child: FilledButton.icon(
+                  onPressed: _save,
+                  icon: const Icon(Icons.playlist_add_check_rounded, size: 20),
+                  label: const Text(
+                    'Schedule Follow-up',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                ],
+                ),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class _LeadPickerCard extends StatelessWidget {
+  final _LeadOption? selected;
+  final bool loading;
+  final String? error;
+  final VoidCallback onTap;
+  final VoidCallback? onClear;
+
+  const _LeadPickerCard({
+    required this.selected,
+    required this.loading,
+    required this.error,
+    required this.onTap,
+    this.onClear,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hasSelection = selected != null;
+    return GestureDetector(
+      onTap: loading ? null : onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: hasSelection ? AppColors.activeMenuBg : Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: hasSelection ? AppColors.primary : AppColors.border,
+            width: hasSelection ? 1.4 : 1.0,
+          ),
+        ),
+        child: hasSelection
+            ? Row(
+                children: [
+                  _PersonAvatar(name: selected!.name),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          selected!.name,
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        if (selected!.code.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            selected!.code,
+                            style: const TextStyle(
+                              color: AppColors.primary,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Text(
+                      'Change',
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  if (onClear != null) ...[
+                    const SizedBox(width: 6),
+                    GestureDetector(
+                      onTap: onClear,
+                      child: const Icon(
+                        Icons.close_rounded,
+                        size: 18,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ],
+              )
+            : Row(
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: AppColors.activeMenuBg,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      loading
+                          ? Icons.hourglass_empty_rounded
+                          : (error != null
+                                ? Icons.refresh_rounded
+                                : Icons.search_rounded),
+                      color: AppColors.primary,
+                      size: 18,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      loading
+                          ? 'Loading leads...'
+                          : (error ?? 'Tap to search and select a lead'),
+                      style: TextStyle(
+                        color: error != null
+                            ? AppColors.red
+                            : AppColors.textSecondary,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    color: AppColors.textMuted,
+                    size: 22,
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+}
+
+class _PersonAvatar extends StatelessWidget {
+  final String name;
+
+  const _PersonAvatar({required this.name});
+
+  @override
+  Widget build(BuildContext context) {
+    final words = name.trim().split(RegExp(r'\s+'));
+    final initials = words
+        .take(2)
+        .map((w) => w.isEmpty ? '' : w[0].toUpperCase())
+        .join('');
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [AppColors.primary900, AppColors.primary],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Center(
+        child: Text(
+          initials.isEmpty ? '?' : initials,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _LeadSearchDialog extends StatefulWidget {
+  final List<_LeadOption> leads;
+  final String? selectedLeadId;
+
+  const _LeadSearchDialog({required this.leads, this.selectedLeadId});
+
+  @override
+  State<_LeadSearchDialog> createState() => _LeadSearchDialogState();
+}
+
+class _LeadSearchDialogState extends State<_LeadSearchDialog> {
+  final _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final query = _searchController.text.trim().toLowerCase();
+    final leads = widget.leads
+        .where(
+          (lead) =>
+              query.isEmpty ||
+              lead.name.toLowerCase().contains(query) ||
+              lead.code.toLowerCase().contains(query),
+        )
+        .toList();
+
+    return AlertDialog(
+      title: const Text('Select Lead'),
+      content: SizedBox(
+        width: 420,
+        height: 420,
+        child: Column(
+          children: [
+            TextField(
+              controller: _searchController,
+              autofocus: true,
+              onChanged: (_) => setState(() {}),
+              decoration: const InputDecoration(
+                hintText: 'Search leads',
+                prefixIcon: Icon(Icons.search_rounded),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Expanded(
+              child: leads.isEmpty
+                  ? const Center(child: Text('No matching leads'))
+                  : ListView.separated(
+                      itemCount: leads.length,
+                      separatorBuilder: (_, _) => const Divider(height: 1),
+                      itemBuilder: (context, index) {
+                        final lead = leads[index];
+                        return ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(lead.name),
+                          subtitle: lead.code.isEmpty ? null : Text(lead.code),
+                          trailing: lead.id == widget.selectedLeadId
+                              ? const Icon(
+                                  Icons.check_circle,
+                                  color: AppColors.primary,
+                                )
+                              : null,
+                          onTap: () => Navigator.of(context).pop(lead),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LeadOption {
+  final String id;
+  final String name;
+  final String code;
+
+  const _LeadOption({required this.id, required this.name, required this.code});
+
+  factory _LeadOption.fromJson(Map<String, dynamic> json) {
+    String read(List<String> keys) {
+      for (final key in keys) {
+        final value = json[key]?.toString().trim();
+        if (value != null && value.isNotEmpty) return value;
+      }
+      return '';
+    }
+
+    return _LeadOption(
+      id: read(['id', 'lead_id']),
+      name: read(['company_name', 'companyName', 'name', 'contact_person']),
+      code: read(['lead_code', 'leadCode', 'code', 'lead_id']),
     );
   }
 }
@@ -1604,6 +1979,7 @@ class _TapInputBox extends StatelessWidget {
 }
 
 class _FollowUpItem {
+  final String title;
   final String customerName;
   final String dateLabel;
   final String timeLabel;
@@ -1616,6 +1992,7 @@ class _FollowUpItem {
   final String followUpType;
 
   _FollowUpItem({
+    this.title = 'General Follow-up',
     required this.customerName,
     required this.dateLabel,
     required this.timeLabel,
@@ -1630,6 +2007,7 @@ class _FollowUpItem {
 
   _FollowUpItem copyWith({String? status, Color? color, String? note}) {
     return _FollowUpItem(
+      title: title,
       customerName: customerName,
       dateLabel: dateLabel,
       timeLabel: timeLabel,

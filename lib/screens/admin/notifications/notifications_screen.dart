@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import '../../../widgets/app_skeleton.dart';
 
 import '../../../constants/app_colors.dart';
 import '../../../models/list_pagination.dart';
 import '../../../models/notification_model.dart';
+import '../../../providers/api_provider.dart';
 import '../../../services/api_service.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/list_pagination_bar.dart';
@@ -14,7 +16,7 @@ class NotificationsScreen extends StatefulWidget {
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
-  final _api = ApiService();
+  ApiService get _api => ApiProviderScope.of(context).service;
   final _pagination = ListPagination();
   List<NotificationModel> _items = const [];
   bool _loading = true;
@@ -30,16 +32,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   @override
   void dispose() {
     _pagination.dispose();
-    _api.close();
     super.dispose();
   }
 
   Future<void> _load() async {
-    if (mounted)
+    if (mounted) {
       setState(() {
         _loading = true;
         _error = null;
       });
+    }
     try {
       final result = await _api.fetchNotifications(pagination: _pagination);
       try {
@@ -118,9 +120,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   );
 
   Widget _buildContent() {
-    if (_loading && _items.isEmpty)
-      return const Center(child: CircularProgressIndicator());
-    if (_error != null && _items.isEmpty)
+    if (_loading && _items.isEmpty) {
+      return const AppPageSkeleton(rows: 7, showHeader: false);
+    }
+    if (_error != null && _items.isEmpty) {
       return ListView(
         children: [
           const SizedBox(height: 100),
@@ -135,23 +138,26 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           ),
         ],
       );
-    if (_items.isEmpty)
+    }
+    if (_items.isEmpty) {
       return ListView(
         children: const [
           SizedBox(height: 100),
           Center(child: Text('No notifications available.')),
         ],
       );
+    }
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       itemCount: _items.length + 1,
       itemBuilder: (context, index) {
-        if (index == _items.length)
+        if (index == _items.length) {
           return ListPaginationBar(
             pagination: _pagination,
             loading: _loading,
             onChanged: _load,
           );
+        }
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
           child: _notificationCard(_items[index]),

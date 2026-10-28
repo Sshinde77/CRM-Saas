@@ -9,6 +9,7 @@ import '../../../services/api_service.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_bottom_navigation.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
+import '../../../widgets/app_skeleton.dart';
 import '../../../routes/app_router.dart';
 import '../../delivery/customers/delivery_customers_screen.dart';
 import '../../admin/leads/admin_leads_screen.dart';
@@ -37,34 +38,12 @@ class _SalesManagerDashboardScreenState
   static Future<_DashboardData>? _cachedDashboardFuture;
   static DateTime? _cachedDashboardAt;
   static String? _cachedSessionKey;
+  static String? _cachedPeriod;
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   Future<_DashboardData>? _future;
   bool _didStartLoad = false;
-
-  final List<_VisitRecord> _mockVisits = const [
-    _VisitRecord(
-      customer: 'Ankit Bhatia',
-      purpose: 'Product Demo',
-      date: '2026-09-04',
-      time: '11:00 AM',
-      status: 'Scheduled',
-    ),
-    _VisitRecord(
-      customer: 'Sunil Kumar',
-      purpose: 'Follow-up Meeting',
-      date: '2026-09-04',
-      time: '02:00 PM',
-      status: 'Follow-up Required',
-    ),
-    _VisitRecord(
-      customer: 'Ravi Mehta',
-      purpose: 'Product Presentation',
-      date: '2026-09-05',
-      time: '10:30 AM',
-      status: 'Scheduled',
-    ),
-  ];
+  String _selectedPeriod = 'today';
 
   @override
   void didChangeDependencies() {
@@ -84,6 +63,7 @@ class _SalesManagerDashboardScreenState
         _cachedDashboardFuture != null &&
         _cachedDashboardAt != null &&
         _cachedSessionKey == _sessionCacheKey &&
+        _cachedPeriod == _selectedPeriod &&
         now.difference(_cachedDashboardAt!) < _dashboardCacheTtl;
 
     if (cacheIsValid) return _cachedDashboardFuture!;
@@ -92,27 +72,17 @@ class _SalesManagerDashboardScreenState
     _cachedDashboardFuture = request;
     _cachedDashboardAt = now;
     _cachedSessionKey = _sessionCacheKey;
+    _cachedPeriod = _selectedPeriod;
     return request;
   }
 
   Future<_DashboardData> _loadDashboard() async {
     final provider = ApiProviderScope.of(context);
-    final mainResults = await Future.wait<dynamic>([
-      provider.fetchCustomers(),
-      provider.fetchOrders(),
-      provider.fetchQuotations(),
-      _loadTodayAttendance(provider),
-    ]);
-
-    final customers = mainResults[0] as List<CustomerModel>;
-    final orders = (mainResults[1] as List<Map<String, dynamic>>)
+    final json = await provider.fetchSalesDashboard(period: _selectedPeriod);
+    final recentOrders = (json['recent_orders'] as List? ?? const [])
+        .whereType<Map<String, dynamic>>()
         .map(_DashboardOrder.fromJson)
         .toList();
-    final quotations = (mainResults[2] as List<Map<String, dynamic>>)
-        .map(_DashboardQuotation.fromJson)
-        .toList();
-
-    final attendance = mainResults[3] as _AttendanceRecord?;
 
     final user = provider.currentUser;
 
@@ -121,26 +91,15 @@ class _SalesManagerDashboardScreenState
           ? user!.name.trim()
           : 'User',
       profilePhoto: user?.profilePhoto,
-      customers: customers,
-      orders: orders,
-      quotations: quotations,
-      attendance: attendance,
-      visits: _mockVisits,
+      customers: const [],
+      orders: recentOrders,
+      quotations: const [],
+      attendance: null,
+      visits: const [],
+      summary: _SalesDashboardSummary.fromJson(
+        (json['summary'] as Map?)?.cast<String, dynamic>() ?? const {},
+      ),
     );
-  }
-
-  Future<_AttendanceRecord?> _loadTodayAttendance(ApiProvider provider) async {
-    try {
-      final attendanceRows = await provider.fetchMyAttendance();
-      return _firstTodayAttendance(
-        attendanceRows
-            .map(_AttendanceRecord.fromJson)
-            .where((record) => _isSameDay(record.date, DateTime.now()))
-            .where((record) => record.checkIn != null),
-      );
-    } catch (_) {
-      return null;
-    }
   }
 
   Future<void> _refresh() async {
@@ -272,6 +231,18 @@ class _SalesManagerDashboardScreenState
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
+                                      _SalesPeriodSelector(
+                                        selected: _selectedPeriod,
+                                        onChanged: (period) {
+                                          setState(() {
+                                            _selectedPeriod = period;
+                                            _future = _getDashboardFuture(
+                                              force: true,
+                                            );
+                                          });
+                                        },
+                                      ),
+                                      const SizedBox(height: 10),
                                       _SalesTargetCard(data: data),
                                       const SizedBox(height: 10),
                                       _PrioritiesCard(
@@ -598,8 +569,8 @@ class _StatsGrid extends StatelessWidget {
         AppColors.deliveryKpiYellowBg,
       ),
       _StatCardData(
-        'Orders This Month',
-        data.ordersThisMonth.length.toString(),
+        'Orders',
+        data.summary.orders.toString(),
         Icons.bar_chart_rounded,
         const Color(0xFF16A34A),
         AppColors.deliveryKpiGreenBg,
@@ -639,7 +610,7 @@ class _SalesTargetCard extends StatelessWidget {
     final statuses = [
       _SalesSummaryData(
         label: 'Total Orders',
-        value: data.orders.length.toString(),
+        value: data.summary.orders.toString(),
         icon: Icons.receipt_long_outlined,
         color: const Color(0xFF2563EB),
         background: const Color(0xFFEAF2FF),
@@ -1548,22 +1519,7 @@ class _LoadingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CircularProgressIndicator(color: AppColors.primary),
-          SizedBox(height: 12),
-          Text(
-            'Loading your dashboard...',
-            style: TextStyle(
-              color: AppColors.textMuted,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
-      ),
-    );
+    return const SingleChildScrollView(child: AppPageSkeleton(rows: 5));
   }
 }
 
@@ -1649,6 +1605,63 @@ class _ProfilePhoto extends StatelessWidget {
   }
 }
 
+class _SalesDashboardSummary {
+  final double salesAmount;
+  final int orders;
+  final double todaySalesAmount;
+  final int assignedCustomers;
+
+  const _SalesDashboardSummary({
+    required this.salesAmount,
+    required this.orders,
+    required this.todaySalesAmount,
+    required this.assignedCustomers,
+  });
+
+  const _SalesDashboardSummary.zero()
+    : salesAmount = 0,
+      orders = 0,
+      todaySalesAmount = 0,
+      assignedCustomers = 0;
+
+  factory _SalesDashboardSummary.fromJson(Map<String, dynamic> json) {
+    return _SalesDashboardSummary(
+      salesAmount: _readDouble(json, const ['sales_amount', 'salesAmount']),
+      orders: _readInt(json, const ['orders']),
+      todaySalesAmount: _readDouble(json, const [
+        'today_sales_amount',
+        'todaySalesAmount',
+      ]),
+      assignedCustomers: _readInt(json, const [
+        'assigned_customers',
+        'assignedCustomers',
+      ]),
+    );
+  }
+}
+
+class _SalesPeriodSelector extends StatelessWidget {
+  final String selected;
+  final ValueChanged<String> onChanged;
+
+  const _SalesPeriodSelector({required this.selected, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 8,
+      children: ['today', 'week', 'month'].map((period) {
+        final label = period[0].toUpperCase() + period.substring(1);
+        return ChoiceChip(
+          label: Text(label),
+          selected: period == selected,
+          onSelected: (_) => onChanged(period),
+        );
+      }).toList(),
+    );
+  }
+}
+
 class _DashboardData {
   final String userName;
   final String? profilePhoto;
@@ -1657,6 +1670,7 @@ class _DashboardData {
   final List<_DashboardQuotation> quotations;
   final _AttendanceRecord? attendance;
   final List<_VisitRecord> visits;
+  final _SalesDashboardSummary summary;
 
   const _DashboardData({
     required this.userName,
@@ -1666,6 +1680,7 @@ class _DashboardData {
     required this.quotations,
     required this.attendance,
     required this.visits,
+    required this.summary,
   });
 
   factory _DashboardData.empty() {
@@ -1677,16 +1692,12 @@ class _DashboardData {
       quotations: [],
       attendance: null,
       visits: [],
+      summary: _SalesDashboardSummary.zero(),
     );
   }
 
   List<_DashboardOrder> get ordersThisMonth {
-    final now = DateTime.now();
-    return orders.where((order) {
-      return !_isCancelled(order.status) &&
-          order.date.year == now.year &&
-          order.date.month == now.month;
-    }).toList();
+    return orders;
   }
 
   List<_DashboardOrder> get recentOrders {
@@ -1701,11 +1712,11 @@ class _DashboardData {
   }
 
   double get monthlySales {
-    return ordersThisMonth.fold(0, (sum, order) => sum + order.total);
+    return summary.salesAmount;
   }
 
   int get activeCustomers {
-    return customers.where((customer) => customer.isActive != false).length;
+    return summary.assignedCustomers;
   }
 
   int get visitsToday {
@@ -1827,16 +1838,6 @@ class _DashboardQuotation {
   final String status;
 
   const _DashboardQuotation({required this.status});
-
-  factory _DashboardQuotation.fromJson(Map<String, dynamic> json) {
-    final quotation = _readMap(json, const ['quotation']);
-    final source = quotation.isEmpty
-        ? json
-        : <String, dynamic>{...json, ...quotation};
-    return _DashboardQuotation(
-      status: _normalize(_readString(source, const ['status'])),
-    );
-  }
 }
 
 class _AttendanceRecord {
@@ -1844,27 +1845,6 @@ class _AttendanceRecord {
   final DateTime? checkIn;
 
   const _AttendanceRecord({required this.date, required this.checkIn});
-
-  factory _AttendanceRecord.fromJson(Map<String, dynamic> json) {
-    final date =
-        _readNullableDate(
-          _readString(json, const ['date', 'attendance_date', 'created_at']),
-        ) ??
-        DateTime.now();
-    return _AttendanceRecord(
-      date: date,
-      checkIn: _readNullableDate(
-        _readString(json, const [
-          'check_in',
-          'checkIn',
-          'check_in_time',
-          'checkInTime',
-          'checked_in_at',
-          'checkedInAt',
-        ]),
-      ),
-    );
-  }
 }
 
 class _VisitRecord {
@@ -1945,13 +1925,6 @@ String _greeting() {
 
 bool _isSameDay(DateTime a, DateTime b) {
   return a.year == b.year && a.month == b.month && a.day == b.day;
-}
-
-_AttendanceRecord? _firstTodayAttendance(Iterable<_AttendanceRecord> records) {
-  for (final record in records) {
-    return record;
-  }
-  return null;
 }
 
 bool _isCancelled(String status) {
@@ -2082,6 +2055,16 @@ double _readDouble(Map<String, dynamic> json, List<String> keys) {
       );
       if (parsed != null) return parsed;
     }
+  }
+  return 0;
+}
+
+int _readInt(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value is num) return value.toInt();
+    final parsed = int.tryParse(value?.toString() ?? '');
+    if (parsed != null) return parsed;
   }
   return 0;
 }

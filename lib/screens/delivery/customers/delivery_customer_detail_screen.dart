@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../widgets/app_skeleton.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../constants/app_colors.dart';
@@ -136,11 +137,7 @@ class _DeliveryCustomerDetailScreenState
                 ),
                 Expanded(
                   child: _loading && customer == null
-                      ? const Center(
-                          child: CircularProgressIndicator(
-                            color: AppColors.deliveryGreen,
-                          ),
-                        )
+                      ? const AppPageSkeleton(rows: 5)
                       : _error != null && customer == null
                       ? _ErrorState(message: _error!, onRetry: _load)
                       : RefreshIndicator(
@@ -210,12 +207,25 @@ class _DeliveryCustomerDetailScreenState
     if (_error != null) {
       return _InlineError(onRetry: _load);
     }
+    if (_loading) {
+      return AppSkeleton(
+        child: Column(
+          children: List.generate(
+            4,
+            (_) => const Padding(
+              padding: EdgeInsets.only(bottom: 10),
+              child: AppSkeletonBox(height: 64),
+            ),
+          ),
+        ),
+      );
+    }
     switch (_tab) {
       case 0:
         return _orders.isEmpty
             ? const _EmptyState(
                 icon: Icons.receipt_long_outlined,
-                label: 'No orders yet',
+                label: 'No data present',
               )
             : Column(
                 children: _orders
@@ -244,7 +254,7 @@ class _DeliveryCustomerDetailScreenState
         return _payments.isEmpty
             ? const _EmptyState(
                 icon: Icons.payments_outlined,
-                label: 'No collections yet',
+                label: 'No data present',
               )
             : Column(
                 children: _payments
@@ -255,7 +265,7 @@ class _DeliveryCustomerDetailScreenState
         return _visits.isEmpty
             ? const _EmptyState(
                 icon: Icons.route_outlined,
-                label: 'No visits yet',
+                label: 'No data present',
               )
             : Column(
                 children: _visits.map((e) => _VisitTile(visit: e)).toList(),

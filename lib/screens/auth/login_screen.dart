@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
 
@@ -21,7 +22,7 @@ class _CountryCode {
 
 const List<_CountryCode> _countryCodes = [
   _CountryCode('IN', '+91'),
-  _CountryCode('US', '+44'),
+  _CountryCode('US', '+1'),
   _CountryCode('AE', '+971'),
   _CountryCode('AU', '+61'),
   _CountryCode('JP', '+81'),
@@ -96,13 +97,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() => _isLoading = true);
     try {
-      await PushNotificationService.instance.requestPermissionBeforeLogin();
       final apiProvider = ApiProviderScope.of(context);
+      await PushNotificationService.instance.requestPermissionBeforeLogin();
       final session = await apiProvider.login(
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
 
+      if (!mounted) return;
       _finishSignIn(apiProvider, session);
     } on ApiException catch (error) {
       if (!mounted) return;
@@ -138,7 +140,9 @@ class _LoginScreenState extends State<LoginScreen> {
     final phone = _normalizedIndianPhone();
     if (phone == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter a valid 10-digit Indian mobile number.')),
+        const SnackBar(
+          content: Text('Enter a valid 10-digit Indian mobile number.'),
+        ),
       );
       return;
     }
@@ -165,14 +169,14 @@ class _LoginScreenState extends State<LoginScreen> {
           _isPhoneTab = false;
         });
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not send OTP: $error')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Could not send OTP: $error')));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -264,22 +268,50 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        Center(
+                          child: Container(
+                            width: 56,
+                            height: 56,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [primary, primaryDark],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(18),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: primary.withValues(alpha: 0.28),
+                                  blurRadius: 14,
+                                  offset: const Offset(0, 5),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.business_rounded,
+                              color: Colors.white,
+                              size: 28,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
                         const Text(
                           'Welcome back',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
                             color: headingText,
+                            letterSpacing: -0.3,
                           ),
                         ),
                         const SizedBox(height: 6),
                         const Text(
                           'Sign in to your workspace to continue',
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 14, color: bodyText),
+                          style: TextStyle(fontSize: 13, color: bodyText),
                         ),
-                        const SizedBox(height: 22),
+                        const SizedBox(height: 24),
                         if (!_phoneLoginUnavailable) _buildTabSwitcher(),
                         const SizedBox(height: 18),
                         if (!_isPhoneTab || _phoneLoginUnavailable) ...[
@@ -426,7 +458,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                     color: headingText,
                                     fontSize: 14,
                                   ),
-                                  buildCounter: (_, {required currentLength, required isFocused, maxLength}) => null,
+                                  buildCounter:
+                                      (
+                                        _, {
+                                        required currentLength,
+                                        required isFocused,
+                                        maxLength,
+                                      }) => null,
                                   decoration: _pillDecoration(
                                     hint: '98450 11223',
                                   ),
@@ -449,7 +487,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             onPressed: _handleSignIn,
                           ),
                         ],
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 20),
                         Row(
                           children: [
                             const Expanded(
@@ -457,13 +495,14 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             Padding(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
+                                horizontal: 12,
                               ),
                               child: Text(
-                                'or',
+                                'or continue with',
                                 style: TextStyle(
                                   color: lightMutedText,
-                                  fontSize: 14,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ),
@@ -472,25 +511,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 4),
-                        const Text(
-                          'Or sign in with social platforms',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 14, color: mutedText),
-                        ),
-                        const SizedBox(height: 10),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Semantics(
-                              label: 'Sign in with Google',
-                              button: true,
-                              child: _SocialCircleButton(
-                                label: 'G',
-                                onTap: _isLoading ? null : _handleGoogleSignIn,
-                              ),
-                            ),
-                          ],
+                        const SizedBox(height: 14),
+                        _GoogleSignInButton(
+                          onTap: _isLoading ? null : _handleGoogleSignIn,
                         ),
                         // Registration link is intentionally hidden from the
                         // login page for now. The registration screen remains
@@ -718,36 +741,76 @@ class _PrimaryButton extends StatelessWidget {
   }
 }
 
-class _SocialCircleButton extends StatelessWidget {
-  final String label;
+class _GoogleSignInButton extends StatelessWidget {
   final VoidCallback? onTap;
 
-  const _SocialCircleButton({required this.label, required this.onTap});
+  const _GoogleSignInButton({required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      customBorder: const CircleBorder(),
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
-          border: Border.all(color: _LoginScreenState.border, width: 1.4),
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: const TextStyle(
-              color: _LoginScreenState.headingText,
-              fontWeight: FontWeight.w700,
-              fontSize: 14,
+    return Semantics(
+      label: 'Continue with Google',
+      button: true,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: AnimatedOpacity(
+          duration: const Duration(milliseconds: 120),
+          opacity: onTap == null ? 0.55 : 1.0,
+          child: Container(
+            height: 52,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: _LoginScreenState.border, width: 1.4),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _GoogleLogoIcon(size: 22),
+                SizedBox(width: 12),
+                Text(
+                  'Continue with Google',
+                  style: TextStyle(
+                    color: _LoginScreenState.headingText,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.1,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
       ),
     );
+  }
+}
+
+class _GoogleLogoIcon extends StatelessWidget {
+  final double size;
+
+  const _GoogleLogoIcon({this.size = 20});
+
+  // Official Google G SVG paths (48×48 viewBox).
+  static const _svg = '''
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <path fill="#4285f4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"/>
+  <path fill="#34a853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z"/>
+  <path fill="#fbbc05" d="M11.69 28.18C11.25 26.86 11 25.45 11 24s.25-2.86.69-4.18v-5.7H4.34C2.85 17.09 2 20.45 2 24c0 3.55.85 6.91 2.34 9.88l7.35-5.7z"/>
+  <path fill="#ea4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z"/>
+</svg>
+''';
+
+  @override
+  Widget build(BuildContext context) {
+    return SvgPicture.string(_svg, width: size, height: size);
   }
 }

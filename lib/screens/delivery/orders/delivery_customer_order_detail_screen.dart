@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../widgets/app_skeleton.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
 
@@ -94,9 +95,7 @@ class _DeliveryCustomerOrderDetailScreenState
 
   Widget _body() {
     if (_loading) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppColors.deliveryGreen),
-      );
+      return const AppPageSkeleton(rows: 5);
     }
     if (_error != null) {
       return ListView(

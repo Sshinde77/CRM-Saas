@@ -6,7 +6,6 @@ import '../../../constants/app_colors.dart';
 import '../../../models/customer_model.dart';
 import '../../../providers/api_provider.dart';
 import '../../../widgets/completion_feedback_sheet.dart';
-import '../../../widgets/delivery/customer_search_dialog.dart';
 import '../../delivery/customers/delivery_customers_screen.dart';
 import '../../admin/leads/admin_leads_screen.dart';
 import '../../admin/orders/admin_orders_screen.dart';
@@ -34,12 +33,7 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
   final _pagination = ListPagination();
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  final TextEditingController _customerNameController = TextEditingController();
-  final TextEditingController _notesController = TextEditingController();
   List<CustomerModel> _customers = const [];
-  CustomerModel? _selectedCustomer;
-  bool _loadingCustomers = true;
-  String? _customerLoadError;
 
   final List<_VisitEntry> _visits = [
     const _VisitEntry(
@@ -66,52 +60,50 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
 
   Future<void> _loadCustomers() async {
     if (!mounted) return;
-    setState(() {
-      _loadingCustomers = true;
-      _customerLoadError = null;
-    });
     try {
       final customers = await ApiProviderScope.of(context).fetchCustomers();
       if (!mounted) return;
       setState(() {
         _customers = customers;
-        _loadingCustomers = false;
       });
     } catch (_) {
-      if (!mounted) return;
-      setState(() {
-        _loadingCustomers = false;
-        _customerLoadError = 'Unable to load customers';
-      });
+      // The customer count is supplemental; the visit form remains usable.
     }
   }
 
-  Future<void> _selectCustomer() async {
-    if (_loadingCustomers) return;
-    if (_customerLoadError != null) {
-      await _loadCustomers();
-      if (!mounted || _customerLoadError != null) return;
-    }
-    final customer = await showDialog<CustomerModel>(
-      context: context,
-      builder: (_) => CustomerSearchDialog(
-        customers: _customers,
-        selectedCustomerId: _selectedCustomer?.id,
-        emptyMessage: 'No customers available.',
+  Future<void> _openLogVisitDialog() async {
+    final result = await Navigator.of(context).push<_LogVisitResult>(
+      MaterialPageRoute(builder: (_) => const _CreateVisitPage()),
+    );
+    if (result == null || !mounted) return;
+    setState(() {
+      _visits.insert(
+        0,
+        _VisitEntry(
+          customer: result.leadName,
+          inTime: _formatVisitTime(DateTime.now()),
+          outTime: '—',
+          notes: [
+            'Type: ${result.visitType[0].toUpperCase()}${result.visitType.substring(1)}',
+            'Purpose: ${result.purpose}',
+            if (result.notes.isNotEmpty) 'Notes: ${result.notes}',
+            if (result.outcome.isNotEmpty) 'Outcome: ${result.outcome}',
+          ].join('\n'),
+          status: 'In Progress',
+        ),
+      );
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Visit logged for ${result.leadName}.'),
+        behavior: SnackBarBehavior.floating,
       ),
     );
-    if (!mounted || customer == null) return;
-    setState(() {
-      _selectedCustomer = customer;
-      _customerNameController.text = customer.name;
-    });
   }
 
   @override
   void dispose() {
     _pagination.dispose();
-    _customerNameController.dispose();
-    _notesController.dispose();
     super.dispose();
   }
 
@@ -201,44 +193,6 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
     _showSnack(action);
   }
 
-  void _handleCheckIn() {
-    final customer = _customerNameController.text.trim();
-    final notes = _notesController.text.trim();
-
-    if (customer.isEmpty || _selectedCustomer == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select a customer before checking in.'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      return;
-    }
-
-    setState(() {
-      _visits.insert(
-        0,
-        _VisitEntry(
-          customer: customer,
-          inTime: _formatVisitTime(DateTime.now()),
-          outTime: '—',
-          notes: notes.isEmpty ? 'No check-in notes.' : notes,
-          status: 'In Progress',
-        ),
-      );
-      _selectedCustomer = null;
-      _customerNameController.clear();
-      _notesController.clear();
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Checked in at $customer.'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
-
   Future<void> _closeVisit(int index) async {
     if (index < 0 || index >= _visits.length) return;
     final visit = _visits[index];
@@ -282,90 +236,64 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final wide = constraints.maxWidth >= 840;
-                    final leftPanel = _CheckInCard(
-                      customerNameController: _customerNameController,
-                      loadingCustomers: _loadingCustomers,
-                      customerLoadError: _customerLoadError,
-                      onSelectCustomer: _selectCustomer,
-                      notesController: _notesController,
-                      onCheckIn: _handleCheckIn,
-                    );
-                    final rightPanel = _VisitHistoryPanel(
-                      visits: visits,
-                      onCloseVisit: (index) => _closeVisit(
-                        (_pagination.page - 1) * _pagination.pageSize + index,
-                      ),
-                    );
-
-                    return Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 920),
-                        child: Column(
-                          children: [
-                            ManagementPageSummary(
-                              title: 'Visits',
-                              subtitle: '${_visits.length} customer visits',
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 920),
+                    child: Column(
+                      children: [
+                        ManagementPageSummary(
+                          title: 'Visits',
+                          subtitle: '${_visits.length} customer visits',
+                          icon: Icons.location_on_outlined,
+                          onAdd: _openLogVisitDialog,
+                          kpis: [
+                            ManagementKpiData(
+                              label: 'Total Visits',
+                              value: '${_visits.length}',
                               icon: Icons.location_on_outlined,
-                              kpis: [
-                                ManagementKpiData(
-                                  label: 'Total Visits',
-                                  value: '${_visits.length}',
-                                  icon: Icons.location_on_outlined,
-                                  color: AppColors.deliveryBlue,
-                                  background: AppColors.deliveryBlueSoft,
-                                ),
-                                ManagementKpiData(
-                                  label: 'Completed',
-                                  value:
-                                      '${_visits.where((visit) => visit.status == 'Completed').length}',
-                                  icon: Icons.check_circle_outline_rounded,
-                                  color: AppColors.deliveryGreen,
-                                  background: AppColors.deliveryGreenSoft,
-                                ),
-                                ManagementKpiData(
-                                  label: 'In Progress',
-                                  value:
-                                      '${_visits.where((visit) => visit.status == 'In Progress').length}',
-                                  icon: Icons.timelapse_rounded,
-                                  color: AppColors.deliveryOrange,
-                                  background: AppColors.deliveryOrangeSoft,
-                                ),
-                                ManagementKpiData(
-                                  label: 'Customers',
-                                  value: '${_customers.length}',
-                                  icon: Icons.groups_2_outlined,
-                                  color: AppColors.deliveryCustomerOrders,
-                                  background:
-                                      AppColors.deliveryCustomerOrdersSoft,
-                                ),
-                              ],
+                              color: AppColors.deliveryBlue,
+                              background: AppColors.deliveryBlueSoft,
                             ),
-                            const SizedBox(height: 16),
-                            if (!wide) ...[
-                              leftPanel,
-                              const SizedBox(height: 20),
-                              rightPanel,
-                            ] else
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  SizedBox(width: 320, child: leftPanel),
-                                  const SizedBox(width: 20),
-                                  Expanded(child: rightPanel),
-                                ],
-                              ),
-                            ListPaginationBar(
-                              pagination: _pagination,
-                              onChanged: () => setState(() {}),
+                            ManagementKpiData(
+                              label: 'Completed',
+                              value:
+                                  '${_visits.where((visit) => visit.status == 'Completed').length}',
+                              icon: Icons.check_circle_outline_rounded,
+                              color: AppColors.deliveryGreen,
+                              background: AppColors.deliveryGreenSoft,
+                            ),
+                            ManagementKpiData(
+                              label: 'In Progress',
+                              value:
+                                  '${_visits.where((visit) => visit.status == 'In Progress').length}',
+                              icon: Icons.timelapse_rounded,
+                              color: AppColors.deliveryOrange,
+                              background: AppColors.deliveryOrangeSoft,
+                            ),
+                            ManagementKpiData(
+                              label: 'Customers',
+                              value: '${_customers.length}',
+                              icon: Icons.groups_2_outlined,
+                              color: AppColors.deliveryCustomerOrders,
+                              background: AppColors.deliveryCustomerOrdersSoft,
                             ),
                           ],
                         ),
-                      ),
-                    );
-                  },
+                        const SizedBox(height: 16),
+                        _VisitHistoryPanel(
+                          visits: visits,
+                          onCloseVisit: (index) => _closeVisit(
+                            (_pagination.page - 1) * _pagination.pageSize +
+                                index,
+                          ),
+                        ),
+                        ListPaginationBar(
+                          pagination: _pagination,
+                          onChanged: () => setState(() {}),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -376,6 +304,7 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
   }
 }
 
+// ignore: unused_element
 class _VisitsOverview extends StatelessWidget {
   final int totalVisits;
 
@@ -472,221 +401,653 @@ class _VisitsOverview extends StatelessWidget {
   }
 }
 
-class _CheckInCard extends StatefulWidget {
-  final TextEditingController customerNameController;
-  final bool loadingCustomers;
-  final String? customerLoadError;
-  final VoidCallback onSelectCustomer;
-  final TextEditingController notesController;
-  final VoidCallback onCheckIn;
+class _LogVisitResult {
+  final String leadName;
+  final String visitType;
+  final String purpose;
+  final String notes;
+  final String outcome;
 
-  const _CheckInCard({
-    required this.customerNameController,
-    required this.loadingCustomers,
-    required this.customerLoadError,
-    required this.onSelectCustomer,
-    required this.notesController,
-    required this.onCheckIn,
+  const _LogVisitResult({
+    required this.leadName,
+    required this.visitType,
+    required this.purpose,
+    required this.notes,
+    required this.outcome,
   });
-
-  @override
-  State<_CheckInCard> createState() => _CheckInCardState();
 }
 
-class _CheckInCardState extends State<_CheckInCard> {
-  late final FocusNode _customerFocusNode;
-  late final FocusNode _notesFocusNode;
+class _CreateVisitPage extends StatefulWidget {
+  const _CreateVisitPage();
+
+  @override
+  State<_CreateVisitPage> createState() => _CreateVisitPageState();
+}
+
+class _CreateVisitPageState extends State<_CreateVisitPage> {
+  final _purposeController = TextEditingController(text: 'Product Demo');
+  final _notesController = TextEditingController();
+  final _outcomeController = TextEditingController();
+
+  List<_VisitLeadOption> _leads = const [];
+  _VisitLeadOption? _selectedLead;
+  bool _loadingLeads = true;
+  String? _leadLoadError;
+  String _visitType = 'lead';
 
   @override
   void initState() {
     super.initState();
-    _customerFocusNode = FocusNode()..addListener(_onFocusChanged);
-    _notesFocusNode = FocusNode()..addListener(_onFocusChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadLeads());
+  }
+
+  Future<void> _loadLeads() async {
+    if (!mounted) return;
+    setState(() {
+      _loadingLeads = true;
+      _leadLoadError = null;
+    });
+    try {
+      final raw = await ApiProviderScope.of(context).fetchLeads();
+      if (!mounted) return;
+      setState(() {
+        _leads = raw
+            .map(_VisitLeadOption.fromJson)
+            .where((l) => l.id.isNotEmpty && l.name.isNotEmpty)
+            .toList();
+        _loadingLeads = false;
+        _leadLoadError = null;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _loadingLeads = false;
+        _leadLoadError = 'Unable to load. Tap to retry.';
+      });
+    }
+  }
+
+  Future<void> _selectLead() async {
+    if (_loadingLeads) return;
+    if (_leadLoadError != null) {
+      await _loadLeads();
+      if (!mounted || _leadLoadError != null) return;
+    }
+    final lead = await showDialog<_VisitLeadOption>(
+      context: context,
+      builder: (_) =>
+          _LeadSearchDialog(leads: _leads, selectedLeadId: _selectedLead?.id),
+    );
+    if (!mounted || lead == null) return;
+    setState(() => _selectedLead = lead);
   }
 
   @override
   void dispose() {
-    _customerFocusNode.removeListener(_onFocusChanged);
-    _notesFocusNode.removeListener(_onFocusChanged);
-    _customerFocusNode.dispose();
-    _notesFocusNode.dispose();
+    _purposeController.dispose();
+    _notesController.dispose();
+    _outcomeController.dispose();
     super.dispose();
   }
 
-  void _onFocusChanged() {
-    if (mounted) setState(() {});
+  void _save() {
+    final purpose = _purposeController.text.trim();
+    if (_selectedLead == null || purpose.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select a lead and enter the visit purpose.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+    Navigator.of(context).pop(
+      _LogVisitResult(
+        leadName: _selectedLead!.name,
+        visitType: _visitType,
+        purpose: purpose,
+        notes: _notesController.text.trim(),
+        outcome: _outcomeController.text.trim(),
+      ),
+    );
   }
-
-  bool get _customerFocused => _customerFocusNode.hasFocus;
-  bool get _notesFocused => _notesFocusNode.hasFocus;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.deliverySurfaceBorder),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.textPrimary.withValues(alpha: 0.05),
-            blurRadius: 14,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Check In',
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
+    return Scaffold(
+      backgroundColor: AppColors.deliveryBackground,
+      body: SafeArea(
+        child: Column(
+          children: [
+            SalesManagerTopBar(
+              title: 'Log Client Visit',
+              leadingIcon: Icons.arrow_back_rounded,
+              onLeadingTap: () => Navigator.of(context).pop(),
             ),
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'Customer Name *',
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 8),
-          GestureDetector(
-            onTap: widget.onSelectCustomer,
-            child: _FieldContainer(
-              focused: _customerFocused,
-              child: TextField(
-                controller: widget.customerNameController,
-                focusNode: _customerFocusNode,
-                readOnly: true,
-                onTap: widget.onSelectCustomer,
-                cursorColor: AppColors.primary,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                  isDense: true,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                  hintText: widget.loadingCustomers
-                      ? 'Loading customers...'
-                      : widget.customerLoadError ?? 'Select customer',
-                  suffixIcon: widget.loadingCustomers
-                      ? const Padding(
-                          padding: EdgeInsets.all(12),
-                          child: SizedBox.square(
-                            dimension: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 600),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _VisitFieldLabel('Lead *'),
+                        const SizedBox(height: 8),
+                        _VisitLeadPickerCard(
+                          selected: _selectedLead,
+                          loading: _loadingLeads,
+                          error: _leadLoadError,
+                          onTap: _selectLead,
+                          onClear: _selectedLead == null
+                              ? null
+                              : () => setState(() => _selectedLead = null),
+                        ),
+                        const SizedBox(height: 18),
+                        _VisitFieldLabel('Visit Type'),
+                        const SizedBox(height: 8),
+                        DropdownButtonFormField<String>(
+                          value: _visitType,
+                          decoration: const InputDecoration(
+                            filled: true,
+                            fillColor: Colors.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(14),
+                              ),
+                              borderSide: BorderSide(color: AppColors.border),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(14),
+                              ),
+                              borderSide: BorderSide(color: AppColors.border),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(14),
+                              ),
+                              borderSide: BorderSide(
+                                color: AppColors.primary,
+                                width: 1.2,
+                              ),
+                            ),
                           ),
-                        )
-                      : const Icon(Icons.keyboard_arrow_down_rounded, size: 22),
+                          items: const [
+                            DropdownMenuItem(
+                              value: 'lead',
+                              child: Text('Lead'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'customer',
+                              child: Text('Customer'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'supplier',
+                              child: Text('Supplier'),
+                            ),
+                          ],
+                          onChanged: (value) {
+                            if (value != null)
+                              setState(() => _visitType = value);
+                          },
+                        ),
+                        const SizedBox(height: 18),
+                        _VisitFieldLabel('Purpose *'),
+                        const SizedBox(height: 8),
+                        _VisitInputBox(
+                          controller: _purposeController,
+                          hintText: 'Visit objective',
+                        ),
+                        const SizedBox(height: 18),
+                        _VisitFieldLabel('Notes & Discussion'),
+                        const SizedBox(height: 8),
+                        _VisitInputBox(
+                          controller: _notesController,
+                          hintText: 'Key discussion points...',
+                          maxLines: 4,
+                        ),
+                        const SizedBox(height: 18),
+                        _VisitFieldLabel('Outcome'),
+                        const SizedBox(height: 8),
+                        _VisitInputBox(
+                          controller: _outcomeController,
+                          hintText: 'e.g. Requested quotation',
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'Notes (optional)',
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
+          ],
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            border: Border(
+              top: BorderSide(color: AppColors.deliveryCardBorder),
             ),
           ),
-          const SizedBox(height: 8),
-          _FieldContainer(
-            focused: _notesFocused,
-            child: TextField(
-              controller: widget.notesController,
-              focusNode: _notesFocusNode,
-              maxLines: 4,
-              cursorColor: AppColors.primary,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-              decoration: const InputDecoration(
-                filled: true,
-                fillColor: Colors.white,
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.symmetric(vertical: 10),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: ElevatedButton.icon(
-              onPressed: widget.onCheckIn,
-              icon: const Icon(Icons.place_outlined, size: 16),
-              label: const Text(
-                'Check In',
-                style: TextStyle(fontWeight: FontWeight.w700),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+          child: Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.textSecondary,
+                    side: const BorderSide(color: AppColors.border),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text('Cancel'),
                 ),
               ),
-            ),
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 2,
+                child: FilledButton.icon(
+                  onPressed: _save,
+                  icon: const Icon(Icons.location_on_rounded, size: 20),
+                  label: const Text(
+                    'Log Visit',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 }
 
-class _FieldContainer extends StatelessWidget {
-  final Widget child;
-  final bool focused;
+class _VisitLeadOption {
+  final String id;
+  final String name;
+  final String code;
 
-  const _FieldContainer({required this.child, required this.focused});
+  const _VisitLeadOption({
+    required this.id,
+    required this.name,
+    required this.code,
+  });
+
+  factory _VisitLeadOption.fromJson(Map<String, dynamic> json) {
+    String read(List<String> keys) {
+      for (final key in keys) {
+        final value = json[key]?.toString().trim();
+        if (value != null && value.isNotEmpty) return value;
+      }
+      return '';
+    }
+
+    return _VisitLeadOption(
+      id: read(['id', 'lead_id']),
+      name: read(['company_name', 'companyName', 'name', 'contact_person']),
+      code: read(['lead_code', 'leadCode', 'code', 'lead_id']),
+    );
+  }
+}
+
+class _VisitLeadPickerCard extends StatelessWidget {
+  final _VisitLeadOption? selected;
+  final bool loading;
+  final String? error;
+  final VoidCallback onTap;
+  final VoidCallback? onClear;
+
+  const _VisitLeadPickerCard({
+    required this.selected,
+    required this.loading,
+    required this.error,
+    required this.onTap,
+    this.onClear,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: focused
-              ? AppColors.primary
-              : AppColors.border.withValues(alpha: 0.85),
-          width: focused ? 1.4 : 1,
+    final hasSelection = selected != null;
+    return GestureDetector(
+      onTap: loading ? null : onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: hasSelection ? AppColors.activeMenuBg : Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: hasSelection ? AppColors.primary : AppColors.border,
+            width: hasSelection ? 1.4 : 1.0,
+          ),
         ),
-        boxShadow: focused
-            ? [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.10),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ]
-            : const [],
+        child: hasSelection
+            ? Row(
+                children: [
+                  _VisitPersonAvatar(name: selected!.name),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          selected!.name,
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        if (selected!.code.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            selected!.code,
+                            style: const TextStyle(
+                              color: AppColors.primary,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Text(
+                      'Change',
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  if (onClear != null) ...[
+                    const SizedBox(width: 6),
+                    GestureDetector(
+                      onTap: onClear,
+                      child: const Icon(
+                        Icons.close_rounded,
+                        size: 18,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ],
+              )
+            : Row(
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: AppColors.activeMenuBg,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      loading
+                          ? Icons.hourglass_empty_rounded
+                          : (error != null
+                                ? Icons.refresh_rounded
+                                : Icons.search_rounded),
+                      color: AppColors.primary,
+                      size: 18,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      loading
+                          ? 'Loading leads...'
+                          : (error ?? 'Tap to search and select a lead'),
+                      style: TextStyle(
+                        color: error != null
+                            ? AppColors.red
+                            : AppColors.textSecondary,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                  const Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    color: AppColors.textMuted,
+                    size: 22,
+                  ),
+                ],
+              ),
       ),
-      child: child,
+    );
+  }
+}
+
+class _VisitPersonAvatar extends StatelessWidget {
+  final String name;
+
+  const _VisitPersonAvatar({required this.name});
+
+  @override
+  Widget build(BuildContext context) {
+    final words = name.trim().split(RegExp(r'\s+'));
+    final initials = words
+        .take(2)
+        .map((w) => w.isEmpty ? '' : w[0].toUpperCase())
+        .join('');
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [AppColors.primary900, AppColors.primary],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Center(
+        child: Text(
+          initials.isEmpty ? '?' : initials,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _LeadSearchDialog extends StatefulWidget {
+  final List<_VisitLeadOption> leads;
+  final String? selectedLeadId;
+
+  const _LeadSearchDialog({required this.leads, this.selectedLeadId});
+
+  @override
+  State<_LeadSearchDialog> createState() => _LeadSearchDialogState();
+}
+
+class _LeadSearchDialogState extends State<_LeadSearchDialog> {
+  final _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final query = _searchController.text.trim().toLowerCase();
+    final leads = widget.leads
+        .where(
+          (lead) =>
+              query.isEmpty ||
+              lead.name.toLowerCase().contains(query) ||
+              lead.code.toLowerCase().contains(query),
+        )
+        .toList();
+
+    return AlertDialog(
+      title: const Text('Select Lead'),
+      content: SizedBox(
+        width: 420,
+        height: 420,
+        child: Column(
+          children: [
+            TextField(
+              controller: _searchController,
+              autofocus: true,
+              onChanged: (_) => setState(() {}),
+              decoration: const InputDecoration(
+                hintText: 'Search leads',
+                prefixIcon: Icon(Icons.search_rounded),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Expanded(
+              child: leads.isEmpty
+                  ? const Center(child: Text('No matching leads'))
+                  : ListView.separated(
+                      itemCount: leads.length,
+                      separatorBuilder: (_, _) => const Divider(height: 1),
+                      itemBuilder: (context, index) {
+                        final lead = leads[index];
+                        return ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(lead.name),
+                          subtitle: lead.code.isEmpty ? null : Text(lead.code),
+                          trailing: lead.id == widget.selectedLeadId
+                              ? const Icon(
+                                  Icons.check_circle,
+                                  color: AppColors.primary,
+                                )
+                              : null,
+                          onTap: () => Navigator.of(context).pop(lead),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _VisitFieldLabel extends StatelessWidget {
+  final String label;
+
+  const _VisitFieldLabel(this.label);
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      label,
+      style: const TextStyle(
+        color: AppColors.textPrimary,
+        fontSize: 13,
+        fontWeight: FontWeight.w600,
+      ),
+    );
+  }
+}
+
+class _VisitInputBox extends StatelessWidget {
+  final TextEditingController controller;
+  final String hintText;
+  final int maxLines;
+
+  const _VisitInputBox({
+    required this.controller,
+    required this.hintText,
+    this.maxLines = 1,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller,
+      maxLines: maxLines,
+      cursorColor: AppColors.primary,
+      style: const TextStyle(
+        fontSize: 14,
+        color: AppColors.textPrimary,
+        fontWeight: FontWeight.w500,
+      ),
+      decoration: InputDecoration(
+        hintText: hintText,
+        hintStyle: const TextStyle(
+          color: AppColors.textSecondary,
+          fontSize: 14,
+        ),
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 12,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: AppColors.border),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: AppColors.border),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.2),
+        ),
+      ),
+    );
+  }
+}
+
+class _VisitTapInput extends StatelessWidget {
+  final TextEditingController controller;
+  final String hintText;
+  final VoidCallback onTap;
+
+  const _VisitTapInput({
+    required this.controller,
+    required this.hintText,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: IgnorePointer(
+        child: _VisitInputBox(controller: controller, hintText: hintText),
+      ),
     );
   }
 }

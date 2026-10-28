@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../widgets/app_skeleton.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -814,11 +815,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
             ),
             Expanded(
               child: _isLoading && customer == null
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.primary,
-                      ),
-                    )
+                  ? const AppPageSkeleton(rows: 6)
                   : RefreshIndicator(
                       onRefresh: _loadCustomer,
                       color: AppColors.primary,
@@ -1708,31 +1705,8 @@ class _CustomerDocumentsDropdown extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFFF8FBF8),
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: AppColors.border.withValues(alpha: 0.75)),
         ),
-        child: const Row(
-          children: [
-            SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2.4,
-                color: AppColors.primary,
-              ),
-            ),
-            SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Loading customer documents...',
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
+        child: const AppPageSkeleton(rows: 3, showHeader: false),
       );
     }
 
@@ -1767,30 +1741,9 @@ class _CustomerDocumentsDropdown extends StatelessWidget {
     }
 
     if (documents.isEmpty) {
-      return Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF8FBF8),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: AppColors.border.withValues(alpha: 0.75)),
-        ),
-        child: const Row(
-          children: [
-            Icon(Icons.folder_off_outlined, color: AppColors.textSecondary),
-            SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'No documents available for this customer.',
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
+      return const _EmptySectionState(
+        title: 'No data present',
+        subtitle: 'No documents available for this customer.',
       );
     }
 
@@ -2047,9 +2000,7 @@ class _AccountStatementCard extends StatelessWidget {
           color: const Color(0xFFF8FBF8),
           borderRadius: BorderRadius.circular(18),
         ),
-        child: const Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
-        ),
+        child: const AppPageSkeleton(rows: 3, showHeader: false),
       );
     }
 
@@ -2095,7 +2046,7 @@ class _AccountStatementCard extends StatelessWidget {
     final ledgerData = ledger;
     if (ledgerData == null) {
       return const _EmptySectionState(
-        title: 'No account statement available.',
+        title: 'No data present',
         subtitle: 'Ledger data was not returned for this customer.',
       );
     }
@@ -2287,7 +2238,7 @@ class _StatementTransactionsTable extends StatelessWidget {
   Widget build(BuildContext context) {
     if (transactions.isEmpty) {
       return const _EmptySectionState(
-        title: 'No ledger transactions found.',
+        title: 'No data present',
         subtitle: 'This customer has no ledger transaction history yet.',
       );
     }
@@ -2448,7 +2399,7 @@ class _CustomerPaymentsSection extends StatelessWidget {
     }
     if (payments.isEmpty) {
       return const _EmptySectionState(
-        title: 'No payment history found.',
+        title: 'No data present',
         subtitle: 'This customer has no recorded payments yet.',
       );
     }
@@ -2575,7 +2526,7 @@ class _CustomerOrdersSection extends StatelessWidget {
     }
     if (orders.isEmpty) {
       return const _EmptySectionState(
-        title: 'No orders found.',
+        title: 'No data present',
         subtitle: 'This customer has no sales orders yet.',
       );
     }
@@ -2786,9 +2737,7 @@ class _SectionLoader extends StatelessWidget {
         color: const Color(0xFFF8FBF8),
         borderRadius: BorderRadius.circular(18),
       ),
-      child: const Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
-      ),
+      child: const AppPageSkeleton(rows: 3, showHeader: false),
     );
   }
 }

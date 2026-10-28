@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:csc_picker/csc_picker.dart';
 import 'package:flutter/material.dart';
+import '../../../widgets/app_skeleton.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
 import 'package:image_picker/image_picker.dart';
@@ -892,11 +893,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
 
                   if (snapshot.connectionState == ConnectionState.waiting &&
                       users.isEmpty) {
-                    return const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.primary,
-                      ),
-                    );
+                    return const AppPageSkeleton(rows: 5);
                   }
 
                   if (snapshot.hasError && users.isEmpty) {
@@ -912,11 +909,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                   if (widget.isEditMode &&
                       !_customerLoaded &&
                       _loadedCustomer == null) {
-                    return const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.primary,
-                      ),
-                    );
+                    return const AppPageSkeleton(rows: 6);
                   }
 
                   return SingleChildScrollView(

@@ -3,6 +3,7 @@ import '../../../widgets/list_pagination_bar.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../../../widgets/app_skeleton.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -487,14 +488,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
                         ),
                       ),
                       if (_isLoading)
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 80),
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        )
+                        const AppPageSkeleton(rows: 7, showHeader: false)
                       else if (_errorMessage != null)
                         _errorState(_errorMessage!)
                       else if (_customers.isEmpty)

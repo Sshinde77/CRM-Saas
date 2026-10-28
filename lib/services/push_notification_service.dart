@@ -32,6 +32,9 @@ class PushNotificationService {
   final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
 
+  // Retained so the token-refresh listener can be cancelled if lifecycle
+  // management is added by the host application.
+  // ignore: unused_field
   StreamSubscription<String>? _tokenSubscription;
   bool _initialized = false;
   bool _registrationInProgress = false;
@@ -110,7 +113,7 @@ class PushNotificationService {
     }
 
     final token = await _messaging.getToken();
-    debugPrint('[FCM] getToken result: ${token == null ? '<null>' : token}');
+    debugPrint('[FCM] getToken result: ${token ?? '<null>'}');
     if (token != null && token.trim().isNotEmpty) {
       await _registerToken(token);
     } else {

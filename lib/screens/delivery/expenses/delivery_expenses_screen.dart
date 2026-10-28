@@ -3,6 +3,7 @@ import '../../../widgets/list_pagination_bar.dart';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import '../../../widgets/app_skeleton.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
 import 'package:image_picker/image_picker.dart';
@@ -15,6 +16,7 @@ import '../../../models/delivery_expense_model.dart';
 import '../../../providers/api_provider.dart';
 import '../../../routes/app_router.dart';
 import '../../../services/api_service.dart';
+import '../../../widgets/app_calendar_date_picker.dart';
 import '../../../widgets/delivery/delivery_bottom_navigation.dart';
 import '../../../widgets/delivery/delivery_image_upload_field.dart';
 import '../../../widgets/delivery/delivery_partner_sidebar.dart';
@@ -1255,11 +1257,12 @@ class _ExpenseFormSheetState extends State<_ExpenseFormSheet> {
   }
 
   Future<void> _pickDate() async {
-    final picked = await showDatePicker(
+    final picked = await showAppCalendarDatePicker(
       context: context,
       initialDate: _expenseDate,
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
+      title: 'Expense Date',
     );
     if (picked != null) setState(() => _expenseDate = picked);
   }
@@ -1660,7 +1663,7 @@ class _StateView extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (loading)
-              const CircularProgressIndicator(color: AppColors.deliveryGreen)
+              const AppPageSkeleton(rows: 5, showHeader: false)
             else
               Icon(icon, color: AppColors.deliveryGreen, size: 48),
             const SizedBox(height: 14),

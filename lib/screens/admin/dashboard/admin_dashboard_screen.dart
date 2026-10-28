@@ -1,10 +1,12 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import '../../../widgets/app_skeleton.dart';
 
 import '../../../constants/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../models/admin_dashboard_model.dart';
+import '../../../providers/api_provider.dart';
 import '../../../services/api_service.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
@@ -64,7 +66,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   static const Color _teal = Color(0xFF009688);
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  final ApiService _apiService = ApiService();
+  ApiService get _apiService => ApiProviderScope.of(context).service;
 
   DashboardRange _selectedRange = DashboardRange.thisMonth;
   DateTimeRange? _customRange;
@@ -81,7 +83,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   @override
   void dispose() {
-    _apiService.close();
     super.dispose();
   }
 
@@ -1787,24 +1788,26 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Widget _loadingView() {
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 18, 16, 92),
-      children: [
-        _skeleton(height: 258),
-        const SizedBox(height: 16),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: 6,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            mainAxisExtent: 112,
+    return AppSkeleton(
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 18, 16, 92),
+        children: [
+          _skeleton(height: 258),
+          const SizedBox(height: 16),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: 6,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              mainAxisExtent: 112,
+            ),
+            itemBuilder: (_, _) => _skeleton(height: 112),
           ),
-          itemBuilder: (_, _) => _skeleton(height: 112),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

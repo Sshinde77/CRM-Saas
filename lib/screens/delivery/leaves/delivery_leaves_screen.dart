@@ -3,6 +3,7 @@ import '../../../widgets/list_pagination_bar.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import '../../../widgets/app_skeleton.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
 
@@ -14,6 +15,7 @@ import '../../../routes/app_router.dart';
 import '../../../services/api_service.dart';
 import '../../../widgets/delivery/delivery_bottom_navigation.dart';
 import '../../../widgets/delivery/delivery_partner_sidebar.dart';
+import '../../../widgets/app_calendar_date_picker.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
 import '../../../widgets/sales_manager/sales_manager_shared_shell.dart';
 
@@ -1080,11 +1082,12 @@ class _ApplyLeaveSheetState extends State<_ApplyLeaveSheet> {
     final initial = isStart
         ? (_startDate ?? now)
         : (_endDate ?? _startDate ?? now);
-    final picked = await showDatePicker(
+    final picked = await showAppCalendarDatePicker(
       context: context,
       initialDate: initial,
       firstDate: DateTime(now.year - 1),
       lastDate: DateTime(now.year + 2),
+      title: isStart ? 'Start Date' : 'End Date',
     );
     if (picked == null) return;
     setState(() {
@@ -1721,12 +1724,7 @@ class _LoadingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const SizedBox(
-      height: 250,
-      child: Center(
-        child: CircularProgressIndicator(color: AppColors.deliveryGreen),
-      ),
-    );
+    return const AppPageSkeleton(rows: 5, showHeader: false);
   }
 }
 

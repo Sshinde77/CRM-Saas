@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../constants/app_colors.dart';
 import '../../../models/auth_models.dart';
+import '../../../providers/api_provider.dart';
 import '../../../services/api_service.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 
@@ -25,7 +26,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   final ImagePicker _imagePicker = ImagePicker();
 
   bool _isEditing = false;
-  final ApiService _apiService = ApiService();
+  ApiService get _apiService => ApiProviderScope.of(context).service;
   final Map<_DocumentType, Uint8List?> _bytes = {
     for (final type in _DocumentType.values) type: null,
   };

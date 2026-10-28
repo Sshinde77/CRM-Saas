@@ -1,6 +1,7 @@
 import '../../../models/list_pagination.dart';
 import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
+import '../../../widgets/app_skeleton.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
 
@@ -526,10 +527,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
   }
 
   Widget _loadingState() {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 80),
-      child: Center(child: CircularProgressIndicator(color: Color(0xFF0D1F42))),
-    );
+    return const AppPageSkeleton(rows: 6, showHeader: false);
   }
 
   Widget _errorState(String message, VoidCallback onRetry) {
@@ -777,6 +775,7 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
   }
 }
 
+// ignore: unused_element
 class _QuotationPageHero extends StatelessWidget {
   const _QuotationPageHero({required this.total, required this.visible});
 

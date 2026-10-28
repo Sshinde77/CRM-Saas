@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../widgets/app_skeleton.dart';
 
 import '../../../constants/app_colors.dart';
 import '../../../providers/api_provider.dart';
@@ -290,9 +291,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 
   Widget _body() {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
+    if (_isLoading) return const AppPageSkeleton(rows: 6);
     if (_errorMessage != null) {
       return ListView(
         padding: const EdgeInsets.all(14),

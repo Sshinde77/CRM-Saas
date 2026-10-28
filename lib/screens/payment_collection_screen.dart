@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/app_skeleton.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
 import 'package:flutter/services.dart';
@@ -389,12 +390,7 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
   }
 
   Widget _body() {
-    if (_loadingCustomers) {
-      return const SizedBox(
-        height: 280,
-        child: Center(child: CircularProgressIndicator(strokeWidth: 2.6)),
-      );
-    }
+    if (_loadingCustomers) return const AppPageSkeleton(rows: 5);
     if (_error != null) {
       return _ErrorState(message: _error!, onRetry: _loadCustomers);
     }

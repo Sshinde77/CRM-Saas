@@ -1,6 +1,7 @@
 import '../../../models/list_pagination.dart';
 import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
+import '../../../widgets/app_skeleton.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -63,7 +64,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
   bool _isLoading = true;
   String? _errorMessage;
 
-  List<String> _statusOptions = const [
+  final List<String> _statusOptions = const [
     'All Status',
     'New',
     'Contacted',
@@ -846,6 +847,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
   }
 }
 
+// ignore: unused_element
 class _HeaderCard extends StatelessWidget {
   final int total;
   final VoidCallback onAdd;
@@ -943,6 +945,7 @@ class _HeaderCard extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _MetricsGrid extends StatelessWidget {
   final int total;
   final int newCount;
@@ -1759,12 +1762,7 @@ class _StateView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 80),
-        child: Center(
-          child: CircularProgressIndicator(color: AppColors.deliveryGreen),
-        ),
-      );
+      return const AppPageSkeleton(rows: 6, showHeader: false);
     }
 
     if (errorMessage != null) {

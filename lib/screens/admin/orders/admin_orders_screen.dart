@@ -1,6 +1,7 @@
 import '../../../models/list_pagination.dart';
 import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
+import '../../../widgets/app_skeleton.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
 
@@ -279,12 +280,10 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
       );
       if (!mounted) return;
       setState(() {
-        _apiOrders = result.orders.map(_OrderRecord.fromJson).toList();
-        _currentPage = result.currentPage <= 0
-            ? _currentPage
-            : result.currentPage;
+        _apiOrders = result.items.map(_OrderRecord.fromJson).toList();
+        _currentPage = result.page <= 0 ? _currentPage : result.page;
         _pageSize = result.pageSize <= 0 ? _pageSize : result.pageSize;
-        _totalItems = result.totalItems;
+        _totalItems = result.total;
         _totalPages = result.totalPages <= 0 ? 1 : result.totalPages;
         _hasNextPage = result.hasNextPage;
         _isLoading = false;
@@ -622,11 +621,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
             _SalesOrdersSummary(total: _totalItems),
             const SizedBox(height: 12),
             if (_isLoading)
-              const _SalesOrderState(
-                icon: Icons.hourglass_empty_rounded,
-                title: 'Loading sales orders',
-                loading: true,
-              )
+              const AppPageSkeleton(rows: 6, showHeader: false)
             else if (_errorMessage != null)
               _SalesOrderState(
                 icon: Icons.cloud_off_outlined,
@@ -965,10 +960,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
           _filterBar(desktop: desktop),
           const SizedBox(height: 10),
           if (_isLoading)
-            const _OrdersStatePanel(
-              icon: Icons.hourglass_empty_rounded,
-              title: 'Loading orders...',
-            )
+            const AppPageSkeleton(rows: 7, showHeader: false)
           else if (_errorMessage != null)
             _OrdersStatePanel(
               icon: Icons.cloud_off_rounded,
@@ -1906,14 +1898,12 @@ class _SalesOrderState extends StatelessWidget {
   final IconData icon;
   final String title;
   final String? subtitle;
-  final bool loading;
   final VoidCallback? onRetry;
 
   const _SalesOrderState({
     required this.icon,
     required this.title,
     this.subtitle,
-    this.loading = false,
     this.onRetry,
   });
 
@@ -1929,10 +1919,7 @@ class _SalesOrderState extends StatelessWidget {
       ),
       child: Column(
         children: [
-          if (loading)
-            const CircularProgressIndicator(color: AppColors.primary)
-          else
-            Icon(icon, size: 48, color: AppColors.primary),
+          Icon(icon, size: 48, color: AppColors.primary),
           const SizedBox(height: 12),
           Text(
             title,

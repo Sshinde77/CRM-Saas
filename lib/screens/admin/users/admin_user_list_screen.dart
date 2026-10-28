@@ -1,6 +1,7 @@
 import '../../../models/list_pagination.dart';
 import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
+import '../../../widgets/app_skeleton.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
 
@@ -8,6 +9,7 @@ import '../../../constants/app_colors.dart';
 import '../../../constants/api_constants.dart';
 import '../../../models/app_user.dart';
 import '../../../models/auth_models.dart';
+import '../../../providers/api_provider.dart';
 import '../../../services/api_service.dart';
 import '../../../widgets/admin/app_drawer.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
@@ -36,7 +38,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
-  late final ApiService _apiService;
+  ApiService get _apiService => ApiProviderScope.of(context).service;
   late Future<List<AppUser>> _usersFuture;
 
   static const Color textPrimary = AppColors.textPrimary;
@@ -57,14 +59,12 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
   @override
   void initState() {
     super.initState();
-    _apiService = ApiService();
     _usersFuture = _apiService.fetchUsers(pagination: _pagination);
   }
 
   @override
   void dispose() {
     _pagination.dispose();
-    _apiService.close();
     _searchController.dispose();
     super.dispose();
   }
@@ -457,14 +457,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
                       ),
                       const SizedBox(height: 14),
                       if (snapshot.connectionState == ConnectionState.waiting)
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 40),
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        )
+                        const AppPageSkeleton(rows: 7, showHeader: false)
                       else if (snapshot.hasError)
                         _buildUsersError(snapshot.error.toString())
                       else

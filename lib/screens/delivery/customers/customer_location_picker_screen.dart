@@ -7,6 +7,7 @@ import 'package:latlong2/latlong.dart' as latlong;
 
 import '../../../constants/app_colors.dart';
 import '../../../services/location_search_service.dart';
+import '../../../widgets/app_skeleton.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
 
 class PickedMapLocation {
@@ -460,7 +461,9 @@ class _SearchPanel extends StatelessWidget {
             ),
           ),
           if (searching)
-            const LinearProgressIndicator(minHeight: 2)
+            const AppSkeleton(
+              child: AppSkeletonBox(height: 2, borderRadius: BorderRadius.zero),
+            )
           else if (error != null)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),

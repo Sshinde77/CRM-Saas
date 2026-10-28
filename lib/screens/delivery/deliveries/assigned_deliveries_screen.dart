@@ -3,6 +3,7 @@ import '../../../widgets/list_pagination_bar.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import '../../../widgets/app_skeleton.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../constants/app_colors.dart';
@@ -1684,9 +1685,7 @@ class _LoadingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: CircularProgressIndicator(color: AppColors.deliveryGreen),
-    );
+    return const AppPageSkeleton(rows: 6, showHeader: false);
   }
 }
 

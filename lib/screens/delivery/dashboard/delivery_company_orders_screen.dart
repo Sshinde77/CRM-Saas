@@ -1,6 +1,7 @@
 import '../../../models/list_pagination.dart';
 import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
+import '../../../widgets/app_skeleton.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
 
@@ -599,7 +600,7 @@ class _StateCard extends StatelessWidget {
         height: 210,
         child: Center(
           child: loading
-              ? const CircularProgressIndicator(color: AppColors.deliveryGreen)
+              ? const AppPageSkeleton(rows: 5, showHeader: false)
               : Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [

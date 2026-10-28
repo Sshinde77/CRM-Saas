@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../constants/app_colors.dart';
 import '../../../models/auth_models.dart';
+import '../../../providers/api_provider.dart';
 import '../../../services/api_service.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 
@@ -38,7 +39,7 @@ class _BrandingIdentityScreenState extends State<BrandingIdentityScreen> {
   };
 
   bool _isEditing = false;
-  final ApiService _apiService = ApiService();
+  ApiService get _apiService => ApiProviderScope.of(context).service;
   static const List<_BrandAsset> _assets = [
     _BrandAsset(
       type: _BrandAssetType.logo,

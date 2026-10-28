@@ -12,6 +12,7 @@ import '../../../services/api_service.dart';
 import '../../../routes/app_router.dart';
 import '../../../widgets/delivery/delivery_partner_sidebar.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
+import '../../../widgets/app_skeleton.dart';
 import 'delivery_company_orders_screen.dart';
 
 class DeliveryDashboardScreen extends StatefulWidget {
@@ -27,11 +28,13 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
   static Future<_DashboardData>? _cachedDashboardFuture;
   static DateTime? _cachedDashboardAt;
   static String? _cachedSessionKey;
+  static String? _cachedPeriod;
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late Future<_DashboardData> _dashboardFuture;
   bool _didStartLoad = false;
   bool _isCheckingIn = false;
+  String _selectedPeriod = 'today';
 
   @override
   void didChangeDependencies() {
@@ -51,6 +54,7 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
         _cachedDashboardFuture != null &&
         _cachedDashboardAt != null &&
         _cachedSessionKey == _sessionCacheKey &&
+        _cachedPeriod == _selectedPeriod &&
         now.difference(_cachedDashboardAt!) < _dashboardCacheTtl;
 
     if (cacheIsValid) return _cachedDashboardFuture!;
@@ -59,70 +63,38 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
     _cachedDashboardFuture = request;
     _cachedDashboardAt = now;
     _cachedSessionKey = _sessionCacheKey;
+    _cachedPeriod = _selectedPeriod;
     return request;
   }
 
   Future<_DashboardData> _loadDashboard() async {
     final provider = ApiProviderScope.of(context);
-    final authMe = await provider.fetchAuthMe();
-    final currentUser = provider.currentUser ?? authMe?.user;
-    final deliveryPartnerId = currentUser?.id?.trim();
-
-    if (deliveryPartnerId == null || deliveryPartnerId.isEmpty) {
-      throw const _DashboardException('Delivery partner id is missing.');
-    }
-
-    final results = await Future.wait<dynamic>([
-      provider.fetchDeliveryPartnerDeliveries(
-        deliveryPartnerId: deliveryPartnerId,
-      ),
-      provider.fetchCurrentVehicleStock(deliveryPartnerId),
-      provider.fetchMyAttendance(),
-      _loadDashboardSummary(provider),
-    ]);
-
-    final deliveries = (results[0] as List<Map<String, dynamic>>)
+    final json = await provider.fetchDeliveryDashboard(period: _selectedPeriod);
+    final deliveries = ((json['open_deliveries'] as List?) ?? const [])
+        .whereType<Map<String, dynamic>>()
         .map(_DeliveryItem.fromJson)
         .toList();
-    final vehicleStock = _VehicleStockSession.fromJson(
-      results[1] as Map<String, dynamic>?,
+    final currentUser = provider.currentUser;
+    final vehicle = (json['vehicle'] as Map?)?.cast<String, dynamic>();
+    final summary = _DeliveryDashboardSummary.fromJson(
+      (json['summary'] as Map?)?.cast<String, dynamic>() ?? const {},
     );
-    final attendanceRecords = (results[2] as List<Map<String, dynamic>>)
-        .map(_AttendanceRecord.fromJson)
-        .toList();
-    final summary = results[3] as _DeliveryDashboardSummary;
 
     return _DashboardData(
       userName: currentUser?.name ?? 'Partner',
       profilePhoto: currentUser?.profilePhoto,
       summary: summary,
       deliveries: deliveries,
-      vehicleStock: vehicleStock,
-      todayAttendance: _AttendanceRecord.todayFrom(attendanceRecords),
+      openDeliveriesCount: _readInt(json, const ['open_deliveries_count']),
+      vehicleStock: _VehicleStockSession.fromJson(vehicle),
+      todayAttendance: null,
     );
-  }
-
-  Future<_DeliveryDashboardSummary> _loadDashboardSummary(
-    ApiProvider provider,
-  ) async {
-    try {
-      final json = await provider.fetchDeliveryPartnerDashboard();
-      return _DeliveryDashboardSummary.fromJson(json);
-    } catch (_) {
-      return const _DeliveryDashboardSummary(totalCompanyOrders: 0);
-    }
   }
 
   Future<void> _refresh() async {
     final nextFuture = _getDashboardFuture(force: true);
     setState(() => _dashboardFuture = nextFuture);
     await nextFuture;
-  }
-
-  void _showComingSoon(String label) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text('$label screen is coming next.')));
   }
 
   Future<void> _checkInNow() async {
@@ -254,11 +226,31 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
                                       },
                                     )
                                   else if (data != null)
-                                    _DashboardContent(
-                                      data: data,
-                                      onViewAllDeliveries: () => Navigator.of(
-                                        context,
-                                      ).pushNamed(AppRoutes.deliveryDeliveries),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        _DeliveryPeriodSelector(
+                                          selected: _selectedPeriod,
+                                          onChanged: (period) {
+                                            setState(() {
+                                              _selectedPeriod = period;
+                                              _dashboardFuture =
+                                                  _getDashboardFuture(
+                                                    force: true,
+                                                  );
+                                            });
+                                          },
+                                        ),
+                                        const SizedBox(height: AppSpacing.md),
+                                        _DashboardContent(
+                                          data: data,
+                                          onViewAllDeliveries: () =>
+                                              Navigator.of(context).pushNamed(
+                                                AppRoutes.deliveryDeliveries,
+                                              ),
+                                        ),
+                                      ],
                                     ),
                                 ],
                               ),
@@ -1893,14 +1885,7 @@ class _LoadingPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const _SurfaceCard(
-      child: SizedBox(
-        height: 250,
-        child: Center(
-          child: CircularProgressIndicator(color: AppColors.deliveryBlue),
-        ),
-      ),
-    );
+    return const _SurfaceCard(child: AppPageSkeleton(rows: 5));
   }
 }
 
@@ -1960,6 +1945,7 @@ class _DashboardData {
   final String? profilePhoto;
   final _DeliveryDashboardSummary summary;
   final List<_DeliveryItem> deliveries;
+  final int openDeliveriesCount;
   final _VehicleStockSession? vehicleStock;
   final _AttendanceRecord? todayAttendance;
 
@@ -1968,6 +1954,7 @@ class _DashboardData {
     required this.profilePhoto,
     required this.summary,
     required this.deliveries,
+    required this.openDeliveriesCount,
     required this.vehicleStock,
     required this.todayAttendance,
   });
@@ -1989,48 +1976,25 @@ class _DashboardData {
     }).toList();
   }
 
-  int get deliveriesToday => todaysDeliveries.length;
+  int get deliveriesToday => summary.deliveries;
 
-  int get totalOrdersCompany => summary.totalCompanyOrders;
+  int get totalOrdersCompany => summary.deliveries;
 
-  int get assignedOrders => deliveries.length;
+  int get assignedOrders => openDeliveriesCount;
 
-  int get completedToday => todaysDeliveries
-      .where((delivery) => delivery.status == 'delivered')
-      .length;
+  int get completedToday => summary.completed;
 
-  int get deliveredOrders =>
-      deliveries.where((delivery) => delivery.status == 'delivered').length;
+  int get deliveredOrders => summary.completed;
 
-  int get acceptedOrders => deliveries.where((delivery) {
-    return delivery.status == 'accepted' || delivery.status == 'loaded';
-  }).length;
+  int get acceptedOrders => summary.pending;
 
-  int get pendingToday => todaysDeliveries.where((delivery) {
-    return const {
-      'planned',
-      'accepted',
-      'loaded',
-      'in_transit',
-    }.contains(delivery.status);
-  }).length;
+  int get pendingToday => summary.pending;
 
-  int get pendingOrders => deliveries.where((delivery) {
-    return const {
-      'planned',
-      'pending',
-      'accepted',
-      'loaded',
-      'in_transit',
-    }.contains(delivery.status);
-  }).length;
+  int get pendingOrders => summary.pending;
 
-  int get canceledOrders => deliveries.where((delivery) {
-    return delivery.status == 'canceled' || delivery.status == 'cancelled';
-  }).length;
+  int get canceledOrders => summary.failed;
 
-  int get paymentPending =>
-      deliveries.where((delivery) => delivery.amountDue > 0).length;
+  int get paymentPending => summary.amountReceivable > 0 ? 1 : 0;
 
   double get totalAmountToCollect {
     return deliveries.fold<double>(
@@ -2040,10 +2004,7 @@ class _DashboardData {
   }
 
   double get totalAmountCollected {
-    return deliveries.fold<double>(
-      0,
-      (sum, delivery) => sum + delivery.amountCollected,
-    );
+    return summary.amountCollected;
   }
 
   double get cashInHand {
@@ -2059,10 +2020,7 @@ class _DashboardData {
   }
 
   double get pendingAmount {
-    return deliveries.fold<double>(
-      0,
-      (sum, delivery) => sum + delivery.amountDue,
-    );
+    return summary.amountReceivable;
   }
 
   String get formattedTotalToCollect => _formatMoney(totalAmountToCollect);
@@ -2074,12 +2032,9 @@ class _DashboardData {
   int get needsResponse =>
       deliveries.where((delivery) => delivery.status == 'planned').length;
 
-  int get failed =>
-      deliveries.where((delivery) => delivery.status == 'failed').length;
+  int get failed => summary.failed;
 
-  int get partial => deliveries
-      .where((delivery) => delivery.status == 'partially_delivered')
-      .length;
+  int get partial => summary.partial;
 
   int get ready => deliveries
       .where(
@@ -2115,16 +2070,64 @@ class _DashboardData {
 }
 
 class _DeliveryDashboardSummary {
-  final int totalCompanyOrders;
+  final int deliveries;
+  final int completed;
+  final int pending;
+  final int partial;
+  final int failed;
+  final double deliveryValue;
+  final double amountCollected;
+  final double amountReceivable;
+  final int podCompleted;
 
-  const _DeliveryDashboardSummary({required this.totalCompanyOrders});
+  const _DeliveryDashboardSummary({
+    required this.deliveries,
+    required this.completed,
+    required this.pending,
+    required this.partial,
+    required this.failed,
+    required this.deliveryValue,
+    required this.amountCollected,
+    required this.amountReceivable,
+    required this.podCompleted,
+  });
 
   factory _DeliveryDashboardSummary.fromJson(Map<String, dynamic> json) {
     return _DeliveryDashboardSummary(
-      totalCompanyOrders: _readInt(json, const [
-        'total_company_orders',
-        'totalCompanyOrders',
-      ]),
+      deliveries: _readInt(json, const ['deliveries']),
+      completed: _readInt(json, const ['completed']),
+      pending: _readInt(json, const ['pending']),
+      partial: _readInt(json, const ['partial']),
+      failed: _readInt(json, const ['failed']),
+      deliveryValue: _readDouble(json, const ['delivery_value']),
+      amountCollected: _readDouble(json, const ['amount_collected']),
+      amountReceivable: _readDouble(json, const ['amount_receivable']),
+      podCompleted: _readInt(json, const ['pod_completed']),
+    );
+  }
+}
+
+class _DeliveryPeriodSelector extends StatelessWidget {
+  final String selected;
+  final ValueChanged<String> onChanged;
+
+  const _DeliveryPeriodSelector({
+    required this.selected,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 8,
+      children: ['today', 'week', 'month'].map((period) {
+        final label = period[0].toUpperCase() + period.substring(1);
+        return ChoiceChip(
+          label: Text(label),
+          selected: period == selected,
+          onSelected: (_) => onChanged(period),
+        );
+      }).toList(),
     );
   }
 }
@@ -2152,10 +2155,18 @@ class _DeliveryItem {
 
   factory _DeliveryItem.fromJson(Map<String, dynamic> json) {
     final id = _readString(json, const ['id', 'delivery_id']) ?? '';
+    final order = json['order'] is Map<String, dynamic>
+        ? json['order'] as Map<String, dynamic>
+        : const <String, dynamic>{};
+    final source = {...order, ...json};
     return _DeliveryItem(
       id: id,
       orderNumber:
-          _readString(json, const ['orderNumber', 'order_number', 'orderNo']) ??
+          _readString(source, const [
+            'orderNumber',
+            'order_number',
+            'orderNo',
+          ]) ??
           'ORD-${id.isEmpty ? 'NEW' : id.toUpperCase()}',
       customerName:
           _readString(json, const ['customerName', 'customer_name']) ??
@@ -2180,6 +2191,7 @@ class _DeliveryItem {
               'payment_mode',
               'paymentMethod',
               'payment_method',
+              'payment_type',
               'collectionMode',
               'collection_mode',
             ]) ??
@@ -2297,29 +2309,6 @@ class _AttendanceRecord {
   final DateTime? checkIn;
 
   const _AttendanceRecord({required this.date, required this.checkIn});
-
-  factory _AttendanceRecord.fromJson(Map<String, dynamic> json) {
-    return _AttendanceRecord(
-      date: _parseDate(_readString(json, const ['date', 'attendance_date'])),
-      checkIn: _parseDateTime(
-        _readString(json, const ['checkIn', 'check_in', 'office_check_in']),
-      ),
-    );
-  }
-
-  static _AttendanceRecord? todayFrom(List<_AttendanceRecord> records) {
-    final today = DateTime.now();
-    for (final record in records) {
-      final date = record.date;
-      if (date == null) continue;
-      if (date.year == today.year &&
-          date.month == today.month &&
-          date.day == today.day) {
-        return record;
-      }
-    }
-    return null;
-  }
 }
 
 class _StatInfo {
@@ -2378,15 +2367,6 @@ class _StatusInfo {
   const _StatusInfo(this.label, this.count, this.color);
 }
 
-class _DashboardException implements Exception {
-  final String message;
-
-  const _DashboardException(this.message);
-
-  @override
-  String toString() => message;
-}
-
 String? _readString(Map<String, dynamic> json, List<String> keys) {
   for (final key in keys) {
     final value = json[key];
@@ -2431,12 +2411,6 @@ int _readInt(Map<String, dynamic> json, List<String> keys) {
 DateTime? _parseDate(String? value) {
   if (value == null || value.trim().isEmpty) return null;
   return DateTime.tryParse(value.trim());
-}
-
-DateTime? _parseDateTime(String? value) {
-  final parsed = _parseDate(value);
-  if (parsed != null) return parsed.toLocal();
-  return null;
 }
 
 String _normalizeStatus(String value) {

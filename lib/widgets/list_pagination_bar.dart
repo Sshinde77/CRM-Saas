@@ -127,50 +127,6 @@ class ListPaginationBar extends StatelessWidget {
                       fontSize: 12,
                     ),
                   ),
-                  if (false)
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text(
-                          'Per page: ',
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 12,
-                          ),
-                        ),
-                        DropdownButton<int>(
-                          value: pagination.pageSize,
-                          isDense: true,
-                          underline: const SizedBox.shrink(),
-                          style: const TextStyle(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 13,
-                          ),
-                          items:
-                              ({10, 25, 50, 100, pagination.pageSize}.toList()
-                                    ..sort())
-                                  .map(
-                                    (size) => DropdownMenuItem(
-                                      value: size,
-                                      child: Text('$size'),
-                                    ),
-                                  )
-                                  .toList(),
-                          onChanged: busy
-                              ? null
-                              : (size) {
-                                  if (size == null ||
-                                      size == pagination.pageSize) {
-                                    return;
-                                  }
-                                  pagination.pageSize = size;
-                                  pagination.reset();
-                                  onChanged();
-                                },
-                        ),
-                      ],
-                    ),
                 ],
               ),
             ),

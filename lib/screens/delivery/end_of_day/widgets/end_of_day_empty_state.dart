@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../widgets/app_skeleton.dart';
 
 import '../../../../constants/app_colors.dart';
 import '../../../../routes/app_router.dart';
@@ -86,26 +87,6 @@ class EndOfDayLoadingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const EndOfDayCard(
-      child: SizedBox(
-        height: 280,
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircularProgressIndicator(color: AppColors.deliveryGreen),
-              SizedBox(height: 14),
-              Text(
-                'Loading active session...',
-                style: TextStyle(
-                  color: AppColors.textMuted,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+    return const EndOfDayCard(child: AppPageSkeleton(rows: 5));
   }
 }

@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../constants/app_colors.dart';
 import '../../../models/auth_models.dart';
+import '../../../providers/api_provider.dart';
 import '../../../services/api_service.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 
@@ -24,7 +25,7 @@ class _BillingScreenState extends State<BillingScreen> {
   static const Color _accent = Color(0xFF0D1F42);
   static const Color _borderColor = Color(0xFFD8DFD8);
   static const Color _fieldBg = Colors.white;
-  final ApiService _apiService = ApiService();
+  ApiService get _apiService => ApiProviderScope.of(context).service;
 
   final ImagePicker _imagePicker = ImagePicker();
   final TextEditingController _upiController = TextEditingController();
