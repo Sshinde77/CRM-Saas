@@ -11,10 +11,19 @@ import '../../../widgets/app_skeleton.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
 
 class PickedMapLocation {
-  const PickedMapLocation({required this.location, required this.placeName});
+  const PickedMapLocation({
+    required this.location,
+    required this.placeName,
+    this.addressLine,
+    this.city,
+    this.postcode,
+  });
 
   final latlong.LatLng location;
   final String placeName;
+  final String? addressLine;
+  final String? city;
+  final String? postcode;
 }
 
 class CustomerLocationPickerScreen extends StatefulWidget {
@@ -45,6 +54,7 @@ class _CustomerLocationPickerScreenState
   int _lookupToken = 0;
   late google_maps.LatLng? _selected = _toGoogleLatLng(widget.initialLocation);
   late String? _selectedPlaceName = _cleanPlaceName(widget.initialPlaceName);
+  LocationSearchResult? _selectedDetails;
   List<LocationSearchResult> _results = const [];
   bool _searching = false;
   bool _locating = false;
@@ -140,15 +150,18 @@ class _CustomerLocationPickerScreenState
     await _selectLocation(
       google_maps.LatLng(result.location.latitude, result.location.longitude),
       placeName: result.displayName,
+      details: result,
     );
   }
 
   Future<void> _selectLocation(
     google_maps.LatLng point, {
     String? placeName,
+    LocationSearchResult? details,
   }) async {
     setState(() {
       _selected = point;
+      _selectedDetails = details;
       _selectedPlaceName = _cleanPlaceName(placeName);
       _resolvingPlace = _selectedPlaceName == null;
     });
@@ -169,6 +182,7 @@ class _CustomerLocationPickerScreenState
       );
       if (!mounted || token != _lookupToken) return;
       setState(() {
+        _selectedDetails = result;
         _selectedPlaceName = result?.displayName ?? 'Pinned location';
         _resolvingPlace = false;
       });
@@ -382,13 +396,16 @@ class _CustomerLocationPickerScreenState
                   const SizedBox(height: 12),
                   FilledButton(
                     style: FilledButton.styleFrom(backgroundColor: _green),
-                    onPressed: selected == null
+                    onPressed: selected == null || _resolvingPlace
                         ? null
                         : () => Navigator.of(context).pop(
                             PickedMapLocation(
                               location: _toResultLatLng(selected),
                               placeName:
                                   _selectedPlaceName ?? 'Pinned location',
+                              addressLine: _selectedDetails?.addressLine,
+                              city: _selectedDetails?.city,
+                              postcode: _selectedDetails?.postcode,
                             ),
                           ),
                     child: const Text('Confirm location'),

@@ -73,7 +73,7 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
 
   Future<void> _openLogVisitDialog() async {
     final result = await Navigator.of(context).push<_LogVisitResult>(
-      MaterialPageRoute(builder: (_) => const _CreateVisitPage()),
+      MaterialPageRoute(builder: (_) => const CreateVisitPage()),
     );
     if (result == null || !mounted) return;
     setState(() {
@@ -217,6 +217,25 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
     );
   }
 
+  Future<void> _openVisitDetails(int index) async {
+    if (index < 0 || index >= _visits.length) return;
+    final updated = await Navigator.of(context).push<dynamic>(
+      MaterialPageRoute(
+        builder: (_) => VisitDetailScreen(
+          customer: _visits[index].customer,
+          inTime: _visits[index].inTime,
+          outTime: _visits[index].outTime,
+          notes: _visits[index].notes,
+          status: _visits[index].status,
+        ),
+      ),
+    );
+    if (!mounted || updated == null) return;
+    if (updated.status == 'Completed') {
+      setState(() => _visits[index] = updated);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final visits = _pagination.local(_visits);
@@ -283,6 +302,10 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
                         _VisitHistoryPanel(
                           visits: visits,
                           onCloseVisit: (index) => _closeVisit(
+                            (_pagination.page - 1) * _pagination.pageSize +
+                                index,
+                          ),
+                          onOpenVisit: (index) => _openVisitDetails(
                             (_pagination.page - 1) * _pagination.pageSize +
                                 index,
                           ),
@@ -417,70 +440,126 @@ class _LogVisitResult {
   });
 }
 
-class _CreateVisitPage extends StatefulWidget {
-  const _CreateVisitPage();
+class CreateVisitPage extends StatefulWidget {
+  const CreateVisitPage({super.key});
 
   @override
-  State<_CreateVisitPage> createState() => _CreateVisitPageState();
+  State<CreateVisitPage> createState() => _CreateVisitPageState();
 }
 
-class _CreateVisitPageState extends State<_CreateVisitPage> {
+class _CreateVisitPageState extends State<CreateVisitPage> {
   final _purposeController = TextEditingController(text: 'Product Demo');
   final _notesController = TextEditingController();
   final _outcomeController = TextEditingController();
 
-  List<_VisitLeadOption> _leads = const [];
-  _VisitLeadOption? _selectedLead;
-  bool _loadingLeads = true;
-  String? _leadLoadError;
+  List<_VisitPartyOption> _parties = const [];
+  _VisitPartyOption? _selectedParty;
+  bool _loadingParties = true;
+  String? _partyLoadError;
   String _visitType = 'lead';
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadLeads());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadParties());
   }
 
-  Future<void> _loadLeads() async {
+  Future<void> _loadParties() async {
     if (!mounted) return;
     setState(() {
-      _loadingLeads = true;
-      _leadLoadError = null;
+      _loadingParties = true;
+      _partyLoadError = null;
     });
     try {
-      final raw = await ApiProviderScope.of(context).fetchLeads();
+      final api = ApiProviderScope.of(context);
+      final parties = <_VisitPartyOption>[];
+      if (_visitType == 'lead') {
+        final pagination = ListPagination()..pageSize = 100;
+        try {
+          do {
+            final raw = await api.fetchLeads(pagination: pagination);
+            parties.addAll(raw.map(_VisitPartyOption.fromJson));
+            if (pagination.page >= pagination.totalPages) break;
+            pagination.page++;
+          } while (true);
+        } finally {
+          pagination.dispose();
+        }
+      } else if (_visitType == 'customer') {
+        final pagination = ListPagination()..pageSize = 100;
+        try {
+          do {
+            final customers = await api.fetchCustomers(
+              pagination: pagination,
+              isActive: true,
+            );
+            parties.addAll(
+              customers.map(
+                (customer) => _VisitPartyOption(
+                  id: customer.id,
+                  name: (customer.businessName ?? customer.name).trim(),
+                  code: (customer.customerId ?? '').trim(),
+                ),
+              ),
+            );
+            if (pagination.page >= pagination.totalPages) break;
+            pagination.page++;
+          } while (true);
+        } finally {
+          pagination.dispose();
+        }
+      } else {
+        var page = 1;
+        var totalPages = 1;
+        do {
+          final result = await api.fetchPaginatedSuppliers(
+            page: page,
+            pageSize: 100,
+            isActive: true,
+          );
+          parties.addAll(result.items.map(_VisitPartyOption.fromJson));
+          totalPages = result.totalPages <= 0 ? 1 : result.totalPages;
+          page++;
+        } while (page <= totalPages);
+      }
       if (!mounted) return;
       setState(() {
-        _leads = raw
-            .map(_VisitLeadOption.fromJson)
-            .where((l) => l.id.isNotEmpty && l.name.isNotEmpty)
+        _parties = parties
+            .where((party) => party.id.isNotEmpty && party.name.isNotEmpty)
             .toList();
-        _loadingLeads = false;
-        _leadLoadError = null;
+        _loadingParties = false;
+        _partyLoadError = null;
       });
     } catch (_) {
       if (!mounted) return;
       setState(() {
-        _loadingLeads = false;
-        _leadLoadError = 'Unable to load. Tap to retry.';
+        _loadingParties = false;
+        _partyLoadError = 'Unable to load. Tap to retry.';
       });
     }
   }
 
-  Future<void> _selectLead() async {
-    if (_loadingLeads) return;
-    if (_leadLoadError != null) {
-      await _loadLeads();
-      if (!mounted || _leadLoadError != null) return;
+  Future<void> _selectParty() async {
+    if (_loadingParties) return;
+    if (_partyLoadError != null) {
+      await _loadParties();
+      if (!mounted || _partyLoadError != null) return;
     }
-    final lead = await showDialog<_VisitLeadOption>(
+    final party = await showDialog<_VisitPartyOption>(
       context: context,
-      builder: (_) =>
-          _LeadSearchDialog(leads: _leads, selectedLeadId: _selectedLead?.id),
+      builder: (_) => _VisitPartySearchDialog(
+        title: 'Select ${_visitTypeLabel}',
+        searchHint: 'Search $_visitTypeLabel',
+        parties: _parties,
+        selectedId: _selectedParty?.id,
+      ),
     );
-    if (!mounted || lead == null) return;
-    setState(() => _selectedLead = lead);
+    if (!mounted || party == null) return;
+    setState(() => _selectedParty = party);
   }
+
+  String get _visitTypeLabel =>
+      _visitType[0].toUpperCase() + _visitType.substring(1);
 
   @override
   void dispose() {
@@ -492,10 +571,12 @@ class _CreateVisitPageState extends State<_CreateVisitPage> {
 
   void _save() {
     final purpose = _purposeController.text.trim();
-    if (_selectedLead == null || purpose.isEmpty) {
+    if (_selectedParty == null || purpose.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please select a lead and enter the visit purpose.'),
+          content: Text(
+            'Please select a Lead, Customer, or Supplier and enter the visit purpose.',
+          ),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -503,7 +584,7 @@ class _CreateVisitPageState extends State<_CreateVisitPage> {
     }
     Navigator.of(context).pop(
       _LogVisitResult(
-        leadName: _selectedLead!.name,
+        leadName: _selectedParty!.name,
         visitType: _visitType,
         purpose: purpose,
         notes: _notesController.text.trim(),
@@ -533,22 +614,10 @@ class _CreateVisitPageState extends State<_CreateVisitPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _VisitFieldLabel('Lead *'),
-                        const SizedBox(height: 8),
-                        _VisitLeadPickerCard(
-                          selected: _selectedLead,
-                          loading: _loadingLeads,
-                          error: _leadLoadError,
-                          onTap: _selectLead,
-                          onClear: _selectedLead == null
-                              ? null
-                              : () => setState(() => _selectedLead = null),
-                        ),
-                        const SizedBox(height: 18),
                         _VisitFieldLabel('Visit Type'),
                         const SizedBox(height: 8),
                         DropdownButtonFormField<String>(
-                          value: _visitType,
+                          initialValue: _visitType,
                           decoration: const InputDecoration(
                             filled: true,
                             fillColor: Colors.white,
@@ -589,9 +658,27 @@ class _CreateVisitPageState extends State<_CreateVisitPage> {
                             ),
                           ],
                           onChanged: (value) {
-                            if (value != null)
-                              setState(() => _visitType = value);
+                            if (value != null) {
+                              setState(() {
+                                _visitType = value;
+                                _selectedParty = null;
+                              });
+                              _loadParties();
+                            }
                           },
+                        ),
+                        const SizedBox(height: 18),
+                        _VisitFieldLabel('Select $_visitTypeLabel *'),
+                        const SizedBox(height: 8),
+                        _VisitPartyPickerCard(
+                          selected: _selectedParty,
+                          loading: _loadingParties,
+                          error: _partyLoadError,
+                          entityLabel: _visitTypeLabel,
+                          onTap: _selectParty,
+                          onClear: _selectedParty == null
+                              ? null
+                              : () => setState(() => _selectedParty = null),
                         ),
                         const SizedBox(height: 18),
                         _VisitFieldLabel('Purpose *'),
@@ -960,6 +1047,270 @@ class _LeadSearchDialogState extends State<_LeadSearchDialog> {
   }
 }
 
+class _VisitPartyOption {
+  final String id;
+  final String name;
+  final String code;
+
+  const _VisitPartyOption({
+    required this.id,
+    required this.name,
+    required this.code,
+  });
+
+  factory _VisitPartyOption.fromJson(Map<String, dynamic> json) {
+    String read(List<String> keys) {
+      for (final key in keys) {
+        final value = json[key]?.toString().trim();
+        if (value != null && value.isNotEmpty) return value;
+      }
+      return '';
+    }
+
+    return _VisitPartyOption(
+      id: read(['id', '_id', 'lead_id', 'customer_id', 'supplier_id']),
+      name: read([
+        'name',
+        'company_name',
+        'companyName',
+        'business_name',
+        'businessName',
+        'supplier_name',
+        'contact_person',
+      ]),
+      code: read([
+        'lead_code',
+        'leadCode',
+        'customer_code',
+        'customerCode',
+        'supplier_code',
+        'supplierCode',
+        'code',
+      ]),
+    );
+  }
+}
+
+class _VisitPartyPickerCard extends StatelessWidget {
+  final _VisitPartyOption? selected;
+  final bool loading;
+  final String? error;
+  final String entityLabel;
+  final VoidCallback onTap;
+  final VoidCallback? onClear;
+
+  const _VisitPartyPickerCard({
+    required this.selected,
+    required this.loading,
+    required this.error,
+    required this.entityLabel,
+    required this.onTap,
+    this.onClear,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hasSelection = selected != null;
+    return GestureDetector(
+      onTap: loading ? null : onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: hasSelection ? AppColors.activeMenuBg : Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: hasSelection ? AppColors.primary : AppColors.border,
+            width: hasSelection ? 1.4 : 1.0,
+          ),
+        ),
+        child: hasSelection
+            ? Row(
+                children: [
+                  _VisitPersonAvatar(name: selected!.name),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          selected!.name,
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        if (selected!.code.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            selected!.code,
+                            style: const TextStyle(
+                              color: AppColors.primary,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Change',
+                    style: TextStyle(
+                      color: AppColors.primary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  if (onClear != null) ...[
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: onClear,
+                      child: const Icon(
+                        Icons.close_rounded,
+                        size: 18,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ],
+              )
+            : Row(
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: AppColors.activeMenuBg,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      loading
+                          ? Icons.hourglass_empty_rounded
+                          : (error != null
+                                ? Icons.refresh_rounded
+                                : Icons.search_rounded),
+                      color: AppColors.primary,
+                      size: 18,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      loading
+                          ? 'Loading ${entityLabel.toLowerCase()}s...'
+                          : (error ??
+                                'Tap to search and select a ${entityLabel.toLowerCase()}'),
+                      style: TextStyle(
+                        color: error != null
+                            ? AppColors.red
+                            : AppColors.textSecondary,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                  const Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    color: AppColors.textMuted,
+                    size: 22,
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+}
+
+class _VisitPartySearchDialog extends StatefulWidget {
+  final String title;
+  final String searchHint;
+  final List<_VisitPartyOption> parties;
+  final String? selectedId;
+
+  const _VisitPartySearchDialog({
+    required this.title,
+    required this.searchHint,
+    required this.parties,
+    this.selectedId,
+  });
+
+  @override
+  State<_VisitPartySearchDialog> createState() =>
+      _VisitPartySearchDialogState();
+}
+
+class _VisitPartySearchDialogState extends State<_VisitPartySearchDialog> {
+  final _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final query = _searchController.text.trim().toLowerCase();
+    final parties = widget.parties
+        .where(
+          (party) =>
+              query.isEmpty ||
+              party.name.toLowerCase().contains(query) ||
+              party.code.toLowerCase().contains(query),
+        )
+        .toList();
+
+    return AlertDialog(
+      title: Text(widget.title),
+      content: SizedBox(
+        width: 420,
+        height: 420,
+        child: Column(
+          children: [
+            TextField(
+              controller: _searchController,
+              autofocus: true,
+              onChanged: (_) => setState(() {}),
+              decoration: InputDecoration(
+                hintText: widget.searchHint,
+                prefixIcon: const Icon(Icons.search_rounded),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Expanded(
+              child: parties.isEmpty
+                  ? const Center(child: Text('No matching records'))
+                  : ListView.separated(
+                      itemCount: parties.length,
+                      separatorBuilder: (_, _) => const Divider(height: 1),
+                      itemBuilder: (context, index) {
+                        final party = parties[index];
+                        return ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(party.name),
+                          subtitle: party.code.isEmpty
+                              ? null
+                              : Text(party.code),
+                          trailing: party.id == widget.selectedId
+                              ? const Icon(
+                                  Icons.check_circle,
+                                  color: AppColors.primary,
+                                )
+                              : null,
+                          onTap: () => Navigator.of(context).pop(party),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _VisitFieldLabel extends StatelessWidget {
   final String label;
 
@@ -1029,34 +1380,16 @@ class _VisitInputBox extends StatelessWidget {
   }
 }
 
-class _VisitTapInput extends StatelessWidget {
-  final TextEditingController controller;
-  final String hintText;
-  final VoidCallback onTap;
-
-  const _VisitTapInput({
-    required this.controller,
-    required this.hintText,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
-      child: IgnorePointer(
-        child: _VisitInputBox(controller: controller, hintText: hintText),
-      ),
-    );
-  }
-}
-
 class _VisitHistoryPanel extends StatelessWidget {
   final List<_VisitEntry> visits;
   final ValueChanged<int> onCloseVisit;
+  final ValueChanged<int> onOpenVisit;
 
-  const _VisitHistoryPanel({required this.visits, required this.onCloseVisit});
+  const _VisitHistoryPanel({
+    required this.visits,
+    required this.onCloseVisit,
+    required this.onOpenVisit,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1075,7 +1408,11 @@ class _VisitHistoryPanel extends StatelessWidget {
           ),
         ),
         for (var i = 0; i < visits.length; i++) ...[
-          _VisitHistoryCard(record: visits[i], onClose: () => onCloseVisit(i)),
+          _VisitHistoryCard(
+            record: visits[i],
+            onClose: () => onCloseVisit(i),
+            onTap: () => onOpenVisit(i),
+          ),
           if (i != visits.length - 1) const SizedBox(height: 12),
         ],
       ],
@@ -1086,79 +1423,97 @@ class _VisitHistoryPanel extends StatelessWidget {
 class _VisitHistoryCard extends StatelessWidget {
   final _VisitEntry record;
   final VoidCallback onClose;
+  final VoidCallback onTap;
 
-  const _VisitHistoryCard({required this.record, required this.onClose});
+  const _VisitHistoryCard({
+    required this.record,
+    required this.onClose,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.deliverySurfaceBorder),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.textPrimary.withValues(alpha: 0.05),
-            blurRadius: 14,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  record.customer,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.deliverySurfaceBorder),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.textPrimary.withValues(alpha: 0.05),
+                blurRadius: 14,
+                offset: const Offset(0, 6),
               ),
-              _StatusPill(label: record.status, color: AppColors.green),
             ],
           ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 12,
-            runSpacing: 8,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _VisitTime(label: 'In', value: record.inTime),
-              _VisitTime(label: 'Out', value: record.outTime),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Divider(height: 1, color: AppColors.border.withValues(alpha: 0.75)),
-          const SizedBox(height: 12),
-          Text(
-            record.notes,
-            style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
-          ),
-          if (record.status != 'Completed') ...[
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              height: 40,
-              child: FilledButton.icon(
-                onPressed: onClose,
-                icon: const Icon(Icons.logout_rounded, size: 18),
-                label: const Text('Close Visit'),
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      record.customer,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
+                  _StatusPill(label: record.status, color: AppColors.green),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 12,
+                runSpacing: 8,
+                children: [
+                  _VisitTime(label: 'In', value: record.inTime),
+                  _VisitTime(label: 'Out', value: record.outTime),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Divider(
+                height: 1,
+                color: AppColors.border.withValues(alpha: 0.75),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                record.notes,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 14,
                 ),
               ),
-            ),
-          ],
-        ],
+              if (record.status != 'Completed') ...[
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  height: 40,
+                  child: FilledButton.icon(
+                    onPressed: onClose,
+                    icon: const Icon(Icons.logout_rounded, size: 18),
+                    label: const Text('Close Visit'),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -1244,6 +1599,235 @@ class _VisitEntry {
       status: status ?? this.status,
     );
   }
+}
+
+class VisitDetailScreen extends StatelessWidget {
+  final String customer;
+  final String inTime;
+  final String outTime;
+  final String notes;
+  final String status;
+
+  const VisitDetailScreen({
+    super.key,
+    required this.customer,
+    required this.inTime,
+    required this.outTime,
+    required this.notes,
+    required this.status,
+  });
+
+  @override
+  Widget build(BuildContext context) => _VisitDetailPage(
+    record: _VisitEntry(
+      customer: customer,
+      inTime: inTime,
+      outTime: outTime,
+      notes: notes,
+      status: status,
+    ),
+  );
+}
+
+class _VisitDetailPage extends StatefulWidget {
+  final _VisitEntry record;
+
+  const _VisitDetailPage({required this.record});
+
+  @override
+  State<_VisitDetailPage> createState() => _VisitDetailPageState();
+}
+
+class _VisitDetailPageState extends State<_VisitDetailPage> {
+  late _VisitEntry _record;
+
+  @override
+  void initState() {
+    super.initState();
+    _record = widget.record;
+  }
+
+  Future<void> _closeVisit() async {
+    final feedback = await showCompletionFeedbackSheet(
+      context: context,
+      title: 'Close visit',
+      subjectLabel: _record.customer,
+    );
+    if (!mounted || feedback == null) return;
+    setState(() {
+      _record = _record.copyWith(
+        outTime: _formatVisitTime(DateTime.now()),
+        notes: '${_record.notes}\n\nClosing feedback: $feedback',
+        status: 'Completed',
+      );
+    });
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Visit closed successfully.')));
+  }
+
+  void _close() => Navigator.of(context).pop(_record);
+
+  @override
+  Widget build(BuildContext context) => MediaQuery(
+    data: MediaQuery.of(context).copyWith(
+      textScaler: MediaQuery.textScalerOf(
+        context,
+      ).clamp(minScaleFactor: 0.9, maxScaleFactor: 1.2),
+    ),
+    child: PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) _close();
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.deliveryBackground,
+        body: SafeArea(
+          child: Column(
+            children: [
+              SalesManagerTopBar(
+                title: 'Visit Details',
+                leadingIcon: Icons.arrow_back_rounded,
+                onLeadingTap: _close,
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: AppColors.deliverySurfaceBorder,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _record.customer,
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        _VisitDetailRow(
+                          icon: Icons.login_rounded,
+                          label: 'Check-in',
+                          value: _record.inTime,
+                        ),
+                        const Divider(height: 24),
+                        _VisitDetailRow(
+                          icon: Icons.logout_rounded,
+                          label: 'Check-out',
+                          value: _record.outTime,
+                        ),
+                        const Divider(height: 24),
+                        _VisitDetailRow(
+                          icon: Icons.flag_outlined,
+                          label: 'Status',
+                          value: _record.status,
+                        ),
+                        const SizedBox(height: 20),
+                        const Text(
+                          'Visit notes',
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          _record.notes,
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 14,
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        bottomNavigationBar: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+            child: SizedBox(
+              height: 48,
+              child: FilledButton.icon(
+                onPressed: _record.status == 'Completed' ? null : _closeVisit,
+                icon: Icon(
+                  _record.status == 'Completed'
+                      ? Icons.task_alt_rounded
+                      : Icons.logout_rounded,
+                  size: 20,
+                ),
+                label: Text(
+                  _record.status == 'Completed'
+                      ? 'Visit completed'
+                      : 'Close Visit',
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+class _VisitDetailRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _VisitDetailRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) => Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Icon(icon, size: 20, color: AppColors.primary),
+      const SizedBox(width: 10),
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 12,
+              ),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              value,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ],
+  );
 }
 
 String _formatVisitTime(DateTime value) {

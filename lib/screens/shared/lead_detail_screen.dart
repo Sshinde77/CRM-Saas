@@ -644,6 +644,73 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
     }
   }
 
+  Future<void> _openFollowUpDetails(_LocalFollowUp item) async {
+    final lead = _lead;
+    if (lead == null) return;
+    final updated = await Navigator.of(context).push<dynamic>(
+      MaterialPageRoute(
+        builder: (_) => FollowUpDetailScreen(
+          title: item.title,
+          customerName: lead.companyName.trim().isNotEmpty
+              ? lead.companyName
+              : lead.contactName,
+          dateLabel: _formatDate(item.dueAt.toIso8601String()),
+          timeLabel: _formatTime(TimeOfDay.fromDateTime(item.dueAt)),
+          note: item.description,
+          status: item.status,
+          color: item.status == 'Done' ? AppColors.primary : AppColors.orange,
+          priority: item.priority,
+          phone: lead.phone,
+          contactPerson: lead.contactName,
+          followUpType: 'Follow-up',
+        ),
+      ),
+    );
+    if (!mounted || updated == null) return;
+    if (updated.status == 'Done') {
+      final index = _localFollowUps.indexOf(item);
+      if (index != -1) {
+        setState(() {
+          _localFollowUps[index] = item.copyWith(status: 'Done');
+        });
+      }
+    }
+  }
+
+  Future<void> _openVisitDetails(_LocalVisit item) async {
+    final lead = _lead;
+    if (lead == null) return;
+    final updated = await Navigator.of(context).push<dynamic>(
+      MaterialPageRoute(
+        builder: (_) => VisitDetailScreen(
+          customer: lead.companyName.trim().isNotEmpty
+              ? lead.companyName
+              : lead.contactName,
+          inTime: _formatTime(TimeOfDay.fromDateTime(item.createdAt)),
+          outTime: item.status == 'Completed'
+              ? _formatTime(TimeOfDay.fromDateTime(item.createdAt))
+              : '-',
+          notes: [
+            if (item.purpose.isNotEmpty) 'Purpose: ${item.purpose}',
+            if (item.notes.isNotEmpty) item.notes,
+            if (item.outcome.isNotEmpty) 'Outcome: ${item.outcome}',
+          ].join('\n'),
+          status: item.status,
+        ),
+      ),
+    );
+    if (!mounted || updated == null || updated.status != 'Completed') return;
+    final index = _localVisits.indexOf(item);
+    if (index != -1 && item.status != 'Completed') {
+      setState(() {
+        _localVisits[index] = item.copyWith(
+          status: 'Completed',
+          createdAt: item.createdAt,
+        );
+      });
+    }
+  }
+
   Future<void> _openVisitForm(LeadDetailModel lead) async {
     final result = await showDialog<_VisitFormResult>(
       context: context,
@@ -941,11 +1008,13 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
         return _FollowUpsSection(
           items: _localFollowUps,
           onAdd: _openFollowUpForm,
+          onTap: _openFollowUpDetails,
         );
       case 2:
         return _VisitsSection(
           items: _localVisits,
           onAdd: () => _openVisitForm(lead),
+          onTap: _openVisitDetails,
         );
       case 3:
       default:
@@ -1772,8 +1841,13 @@ class _InfoRow extends StatelessWidget {
 class _FollowUpsSection extends StatelessWidget {
   final List<_LocalFollowUp> items;
   final VoidCallback onAdd;
+  final ValueChanged<_LocalFollowUp> onTap;
 
-  const _FollowUpsSection({required this.items, required this.onAdd});
+  const _FollowUpsSection({
+    required this.items,
+    required this.onAdd,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1819,85 +1893,92 @@ class _FollowUpsSection extends StatelessWidget {
           ...items.map(
             (item) => Padding(
               padding: const EdgeInsets.only(bottom: 8),
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.deliveryCardSoft,
+              child: Material(
+                color: AppColors.deliveryCardSoft,
+                borderRadius: BorderRadius.circular(12),
+                child: InkWell(
+                  onTap: () => onTap(item),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.deliveryCardBorder),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.event_note_rounded,
-                          size: 16,
-                          color: AppColors.deliveryCustomerOrders,
-                        ),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            item.title,
-                            style: const TextStyle(
-                              color: AppColors.deliveryInk,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                        _PriorityBadge(priority: item.priority),
-                      ],
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.deliveryCardBorder),
                     ),
-                    const SizedBox(height: 6),
-                    Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(
-                          Icons.schedule_rounded,
-                          size: 13,
-                          color: AppColors.textMuted,
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.event_note_rounded,
+                              size: 16,
+                              color: AppColors.deliveryCustomerOrders,
+                            ),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                item.title,
+                                style: const TextStyle(
+                                  color: AppColors.deliveryInk,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                            _PriorityBadge(priority: item.priority),
+                          ],
                         ),
-                        const SizedBox(width: 4),
-                        Text(
-                          _formatDateTime(item.dueAt),
-                          style: const TextStyle(
-                            color: AppColors.textMuted,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        if (item.assigneeName.isNotEmpty) ...[
-                          const SizedBox(width: 10),
-                          const Icon(
-                            Icons.person_outline_rounded,
-                            size: 13,
-                            color: AppColors.textMuted,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            item.assigneeName,
-                            style: const TextStyle(
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.schedule_rounded,
+                              size: 13,
                               color: AppColors.textMuted,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              _formatDateTime(item.dueAt),
+                              style: const TextStyle(
+                                color: AppColors.textMuted,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            if (item.assigneeName.isNotEmpty) ...[
+                              const SizedBox(width: 10),
+                              const Icon(
+                                Icons.person_outline_rounded,
+                                size: 13,
+                                color: AppColors.textMuted,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                item.assigneeName,
+                                style: const TextStyle(
+                                  color: AppColors.textMuted,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        if (item.description.isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          Text(
+                            item.description,
+                            style: const TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
                       ],
                     ),
-                    if (item.description.isNotEmpty) ...[
-                      const SizedBox(height: 6),
-                      Text(
-                        item.description,
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -1907,11 +1988,154 @@ class _FollowUpsSection extends StatelessWidget {
   }
 }
 
+class _LeadFollowUpDetailScreen extends StatelessWidget {
+  final _LocalFollowUp item;
+
+  const _LeadFollowUpDetailScreen({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.deliveryBackground,
+      appBar: AppBar(
+        title: const Text('Follow-up Details'),
+        backgroundColor: AppColors.surface,
+        foregroundColor: AppColors.deliveryInk,
+        elevation: 0,
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.deliveryCardBorder),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(
+                      Icons.event_note_rounded,
+                      size: 22,
+                      color: AppColors.deliveryCustomerOrders,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        item.title,
+                        style: const TextStyle(
+                          color: AppColors.deliveryInk,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    _PriorityBadge(priority: item.priority),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                _FollowUpDetailRow(
+                  icon: Icons.schedule_rounded,
+                  label: 'Due date',
+                  value: _formatDateTime(item.dueAt),
+                ),
+                if (item.assigneeName.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  _FollowUpDetailRow(
+                    icon: Icons.person_outline_rounded,
+                    label: 'Assigned to',
+                    value: item.assigneeName,
+                  ),
+                ],
+                if (item.description.isNotEmpty) ...[
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Description',
+                    style: TextStyle(
+                      color: AppColors.textMuted,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    item.description,
+                    style: const TextStyle(
+                      color: AppColors.deliveryInk,
+                      fontSize: 14,
+                      height: 1.45,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FollowUpDetailRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _FollowUpDetailRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) => Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Icon(icon, size: 20, color: AppColors.deliveryGreen),
+      const SizedBox(width: 10),
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: const TextStyle(
+                color: AppColors.textMuted,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              value,
+              style: const TextStyle(
+                color: AppColors.deliveryInk,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ],
+  );
+}
+
 class _VisitsSection extends StatelessWidget {
   final List<_LocalVisit> items;
   final VoidCallback onAdd;
+  final ValueChanged<_LocalVisit> onTap;
 
-  const _VisitsSection({required this.items, required this.onAdd});
+  const _VisitsSection({
+    required this.items,
+    required this.onAdd,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1957,93 +2181,100 @@ class _VisitsSection extends StatelessWidget {
           ...items.map(
             (item) => Padding(
               padding: const EdgeInsets.only(bottom: 8),
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.deliveryCardSoft,
+              child: Material(
+                color: AppColors.deliveryCardSoft,
+                borderRadius: BorderRadius.circular(12),
+                child: InkWell(
+                  onTap: () => onTap(item),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.deliveryCardBorder),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.deliveryCardBorder),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(
-                          Icons.pin_drop_rounded,
-                          size: 16,
-                          color: AppColors.deliveryGreen,
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.pin_drop_rounded,
+                              size: 16,
+                              color: AppColors.deliveryGreen,
+                            ),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                item.visitType,
+                                style: const TextStyle(
+                                  color: AppColors.deliveryInk,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                            const _StatusBadge(
+                              label: 'Completed',
+                              color: AppColors.deliveryGreen,
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            item.visitType,
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.schedule_rounded,
+                              size: 13,
+                              color: AppColors.textMuted,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              _formatDateTime(item.createdAt),
+                              style: const TextStyle(
+                                color: AppColors.textMuted,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (item.purpose.isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          Text(
+                            'Purpose: ${item.purpose}',
                             style: const TextStyle(
                               color: AppColors.deliveryInk,
-                              fontSize: 13,
+                              fontSize: 12,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                        ),
-                        const _StatusBadge(
-                          label: 'Completed',
-                          color: AppColors.deliveryGreen,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.schedule_rounded,
-                          size: 13,
-                          color: AppColors.textMuted,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          _formatDateTime(item.createdAt),
-                          style: const TextStyle(
-                            color: AppColors.textMuted,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
+                        ],
+                        if (item.notes.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            item.notes,
+                            style: const TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                        ),
+                        ],
+                        if (item.outcome.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            'Outcome: ${item.outcome}',
+                            style: const TextStyle(
+                              color: AppColors.textMuted,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ],
                     ),
-                    if (item.purpose.isNotEmpty) ...[
-                      const SizedBox(height: 6),
-                      Text(
-                        'Purpose: ${item.purpose}',
-                        style: const TextStyle(
-                          color: AppColors.deliveryInk,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                    if (item.notes.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        item.notes,
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                    if (item.outcome.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        'Outcome: ${item.outcome}',
-                        style: const TextStyle(
-                          color: AppColors.textMuted,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -2834,13 +3065,7 @@ class _ConvertLeadSheetState extends State<_ConvertLeadSheet> {
           _fieldLabel('Customer Type'),
           _dropdownBox<String>(
             value: _customerType,
-            items: const [
-              'business',
-              'retail',
-              'wholesale',
-              'distributor',
-              'individual',
-            ],
+            items: const ['business', 'dealer', 'distributor', 'individual'],
             itemLabel: (v) => v[0].toUpperCase() + v.substring(1),
             onChanged: (v) => setState(() => _customerType = v ?? 'business'),
           ),
@@ -3052,6 +3277,7 @@ class _LocalFollowUp {
   final String description;
   final DateTime dueAt;
   final String priority;
+  final String status;
   final String? assigneeId;
   final String assigneeName;
 
@@ -3060,9 +3286,22 @@ class _LocalFollowUp {
     required this.description,
     required this.dueAt,
     required this.priority,
+    this.status = 'Pending',
     this.assigneeId,
     required this.assigneeName,
   });
+
+  _LocalFollowUp copyWith({String? status}) {
+    return _LocalFollowUp(
+      title: title,
+      description: description,
+      dueAt: dueAt,
+      priority: priority,
+      status: status ?? this.status,
+      assigneeId: assigneeId,
+      assigneeName: assigneeName,
+    );
+  }
 }
 
 class _LocalVisit {
@@ -3071,6 +3310,7 @@ class _LocalVisit {
   final String notes;
   final String outcome;
   final DateTime createdAt;
+  final String status;
 
   const _LocalVisit({
     required this.visitType,
@@ -3078,7 +3318,19 @@ class _LocalVisit {
     required this.notes,
     required this.outcome,
     required this.createdAt,
+    this.status = 'Completed',
   });
+
+  _LocalVisit copyWith({String? status, DateTime? createdAt}) {
+    return _LocalVisit(
+      visitType: visitType,
+      purpose: purpose,
+      notes: notes,
+      outcome: outcome,
+      createdAt: createdAt ?? this.createdAt,
+      status: status ?? this.status,
+    );
+  }
 }
 
 class _VisitFormResult {

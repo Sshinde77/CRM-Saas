@@ -2408,11 +2408,6 @@ int _readInt(Map<String, dynamic> json, List<String> keys) {
   return 0;
 }
 
-DateTime? _parseDate(String? value) {
-  if (value == null || value.trim().isEmpty) return null;
-  return DateTime.tryParse(value.trim());
-}
-
 String _normalizeStatus(String value) {
   return value.trim().toLowerCase().replaceAll('-', '_').replaceAll(' ', '_');
 }

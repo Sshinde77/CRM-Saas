@@ -315,8 +315,7 @@ class _CreateDeliveryCustomerScreenState
 
   String? get _apiCustomerType {
     return switch (_type) {
-      'Retail' || 'General Trade' => 'retailer',
-      'Wholesale' => 'wholesaler',
+      'Retail' || 'General Trade' || 'Wholesale' => 'dealer',
       'Distributor' => 'distributor',
       'Business' => 'business',
       'Individual' => 'individual',
@@ -370,11 +369,57 @@ class _CreateDeliveryCustomerScreenState
       ),
     );
     if (!mounted || selected == null) return;
+    final addressLine = selected.addressLine?.trim();
+    final city = selected.city?.trim();
+    final pincode = selected.postcode?.replaceAll(RegExp(r'\D'), '');
     setState(() {
       _pickedLocation = selected;
       _location.text = selected.placeName;
+      if (addressLine != null && addressLine.isNotEmpty) {
+        _address.text = addressLine;
+      }
+      if (city != null && city.isNotEmpty) _city.text = city;
+      if (pincode != null && _validPincode(pincode)) _pincode.text = pincode;
+      for (final key in const ['address', 'city', 'pincode']) {
+        _autoFilledFields.remove(key);
+        _voiceWarnings.remove(key);
+      }
     });
   }
+
+  Widget _sectionHeader(String title, IconData icon) => Padding(
+    padding: const EdgeInsets.only(bottom: 14),
+    child: Row(
+      children: [
+        Icon(icon, size: 18, color: _green),
+        const SizedBox(width: 8),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w800,
+            color: AppColors.deliveryDashboardHeaderEnd,
+          ),
+        ),
+        const SizedBox(width: 10),
+        const Expanded(child: Divider(height: 1)),
+      ],
+    ),
+  );
+
+  Widget _sectionCard(List<Widget> children) => Container(
+    margin: const EdgeInsets.only(bottom: 18),
+    padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+    decoration: BoxDecoration(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: AppColors.border),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: children,
+    ),
+  );
 
   Future<void> _save() async {
     if (_saving || _pickingPhoto || !_formKey.currentState!.validate()) return;
@@ -504,153 +549,169 @@ class _CreateDeliveryCustomerScreenState
                             const SizedBox(height: 12),
                             _VoiceReviewBanner(message: _voiceReviewMessage!),
                           ],
-                          const SizedBox(height: 16),
-                          _field(
-                            'Shop Name',
-                            _shop,
-                            fieldKey: 'shopName',
-                            hint: 'Enter shop name',
-                            capitalization: TextCapitalization.words,
+                          const SizedBox(height: 20),
+                          _sectionHeader(
+                            'Shop Details',
+                            Icons.storefront_outlined,
                           ),
-                          _field(
-                            'Contact Person',
-                            _contact,
-                            fieldKey: 'contactPerson',
-                            hint: 'Enter contact person',
-                            capitalization: TextCapitalization.words,
-                          ),
-                          _field(
-                            'Mobile Number',
-                            _phone,
-                            fieldKey: 'mobileNumber',
-                            hint: '+91 98765 43210',
-                            keyboard: TextInputType.phone,
-                            validator: (value) {
-                              final digits = (value ?? '').replaceAll(
-                                RegExp(r'\D'),
-                                '',
-                              );
-                              return digits.length < 10 || digits.length > 15
-                                  ? 'Enter a valid mobile number'
-                                  : null;
-                            },
-                          ),
-                          _field(
-                            'GSTIN',
-                            _gst,
-                            fieldKey: 'gstin',
-                            hint: 'Enter GSTIN',
-                            required: false,
-                            capitalization: TextCapitalization.characters,
-                            validator: (value) {
-                              final text = (value ?? '').trim();
-                              if (text.isEmpty) return null;
-                              return RegExp(
-                                    r'^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$',
-                                  ).hasMatch(text.toUpperCase())
+                          _sectionCard([
+                            _field(
+                              'Shop Name',
+                              _shop,
+                              fieldKey: 'shopName',
+                              hint: 'Enter shop name',
+                              capitalization: TextCapitalization.words,
+                            ),
+                            _field(
+                              'Contact Person',
+                              _contact,
+                              fieldKey: 'contactPerson',
+                              hint: 'Enter contact person',
+                              capitalization: TextCapitalization.words,
+                            ),
+                            _field(
+                              'Mobile Number',
+                              _phone,
+                              fieldKey: 'mobileNumber',
+                              hint: '+91 98765 43210',
+                              keyboard: TextInputType.phone,
+                              validator: (value) {
+                                final digits = (value ?? '').replaceAll(
+                                  RegExp(r'\D'),
+                                  '',
+                                );
+                                return digits.length < 10 || digits.length > 15
+                                    ? 'Enter a valid mobile number'
+                                    : null;
+                              },
+                            ),
+                            _field(
+                              'GSTIN',
+                              _gst,
+                              fieldKey: 'gstin',
+                              hint: 'Enter GSTIN',
+                              required: false,
+                              capitalization: TextCapitalization.characters,
+                              validator: (value) {
+                                final text = (value ?? '').trim();
+                                if (text.isEmpty) return null;
+                                return RegExp(
+                                      r'^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$',
+                                    ).hasMatch(text.toUpperCase())
+                                    ? null
+                                    : 'Enter a valid 15-character GSTIN';
+                              },
+                            ),
+                            _label('Customer Type'),
+                            DropdownButtonFormField<String>(
+                              initialValue: _type,
+                              decoration: _decoration(
+                                'Select customer type',
+                                fieldKey: 'customerType',
+                              ),
+                              isExpanded: true,
+                              items: _customerTypes
+                                  .map(
+                                    (type) => DropdownMenuItem(
+                                      value: type,
+                                      child: Text(type),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: _saving
                                   ? null
-                                  : 'Enter a valid 15-character GSTIN';
-                            },
-                          ),
-                          _label('Customer Type'),
-                          DropdownButtonFormField<String>(
-                            initialValue: _type,
-                            decoration: _decoration(
-                              'Select customer type',
-                              fieldKey: 'customerType',
+                                  : (value) => setState(() {
+                                      _type = value;
+                                      _voiceWarnings.remove('customerType');
+                                    }),
+                              validator: _required,
                             ),
-                            isExpanded: true,
-                            items: _customerTypes
-                                .map(
-                                  (type) => DropdownMenuItem(
-                                    value: type,
-                                    child: Text(type),
+                            _FieldAssist(
+                              autoFilled: _autoFilledFields.contains(
+                                'customerType',
+                              ),
+                              warning: _voiceWarnings['customerType'],
+                            ),
+                            const SizedBox(height: 18),
+                          ]),
+                          _sectionHeader(
+                            'Location & Address',
+                            Icons.location_on_outlined,
+                          ),
+                          _sectionCard([
+                            _label('Geo-tag Location'),
+                            TextFormField(
+                              controller: _location,
+                              focusNode: _locationFocus,
+                              enabled: !_saving,
+                              readOnly: true,
+                              onTap: _saving ? null : _pickLocation,
+                              decoration: _decoration('Tap to pick on map')
+                                  .copyWith(
+                                    helperText:
+                                        'Address, city and pincode fill automatically',
+                                    prefixIcon: const Icon(
+                                      Icons.my_location_rounded,
+                                      color: _green,
+                                      size: 20,
+                                    ),
+                                    suffixIcon: IconButton(
+                                      tooltip: 'Pick on Google Maps',
+                                      onPressed: _saving ? null : _pickLocation,
+                                      icon: const Icon(
+                                        Icons.map_outlined,
+                                        color: _green,
+                                        size: 21,
+                                      ),
+                                    ),
                                   ),
-                                )
-                                .toList(),
-                            onChanged: _saving
-                                ? null
-                                : (value) => setState(() {
-                                    _type = value;
-                                    _voiceWarnings.remove('customerType');
-                                  }),
-                            validator: _required,
-                          ),
-                          _FieldAssist(
-                            autoFilled: _autoFilledFields.contains(
-                              'customerType',
+                              validator: _validateLocation,
                             ),
-                            warning: _voiceWarnings['customerType'],
-                          ),
-                          const SizedBox(height: 18),
-                          _field(
-                            'Address',
-                            _address,
-                            fieldKey: 'address',
-                            hint: 'Shop / building, street and area',
-                            lines: 3,
-                            capitalization: TextCapitalization.sentences,
-                          ),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: _field(
-                                  'City',
-                                  _city,
-                                  fieldKey: 'city',
-                                  hint: 'City',
-                                  capitalization: TextCapitalization.words,
-                                ),
-                              ),
-                              const SizedBox(width: 14),
-                              Expanded(
-                                child: _field(
-                                  'Pincode',
-                                  _pincode,
-                                  fieldKey: 'pincode',
-                                  hint: '560034',
-                                  keyboard: TextInputType.number,
-                                  formatters: [
-                                    FilteringTextInputFormatter.digitsOnly,
-                                    LengthLimitingTextInputFormatter(6),
-                                  ],
-                                  validator: (value) =>
-                                      RegExp(
-                                        r'^[1-9][0-9]{5}$',
-                                      ).hasMatch((value ?? '').trim())
-                                      ? null
-                                      : 'Enter a 6-digit pincode',
-                                ),
-                              ),
-                            ],
-                          ),
-                          _label('Geo-tag Location'),
-                          TextFormField(
-                            controller: _location,
-                            focusNode: _locationFocus,
-                            enabled: !_saving,
-                            textInputAction: TextInputAction.done,
-                            decoration: _decoration('12.9352, 77.6245').copyWith(
-                              helperText:
-                                  'Pick on Google Maps or enter latitude, longitude',
-                              suffixIcon: IconButton(
-                                tooltip: 'Pick on Google Maps',
-                                onPressed: _saving ? null : _pickLocation,
-                                icon: const Icon(
-                                  Icons.map_outlined,
-                                  color: _green,
-                                  size: 21,
-                                ),
-                              ),
+                            const SizedBox(height: 18),
+                            _field(
+                              'Address',
+                              _address,
+                              fieldKey: 'address',
+                              hint: 'Shop / building, street and area',
+                              lines: 3,
+                              capitalization: TextCapitalization.sentences,
                             ),
-                            validator: _validateLocation,
-                            onChanged: (_) => setState(() {
-                              _pickedLocation = null;
-                            }),
-                            onFieldSubmitted: (_) => _save(),
-                          ),
-                          const SizedBox(height: 26),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: _field(
+                                    'City',
+                                    _city,
+                                    fieldKey: 'city',
+                                    hint: 'City',
+                                    capitalization: TextCapitalization.words,
+                                  ),
+                                ),
+                                const SizedBox(width: 14),
+                                Expanded(
+                                  child: _field(
+                                    'Pincode',
+                                    _pincode,
+                                    fieldKey: 'pincode',
+                                    hint: '560034',
+                                    keyboard: TextInputType.number,
+                                    formatters: [
+                                      FilteringTextInputFormatter.digitsOnly,
+                                      LengthLimitingTextInputFormatter(6),
+                                    ],
+                                    validator: (value) =>
+                                        RegExp(
+                                          r'^[1-9][0-9]{5}$',
+                                        ).hasMatch((value ?? '').trim())
+                                        ? null
+                                        : 'Enter a 6-digit pincode',
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ]),
+                          const SizedBox(height: 8),
                           FilledButton(
                             onPressed: _canCreateCustomer ? _save : null,
                             style: FilledButton.styleFrom(

@@ -10,7 +10,11 @@ import '../../../providers/api_provider.dart';
 import '../../../widgets/customer_avatar.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
 import '../../shared/map_location_view_screen.dart';
+import '../../admin/customers/add_customer_screen.dart';
+import '../../payment_collection_screen.dart';
+import '../orders/create_delivery_order_screen.dart';
 import '../orders/delivery_customer_order_detail_screen.dart';
+import '../../sales_manager/visits/sales_manager_visits_screen.dart';
 
 class DeliveryCustomerDetailScreen extends StatefulWidget {
   final String customerId;
@@ -100,6 +104,40 @@ class _DeliveryCustomerDetailScreenState
           longitude: customer.mapLongitude!,
           title: customer.businessName ?? customer.name,
           subtitle: customer.deliveryAddress ?? customer.billingAddress,
+        ),
+      ),
+    );
+  }
+
+  void _openCreateOrder() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const CreateDeliveryOrderScreen()),
+    );
+  }
+
+  void _openCreateCollection() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) =>
+            PaymentCollectionScreen(initialCustomerId: widget.customerId),
+      ),
+    );
+  }
+
+  void _openCreateVisit() {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const CreateVisitPage()));
+  }
+
+  void _openEditCustomer() {
+    final customer = _customer;
+    if (customer == null) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => AddCustomerScreen(
+          customerId: customer.id,
+          existingCustomer: customer,
         ),
       ),
     );
@@ -222,56 +260,96 @@ class _DeliveryCustomerDetailScreenState
     }
     switch (_tab) {
       case 0:
-        return _orders.isEmpty
-            ? const _EmptyState(
-                icon: Icons.receipt_long_outlined,
-                label: 'No data present',
-              )
-            : Column(
-                children: _orders
-                    .map(
-                      (order) => _OrderTile(
-                        order: order,
-                        onTap: order.id.trim().isEmpty
-                            ? null
-                            : () => Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      DeliveryCustomerOrderDetailScreen(
-                                        orderId: order.id,
-                                        initialProgressStatus:
-                                            order.fulfillment == '-'
-                                            ? order.status
-                                            : order.fulfillment,
-                                      ),
-                                ),
-                              ),
-                      ),
-                    )
-                    .toList(),
-              );
+        return Column(
+          children: [
+            _TabActionButton(
+              label: 'Create Order',
+              icon: Icons.add_shopping_cart_rounded,
+              onPressed: _openCreateOrder,
+            ),
+            const SizedBox(height: 12),
+            _orders.isEmpty
+                ? const _EmptyState(
+                    icon: Icons.receipt_long_outlined,
+                    label: 'No data present',
+                  )
+                : Column(
+                    children: _orders
+                        .map(
+                          (order) => _OrderTile(
+                            order: order,
+                            onTap: order.id.trim().isEmpty
+                                ? null
+                                : () => Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          DeliveryCustomerOrderDetailScreen(
+                                            orderId: order.id,
+                                            initialProgressStatus:
+                                                order.fulfillment == '-'
+                                                ? order.status
+                                                : order.fulfillment,
+                                          ),
+                                    ),
+                                  ),
+                          ),
+                        )
+                        .toList(),
+                  ),
+          ],
+        );
       case 1:
-        return _payments.isEmpty
-            ? const _EmptyState(
-                icon: Icons.payments_outlined,
-                label: 'No data present',
-              )
-            : Column(
-                children: _payments
-                    .map((e) => _PaymentTile(payment: e))
-                    .toList(),
-              );
+        return Column(
+          children: [
+            _TabActionButton(
+              label: 'Create Collection',
+              icon: Icons.payments_rounded,
+              onPressed: _openCreateCollection,
+            ),
+            const SizedBox(height: 12),
+            _payments.isEmpty
+                ? const _EmptyState(
+                    icon: Icons.payments_outlined,
+                    label: 'No data present',
+                  )
+                : Column(
+                    children: _payments
+                        .map((e) => _PaymentTile(payment: e))
+                        .toList(),
+                  ),
+          ],
+        );
       case 2:
-        return _visits.isEmpty
-            ? const _EmptyState(
-                icon: Icons.route_outlined,
-                label: 'No data present',
-              )
-            : Column(
-                children: _visits.map((e) => _VisitTile(visit: e)).toList(),
-              );
+        return Column(
+          children: [
+            _TabActionButton(
+              label: 'Create Visit',
+              icon: Icons.add_location_alt_rounded,
+              onPressed: _openCreateVisit,
+            ),
+            const SizedBox(height: 12),
+            _visits.isEmpty
+                ? const _EmptyState(
+                    icon: Icons.route_outlined,
+                    label: 'No data present',
+                  )
+                : Column(
+                    children: _visits.map((e) => _VisitTile(visit: e)).toList(),
+                  ),
+          ],
+        );
       default:
-        return _CustomerInfo(customer: customer);
+        return Column(
+          children: [
+            _TabActionButton(
+              label: 'Edit Customer',
+              icon: Icons.edit_rounded,
+              onPressed: _openEditCustomer,
+            ),
+            const SizedBox(height: 12),
+            _CustomerInfo(customer: customer),
+          ],
+        );
     }
   }
 }
@@ -860,6 +938,37 @@ class _CustomerInfo extends StatelessWidget {
   );
 }
 
+class _TabActionButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  const _TabActionButton({
+    required this.label,
+    required this.icon,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: double.infinity,
+    child: FilledButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 20),
+      label: Text(
+        label,
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+      ),
+      style: FilledButton.styleFrom(
+        backgroundColor: AppColors.deliveryGreen,
+        foregroundColor: Colors.white,
+        minimumSize: const Size.fromHeight(48),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    ),
+  );
+}
+
 class _InfoSection extends StatelessWidget {
   final String title;
   final IconData icon;
@@ -888,6 +997,7 @@ class _InfoSection extends StatelessWidget {
               title,
               style: AppTextStyles.cardTitle.copyWith(
                 color: AppColors.deliveryInk,
+                fontSize: 16,
               ),
             ),
           ],
@@ -918,7 +1028,7 @@ class _InfoSection extends StatelessWidget {
                         textAlign: TextAlign.end,
                         style: const TextStyle(
                           color: AppColors.deliveryInk,
-                          fontSize: 13,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
                       ),

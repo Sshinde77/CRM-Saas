@@ -107,10 +107,14 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
         if (mounted) {
           setState(() {
             _warehouses = warehouses;
-            if (!warehouses.any(
+            final currentIsValid = warehouses.any(
               (w) => _text(w, ['id', 'warehouse_id']) == _selectedWarehouseId,
-            )) {
-              _selectedWarehouseId = _allWarehousesId;
+            );
+            if (!currentIsValid) {
+              // Auto-select when exactly one warehouse is available.
+              _selectedWarehouseId = warehouses.length == 1
+                  ? _text(warehouses.first, ['id', 'warehouse_id'])
+                  : _allWarehousesId;
             }
           });
         }
@@ -124,6 +128,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
     setState(() {
       _stockLoading = true;
       _stockError = null;
+      _stockByProductId = {}; // clear stale data immediately
     });
     try {
       final selectedId = _selectedWarehouseId;
@@ -383,9 +388,20 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
   }
 
   String _productIdFromStockRow(Map<String, dynamic> row) {
+    // Prefer an explicit foreign-key on the outer row first (most reliable).
+    final outerKey = _text(row, ['product_id', 'productId']);
+    if (outerKey.isNotEmpty) return outerKey;
+    // Then try the nested product sub-object's own ID.
     final product = row['product'];
-    final data = product is Map<String, dynamic> ? {...row, ...product} : row;
-    return _text(data, ['product_id', 'productId', 'id', '_id']);
+    if (product is Map<String, dynamic>) {
+      return _text(Map<String, dynamic>.from(product), [
+        'id',
+        '_id',
+        'product_id',
+      ]);
+    }
+    // Last resort: the row's own ID fields (may be the stock-record ID).
+    return _text(row, ['id', '_id']);
   }
 
   double? _stockFromRow(Map<String, dynamic> row) {
@@ -394,27 +410,32 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
     return _OrderProduct.readStock(data);
   }
 
-  double? _displayStockFor(_OrderProduct product) {
+  /// Raw warehouse stock for a product (before cart deduction).
+  double? _warehouseStockFor(_OrderProduct product) {
     if (_stockByProductId.containsKey(product.id)) {
       return _stockByProductId[product.id];
     }
     return product.stock;
   }
 
-  String _availabilityLabel(double? stock) {
-    if (_stockLoading) return 'Availability: Loading';
-    if (stock == null) return 'Availability: Checked on order';
-    if (stock <= 0) return 'Availability: 0';
-    final quantity = stock == stock.truncateToDouble()
-        ? stock.toStringAsFixed(0)
-        : stock.toString();
-    return 'Availability: $quantity';
+  String _availabilityLabel(double? rawStock, int inCart) {
+    if (_stockLoading) return 'Availability: Loading…';
+    if (rawStock == null) return 'Availability: Checked on order';
+    if (rawStock <= 0) return 'Out of stock';
+    final remaining = (rawStock - inCart).clamp(0, rawStock);
+    if (inCart > 0 && remaining == 0) return 'No stock remaining';
+    final qty = remaining == remaining.truncateToDouble()
+        ? remaining.toStringAsFixed(0)
+        : remaining.toStringAsFixed(2);
+    return 'Available: $qty';
   }
 
-  Color _availabilityColor(double? stock) {
-    if (_stockLoading || stock == null) return AppColors.textLightMuted;
-    if (stock <= 0) return AppColors.red;
-    if (stock <= 10) return Colors.deepOrange;
+  Color _availabilityColor(double? rawStock, int inCart) {
+    if (_stockLoading || rawStock == null) return AppColors.textLightMuted;
+    if (rawStock <= 0) return AppColors.red;
+    final remaining = rawStock - inCart;
+    if (remaining <= 0) return AppColors.red;
+    if (remaining <= 10) return Colors.deepOrange;
     return _green;
   }
 
@@ -845,8 +866,9 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                                               );
                                               _loadStockForWarehouse();
                                             },
-                                      validator: (v) => v == null
-                                          ? 'Select a warehouse'
+                                      validator: (v) =>
+                                          (v == null || v == _allWarehousesId)
+                                          ? 'Select a specific warehouse'
                                           : null,
                                     ),
                                     if (_loadErrors.containsKey('Warehouses'))
@@ -860,13 +882,25 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                                     if (_stockError != null)
                                       Padding(
                                         padding: const EdgeInsets.only(top: 6),
-                                        child: Text(
-                                          _stockError!,
-                                          style: const TextStyle(
-                                            color: AppColors.red,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
-                                          ),
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                _stockError!,
+                                                style: const TextStyle(
+                                                  color: AppColors.red,
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ),
+                                            TextButton(
+                                              onPressed: _stockLoading
+                                                  ? null
+                                                  : _loadStockForWarehouse,
+                                              child: const Text('Retry'),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                   ],
@@ -1263,7 +1297,11 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
     }
     final cards = visible.map<Widget>((p) {
       final quantity = _quantities[p.id] ?? 0;
-      final displayStock = _displayStockFor(p);
+      final rawStock = _warehouseStockFor(p);
+      // Disable + when stock is known and cart already covers it.
+      final canAdd =
+          !_stockLoading &&
+          (rawStock == null || rawStock > 0 && quantity < rawStock);
       return Container(
         key: ValueKey('order-product-${p.id}'),
         margin: const EdgeInsets.only(bottom: 8),
@@ -1316,11 +1354,11 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                     ),
                   const SizedBox(height: 3),
                   Text(
-                    _availabilityLabel(displayStock),
+                    _availabilityLabel(rawStock, quantity),
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
-                      color: _availabilityColor(displayStock),
+                      color: _availabilityColor(rawStock, quantity),
                     ),
                   ),
                   RichText(
@@ -1332,7 +1370,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                       ),
                       children: [
                         TextSpan(
-                          text: _money(_unitPrice(p)),
+                          text: _money(p.price),
                           style: const TextStyle(fontWeight: FontWeight.w700),
                         ),
                         TextSpan(
@@ -1404,11 +1442,15 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                       style: const TextStyle(fontWeight: FontWeight.w700),
                     ),
                     IconButton(
-                      tooltip: 'Add one ${p.name}',
+                      tooltip: canAdd
+                          ? 'Add one ${p.name}'
+                          : 'No more stock available',
                       visualDensity: VisualDensity.compact,
-                      color: _green,
-                      onPressed: () =>
-                          setState(() => _quantities[p.id] = quantity + 1),
+                      color: canAdd ? _green : AppColors.textLightMuted,
+                      onPressed: canAdd
+                          ? () =>
+                                setState(() => _quantities[p.id] = quantity + 1)
+                          : null,
                       icon: const Icon(Icons.add, size: 18),
                     ),
                   ],

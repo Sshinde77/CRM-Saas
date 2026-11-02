@@ -830,6 +830,53 @@ class _FollowUpDetailScreen extends StatefulWidget {
   State<_FollowUpDetailScreen> createState() => _FollowUpDetailScreenState();
 }
 
+/// Shared follow-up detail entry point used by lead and follow-up screens.
+class FollowUpDetailScreen extends StatelessWidget {
+  final String title;
+  final String customerName;
+  final String dateLabel;
+  final String timeLabel;
+  final String note;
+  final String status;
+  final Color color;
+  final String priority;
+  final String phone;
+  final String contactPerson;
+  final String followUpType;
+
+  const FollowUpDetailScreen({
+    super.key,
+    required this.title,
+    required this.customerName,
+    required this.dateLabel,
+    required this.timeLabel,
+    required this.note,
+    required this.status,
+    required this.color,
+    required this.priority,
+    required this.phone,
+    required this.contactPerson,
+    required this.followUpType,
+  });
+
+  @override
+  Widget build(BuildContext context) => _FollowUpDetailScreen(
+    item: _FollowUpItem(
+      title: title,
+      customerName: customerName,
+      dateLabel: dateLabel,
+      timeLabel: timeLabel,
+      note: note,
+      status: status,
+      color: color,
+      priority: priority,
+      phone: phone,
+      contactPerson: contactPerson,
+      followUpType: followUpType,
+    ),
+  );
+}
+
 class _FollowUpDetailScreenState extends State<_FollowUpDetailScreen> {
   late _FollowUpItem _item;
 
@@ -1505,7 +1552,7 @@ class _CreateFollowUpPageState extends State<_CreateFollowUpPage> {
                         _FieldLabel('Priority'),
                         const SizedBox(height: 8),
                         DropdownButtonFormField<String>(
-                          value: _priority,
+                          initialValue: _priority,
                           decoration: const InputDecoration(
                             filled: true,
                             fillColor: Colors.white,
@@ -1547,8 +1594,9 @@ class _CreateFollowUpPageState extends State<_CreateFollowUpPage> {
                             ),
                           ],
                           onChanged: (value) {
-                            if (value != null)
+                            if (value != null) {
                               setState(() => _priority = value);
+                            }
                           },
                         ),
                         const SizedBox(height: 18),
