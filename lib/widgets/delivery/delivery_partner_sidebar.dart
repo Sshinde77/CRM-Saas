@@ -85,6 +85,8 @@ class DeliveryPartnerSidebar extends StatelessWidget {
         Navigator.of(context).pushNamed(AppRoutes.deliveryExpenses);
       case AppRoutes.deliveryEndOfDay:
         Navigator.of(context).pushNamed(AppRoutes.deliveryEndOfDay);
+      case AppRoutes.deliveryProfile:
+        Navigator.of(context).pushNamed(AppRoutes.deliveryProfile);
       default:
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
@@ -297,5 +299,10 @@ const List<_DeliveryMenuItem> _deliveryMenuItems = [
     label: 'Expenses',
     route: AppRoutes.deliveryExpenses,
     icon: Icons.receipt_long_outlined,
+  ),
+  _DeliveryMenuItem(
+    label: 'Profile',
+    route: AppRoutes.deliveryProfile,
+    icon: Icons.person_outline_rounded,
   ),
 ];

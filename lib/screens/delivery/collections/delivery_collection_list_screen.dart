@@ -14,6 +14,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../models/customer_model.dart';
 import '../../../providers/api_provider.dart';
 import '../../../routes/app_router.dart';
+import '../../../widgets/customer_avatar.dart';
 import '../../../widgets/delivery/delivery_partner_sidebar.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
 import '../../payment_collection_screen.dart';
@@ -510,22 +511,10 @@ class _CollectionListTile extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  alignment: Alignment.center,
-                  decoration: const BoxDecoration(
-                    color: AppColors.deliveryGreenSoft,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Text(
-                    delivery.initials,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.deliveryInk,
-                    ),
-                  ),
+                CustomerAvatar(
+                  name: delivery.customerName,
+                  photoUrl: delivery.photoUrl,
+                  size: 56,
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -992,6 +981,7 @@ class _CollectionDelivery {
     required this.phone,
     required this.latitude,
     required this.longitude,
+    this.photoUrl,
   });
 
   final String id;
@@ -1006,6 +996,7 @@ class _CollectionDelivery {
   final String? phone;
   final double? latitude;
   final double? longitude;
+  final String? photoUrl;
 
   factory _CollectionDelivery.fromJson(Map<String, dynamic> json) {
     final id = _readString(json, const ['id', 'delivery_id']) ?? '';
@@ -1090,6 +1081,12 @@ class _CollectionDelivery {
             'longitude',
             'map_longitude',
           ]),
+      photoUrl:
+          _readString(json, const ['customer_photo_url', 'profile_photo_url']) ??
+          _readNestedString(json, 'customer', const [
+            'profile_photo_url',
+            'photo_url',
+          ]),
     );
   }
 
@@ -1116,6 +1113,7 @@ class _CollectionDelivery {
       phone: customer.phone,
       latitude: customer.mapLatitude,
       longitude: customer.mapLongitude,
+      photoUrl: customer.profilePhotoUrl,
     );
   }
 

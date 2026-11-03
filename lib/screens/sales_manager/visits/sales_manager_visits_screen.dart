@@ -6,6 +6,7 @@ import '../../../constants/app_colors.dart';
 import '../../../models/customer_model.dart';
 import '../../../providers/api_provider.dart';
 import '../../../widgets/completion_feedback_sheet.dart';
+import '../../../widgets/customer_avatar.dart';
 import '../../delivery/customers/delivery_customers_screen.dart';
 import '../../admin/leads/admin_leads_screen.dart';
 import '../../admin/orders/admin_orders_screen.dart';
@@ -499,6 +500,7 @@ class _CreateVisitPageState extends State<CreateVisitPage> {
                   id: customer.id,
                   name: (customer.businessName ?? customer.name).trim(),
                   code: (customer.customerId ?? '').trim(),
+                  photoUrl: customer.profilePhotoUrl ?? '',
                 ),
               ),
             );
@@ -548,7 +550,7 @@ class _CreateVisitPageState extends State<CreateVisitPage> {
     final party = await showDialog<_VisitPartyOption>(
       context: context,
       builder: (_) => _VisitPartySearchDialog(
-        title: 'Select ${_visitTypeLabel}',
+        title: 'Select $_visitTypeLabel',
         searchHint: 'Search $_visitTypeLabel',
         parties: _parties,
         selectedId: _selectedParty?.id,
@@ -776,6 +778,7 @@ class _VisitLeadOption {
     required this.code,
   });
 
+  // ignore: unused_element
   factory _VisitLeadOption.fromJson(Map<String, dynamic> json) {
     String read(List<String> keys) {
       for (final key in keys) {
@@ -793,6 +796,7 @@ class _VisitLeadOption {
   }
 }
 
+// ignore: unused_element
 class _VisitLeadPickerCard extends StatelessWidget {
   final _VisitLeadOption? selected;
   final bool loading;
@@ -800,11 +804,13 @@ class _VisitLeadPickerCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback? onClear;
 
+  // ignore: unused_element_parameter
   const _VisitLeadPickerCard({
     required this.selected,
     required this.loading,
     required this.error,
     required this.onTap,
+    // ignore: unused_element_parameter
     this.onClear,
   });
 
@@ -827,7 +833,10 @@ class _VisitLeadPickerCard extends StatelessWidget {
         child: hasSelection
             ? Row(
                 children: [
-                  _VisitPersonAvatar(name: selected!.name),
+                  CustomerAvatar(
+                    name: selected!.name,
+                    size: 40,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -932,6 +941,7 @@ class _VisitLeadPickerCard extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _VisitPersonAvatar extends StatelessWidget {
   final String name;
 
@@ -973,6 +983,7 @@ class _LeadSearchDialog extends StatefulWidget {
   final List<_VisitLeadOption> leads;
   final String? selectedLeadId;
 
+  // ignore: unused_element_parameter
   const _LeadSearchDialog({required this.leads, this.selectedLeadId});
 
   @override
@@ -1051,11 +1062,13 @@ class _VisitPartyOption {
   final String id;
   final String name;
   final String code;
+  final String photoUrl;
 
   const _VisitPartyOption({
     required this.id,
     required this.name,
     required this.code,
+    this.photoUrl = '',
   });
 
   factory _VisitPartyOption.fromJson(Map<String, dynamic> json) {
@@ -1086,6 +1099,15 @@ class _VisitPartyOption {
         'supplier_code',
         'supplierCode',
         'code',
+      ]),
+      photoUrl: read([
+        'customer_profile_photo_url',
+        'customer_profile_image_url',
+        'profile_photo_url',
+        'profile_image_url',
+        'profilePhoto',
+        'avatar_url',
+        'avatar',
       ]),
     );
   }
@@ -1127,7 +1149,11 @@ class _VisitPartyPickerCard extends StatelessWidget {
         child: hasSelection
             ? Row(
                 children: [
-                  _VisitPersonAvatar(name: selected!.name),
+                  CustomerAvatar(
+                    name: selected!.name,
+                    photoUrl: selected!.photoUrl,
+                    size: 40,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -1289,6 +1315,11 @@ class _VisitPartySearchDialogState extends State<_VisitPartySearchDialog> {
                         final party = parties[index];
                         return ListTile(
                           contentPadding: EdgeInsets.zero,
+                          leading: CustomerAvatar(
+                            name: party.name,
+                            photoUrl: party.photoUrl,
+                            size: 40,
+                          ),
                           title: Text(party.name),
                           subtitle: party.code.isEmpty
                               ? null

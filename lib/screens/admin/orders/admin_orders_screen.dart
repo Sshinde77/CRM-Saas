@@ -401,7 +401,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     Navigator.of(context).maybePop();
     if (action == 'Sales Orders') return;
     if (action == 'Create Order') {
-      Navigator.of(context).pushReplacement(
+      Navigator.of(context).push(
         MaterialPageRoute(
           builder: (_) => const NewAdminOrderScreen(useSalesManagerShell: true),
         ),

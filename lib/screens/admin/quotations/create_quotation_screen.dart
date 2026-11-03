@@ -9,6 +9,7 @@ import '../../../models/customer_model.dart';
 import '../../../providers/api_provider.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
+import '../../../widgets/customer_avatar.dart';
 import '../../../widgets/app_calendar_date_picker.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
@@ -606,6 +607,14 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
               value: _selectedCustomer?.name,
               hint: 'Select customer',
               icon: Icons.business_outlined,
+              leading: _selectedCustomer == null
+                  ? null
+                  : CustomerAvatar(
+                      name: _selectedCustomer!.businessName ??
+                          _selectedCustomer!.name,
+                      photoUrl: _selectedCustomer!.profilePhotoUrl,
+                      size: 28,
+                    ),
               onTap: _showCustomerPicker,
               trailing: IconButton(
                 onPressed: _quickAddCustomer,
@@ -915,6 +924,11 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
       items: _customers,
       label: (customer) => customer.name,
       subtitle: (customer) => customer.phone ?? customer.email ?? '',
+      leading: (customer) => CustomerAvatar(
+        name: customer.businessName ?? customer.name,
+        photoUrl: customer.profilePhotoUrl,
+        size: 42,
+      ),
     );
     if (customer == null) return;
     setState(() {
@@ -994,6 +1008,7 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
     required List<T> items,
     required String Function(T item) label,
     required String Function(T item) subtitle,
+    Widget Function(T item)? leading,
   }) {
     return showModalBottomSheet<T>(
       context: context,
@@ -1050,6 +1065,7 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
                               borderRadius: BorderRadius.circular(14),
                             ),
                             tileColor: const Color(0xFFF8FAFC),
+                            leading: leading?.call(item),
                             title: Text(
                               label(item),
                               style: const TextStyle(
@@ -1357,6 +1373,7 @@ class _SelectTile extends StatelessWidget {
   final String? value;
   final String hint;
   final IconData icon;
+  final Widget? leading;
   final VoidCallback onTap;
   final Widget? trailing;
 
@@ -1365,6 +1382,7 @@ class _SelectTile extends StatelessWidget {
     required this.value,
     required this.hint,
     required this.icon,
+    this.leading,
     required this.onTap,
     this.trailing,
   });
@@ -1390,7 +1408,7 @@ class _SelectTile extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Icon(icon, size: 18, color: AppColors.textMuted),
+                leading ?? Icon(icon, size: 18, color: AppColors.textMuted),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(

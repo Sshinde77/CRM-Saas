@@ -9,6 +9,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../constants/app_colors.dart';
 import '../models/customer_model.dart';
 import '../providers/api_provider.dart';
+import '../widgets/customer_avatar.dart';
 import '../widgets/delivery/delivery_top_bar.dart';
 import '../widgets/delivery/customer_search_dialog.dart';
 import 'delivery/customers/create_delivery_customer_screen.dart';
@@ -446,10 +447,16 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
                   child: InputDecorator(
                     decoration: _decoration().copyWith(
                       errorText: field.errorText,
-                      prefixIcon: const Icon(
-                        Icons.storefront_outlined,
-                        size: 20,
-                      ),
+                      prefixIcon: _selectedCustomer == null
+                          ? const Icon(Icons.storefront_outlined, size: 20)
+                          : Padding(
+                              padding: const EdgeInsets.all(8),
+                              child: CustomerAvatar(
+                                name: _selectedCustomer!.name,
+                                photoUrl: _selectedCustomer!.photoUrl,
+                                size: 24,
+                              ),
+                            ),
                       suffixIcon: const Icon(
                         Icons.keyboard_arrow_down,
                         size: 20,
@@ -1039,6 +1046,7 @@ class _PaymentCustomer {
     required this.latitude,
     required this.longitude,
     required this.raw,
+    this.photoUrl,
   });
   final dynamic id;
   final String name;
@@ -1047,6 +1055,7 @@ class _PaymentCustomer {
   final double? latitude;
   final double? longitude;
   final Map<String, dynamic> raw;
+  final String? photoUrl;
 
   bool get hasLocation => latitude != null && longitude != null;
 
@@ -1071,6 +1080,7 @@ class _PaymentCustomer {
       address: _customerAddress(customer),
       latitude: customer.mapLatitude ?? fallback?.latitude,
       longitude: customer.mapLongitude ?? fallback?.longitude,
+      photoUrl: customer.profilePhotoUrl ?? fallback?.photoUrl,
       raw: const {},
     );
   }

@@ -16,6 +16,7 @@ import '../screens/delivery/leaves/delivery_leaves_screen.dart';
 import '../screens/delivery/vehicle_stock/delivery_vehicle_loading_screen.dart';
 import '../screens/delivery/vehicle_stock/delivery_vehicle_stock_screen.dart';
 import '../screens/role_home_screen.dart';
+import '../screens/shared/profile_screen.dart';
 
 class AppRoutes {
   const AppRoutes._();
@@ -36,6 +37,7 @@ class AppRoutes {
   static const String deliveryExpenses = '/delivery/expenses';
   static const String deliveryEndOfDay = '/delivery/end-of-day';
   static const String deliveryVehicleLoading = '/delivery/vehicle-loading';
+  static const String deliveryProfile = '/delivery/profile';
 
   static String deliveryDetail(String deliveryId) =>
       '$deliveryDeliveries/$deliveryId';
@@ -63,6 +65,7 @@ class AppRouter {
           const DeliveryVehicleLoadingScreen(),
       AppRoutes.deliveryEndOfDay: (_) => const EndOfDayReturnScreen(),
       AppRoutes.deliveryExpenses: (_) => const DeliveryExpensesScreen(),
+      AppRoutes.deliveryProfile: (_) => const ProfileScreen(),
     };
   }
 

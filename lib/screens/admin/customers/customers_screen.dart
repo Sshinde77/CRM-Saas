@@ -16,6 +16,7 @@ import 'customer_details_screen.dart';
 import 'add_customer_screen.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
+import '../../../widgets/customer_avatar.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
 import '../../delivery/attendance/delivery_attendance_screen.dart';
@@ -727,7 +728,11 @@ class _CustomersScreenState extends State<CustomersScreen> {
           return Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _avatar(customer.initials, compact ? 42 : 48),
+              CustomerAvatar(
+                name: customer.businessName ?? customer.name,
+                photoUrl: customer.profilePhotoUrl,
+                size: compact ? 42 : 48,
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Column(
@@ -1047,28 +1052,6 @@ class _CustomersScreenState extends State<CustomersScreen> {
           onTap: () => _deleteCustomer(customer),
         ),
       ],
-    );
-  }
-
-  Widget _avatar(String initials, double size) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: AppColors.surfaceSoft,
-        shape: BoxShape.circle,
-        border: Border.all(color: AppColors.borderLight),
-      ),
-      alignment: Alignment.center,
-      child: Text(
-        initials,
-        style: TextStyle(
-          color: AppColors.primary,
-          fontWeight: FontWeight.w700,
-          fontSize: size * 0.24,
-          letterSpacing: 0,
-        ),
-      ),
     );
   }
 

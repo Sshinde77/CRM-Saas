@@ -16,6 +16,7 @@ import '../../../widgets/app_calendar_date_picker.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
 import '../../../widgets/delivery/customer_search_dialog.dart';
 import '../../../widgets/delivery/delivery_partner_search_dialog.dart';
+import '../../../widgets/customer_avatar.dart';
 import '../customers/create_delivery_customer_screen.dart';
 
 class CreateDeliveryOrderScreen extends StatefulWidget {
@@ -41,6 +42,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   final _form = GlobalKey<FormState>();
   final _quantities = <String, int>{};
+  final _quantityInputs = <String, TextEditingController>{};
   final _priceInputs = <String, String>{};
   final _productScrollController = ScrollController();
   final _discount = TextEditingController(text: '0');
@@ -62,6 +64,45 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
   final _loaded = <String>{};
   DateTime _orderDate = DateUtils.dateOnly(DateTime.now());
   DateTime _deliveryDate = DateUtils.dateOnly(DateTime.now());
+
+  TextEditingController _quantityControllerFor(_OrderProduct product) {
+    return _quantityInputs.putIfAbsent(
+      product.id,
+      () => TextEditingController(text: '${_quantities[product.id] ?? 0}'),
+    );
+  }
+
+  void _setProductQuantity(_OrderProduct product, int quantity) {
+    final stock = _warehouseStockFor(product);
+    final maximum = stock == null ? quantity : quantity.clamp(0, stock.floor());
+    final value = maximum < 0 ? 0 : maximum;
+    setState(() => _quantities[product.id] = value);
+    final controller = _quantityControllerFor(product);
+    controller.value = TextEditingValue(
+      text: '$value',
+      selection: TextSelection.collapsed(offset: '$value'.length),
+    );
+  }
+
+  void _setManualProductQuantity(_OrderProduct product, String value) {
+    if (value.trim().isEmpty) {
+      setState(() => _quantities[product.id] = 0);
+      return;
+    }
+    final quantity = int.tryParse(value.trim());
+    if (quantity == null || quantity < 0) return;
+    setState(() => _quantities[product.id] = quantity);
+  }
+
+  @override
+  void dispose() {
+    for (final controller in _quantityInputs.values) {
+      controller.dispose();
+    }
+    _productScrollController.dispose();
+    _discount.dispose();
+    super.dispose();
+  }
 
   @override
   void didChangeDependencies() {
@@ -323,13 +364,6 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
     }
   }
 
-  @override
-  void dispose() {
-    _productScrollController.dispose();
-    _discount.dispose();
-    super.dispose();
-  }
-
   List<_OrderProduct> get _selected =>
       _products.where((p) => (_quantities[p.id] ?? 0) > 0).toList();
   double _unitPrice(_OrderProduct product) {
@@ -528,11 +562,21 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
             setState(() {
               _quantities.clear();
               _priceInputs.clear();
+              for (final controller in _quantityInputs.values) {
+                controller.text = '0';
+              }
               _discount.text = '0';
             });
           },
           onQuantityChanged: (id, quantity) => setState(() {
             _quantities[id] = quantity;
+            final controller = _quantityInputs[id];
+            if (controller != null && controller.text != '$quantity') {
+              controller.value = TextEditingValue(
+                text: '$quantity',
+                selection: TextSelection.collapsed(offset: '$quantity'.length),
+              );
+            }
             final enteredDiscount = double.tryParse(_discount.text) ?? 0;
             if (enteredDiscount > _subtotal) {
               _discount.text = _subtotal.toStringAsFixed(2);
@@ -545,7 +589,11 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Sales order created successfully.')),
       );
-      widget.onCreated?.call();
+      if (widget.onCreated != null) {
+        widget.onCreated!.call();
+      } else if (mounted) {
+        Navigator.of(context).pop(true);
+      }
     }
   }
 
@@ -740,6 +788,25 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                                                 icon: Icons.storefront_outlined,
                                               ).copyWith(
                                                 errorText: field.errorText,
+                                                prefixIcon: _customer == null
+                                                    ? const Icon(
+                                                        Icons
+                                                            .storefront_outlined,
+                                                      )
+                                                    : Padding(
+                                                        padding:
+                                                            const EdgeInsets.all(
+                                                              8,
+                                                            ),
+                                                        child: CustomerAvatar(
+                                                          name: _customer!
+                                                              .businessName ??
+                                                              _customer!.name,
+                                                          photoUrl: _customer!
+                                                              .profilePhotoUrl,
+                                                          size: 28,
+                                                        ),
+                                                      ),
                                                 suffixIcon: const Icon(
                                                   Icons.keyboard_arrow_down,
                                                 ),
@@ -1432,14 +1499,40 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                       visualDensity: VisualDensity.compact,
                       onPressed: quantity == 0
                           ? null
-                          : () => setState(
-                              () => _quantities[p.id] = quantity - 1,
-                            ),
+                          : () => _setProductQuantity(p, quantity - 1),
                       icon: const Icon(Icons.remove, size: 18),
                     ),
-                    Text(
-                      '$quantity',
-                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    SizedBox(
+                      width: 28,
+                      child: TextField(
+                        key: ValueKey('order-quantity-${p.id}'),
+                        controller: _quantityControllerFor(p),
+                        keyboardType: TextInputType.number,
+                        textAlign: TextAlign.center,
+                        enabled: !_stockLoading,
+                        cursorWidth: 1.5,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        decoration: const InputDecoration(
+                          isDense: true,
+                          isCollapsed: true,
+                          contentPadding: EdgeInsets.zero,
+                          border: InputBorder.none,
+                        ),
+                        onChanged: (value) =>
+                            _setManualProductQuantity(p, value),
+                        onEditingComplete: () {
+                          final value = int.tryParse(
+                            _quantityControllerFor(p).text.trim(),
+                          );
+                          if (value != null) {
+                            _setProductQuantity(p, value);
+                          }
+                          FocusScope.of(context).unfocus();
+                        },
+                      ),
                     ),
                     IconButton(
                       tooltip: canAdd
@@ -1448,8 +1541,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                       visualDensity: VisualDensity.compact,
                       color: canAdd ? _green : AppColors.textLightMuted,
                       onPressed: canAdd
-                          ? () =>
-                                setState(() => _quantities[p.id] = quantity + 1)
+                          ? () => _setProductQuantity(p, quantity + 1)
                           : null,
                       icon: const Icon(Icons.add, size: 18),
                     ),
@@ -1710,9 +1802,12 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
   static const _green = AppColors.deliveryGreen;
   static const _header = AppColors.deliveryDashboardHeaderEnd;
   static const _red = AppColors.deliveryRed;
-  final _paidController = TextEditingController(text: '0');
+  final _paidController = TextEditingController();
+  final _paidFocusNode = FocusNode();
   final _previewScrollController = ScrollController();
+  final _quantityControllers = <String, TextEditingController>{};
   bool _submitting = false;
+  bool _cancelRequested = false;
   String? _error;
   String? _createdOrderId;
   List<String> _stockShortages = [];
@@ -1737,7 +1832,10 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
   double get _total => _subtotal - _discount + _tax;
   double get _previousBalance => (widget.customer.outstanding ?? 0).toDouble();
   double get _grandTotal => _total + _previousBalance;
-  double? get _paid => double.tryParse(_paidController.text.trim());
+  double? get _paid {
+    final value = _paidController.text.trim();
+    return value.isEmpty ? 0 : double.tryParse(value);
+  }
   String get _submitLabel {
     if (_submitting) {
       return _createdOrderId == null
@@ -1749,6 +1847,12 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
   }
 
   String _money(double value) => _formatOrderMoney(value);
+  TextEditingController _quantityControllerFor(_PreviewItem item) {
+    return _quantityControllers.putIfAbsent(
+      item.product.id,
+      () => TextEditingController(text: '${item.quantity}'),
+    );
+  }
   String _date(DateTime date) =>
       '${date.day.toString().padLeft(2, '0')} ${const ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][date.month - 1]} ${date.year}';
   String _apiDate(DateTime date) =>
@@ -1778,18 +1882,88 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
   @override
   void dispose() {
     _paidController.dispose();
+    _paidFocusNode.dispose();
     _previewScrollController.dispose();
+    for (final controller in _quantityControllers.values) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
   void _setQuantity(_PreviewItem item, int quantity) {
     if (_createdOrderId != null) return;
+    if (quantity < 0) quantity = 0;
     setState(() {
       item.quantity = quantity;
       _error = null;
       _stockShortages = [];
     });
+    final controller = _quantityControllerFor(item);
+    controller.value = TextEditingValue(
+      text: '$quantity',
+      selection: TextSelection.collapsed(offset: '$quantity'.length),
+    );
     widget.onQuantityChanged(item.product.id, quantity);
+  }
+
+  void _setManualQuantity(_PreviewItem item, String value) {
+    if (value.trim().isEmpty) {
+      _setQuantity(item, 0);
+      return;
+    }
+    final quantity = int.tryParse(value.trim());
+    if (quantity == null || quantity < 0 || _createdOrderId != null) return;
+    _setQuantity(item, quantity);
+  }
+
+  Future<void> _handleBackPressed() async {
+    if (!_submitting) {
+      if (mounted) Navigator.of(context).pop();
+      return;
+    }
+
+    final cancel = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Stop order creation?'),
+        content: const Text(
+          'The order is still being created. Do you want to stop it?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('No'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Yes'),
+          ),
+        ],
+      ),
+    );
+
+    if (cancel == true && mounted) {
+      _cancelRequested = true;
+      Navigator.of(context).pop(false);
+    }
+  }
+
+  Future<void> _cancelCreatedOrderIfNeeded(
+    ApiProvider api,
+    String? orderId,
+  ) async {
+    if (!_cancelRequested || orderId == null || orderId.trim().isEmpty) return;
+    try {
+      await api.cancelOrder(
+        orderId: orderId,
+        reason: 'Other',
+        notes: 'Order creation cancelled by the user while processing.',
+      );
+    } catch (_) {
+      // The original request may still be processing; there is no UI left
+      // to report a cancellation failure after the user leaves this page.
+    }
   }
 
   Future<void> _createOrder() async {
@@ -1805,11 +1979,13 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
     }
     setState(() {
       _submitting = true;
+      _cancelRequested = false;
       _error = null;
       _stockShortages = [];
     });
     try {
       final api = ApiProviderScope.of(context);
+      String? requestOrderId;
       if (_createdOrderId == null) {
         final paymentType = _apiPaymentType;
         final deliveryAddress = _deliveryAddress;
@@ -1857,21 +2033,28 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
             'paid_amount': paid,
           },
         );
-        widget.onOrderCreated();
+        requestOrderId = _orderId(response);
         if (widget.deliveryPartner != null) {
-          _createdOrderId = _orderId(response);
+          _createdOrderId = requestOrderId;
           if (_createdOrderId!.isEmpty) {
             throw const ApiException(
               message: 'The server did not return an order ID.',
             );
           }
         }
+        if (_cancelRequested) {
+          await _cancelCreatedOrderIfNeeded(api, requestOrderId);
+          return;
+        }
+        widget.onOrderCreated();
       }
       if (widget.deliveryPartner != null) {
         await api.assignOrderDeliveryPartner(
           orderId: _createdOrderId!,
           deliveryPartnerId: widget.deliveryPartner!.id,
         );
+        await _cancelCreatedOrderIfNeeded(api, _createdOrderId);
+        if (_cancelRequested) return;
       }
       if (mounted) Navigator.of(context).pop(true);
     } catch (error) {
@@ -2025,8 +2208,15 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
         widget.customer.address ??
         widget.customer.billingAddress;
     final warehouseName = _text(widget.warehouse, ['name', 'warehouse_name']);
-    return Scaffold(
-      backgroundColor: AppColors.deliveryBackground,
+    return PopScope(
+      canPop: !_submitting,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && _submitting) {
+          _handleBackPressed();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.deliveryBackground,
       bottomNavigationBar: SafeArea(
         child: Container(
           padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
@@ -2074,7 +2264,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
               title: 'Sales Order Preview',
               subtitle: 'Review order details before creating',
               leadingIcon: Icons.arrow_back_rounded,
-              onLeadingTap: () => Navigator.of(context).maybePop(),
+              onLeadingTap: _handleBackPressed,
             ),
             Expanded(
               child: Center(
@@ -2234,6 +2424,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                                   Flexible(
                                     child: TextField(
                                       controller: _paidController,
+                                      focusNode: _paidFocusNode,
                                       readOnly: _createdOrderId != null,
                                       keyboardType:
                                           const TextInputType.numberWithOptions(
@@ -2245,6 +2436,9 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                                         fontWeight: FontWeight.w700,
                                       ),
                                       decoration: InputDecoration(
+                                        hintText: _paidFocusNode.hasFocus
+                                            ? null
+                                            : '0',
                                         prefixText: '₹ ',
                                         prefixStyle: const TextStyle(
                                           color: _green,
@@ -2283,6 +2477,9 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                                           ),
                                         ),
                                       ),
+                                      onTap: () => setState(() {
+                                        _error = null;
+                                      }),
                                       onChanged: (_) =>
                                           setState(() => _error = null),
                                     ),
@@ -2335,6 +2532,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
             ),
           ],
         ),
+      ),
       ),
     );
   }
@@ -2422,7 +2620,8 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
           ),
         ),
         const SizedBox(width: 10),
-        Flexible(
+        Expanded(
+          flex: 2,
           child: Text(
             value,
             textAlign: TextAlign.right,
@@ -2552,17 +2751,37 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                                       : null,
                                   child: const Icon(Icons.remove, size: 16),
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 5,
-                                  ),
-                                  child: Text(
-                                    '${item.quantity}',
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w700,
+                                  SizedBox(
+                                    width: 28,
+                                    child: TextField(
+                                      controller: _quantityControllerFor(item),
+                                      keyboardType: TextInputType.number,
+                                      textAlign: TextAlign.center,
+                                      enabled: _createdOrderId == null,
+                                      cursorWidth: 1.5,
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                      decoration: const InputDecoration(
+                                        isDense: true,
+                                        isCollapsed: true,
+                                        contentPadding: EdgeInsets.zero,
+                                        border: InputBorder.none,
+                                      ),
+                                      onChanged: (value) =>
+                                          _setManualQuantity(item, value),
+                                      onEditingComplete: () {
+                                        final value = int.tryParse(
+                                          _quantityControllerFor(item).text
+                                              .trim(),
+                                        );
+                                        if (value != null) {
+                                          _setQuantity(item, value);
+                                        }
+                                        FocusScope.of(context).unfocus();
+                                      },
                                     ),
-                                  ),
                                 ),
                                 InkWell(
                                   onTap: _createdOrderId == null
@@ -2725,14 +2944,32 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                         : null,
                     icon: const Icon(Icons.remove, size: 16),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: Text(
-                      '${item.quantity}',
+                  SizedBox(
+                    width: 28,
+                    child: TextField(
+                      controller: _quantityControllerFor(item),
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.center,
+                      enabled: _createdOrderId == null,
+                      cursorWidth: 1.5,
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                       ),
+                      decoration: const InputDecoration(
+                        isDense: true,
+                        isCollapsed: true,
+                        contentPadding: EdgeInsets.zero,
+                        border: InputBorder.none,
+                      ),
+                      onChanged: (value) => _setManualQuantity(item, value),
+                      onEditingComplete: () {
+                        final value = int.tryParse(
+                          _quantityControllerFor(item).text.trim(),
+                        );
+                        if (value != null) _setQuantity(item, value);
+                        FocusScope.of(context).unfocus();
+                      },
                     ),
                   ),
                   IconButton.filledTonal(

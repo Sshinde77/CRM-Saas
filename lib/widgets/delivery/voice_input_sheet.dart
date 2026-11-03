@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
@@ -36,7 +37,7 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
 
   bool _speechReady = false;
   bool _initializing = true;
-  bool _holdingMic = false;
+  bool _starting = false;
   bool _listening = false;
   String? _error;
   List<LocaleName> _locales = const [];
@@ -65,7 +66,12 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
 
   Future<void> _initializeSpeech() async {
     final microphonePermission = await Permission.microphone.request();
-    final speechPermission = await Permission.speech.request();
+    // Android uses RECORD_AUDIO for speech recognition. Permission.speech is
+    // an iOS permission and can incorrectly block Android recognition when
+    // requested there.
+    final speechPermission = defaultTargetPlatform == TargetPlatform.iOS
+        ? await Permission.speech.request()
+        : PermissionStatus.granted;
     if (!microphonePermission.isGranted || !speechPermission.isGranted) {
       if (!mounted) return;
       setState(() {
@@ -83,7 +89,6 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
         setState(() => _listening = isListening);
         if (isListening) {
           _pulseController.repeat(reverse: true);
-          if (!_holdingMic) _speech.stop();
         } else {
           _pulseController.stop();
         }
@@ -114,28 +119,47 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
     });
   }
 
-  Future<void> _startHoldListening() async {
-    if (_initializing || !_speechReady) return;
-    _holdingMic = true;
-    if (_listening) return;
+  Future<void> _startListening() async {
+    if (_initializing || !_speechReady || _starting || _listening) return;
+    _starting = true;
     setState(() => _error = null);
-    await _speech.listen(
-      onResult: _onSpeechResult,
-      listenOptions: SpeechListenOptions(
-        localeId: _selectedLocaleId,
-        partialResults: true,
-        listenFor: const Duration(minutes: 2),
-        pauseFor: const Duration(minutes: 2),
-      ),
-    );
-    if (!mounted || _holdingMic) return;
-    await _speech.stop();
+    try {
+      await _speech.listen(
+        onResult: _onSpeechResult,
+        listenOptions: SpeechListenOptions(
+          localeId: _selectedLocaleId,
+          partialResults: true,
+          cancelOnError: true,
+          listenMode: ListenMode.dictation,
+          listenFor: const Duration(minutes: 2),
+          pauseFor: const Duration(seconds: 8),
+        ),
+      );
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _listening = false;
+          _error = 'Could not start the microphone. Please try again.';
+        });
+      }
+    } finally {
+      _starting = false;
+      if (mounted) setState(() {});
+    }
   }
 
-  Future<void> _stopHoldListening() async {
-    _holdingMic = false;
+  Future<void> _stopListening() async {
     if (!_speechReady) return;
     await _speech.stop();
+    if (mounted) setState(() => _listening = false);
+  }
+
+  Future<void> _toggleListening() async {
+    if (_listening || _starting) {
+      await _stopListening();
+    } else {
+      await _startListening();
+    }
   }
 
   void _onSpeechResult(SpeechRecognitionResult result) {
@@ -147,7 +171,7 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
   }
 
   Future<void> _useTranscript() async {
-    await _stopHoldListening();
+    await _stopListening();
     final transcript = _transcriptController.text.trim();
     if (!mounted) return;
     if (transcript.length < widget.minimumLength) {
@@ -248,9 +272,7 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
             child: ScaleTransition(
               scale: _pulseController,
               child: GestureDetector(
-                onTapDown: micDisabled ? null : (_) => _startHoldListening(),
-                onTapUp: micDisabled ? null : (_) => _stopHoldListening(),
-                onTapCancel: micDisabled ? null : _stopHoldListening,
+                onTap: micDisabled ? null : _toggleListening,
                 child: Semantics(
                   button: true,
                   enabled: !micDisabled,
@@ -295,8 +317,8 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
             _initializing
                 ? 'Preparing speech recognition...'
                 : _listening
-                ? 'Listening... release the mic to stop.'
-                : 'Hold the mic, speak in the selected language, then release.',
+                ? 'Listening... tap the mic to stop.'
+                : 'Tap the mic, speak in the selected language, then tap again.',
             textAlign: TextAlign.center,
             style: const TextStyle(
               color: AppColors.textSecondary,
@@ -335,7 +357,7 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: _listening ? _stopHoldListening : null,
+                  onPressed: _listening ? _stopListening : null,
                   child: const Text('Stop'),
                 ),
               ),

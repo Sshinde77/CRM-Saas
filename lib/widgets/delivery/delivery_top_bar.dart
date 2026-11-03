@@ -4,6 +4,7 @@ import '../../constants/app_colors.dart';
 import '../../models/auth_models.dart';
 import '../../providers/api_provider.dart';
 import '../../screens/auth/login_screen.dart';
+import '../../screens/shared/profile_screen.dart';
 import '../../services/api_service.dart';
 import '../../routes/app_router.dart';
 
@@ -365,7 +366,11 @@ class _DeliveryAvatar extends StatelessWidget {
       offset: const Offset(0, 42),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       onSelected: (value) {
-        if (value == _ProfileMenuAction.signOut && onSignOut != null) {
+        if (value == _ProfileMenuAction.viewProfile) {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const ProfileScreen()),
+          );
+        } else if (value == _ProfileMenuAction.signOut && onSignOut != null) {
           onSignOut!();
         }
       },
@@ -376,6 +381,27 @@ class _DeliveryAvatar extends StatelessWidget {
           child: _ProfileMenuHeader(
             profileName: profileName,
             profileRole: profileRole,
+          ),
+        ),
+        const PopupMenuItem<_ProfileMenuAction>(
+          value: _ProfileMenuAction.viewProfile,
+          child: Row(
+            children: [
+              Icon(
+                Icons.person_outline_rounded,
+                color: AppColors.textSecondary,
+                size: 20,
+              ),
+              SizedBox(width: 10),
+              Text(
+                'My Profile',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
         ),
         const PopupMenuItem<_ProfileMenuAction>(
@@ -436,7 +462,7 @@ class _DeliveryAvatar extends StatelessWidget {
   }
 }
 
-enum _ProfileMenuAction { signOut }
+enum _ProfileMenuAction { viewProfile, signOut }
 
 class _ProfileMenuHeader extends StatelessWidget {
   final String profileName;

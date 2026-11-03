@@ -121,6 +121,20 @@ class PushNotificationService {
     }
   }
 
+  /// Returns whether push notifications are currently permitted on this
+  /// device. Always false on web, where push is not wired up.
+  Future<bool> hasPermission() async {
+    if (kIsWeb ||
+        (defaultTargetPlatform != TargetPlatform.android &&
+            defaultTargetPlatform != TargetPlatform.iOS)) {
+      return false;
+    }
+    await initialize();
+    final settings = await _messaging.getNotificationSettings();
+    return settings.authorizationStatus == AuthorizationStatus.authorized ||
+        settings.authorizationStatus == AuthorizationStatus.provisional;
+  }
+
   /// Requests notification permission before authentication starts.
   /// Denying permission does not block CRM login; it only prevents push alerts
   /// from being displayed by the operating system.
@@ -210,7 +224,9 @@ class PushNotificationService {
   }
 
   void _handleOpenedMessage(RemoteMessage message) {
+    // data.type carries the event name (e.g. "order_created"), data.category
+    // the in-app type, and data.action_url the screen to open -- see the
+    // notification contract (2026-11-02). Routing per role is not wired yet.
     debugPrint('[FCM] opened notification: ${message.data}');
-    // Add route handling here when the backend defines business-event types.
   }
 }

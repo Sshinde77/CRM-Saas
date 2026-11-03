@@ -7,6 +7,7 @@ import '../../../models/customer_model.dart';
 import '../../../providers/api_provider.dart';
 import '../../../services/api_service.dart';
 import '../../../widgets/app_skeleton.dart';
+import '../../../widgets/customer_avatar.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
 import '../../delivery/customers/delivery_customers_screen.dart';
@@ -534,6 +535,11 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
                 value: _selectedCustomer,
                 items: _customers,
                 itemLabel: _customerLabel,
+                itemLeading: (customer) => CustomerAvatar(
+                  name: customer.businessName ?? customer.name,
+                  photoUrl: customer.profilePhotoUrl,
+                  size: 28,
+                ),
                 onChanged: (customer) {
                   setState(() => _customerId = customer?.id);
                 },
@@ -891,6 +897,7 @@ class _SelectField<T> extends StatelessWidget {
   final List<T> items;
   final String Function(T item) itemLabel;
   final ValueChanged<T?> onChanged;
+  final Widget Function(T item)? itemLeading;
   final String? errorText;
   final bool enabled;
 
@@ -901,6 +908,7 @@ class _SelectField<T> extends StatelessWidget {
     required this.items,
     required this.itemLabel,
     required this.onChanged,
+    this.itemLeading,
     this.errorText,
     this.enabled = true,
   });
@@ -931,7 +939,20 @@ class _SelectField<T> extends StatelessWidget {
           ...items.map(
             (item) => DropdownMenuItem<T>(
               value: item,
-              child: Text(itemLabel(item), overflow: TextOverflow.ellipsis),
+              child: Row(
+                children: [
+                  if (itemLeading != null) ...[
+                    itemLeading!(item),
+                    const SizedBox(width: 8),
+                  ],
+                  Expanded(
+                    child: Text(
+                      itemLabel(item),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],

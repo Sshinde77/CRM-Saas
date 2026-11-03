@@ -55,15 +55,5 @@ class NewAdminOrderScreen extends StatelessWidget {
             onSelect: (action) => _handleSalesManagerSelection(context, action),
           )
         : const AppDrawer(activeItem: 'Orders'),
-    onCreated: useSalesManagerShell
-        ? () {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder: (_) =>
-                    const AdminOrdersScreen(useSalesManagerShell: true),
-              ),
-            );
-          }
-        : null,
   );
 }

@@ -284,12 +284,15 @@ class _SalesManagerDashboardScreenState
     );
   }
 
-  void _openCreateOrder() {
-    Navigator.of(context).push(
+  Future<void> _openCreateOrder() async {
+    final created = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
         builder: (_) => const NewAdminOrderScreen(useSalesManagerShell: true),
       ),
     );
+    if (created == true && mounted) {
+      await _refresh();
+    }
   }
 
   void _openSalesOrders() {

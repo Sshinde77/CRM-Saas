@@ -4,6 +4,7 @@ import 'package:crm_saas/core/theme/app_text_styles.dart';
 
 import '../../constants/app_colors.dart';
 import '../../models/customer_model.dart';
+import '../customer_avatar.dart';
 import 'voice_input_sheet.dart';
 
 class CustomerSearchDialog extends StatefulWidget {
@@ -263,18 +264,10 @@ class _CustomerSearchDialogState extends State<CustomerSearchDialog> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    width: wide ? 80 : 46,
-                    height: wide ? 80 : 46,
-                    decoration: BoxDecoration(
-                      color: AppColors.deliveryGreenSoft,
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    child: Icon(
-                      Icons.storefront_outlined,
-                      color: _accent,
-                      size: wide ? 34 : 25,
-                    ),
+                  CustomerAvatar(
+                    name: title,
+                    photoUrl: customer.profilePhotoUrl,
+                    size: wide ? 80 : 46,
                   ),
                   SizedBox(width: wide ? 18 : 10),
                   Expanded(

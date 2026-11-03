@@ -696,7 +696,7 @@ class _ActivityPanel extends StatelessWidget {
               'Orders',
               'Collections',
               'Visits',
-              'Customer Details',
+              'Details',
             ];
             final active = selected == index;
             return Expanded(

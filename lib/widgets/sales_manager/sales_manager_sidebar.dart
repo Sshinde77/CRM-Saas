@@ -5,6 +5,7 @@ import '../../screens/delivery/attendance/delivery_attendance_screen.dart';
 import '../../screens/delivery/deliveries/assigned_deliveries_screen.dart';
 import '../../screens/delivery/expenses/delivery_expenses_screen.dart';
 import '../../screens/delivery/leaves/delivery_leaves_screen.dart';
+import '../../screens/shared/profile_screen.dart';
 import '../../routes/app_router.dart';
 import '../sidebar_logout_button.dart';
 
@@ -57,6 +58,7 @@ class SalesManagerSidebar extends StatelessWidget {
       const _SidebarItem('Leaves', Icons.event_busy_outlined),
       const _SidebarItem('Expenses', Icons.receipt_long_outlined),
       const _SidebarItem('My Performance', Icons.bar_chart_outlined),
+      const _SidebarItem('Profile', Icons.person_outline_rounded),
     ];
 
     return Container(
@@ -183,6 +185,7 @@ class SalesManagerSidebar extends StatelessWidget {
       'Attendance' => const DeliveryAttendanceScreen(),
       'Leaves' => const DeliveryLeavesScreen(),
       'Expenses' => const DeliveryExpensesScreen(),
+      'Profile' => const ProfileScreen(),
       _ => null,
     };
 

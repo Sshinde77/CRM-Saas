@@ -1988,6 +1988,7 @@ class _FollowUpsSection extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _LeadFollowUpDetailScreen extends StatelessWidget {
   final _LocalFollowUp item;
 
