@@ -217,7 +217,7 @@ class ListPaginationPageSize extends StatelessWidget {
             value: pagination.pageSize,
             isDense: true,
             underline: const SizedBox.shrink(),
-            style: AppTextStyles.smallStrong.copyWith(color: AppColors.primary),
+            style: AppTextStyles.small.copyWith(color: AppColors.primary),
             items: ({10, 25, 50, 100, pagination.pageSize}.toList()..sort())
                 .map(
                   (size) => DropdownMenuItem(value: size, child: Text('$size')),

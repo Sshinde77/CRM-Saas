@@ -42,7 +42,9 @@ class _DeliveryPartnerSearchDialogState
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (_) => const VoiceInputSheet(),
+      builder: (_) => const VoiceInputSheet(
+        useCase: VoiceInputUseCase.search,
+      ),
     );
     if (!mounted || text == null) return;
     setState(() => _search.text = text.trim());

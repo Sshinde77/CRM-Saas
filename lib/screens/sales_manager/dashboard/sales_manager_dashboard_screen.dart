@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
@@ -78,13 +79,34 @@ class _SalesManagerDashboardScreenState
 
   Future<_DashboardData> _loadDashboard() async {
     final provider = ApiProviderScope.of(context);
-    final json = await provider.fetchSalesDashboard(period: _selectedPeriod);
+    final results = await Future.wait([
+      provider.fetchSalesDashboard(period: _selectedPeriod),
+      provider.fetchMyAttendance().catchError((_) => <Map<String, dynamic>>[]),
+    ]);
+
+    final json = results[0] as Map<String, dynamic>;
+    final attendanceList = results[1] as List<Map<String, dynamic>>;
+
     final recentOrders = (json['recent_orders'] as List? ?? const [])
         .whereType<Map<String, dynamic>>()
         .map(_DashboardOrder.fromJson)
         .toList();
 
     final user = provider.currentUser;
+
+    final todayStr = _todayDateString();
+    final todayRecord = attendanceList.where((record) {
+      return (record['date']?.toString() ?? '') == todayStr;
+    }).firstOrNull;
+
+    _AttendanceRecord? attendance;
+    if (todayRecord != null) {
+      final checkInRaw = todayRecord['office_check_in']?.toString();
+      attendance = _AttendanceRecord(
+        date: DateTime.parse(todayStr),
+        checkIn: checkInRaw != null ? DateTime.tryParse(checkInRaw) : null,
+      );
+    }
 
     return _DashboardData(
       userName: user?.name.trim().isNotEmpty == true
@@ -94,12 +116,54 @@ class _SalesManagerDashboardScreenState
       customers: const [],
       orders: recentOrders,
       quotations: const [],
-      attendance: null,
+      attendance: attendance,
       visits: const [],
       summary: _SalesDashboardSummary.fromJson(
         (json['summary'] as Map?)?.cast<String, dynamic>() ?? const {},
       ),
     );
+  }
+
+  String _todayDateString() {
+    final now = DateTime.now();
+    return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+  }
+
+  bool _isCheckingIn = false;
+
+  Future<void> _checkInNow() async {
+    if (_isCheckingIn) return;
+    setState(() => _isCheckingIn = true);
+    try {
+      await ApiProviderScope.of(context).checkInAttendance('office_check_in');
+    } catch (e) {
+      final msg = e.toString().toLowerCase();
+      final alreadyCheckedIn = msg.contains('already') ||
+          msg.contains('409') ||
+          msg.contains('exists') ||
+          msg.contains('duplicate');
+      if (!alreadyCheckedIn) {
+        if (mounted) {
+          setState(() => _isCheckingIn = false);
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              const SnackBar(
+                content: Text('Failed to check in. Please try again.'),
+              ),
+            );
+        }
+        return;
+      }
+    }
+    await _refresh();
+    if (!mounted) return;
+    setState(() => _isCheckingIn = false);
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        const SnackBar(content: Text('Checked in successfully.')),
+      );
   }
 
   Future<void> _refresh() async {
@@ -178,6 +242,36 @@ class _SalesManagerDashboardScreenState
         bottomNavigationBar: const SalesManagerBottomNavigation(
           currentIndex: 0,
         ),
+        floatingActionButton: FutureBuilder<_DashboardData>(
+          future: _future,
+          builder: (context, snapshot) {
+            final data = snapshot.data;
+            if (data == null || data.isCheckedIn) return const SizedBox.shrink();
+            return FloatingActionButton.extended(
+              heroTag: 'sales-dashboard-check-in',
+              onPressed: _isCheckingIn ? null : _checkInNow,
+              backgroundColor: AppColors.primary,
+              foregroundColor: AppColors.surface,
+              elevation: 8,
+              icon: _isCheckingIn
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.2,
+                        color: AppColors.surface,
+                      ),
+                    )
+                  : const Icon(Icons.login_rounded, size: 20),
+              label: Text(
+                _isCheckingIn ? 'Checking in' : 'Check In',
+                style: AppTextStyles.bodyStrong
+                    .copyWith(color: AppColors.surface),
+              ),
+            );
+          },
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         body: SafeArea(
           bottom: false,
           child: Column(
@@ -935,8 +1029,6 @@ class _PrioritiesCard extends StatelessWidget {
         children: [
           _SectionTitle(
             title: "Today's Priorities",
-            action: 'View all priorities',
-            onAction: onFollowUps,
           ),
           const SizedBox(height: 6),
           for (final row in rows) _PriorityRow(row: row),
@@ -1342,13 +1434,13 @@ class _ListRow extends StatelessWidget {
 
 class _SectionTitle extends StatelessWidget {
   final String title;
-  final String action;
-  final VoidCallback onAction;
+  final String? action;
+  final VoidCallback? onAction;
 
   const _SectionTitle({
     required this.title,
-    required this.action,
-    required this.onAction,
+    this.action,
+    this.onAction,
   });
 
   @override
@@ -1363,18 +1455,19 @@ class _SectionTitle extends StatelessWidget {
             style: AppTextStyles.sectionHeading,
           ),
         ),
-        TextButton.icon(
-          onPressed: onAction,
-          label: Text(action),
-          icon: const Icon(Icons.chevron_right_rounded, size: 16),
-          style: TextButton.styleFrom(
-            foregroundColor: AppColors.primary,
-            padding: EdgeInsets.zero,
-            minimumSize: Size.zero,
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            textStyle: AppTextStyles.bodyStrong,
+        if (action != null && onAction != null)
+          TextButton.icon(
+            onPressed: onAction!,
+            label: Text(action!),
+            icon: const Icon(Icons.chevron_right_rounded, size: 16),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.primary,
+              padding: EdgeInsets.zero,
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              textStyle: AppTextStyles.bodyStrong,
+            ),
           ),
-        ),
       ],
     );
   }
@@ -1585,12 +1678,12 @@ class _ProfilePhoto extends StatelessWidget {
     }
 
     return ClipOval(
-      child: Image.network(
-        photoUrl,
+      child: CachedNetworkImage(
+        imageUrl: photoUrl,
         width: double.infinity,
         height: double.infinity,
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => _fallback(),
+        errorWidget: (context, url, error) => _fallback(),
       ),
     );
   }
@@ -1654,6 +1747,7 @@ class _SalesPeriodSelector extends StatelessWidget {
         return ChoiceChip(
           label: Text(label),
           selected: period == selected,
+          checkmarkColor: Colors.white,
           onSelected: (_) => onChanged(period),
         );
       }).toList(),
@@ -1764,6 +1858,8 @@ class _DashboardData {
   int get cancelledOrders {
     return orders.where((order) => _isCancelled(order.status)).length;
   }
+
+  bool get isCheckedIn => attendance?.checkIn != null;
 }
 
 class _DashboardOrder {

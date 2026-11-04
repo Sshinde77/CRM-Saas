@@ -230,10 +230,6 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
     });
   }
 
-  void _removeItem(int index) {
-    setState(() => _items.removeAt(index));
-  }
-
   bool _validateStep({bool showMessage = true}) {
     if (_step == 0) {
       if (_forCustomer && _selectedCustomer == null) {
@@ -405,7 +401,7 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: const Color(0xFFF6F8FC),
+      backgroundColor: AppColors.deliveryBackground,
       drawer: widget.useSalesManagerShell
           ? SalesManagerSidebarDrawer(
               currentPage: 'Quotations',
@@ -496,14 +492,14 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       padding: const EdgeInsets.fromLTRB(18, 12, 18, 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.8)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 18,
-            offset: const Offset(0, 10),
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -521,7 +517,7 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
                           color: i == 0
                               ? Colors.transparent
                               : (_step >= i
-                                    ? const Color(0xFF284BFF)
+                                    ? AppColors.deliveryGreen
                                     : AppColors.border),
                         ),
                       ),
@@ -530,12 +526,12 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
                         height: 22,
                         decoration: BoxDecoration(
                           color: _step >= i
-                              ? const Color(0xFF284BFF)
-                              : Colors.white,
+                              ? AppColors.deliveryGreen
+                              : AppColors.surface,
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: _step >= i
-                                ? const Color(0xFF284BFF)
+                                ? AppColors.deliveryGreen
                                 : AppColors.borderStrong,
                           ),
                         ),
@@ -562,7 +558,7 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
                           color: i == labels.length - 1
                               ? Colors.transparent
                               : (_step > i
-                                    ? const Color(0xFF284BFF)
+                                    ? AppColors.deliveryGreen
                                     : AppColors.border),
                         ),
                       ),
@@ -573,7 +569,7 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
                     labels[i],
                     style: AppTextStyles.bodyStrong.copyWith(
                       color: _step == i
-                          ? const Color(0xFF1234D8)
+                          ? AppColors.deliveryGreen
                           : AppColors.textMuted,
                     ),
                   ),
@@ -617,7 +613,7 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
               onTap: _showCustomerPicker,
               trailing: IconButton(
                 onPressed: _quickAddCustomer,
-                icon: const Icon(Icons.add_rounded, color: Color(0xFF284BFF)),
+                icon: const Icon(Icons.add_rounded, color: AppColors.deliveryGreen),
               ),
             )
           else
@@ -707,69 +703,118 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
           product.sku.toLowerCase().contains(query);
     }).toList();
 
-    return Column(
-      children: [
-        _SectionCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const _SectionTitle('Add Products'),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _searchController,
-                onChanged: (_) => setState(() {}),
-                decoration: _inputDecoration(
-                  'Search products...',
-                  prefixIcon: Icons.search_rounded,
-                ),
-              ),
-              const SizedBox(height: 12),
-              if (visibleProducts.isEmpty)
-                const _EmptyInline('No matching products found.')
-              else
-                for (var i = 0; i < visibleProducts.take(8).length; i++) ...[
-                  _ProductPickerRow(
-                    product: visibleProducts[i],
-                    onAdd: () => _addProduct(visibleProducts[i]),
-                  ),
-                  if (i != visibleProducts.take(8).length - 1)
-                    const SizedBox(height: 8),
-                ],
-            ],
+    return _SectionCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const _SectionTitle('Add Products'),
+          const SizedBox(height: 10),
+          TextField(
+            controller: _searchController,
+            onChanged: (_) => setState(() {}),
+            decoration: _inputDecoration(
+              'Search products...',
+              prefixIcon: Icons.search_rounded,
+            ),
           ),
+          const SizedBox(height: 12),
+          if (visibleProducts.isEmpty)
+            const _EmptyInline('No matching products found.')
+          else
+            for (var i = 0; i < visibleProducts.length; i++) ...[
+              _buildProductCard(visibleProducts[i]),
+              if (i != visibleProducts.length - 1) const SizedBox(height: 8),
+            ],
+          if (_items.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            _TotalsPanel(
+              subtotal: _subtotal,
+              discount: _discountTotal,
+              tax: _taxTotal,
+              total: _grandTotal,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProductCard(_ProductOption product) {
+    final existingIndex =
+        _items.indexWhere((item) => item.product.id == product.id);
+    final quantity = existingIndex >= 0 ? _items[existingIndex].quantity : 0.0;
+    final hasQty = quantity > 0;
+
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: hasQty
+            ? AppColors.deliveryGreen.withValues(alpha: 0.05)
+            : AppColors.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: hasQty ? AppColors.deliveryGreen : AppColors.border,
         ),
-        const SizedBox(height: 12),
-        _SectionCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _SectionTitle('Added Items (${_items.length})'),
-              const SizedBox(height: 10),
-              if (_items.isEmpty)
-                const _EmptyInline('Add products to build this quotation.')
-              else
-                for (var i = 0; i < _items.length; i++) ...[
-                  _QuoteItemRow(
-                    item: _items[i],
-                    onDecrease: () => _changeQuantity(i, -1),
-                    onIncrease: () => _changeQuantity(i, 1),
-                    onRemove: () => _removeItem(i),
+      ),
+      child: Row(
+        children: [
+          _ProductThumb(product.name, size: 56, imageUrl: product.imageUrl),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  product.name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.bodyStrong.copyWith(
+                    color: AppColors.textPrimary,
                   ),
-                  if (i != _items.length - 1) const SizedBox(height: 8),
+                ),
+                if (product.sku.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    'SKU: ${product.sku}',
+                    style: AppTextStyles.small.copyWith(
+                      color: AppColors.textLightMuted,
+                    ),
+                  ),
                 ],
-              if (_items.isNotEmpty) ...[
-                const SizedBox(height: 14),
-                _TotalsPanel(
-                  subtotal: _subtotal,
-                  discount: _discountTotal,
-                  tax: _taxTotal,
-                  total: _grandTotal,
+                const SizedBox(height: 2),
+                Text(
+                  '${_money(product.unitPrice)} / ${product.uom}',
+                  style: AppTextStyles.bodyStrong.copyWith(
+                    color: hasQty
+                        ? AppColors.deliveryGreen
+                        : AppColors.textMuted,
+                  ),
                 ),
               ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _QtyButton(
+                icon: Icons.remove_rounded,
+                onTap: hasQty
+                    ? () => _changeQuantity(existingIndex, -1)
+                    : null,
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: Text(_qty(quantity), style: AppTextStyles.bodyStrong),
+              ),
+              _QtyButton(
+                icon: Icons.add_rounded,
+                onTap: () => _addProduct(product),
+              ),
             ],
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -840,7 +885,7 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
       child: Container(
         padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surface,
           border: const Border(top: BorderSide(color: AppColors.border)),
           boxShadow: [
             BoxShadow(
@@ -868,15 +913,14 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: ElevatedButton(
+              child: FilledButton(
                 onPressed: _isSaving
                     ? null
                     : (_step == 2 ? _saveQuotation : _nextStep),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF284BFF),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.deliveryGreen,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -1017,7 +1061,7 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
           margin: const EdgeInsets.all(12),
           constraints: const BoxConstraints(maxHeight: 520),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.surface,
             borderRadius: BorderRadius.circular(24),
           ),
           child: Column(
@@ -1061,7 +1105,7 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
                             ),
-                            tileColor: const Color(0xFFF8FAFC),
+                            tileColor: AppColors.surfaceSoft,
                             leading: leading?.call(item),
                             title: Text(
                               label(item),
@@ -1151,7 +1195,7 @@ class _QuickAddCustomerDialogState extends State<_QuickAddCustomerDialog> {
         constraints: const BoxConstraints(maxWidth: 430),
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(22),
           boxShadow: [
             BoxShadow(
@@ -1218,10 +1262,10 @@ class _QuickAddCustomerDialogState extends State<_QuickAddCustomerDialog> {
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: ElevatedButton(
+                  child: FilledButton(
                     onPressed: _saving ? null : _save,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF284BFF),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.deliveryGreen,
                       foregroundColor: Colors.white,
                     ),
                     child: Text(_saving ? 'Saving...' : 'Save'),
@@ -1247,14 +1291,14 @@ class _SectionCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.8)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.035),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -1295,7 +1339,7 @@ class _SegmentedChoice extends StatelessWidget {
       margin: const EdgeInsets.only(top: 10),
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: const Color(0xFFF1F5F9),
+        color: AppColors.surfaceSoft,
         borderRadius: BorderRadius.circular(13),
       ),
       child: Row(
@@ -1340,7 +1384,7 @@ class _SegmentButton extends StatelessWidget {
         duration: const Duration(milliseconds: 160),
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: selected ? const Color(0xFF284BFF) : Colors.transparent,
+          color: selected ? AppColors.deliveryGreen : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Text(
@@ -1389,7 +1433,7 @@ class _SelectTile extends StatelessWidget {
             constraints: const BoxConstraints(minHeight: 48),
             padding: const EdgeInsets.only(left: 12),
             decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
+              color: AppColors.surfaceSoft,
               borderRadius: BorderRadius.circular(13),
               border: Border.all(color: AppColors.border),
             ),
@@ -1491,139 +1535,15 @@ class _FieldLabel extends StatelessWidget {
   }
 }
 
-class _ProductPickerRow extends StatelessWidget {
-  final _ProductOption product;
-  final VoidCallback onAdd;
-
-  const _ProductPickerRow({required this.product, required this.onAdd});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        children: [
-          _ProductThumb(product.name, imageUrl: product.imageUrl),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  product.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.bodyStrong.copyWith(
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '${product.sku}  |  ${_money(product.unitPrice)}',
-                  style: AppTextStyles.bodyStrong.copyWith(
-                    color: AppColors.textMuted,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          IconButton.filled(
-            onPressed: onAdd,
-            icon: const Icon(Icons.add_rounded, size: 18),
-            style: IconButton.styleFrom(
-              backgroundColor: const Color(0xFF284BFF),
-              foregroundColor: Colors.white,
-              minimumSize: const Size(34, 34),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _QuoteItemRow extends StatelessWidget {
-  final _QuoteItem item;
-  final VoidCallback onDecrease;
-  final VoidCallback onIncrease;
-  final VoidCallback onRemove;
-
-  const _QuoteItemRow({
-    required this.item,
-    required this.onDecrease,
-    required this.onIncrease,
-    required this.onRemove,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        children: [
-          _ProductThumb(item.product.name, imageUrl: item.product.imageUrl),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.product.name,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.bodyStrong.copyWith(
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '${_money(item.product.unitPrice)} x ${_qty(item.quantity)} ${item.product.uom}',
-                  style: AppTextStyles.bodyStrong.copyWith(
-                    color: AppColors.textMuted,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          _QtyButton(icon: Icons.remove_rounded, onTap: onDecrease),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Text(_qty(item.quantity), style: AppTextStyles.bodyStrong),
-          ),
-          _QtyButton(icon: Icons.add_rounded, onTap: onIncrease),
-          const SizedBox(width: 8),
-          Text(_money(item.lineTotal), style: AppTextStyles.bodyStrong),
-          IconButton(
-            onPressed: onRemove,
-            icon: const Icon(
-              Icons.close_rounded,
-              color: Color(0xFFEF4444),
-              size: 18,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _QtyButton extends StatelessWidget {
   final IconData icon;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   const _QtyButton({required this.icon, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
+    final enabled = onTap != null;
     return InkWell(
       borderRadius: BorderRadius.circular(9),
       onTap: onTap,
@@ -1631,10 +1551,16 @@ class _QtyButton extends StatelessWidget {
         width: 26,
         height: 26,
         decoration: BoxDecoration(
-          color: const Color(0xFFF1F5F9),
+          color: enabled
+              ? AppColors.surfaceSoft
+              : AppColors.border.withValues(alpha: 0.4),
           borderRadius: BorderRadius.circular(9),
         ),
-        child: Icon(icon, size: 15, color: AppColors.textSecondary),
+        child: Icon(
+          icon,
+          size: 15,
+          color: enabled ? AppColors.textSecondary : AppColors.textLightMuted,
+        ),
       ),
     );
   }
@@ -1734,7 +1660,7 @@ class _TotalsPanel extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
+        color: AppColors.surfaceSoft,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppColors.border),
       ),
@@ -1817,7 +1743,7 @@ class _EmptyInline extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
+        color: AppColors.surfaceSoft,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppColors.border),
       ),
@@ -2034,7 +1960,7 @@ InputDecoration _inputDecoration(String hint, {IconData? prefixIcon}) {
     hintStyle: AppTextStyles.inputHint,
     prefixIcon: prefixIcon == null ? null : Icon(prefixIcon, size: 18),
     filled: true,
-    fillColor: const Color(0xFFF8FAFC),
+    fillColor: AppColors.surfaceSoft,
     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(13),
@@ -2046,7 +1972,7 @@ InputDecoration _inputDecoration(String hint, {IconData? prefixIcon}) {
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(13),
-      borderSide: const BorderSide(color: Color(0xFF284BFF), width: 1.4),
+      borderSide: const BorderSide(color: AppColors.deliveryGreen, width: 1.4),
     ),
   );
 }

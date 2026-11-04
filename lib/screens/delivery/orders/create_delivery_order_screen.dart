@@ -1484,7 +1484,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                       icon: const Icon(Icons.remove, size: 18),
                     ),
                     SizedBox(
-                      width: 48,
+                      width: _quantityFieldWidth(quantity),
                       child: TextField(
                         key: ValueKey('order-quantity-${p.id}'),
                         controller: _quantityControllerFor(p),
@@ -1725,6 +1725,11 @@ String _formatOrderMoney(double value) {
     whole = '${groups.join(',')},$lastThree';
   }
   return '${value < 0 ? '− ' : ''}₹ $whole.${parts.last}';
+}
+
+double _quantityFieldWidth(int quantity) {
+  final digits = quantity.abs().toString().length;
+  return (digits * 10.0 + 20).clamp(48.0, 96.0).toDouble();
 }
 
 class _PreviewItem {
@@ -2706,7 +2711,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                                   child: const Icon(Icons.remove, size: 16),
                                 ),
                                 SizedBox(
-                                  width: 28,
+                                  width: _quantityFieldWidth(item.quantity),
                                   child: TextField(
                                     controller: _quantityControllerFor(item),
                                     keyboardType: TextInputType.number,
@@ -2886,7 +2891,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                     icon: const Icon(Icons.remove, size: 16),
                   ),
                   SizedBox(
-                    width: 28,
+                    width: _quantityFieldWidth(item.quantity),
                     child: TextField(
                       controller: _quantityControllerFor(item),
                       keyboardType: TextInputType.number,

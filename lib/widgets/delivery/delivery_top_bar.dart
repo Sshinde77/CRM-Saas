@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../constants/app_colors.dart';
@@ -423,12 +424,12 @@ class _DeliveryAvatar extends StatelessWidget {
         alignment: Alignment.center,
         clipBehavior: Clip.antiAlias,
         child: hasProfilePhoto
-            ? Image.network(
-                imageUrl,
+            ? CachedNetworkImage(
+                imageUrl: imageUrl,
                 fit: BoxFit.cover,
                 width: 36,
                 height: 36,
-                errorBuilder: (context, error, stackTrace) {
+                errorWidget: (context, url, error) {
                   return Text(
                     _initials,
                     style: AppTextStyles.bodyStrong.copyWith(

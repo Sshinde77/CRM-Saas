@@ -590,7 +590,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
               ),
               dropdownColor: AppColors.surface,
               borderRadius: BorderRadius.circular(8),
-              style: AppTextStyles.bodyStrong.copyWith(color: textPrimary),
+              style: AppTextStyles.body.copyWith(color: textPrimary),
               items: _sortOptions
                   .map(
                     (option) =>

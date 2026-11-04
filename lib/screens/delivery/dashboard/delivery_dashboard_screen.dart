@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../../widgets/delivery/delivery_bottom_navigation.dart';
@@ -69,7 +70,14 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
 
   Future<_DashboardData> _loadDashboard() async {
     final provider = ApiProviderScope.of(context);
-    final json = await provider.fetchDeliveryDashboard(period: _selectedPeriod);
+    final results = await Future.wait([
+      provider.fetchDeliveryDashboard(period: _selectedPeriod),
+      provider.fetchMyAttendance().catchError((_) => <Map<String, dynamic>>[]),
+    ]);
+
+    final json = results[0] as Map<String, dynamic>;
+    final attendanceList = results[1] as List<Map<String, dynamic>>;
+
     final deliveries = ((json['open_deliveries'] as List?) ?? const [])
         .whereType<Map<String, dynamic>>()
         .map(_DeliveryItem.fromJson)
@@ -80,6 +88,21 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
       (json['summary'] as Map?)?.cast<String, dynamic>() ?? const {},
     );
 
+    final todayStr = _todayDateString();
+    final todayRecord = attendanceList.where((record) {
+      final date = record['date']?.toString() ?? '';
+      return date == todayStr;
+    }).firstOrNull;
+
+    _AttendanceRecord? todayAttendance;
+    if (todayRecord != null) {
+      final checkInRaw = todayRecord['office_check_in']?.toString();
+      todayAttendance = _AttendanceRecord(
+        date: DateTime.tryParse(todayRecord['date']?.toString() ?? ''),
+        checkIn: checkInRaw != null ? DateTime.tryParse(checkInRaw) : null,
+      );
+    }
+
     return _DashboardData(
       userName: currentUser?.name ?? 'Partner',
       profilePhoto: currentUser?.profilePhoto,
@@ -87,8 +110,16 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
       deliveries: deliveries,
       openDeliveriesCount: _readInt(json, const ['open_deliveries_count']),
       vehicleStock: _VehicleStockSession.fromJson(vehicle),
-      todayAttendance: null,
+      todayAttendance: todayAttendance,
     );
+  }
+
+  String _todayDateString() {
+    final now = DateTime.now();
+    final y = now.year.toString();
+    final m = now.month.toString().padLeft(2, '0');
+    final d = now.day.toString().padLeft(2, '0');
+    return '$y-$m-$d';
   }
 
   Future<void> _refresh() async {
@@ -103,27 +134,35 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
     setState(() => _isCheckingIn = true);
     try {
       await ApiProviderScope.of(context).checkInAttendance('office_check_in');
-      await _refresh();
-      if (!mounted) return;
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          const SnackBar(content: Text('Checked in successfully.')),
-        );
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          const SnackBar(
-            content: Text('Failed to check in. Please try again.'),
-          ),
-        );
-    } finally {
-      if (mounted) {
-        setState(() => _isCheckingIn = false);
+    } catch (e) {
+      final msg = e.toString().toLowerCase();
+      final alreadyCheckedIn = msg.contains('already') ||
+          msg.contains('409') ||
+          msg.contains('exists') ||
+          msg.contains('duplicate');
+      if (!alreadyCheckedIn) {
+        if (mounted) {
+          setState(() => _isCheckingIn = false);
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              const SnackBar(
+                content: Text('Failed to check in. Please try again.'),
+              ),
+            );
+        }
+        return;
       }
     }
+
+    await _refresh();
+    if (!mounted) return;
+    setState(() => _isCheckingIn = false);
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        const SnackBar(content: Text('Checked in successfully.')),
+      );
   }
 
   @override
@@ -454,10 +493,10 @@ class _ProfileAvatar extends StatelessWidget {
               color: AppColors.deliveryDashboardHeaderEnd,
               size: size * 0.58,
             )
-          : Image.network(
-              photo,
+          : CachedNetworkImage(
+              imageUrl: photo,
               fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
+              errorWidget: (context, url, error) {
                 return Icon(
                   Icons.person_rounded,
                   color: AppColors.deliveryDashboardHeaderEnd,
@@ -2045,6 +2084,7 @@ class _DeliveryPeriodSelector extends StatelessWidget {
         return ChoiceChip(
           label: Text(label),
           selected: period == selected,
+          checkmarkColor: Colors.white,
           onSelected: (_) => onChanged(period),
         );
       }).toList(),

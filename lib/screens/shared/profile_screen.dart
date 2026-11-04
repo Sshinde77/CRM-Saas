@@ -132,12 +132,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _loadError = null;
     });
     try {
-      final authMe = await _api!.fetchAuthMe();
-      final userId = (authMe?.user?.id ?? _api!.currentUser?.id ?? '').trim();
-      if (userId.isEmpty) {
-        throw StateError('Could not resolve the current user.');
+      final authMe = await _api!.fetchAuthMe(force: true);
+      final meUser = authMe?.user;
+      if (meUser == null || (meUser.id ?? '').trim().isEmpty) {
+        throw StateError('Could not load the current user from the me API.');
       }
-      final user = await _api!.fetchUserById(userId);
+      final meUserData = <String, dynamic>{
+        ...meUser.rawData,
+        'id': meUser.id,
+        'name': meUser.rawData['name'] ?? meUser.name,
+        'email': meUser.rawData['email'] ?? meUser.email,
+        'role': meUser.rawData['role'] ?? meUser.role,
+        'profile_photo':
+            meUser.rawData['profile_photo'] ?? meUser.profilePhoto,
+      };
+      final user = AppUser.fromJson(meUserData);
       Map<String, dynamic>? organization;
       try {
         organization = await _api!.service.fetchOrganizationMe();
@@ -1144,7 +1153,7 @@ class _DropdownField extends StatelessWidget {
         DropdownButtonFormField<String>(
           initialValue: value,
           isExpanded: true,
-          style: AppTextStyles.bodyStrong.copyWith(
+          style: AppTextStyles.body.copyWith(
             color: AppColors.deliveryInk,
           ),
           decoration: InputDecoration(
@@ -1291,53 +1300,52 @@ class _DetailGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final wide = constraints.maxWidth >= 420;
-        final width = wide ? (constraints.maxWidth - 14) / 2 : double.infinity;
-        return Wrap(
-          spacing: 14,
-          runSpacing: 16,
-          children: rows
-              .map(
-                (row) => SizedBox(
-                  width: width,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          if (row.icon != null) ...[
-                            Icon(
-                              row.icon,
-                              size: 15,
-                              color: AppColors.textMuted,
-                            ),
-                            const SizedBox(width: 6),
-                          ],
-                          Text(
-                            row.label.toUpperCase(),
-                            style: AppTextStyles.bodyStrong.copyWith(
-                              color: AppColors.textMuted,
-                              letterSpacing: 0.3,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        row.value.trim().isEmpty ? '-' : row.value,
-                        style: AppTextStyles.bodyStrong.copyWith(
-                          color: AppColors.deliveryInk,
-                        ),
-                      ),
-                    ],
+    return Column(
+      children: [
+        for (var i = 0; i < rows.length; i++) ...[
+          if (i != 0)
+            const Divider(height: 1, color: AppColors.border),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 11),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (rows[i].icon != null) ...[
+                  Padding(
+                    padding: const EdgeInsets.only(top: 1),
+                    child: Icon(
+                      rows[i].icon,
+                      size: 15,
+                      color: AppColors.textMuted,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                Expanded(
+                  flex: 5,
+                  child: Text(
+                    rows[i].label,
+                    style: AppTextStyles.body.copyWith(
+                      color: AppColors.textMuted,
+                    ),
                   ),
                 ),
-              )
-              .toList(),
-        );
-      },
+                const SizedBox(width: 10),
+                Expanded(
+                  flex: 6,
+                  child: Text(
+                    rows[i].value.trim().isEmpty ? '-' : rows[i].value,
+                    textAlign: TextAlign.right,
+                    style: AppTextStyles.bodyStrong.copyWith(
+                      color: AppColors.deliveryInk,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../constants/app_colors.dart';
@@ -36,14 +37,13 @@ class ProductImage extends StatelessWidget {
         errorBuilder: (_, e, s) => _fallback(url),
       );
     } else if (url.isNotEmpty) {
-      child = Image.network(
-        url,
+      child = CachedNetworkImage(
+        imageUrl: url,
         width: size,
         height: size,
         fit: BoxFit.cover,
-        errorBuilder: (_, e, s) => _fallback(url),
-        loadingBuilder: (context, child, progress) =>
-            progress == null ? child : _fallback(url),
+        placeholder: (ctx, url2) => _fallback(url),
+        errorWidget: (ctx, url2, err) => _fallback(url),
       );
     } else {
       child = _fallback(url);

@@ -446,14 +446,6 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _Header(
-                title: _isEditMode ? 'Edit Lead' : 'Add Lead',
-                subtitle: _isEditMode
-                    ? 'Update the lead details from the latest backend record.'
-                    : 'Capture a new prospect and assign it to a salesperson.',
-                onBack: () => Navigator.of(context).maybePop(),
-              ),
-              const SizedBox(height: 16),
               if (wide)
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -739,66 +731,6 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
   }
 }
 
-class _Header extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final VoidCallback onBack;
-
-  const _Header({
-    required this.title,
-    required this.subtitle,
-    required this.onBack,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Home > Leads',
-                style: AppTextStyles.bodyStrong.copyWith(
-                  color: const Color(0xFF08783D),
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                title,
-                style: AppTextStyles.screenHeading.copyWith(
-                  color: const Color(0xFF0F172A),
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                style: AppTextStyles.body.copyWith(
-                  color: const Color(0xFF64748B),
-                ),
-              ),
-            ],
-          ),
-        ),
-        OutlinedButton.icon(
-          onPressed: onBack,
-          icon: const Icon(Icons.arrow_back_rounded, size: 17),
-          label: const Text('Back to Leads'),
-          style: OutlinedButton.styleFrom(
-            foregroundColor: const Color(0xFF0F172A),
-            side: const BorderSide(color: Color(0xFFD7DEE8)),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 class _FormGrid extends StatelessWidget {
   final bool wide;
   final List<Widget> children;
@@ -979,23 +911,18 @@ class _ProductPickerState extends State<_ProductPicker> {
   @override
   Widget build(BuildContext context) {
     final normalized = _query.trim().toLowerCase();
-    final suggestions = normalized.isEmpty
-        ? <_ProductOption>[]
-        : widget.products
-              .where((product) {
-                if (widget.selected.contains(product.name)) return false;
-                return product.name.toLowerCase().contains(normalized) ||
-                    product.sku.toLowerCase().contains(normalized);
-              })
-              .take(8)
-              .toList();
-    final exactMatch = widget.products.any(
-      (product) => product.name.toLowerCase() == normalized,
-    );
-    final canAddCustom =
-        normalized.isNotEmpty &&
+    final allVisible = widget.products.where((product) {
+      if (normalized.isEmpty) return true;
+      return product.name.toLowerCase().contains(normalized) ||
+          product.sku.toLowerCase().contains(normalized);
+    }).toList();
+    final showLimit = normalized.isEmpty && allVisible.length > 8;
+    final visibleProducts = showLimit ? allVisible.take(8).toList() : allVisible;
+    final canAddCustom = normalized.isNotEmpty &&
         !widget.selected.contains(_query.trim()) &&
-        !exactMatch;
+        !widget.products.any(
+          (product) => product.name.toLowerCase() == normalized,
+        );
 
     return _LabeledField(
       label: 'Interested Products',
@@ -1015,66 +942,181 @@ class _ProductPickerState extends State<_ProductPicker> {
             onChanged: (value) => setState(() => _query = value),
             onSubmitted: (_) => _addCustom(),
           ),
-          if (suggestions.isNotEmpty || canAddCustom) ...[
-            const SizedBox(height: 8),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
+          const SizedBox(height: 10),
+          for (var i = 0; i < visibleProducts.length; i++) ...[
+            _buildProductCard(visibleProducts[i]),
+            if (i != visibleProducts.length - 1) const SizedBox(height: 8),
+          ],
+          if (canAddCustom) ...[
+            if (visibleProducts.isNotEmpty) const SizedBox(height: 8),
+            _buildCustomCard(),
+          ],
+          if (visibleProducts.isEmpty && !canAddCustom)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Text(
+                'No products found.',
+                style: AppTextStyles.body.copyWith(
+                  color: const Color(0xFF94A3B8),
+                ),
               ),
+            ),
+          if (showLimit) ...[
+            const SizedBox(height: 6),
+            Text(
+              'Search to find more (${allVisible.length} total)',
+              style: AppTextStyles.small.copyWith(
+                color: const Color(0xFF94A3B8),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProductCard(_ProductOption product) {
+    final isSelected = widget.selected.contains(product.name);
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          if (isSelected) {
+            widget.selected.remove(product.name);
+          } else {
+            widget.selected.add(product.name);
+          }
+        });
+        widget.onChanged();
+      },
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? const Color(0xFF08783D).withValues(alpha: 0.05)
+              : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected
+                ? const Color(0xFF08783D)
+                : const Color(0xFFD7DEE8),
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? const Color(0xFF08783D).withValues(alpha: 0.10)
+                    : const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                Icons.inventory_2_outlined,
+                size: 20,
+                color: isSelected
+                    ? const Color(0xFF08783D)
+                    : const Color(0xFF94A3B8),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  for (final product in suggestions)
-                    ListTile(
-                      dense: true,
-                      visualDensity: VisualDensity.compact,
-                      leading: const Icon(
-                        Icons.inventory_2_outlined,
-                        color: Color(0xFF08783D),
-                      ),
-                      title: Text(product.name),
-                      subtitle: product.sku.isEmpty ? null : Text(product.sku),
-                      onTap: () => _addProduct(product.name),
+                  Text(
+                    product.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.bodyStrong.copyWith(
+                      color: const Color(0xFF0F172A),
                     ),
-                  if (canAddCustom)
-                    ListTile(
-                      dense: true,
-                      visualDensity: VisualDensity.compact,
-                      leading: const Icon(
-                        Icons.add_circle_outline_rounded,
-                        color: Color(0xFF08783D),
+                  ),
+                  if (product.sku.isNotEmpty)
+                    Text(
+                      'SKU: ${product.sku}',
+                      style: AppTextStyles.small.copyWith(
+                        color: const Color(0xFF94A3B8),
                       ),
-                      title: Text('Add "${_query.trim()}"'),
-                      onTap: _addCustom,
                     ),
                 ],
               ),
             ),
-          ],
-          if (widget.selected.isNotEmpty) ...[
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final product in widget.selected)
-                  InputChip(
-                    label: Text(product),
-                    labelStyle: AppTextStyles.bodyStrong.copyWith(
-                      color: const Color(0xFF0F172A),
-                    ),
-                    backgroundColor: const Color(0xFFEFF8F2),
-                    side: const BorderSide(color: Color(0xFFCDECD7)),
-                    onDeleted: () {
-                      setState(() => widget.selected.remove(product));
-                      widget.onChanged();
-                    },
-                  ),
-              ],
+            const SizedBox(width: 8),
+            Container(
+              width: 30,
+              height: 30,
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? const Color(0xFF08783D)
+                    : const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                isSelected ? Icons.check_rounded : Icons.add_rounded,
+                size: 16,
+                color: isSelected ? Colors.white : const Color(0xFF64748B),
+              ),
             ),
           ],
-        ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCustomCard() {
+    return GestureDetector(
+      onTap: _addCustom,
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFD7DEE8)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: const Color(0xFFEFF8F2),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                Icons.add_circle_outline_rounded,
+                size: 20,
+                color: Color(0xFF08783D),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Add "${_query.trim()}"',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.bodyStrong.copyWith(
+                  color: const Color(0xFF0F172A),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              width: 30,
+              height: 30,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.add_rounded,
+                size: 16,
+                color: Color(0xFF08783D),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

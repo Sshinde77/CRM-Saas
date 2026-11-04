@@ -547,6 +547,7 @@ void _putIfNotBlank(Map<String, dynamic> payload, String key, String? value) {
 }
 
 class CurrentUserProfile {
+  final Map<String, dynamic> rawData;
   final String? id;
   final String name;
   final String role;
@@ -556,6 +557,7 @@ class CurrentUserProfile {
   final String? deliveryPartnerName;
 
   const CurrentUserProfile({
+    this.rawData = const <String, dynamic>{},
     this.id,
     required this.name,
     required this.role,
@@ -587,6 +589,7 @@ class CurrentUserProfile {
         partnerData?['full_name'];
 
     return CurrentUserProfile(
+      rawData: Map<String, dynamic>.from(json),
       id: rawId?.trim().isEmpty == true ? null : rawId?.trim(),
       name: (rawName == null || rawName.trim().isEmpty)
           ? 'User'

@@ -876,7 +876,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.deliveryBackground,
       body: SafeArea(
         child: Column(
           children: [
@@ -931,12 +931,10 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                           return Container(
                             padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
-                              color: AppColors.background,
+                              color: AppColors.deliveryBackground,
                               borderRadius: BorderRadius.circular(28),
                               border: Border.all(
-                                color: AppColors.borderStrong.withValues(
-                                  alpha: 0.35,
-                                ),
+                                color: AppColors.border.withValues(alpha: 0.5),
                               ),
                             ),
                             child: Row(
@@ -1142,11 +1140,18 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.background,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: AppColors.borderStrong.withValues(alpha: 0.35),
+          color: AppColors.border.withValues(alpha: 0.8),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1196,13 +1201,13 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                             height: 42,
                             decoration: BoxDecoration(
                               color: isActive || isCompleted
-                                  ? AppColors.primary
+                                  ? AppColors.deliveryGreen
                                   : const Color(0xFFF3F4F6),
                               shape: BoxShape.circle,
                               boxShadow: isActive
                                   ? [
                                       BoxShadow(
-                                        color: AppColors.primary.withValues(
+                                        color: AppColors.deliveryGreen.withValues(
                                           alpha: 0.18,
                                         ),
                                         blurRadius: 10,
@@ -1231,7 +1236,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                             _customerStepShortLabel(step.title),
                             style: AppTextStyles.bodyStrong.copyWith(
                               color: isActive
-                                  ? AppColors.primary
+                                  ? AppColors.deliveryGreen
                                   : AppColors.textSecondary,
                             ),
                           ),
@@ -1245,7 +1250,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                           width: 56,
                           height: 2,
                           color: index < _currentStep
-                              ? AppColors.primary
+                              ? AppColors.deliveryGreen
                               : const Color(0xFFD8DFE6),
                         ),
                       ),
@@ -1269,11 +1274,18 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.background,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: AppColors.borderStrong.withValues(alpha: 0.35),
+          color: AppColors.border.withValues(alpha: 0.8),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1325,12 +1337,11 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                 ),
               ),
               const SizedBox(width: 12),
-              ElevatedButton(
+              FilledButton(
                 onPressed: _isSubmitting ? null : () => _nextStep(users),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.deliveryGreen,
                   foregroundColor: Colors.white,
-                  elevation: 0,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 22,
                     vertical: 14,
@@ -1354,7 +1365,9 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                                   ? 'Save Changes'
                                   : 'Add New Customer')
                             : 'Next',
-                        style: AppTextStyles.bodyStrong,
+                        style: AppTextStyles.bodyStrong.copyWith(
+                          color: Colors.white,
+                        ),
                       ),
               ),
             ],
@@ -1371,7 +1384,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           width: 32,
           height: 32,
           decoration: const BoxDecoration(
-            color: AppColors.primary,
+            color: AppColors.deliveryGreen,
             shape: BoxShape.circle,
           ),
           alignment: Alignment.center,
@@ -1489,11 +1502,18 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.background,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: AppColors.borderStrong.withValues(alpha: 0.35),
+          color: AppColors.border.withValues(alpha: 0.8),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1695,7 +1715,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                       }
                     });
                   },
-                  activeColor: AppColors.primary,
+                  activeColor: AppColors.deliveryGreen,
                   checkColor: Colors.white,
                   side: const BorderSide(
                     color: AppColors.borderStrong,
@@ -1812,7 +1832,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                   icon: const Icon(
                     Icons.my_location_outlined,
                     size: 18,
-                    color: AppColors.primary,
+                    color: AppColors.deliveryGreen,
                   ),
                   label: const Text('Pick'),
                 ),
@@ -1873,7 +1893,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                   value: _taxExempt,
                   onChanged: (value) =>
                       setState(() => _taxExempt = value ?? false),
-                  activeColor: AppColors.primary,
+                  activeColor: AppColors.deliveryGreen,
                   checkColor: Colors.white,
                 ),
                 const SizedBox(width: 4),
@@ -2325,7 +2345,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                   Text(
                     'Uploaded and ready to attach on save',
                     style: AppTextStyles.bodyStrong.copyWith(
-                      color: AppColors.primary,
+                      color: AppColors.deliveryGreen,
                     ),
                   ),
                 ],
@@ -2492,7 +2512,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                       }
                     });
                   },
-                  activeColor: AppColors.primary,
+                  activeColor: AppColors.deliveryGreen,
                   checkColor: Colors.white,
                   side: const BorderSide(
                     color: AppColors.borderStrong,
@@ -2596,7 +2616,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                       setState(() => _isActive = value);
                     },
                     activeThumbColor: Colors.white,
-                    activeTrackColor: AppColors.primary,
+                    activeTrackColor: AppColors.deliveryGreen,
                     inactiveThumbColor: Colors.white,
                     inactiveTrackColor: AppColors.borderStrong.withValues(
                       alpha: 0.45,
@@ -2633,12 +2653,11 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                 child: const Text('Cancel'),
               ),
               const SizedBox(width: 12),
-              ElevatedButton(
+              FilledButton(
                 onPressed: _isSubmitting ? null : () => _submit(users),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.deliveryGreen,
                   foregroundColor: Colors.white,
-                  elevation: 0,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 22,
                     vertical: 14,
@@ -2674,7 +2693,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           width: 30,
           height: 30,
           decoration: const BoxDecoration(
-            color: AppColors.primary,
+            color: AppColors.deliveryGreen,
             shape: BoxShape.circle,
           ),
           alignment: Alignment.center,
@@ -2833,7 +2852,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             ),
             hint: Text(hintText, style: AppTextStyles.inputHint),
             decoration: _inputDecoration(''),
-            dropdownColor: Colors.white,
+            dropdownColor: AppColors.surface,
             borderRadius: BorderRadius.circular(16),
             items: items
                 .map(
@@ -2861,7 +2880,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
               color: AppColors.textLightMuted,
             ),
             decoration: _inputDecoration(''),
-            dropdownColor: Colors.white,
+            dropdownColor: AppColors.surface,
             borderRadius: BorderRadius.circular(16),
             items: items
                 .map(
@@ -2914,7 +2933,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           ),
           hint: Text(hintText, style: AppTextStyles.inputHint),
           decoration: _inputDecoration(''),
-          dropdownColor: Colors.white,
+          dropdownColor: AppColors.surface,
           borderRadius: BorderRadius.circular(16),
           items: items
               .map(
@@ -2939,7 +2958,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     return InputDecoration(
       hintText: hintText,
       filled: true,
-      fillColor: Colors.white,
+      fillColor: AppColors.surface,
       suffixIcon: suffixIcon,
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       border: OutlineInputBorder(
@@ -2952,7 +2971,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.primary),
+        borderSide: const BorderSide(color: AppColors.deliveryGreen),
       ),
     );
   }

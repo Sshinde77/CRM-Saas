@@ -555,7 +555,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                   value: opt,
                   child: Text(
                     opt,
-                    style: AppTextStyles.secondaryStrong.copyWith(
+                    style: AppTextStyles.secondary.copyWith(
                       color: AppColors.deliveryInk,
                     ),
                   ),

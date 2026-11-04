@@ -1337,7 +1337,7 @@ class _PaymentConfirmationCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(7),
                     ),
                   ),
-                  style: AppTextStyles.smallStrong.copyWith(
+                  style: AppTextStyles.small.copyWith(
                     color: AppColors.deliveryInk,
                   ),
                   items: const [
@@ -1442,14 +1442,14 @@ class _BillingRow extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: (strong ? AppTextStyles.smallStrong : AppTextStyles.small)
+              style: (strong ? AppTextStyles.bodyStrong : AppTextStyles.small)
                   .copyWith(color: labelColor ?? AppColors.deliveryInk),
             ),
           ),
           Text(
             value,
             style: strong
-                ? AppTextStyles.importantNumber.copyWith(
+                ? AppTextStyles.bodyStrong.copyWith(
                     color: valueColor ?? AppColors.deliveryInk,
                   )
                 : AppTextStyles.small.copyWith(
@@ -1522,7 +1522,7 @@ class _AmountStrip extends StatelessWidget {
               value,
               style:
                   (strong
-                          ? AppTextStyles.importantNumber
+                          ? AppTextStyles.bodyStrong
                           : AppTextStyles.smallStrong)
                       .copyWith(
                         color: strong

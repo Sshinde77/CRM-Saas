@@ -58,7 +58,7 @@ class AppPagination extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
                     color: colors.onSurface,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w400,
                   ),
                   items: pageSizeOptions
                       .map(

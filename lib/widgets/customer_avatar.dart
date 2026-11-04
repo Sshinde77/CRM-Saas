@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../constants/app_colors.dart';
@@ -60,12 +61,11 @@ class CustomerAvatar extends StatelessWidget {
                 fit: BoxFit.cover,
                 errorBuilder: (_, error, stack) => fallback,
               )
-            : Image.network(
-                url,
+            : CachedNetworkImage(
+                imageUrl: url,
                 fit: BoxFit.cover,
-                errorBuilder: (_, error, stack) => fallback,
-                loadingBuilder: (_, child, progress) =>
-                    progress == null ? child : fallback,
+                placeholder: (ctx, url2) => fallback,
+                errorWidget: (ctx, url2, err) => fallback,
               ),
       ),
     );

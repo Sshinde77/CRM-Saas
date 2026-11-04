@@ -151,7 +151,7 @@ class AppTextStyles {
     headlineMedium: screenHeading,
     headlineSmall: screenHeading,
     titleLarge: sectionHeading,
-    titleMedium: cardTitle,
+    titleMedium: body,
     titleSmall: bodyStrong,
     bodyLarge: body,
     bodyMedium: cardBody,

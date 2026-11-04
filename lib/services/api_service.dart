@@ -1,4 +1,3 @@
-import '../models/list_pagination.dart';
 import 'dart:async';
 import 'dart:convert';
 
@@ -18,9 +17,12 @@ import '../models/delivery_detail_model.dart';
 import '../models/delivery_expense_model.dart';
 import '../models/auth_models.dart';
 import '../models/app_user.dart';
+import '../models/list_pagination.dart';
 import '../models/plan_model.dart';
 import '../models/role_model.dart';
 import '../models/notification_model.dart';
+
+dynamic _jsonDecodeIsolate(String body) => jsonDecode(body);
 
 class ApiException implements Exception {
   final int? statusCode;
@@ -76,7 +78,7 @@ class ApiService {
   static final Map<String, Future<http.Response>> _inFlightGets = {};
   static int _cacheGeneration = 0;
 
-  static const Duration _responseCacheTtl = Duration(seconds: 20);
+  static const Duration _responseCacheTtl = Duration(minutes: 2);
   static const Duration _dashboardCacheTtl = Duration(minutes: 5);
   // Keep loaded list/detail/page responses available for the active app
   // session. Once fresh data expires, callers still receive the cached
@@ -841,7 +843,7 @@ class ApiService {
       timeout: timeout,
       retryOnTimeout: retryOnTimeout,
     );
-    final decoded = _tryDecodeBody(response.body.trim());
+    final decoded = await _tryDecodeBodyAsync(response.body.trim());
     final rawItems = _extractGenericList(
       decoded,
       candidateKeys,
@@ -3303,12 +3305,26 @@ class ApiService {
   }
 
   dynamic _tryDecodeBody(String body) {
-    if (body.isEmpty) {
-      return null;
-    }
-
+    if (body.isEmpty) return null;
     try {
       return jsonDecode(body);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<dynamic> _tryDecodeBodyAsync(String body) async {
+    if (body.isEmpty) return null;
+    // Only pay the isolate-spawn overhead for genuinely large payloads.
+    if (body.length < 32768) {
+      try {
+        return jsonDecode(body);
+      } catch (_) {
+        return null;
+      }
+    }
+    try {
+      return await compute(_jsonDecodeIsolate, body);
     } catch (_) {
       return null;
     }
@@ -3336,7 +3352,7 @@ class ApiService {
         timeout: timeout,
         retryOnTimeout: retryOnTimeout,
       );
-      _invalidateResponseCache();
+      _invalidateCacheForEndpoint(endpoint);
       return response;
     }
 
@@ -3530,6 +3546,38 @@ class ApiService {
   static void _invalidateResponseCache() {
     _cacheGeneration++;
     _responseCache.clear();
+  }
+
+  // Removes only cache entries relevant to the mutated endpoint, leaving
+  // unrelated data intact so other screens don't pay a re-fetch cost.
+  static void _invalidateCacheForEndpoint(String endpoint) {
+    final segment = endpoint
+        .split('/')
+        .where((p) => p.isNotEmpty)
+        .firstOrNull;
+    if (segment == null) {
+      _invalidateResponseCache();
+      return;
+    }
+    // Domains that share data with the dashboard summaries — when these
+    // change, also purge the dashboard caches so counts stay accurate.
+    const dashboardRelated = {
+      'orders',
+      'deliveries',
+      'customers',
+      'leads',
+      'quotations',
+      'attendance',
+      'vehicle-stock',
+      'customer-payments',
+    };
+    final domains = <String>{segment};
+    if (dashboardRelated.contains(segment)) domains.add('dashboard');
+
+    _cacheGeneration++;
+    _responseCache.removeWhere(
+      (key, _) => domains.any((d) => key.contains('/$d')),
+    );
   }
 
   void _refreshCachedGet({
