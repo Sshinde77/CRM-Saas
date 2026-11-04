@@ -357,13 +357,11 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
                           ),
                         ),
                         const SizedBox(width: 10),
-                        const Expanded(
+                        Expanded(
                           child: Text(
                             'Update Lead Status',
-                            style: TextStyle(
+                            style: AppTextStyles.sectionHeading.copyWith(
                               color: AppColors.deliveryInk,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
@@ -399,10 +397,8 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
                                   value: status,
                                   child: Text(
                                     status,
-                                    style: const TextStyle(
+                                    style: AppTextStyles.bodyStrong.copyWith(
                                       color: AppColors.deliveryInk,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 13.5,
                                     ),
                                   ),
                                 ),
@@ -433,11 +429,10 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
                               padding: const EdgeInsets.symmetric(vertical: 12),
                             ),
                             onPressed: () => Navigator.of(context).pop(),
-                            child: const Text(
+                            child: Text(
                               'Cancel',
-                              style: TextStyle(
+                              style: AppTextStyles.bodyStrong.copyWith(
                                 color: AppColors.textSecondary,
-                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
@@ -458,9 +453,11 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
                             ),
                             onPressed: () =>
                                 Navigator.of(context).pop(selectedStatus),
-                            child: const Text(
+                            child: Text(
                               'Save Status',
-                              style: TextStyle(fontWeight: FontWeight.w700),
+                              style: AppTextStyles.bodyStrong.copyWith(
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ),
@@ -504,21 +501,16 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          title: const Text(
+          title: Text(
             'Add Follow-up Note',
-            style: TextStyle(
+            style: AppTextStyles.sectionHeading.copyWith(
               color: AppColors.deliveryInk,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
             ),
           ),
           content: TextField(
             controller: controller,
             maxLines: 4,
-            style: const TextStyle(
-              fontSize: 13.5,
-              color: AppColors.deliveryInk,
-            ),
+            style: AppTextStyles.body.copyWith(color: AppColors.deliveryInk),
             decoration: InputDecoration(
               hintText: 'Enter notes, client feedback or next steps...',
               hintStyle: AppTextStyles.inputHint,
@@ -976,10 +968,8 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
             Text(
               _errorMessage ?? 'Unable to load lead details.',
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: AppTextStyles.bodyStrong.copyWith(
                 color: AppColors.deliveryInk,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 14),
@@ -1166,10 +1156,9 @@ class _ProfileCard extends StatelessWidget {
                       lead.displayName,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: AppTextStyles.cardTitle.copyWith(
                         fontSize: 18,
-                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -1186,9 +1175,8 @@ class _ProfileCard extends StatelessWidget {
                             company,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: AppTextStyles.small.copyWith(
                               color: Colors.white70,
-                              fontSize: 12,
                             ),
                           ),
                         ),
@@ -1328,19 +1316,16 @@ class _DateSummary extends StatelessWidget {
       children: [
         Text(
           label,
-          style: TextStyle(
+          style: AppTextStyles.smallStrong.copyWith(
             color: light ? Colors.white70 : AppColors.textMuted,
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
           ),
         ),
         const SizedBox(height: 2),
         Text(
           value,
-          style: TextStyle(
+          style: AppTextStyles.secondaryStrong.copyWith(
             color: light ? Colors.white : AppColors.deliveryInk,
-            fontSize: 12.5,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ],
@@ -1510,11 +1495,9 @@ class _MetricTile extends StatelessWidget {
                   info.value,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: AppTextStyles.bodyStrong.copyWith(
                     color: AppColors.deliveryInk,
-                    fontSize: 13.5,
                     height: 1.1,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -1522,10 +1505,8 @@ class _MetricTile extends StatelessWidget {
                   info.label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(0xFF586176),
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w700,
+                  style: AppTextStyles.smallStrong.copyWith(
+                    color: const Color(0xFF586176),
                   ),
                 ),
               ],
@@ -1599,14 +1580,11 @@ class _ActivityPanel extends StatelessWidget {
                         ),
                         child: Text(
                           tabs[index],
-                          style: TextStyle(
+                          style: AppTextStyles.smallStrong.copyWith(
                             color: isSelected
                                 ? Colors.white
                                 : AppColors.deliveryInk,
-                            fontSize: 12,
-                            fontWeight: isSelected
-                                ? FontWeight.w700
-                                : FontWeight.w600,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
@@ -1746,10 +1724,9 @@ class _DetailSectionCard extends StatelessWidget {
               const SizedBox(width: 6),
               Text(
                 title,
-                style: const TextStyle(
+                style: AppTextStyles.secondaryStrong.copyWith(
                   color: AppColors.deliveryInk,
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -1798,10 +1775,8 @@ class _InfoRow extends StatelessWidget {
             flex: 4,
             child: Text(
               label,
-              style: const TextStyle(
+              style: AppTextStyles.smallStrong.copyWith(
                 color: AppColors.textMuted,
-                fontSize: 11.5,
-                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -1810,10 +1785,9 @@ class _InfoRow extends StatelessWidget {
             child: Text(
               displayValue,
               textAlign: TextAlign.end,
-              style: const TextStyle(
+              style: AppTextStyles.smallStrong.copyWith(
                 color: AppColors.deliveryInk,
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -1856,12 +1830,11 @@ class _FollowUpsSection extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               'Scheduled Follow-ups',
-              style: TextStyle(
+              style: AppTextStyles.secondaryStrong.copyWith(
                 color: AppColors.deliveryInk,
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
               ),
             ),
             TextButton.icon(
@@ -1874,9 +1847,12 @@ class _FollowUpsSection extends StatelessWidget {
                 ),
               ),
               icon: const Icon(Icons.add_rounded, size: 16),
-              label: const Text(
+              label: Text(
                 'Add Follow-up',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                style: AppTextStyles.smallStrong.copyWith(
+                  color: AppColors.deliveryGreen,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],
@@ -1919,10 +1895,9 @@ class _FollowUpsSection extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 item.title,
-                                style: const TextStyle(
+                                style: AppTextStyles.secondaryStrong.copyWith(
                                   color: AppColors.deliveryInk,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
@@ -1940,10 +1915,8 @@ class _FollowUpsSection extends StatelessWidget {
                             const SizedBox(width: 4),
                             Text(
                               _formatDateTime(item.dueAt),
-                              style: const TextStyle(
+                              style: AppTextStyles.smallStrong.copyWith(
                                 color: AppColors.textMuted,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
                               ),
                             ),
                             if (item.assigneeName.isNotEmpty) ...[
@@ -1956,10 +1929,8 @@ class _FollowUpsSection extends StatelessWidget {
                               const SizedBox(width: 4),
                               Text(
                                 item.assigneeName,
-                                style: const TextStyle(
+                                style: AppTextStyles.smallStrong.copyWith(
                                   color: AppColors.textMuted,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ],
@@ -1969,10 +1940,8 @@ class _FollowUpsSection extends StatelessWidget {
                           const SizedBox(height: 6),
                           Text(
                             item.description,
-                            style: const TextStyle(
+                            style: AppTextStyles.smallStrong.copyWith(
                               color: AppColors.textSecondary,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
@@ -2029,10 +1998,9 @@ class _LeadFollowUpDetailScreen extends StatelessWidget {
                     Expanded(
                       child: Text(
                         item.title,
-                        style: const TextStyle(
-                          color: AppColors.deliveryInk,
+                        style: AppTextStyles.cardTitle.copyWith(
                           fontSize: 18,
-                          fontWeight: FontWeight.w700,
+                          color: AppColors.deliveryInk,
                         ),
                       ),
                     ),
@@ -2055,20 +2023,17 @@ class _LeadFollowUpDetailScreen extends StatelessWidget {
                 ],
                 if (item.description.isNotEmpty) ...[
                   const SizedBox(height: 20),
-                  const Text(
+                  Text(
                     'Description',
-                    style: TextStyle(
+                    style: AppTextStyles.smallStrong.copyWith(
                       color: AppColors.textMuted,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 6),
                   Text(
                     item.description,
-                    style: const TextStyle(
+                    style: AppTextStyles.body.copyWith(
                       color: AppColors.deliveryInk,
-                      fontSize: 14,
                       height: 1.45,
                     ),
                   ),
@@ -2105,19 +2070,15 @@ class _FollowUpDetailRow extends StatelessWidget {
           children: [
             Text(
               label,
-              style: const TextStyle(
+              style: AppTextStyles.smallStrong.copyWith(
                 color: AppColors.textMuted,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 3),
             Text(
               value,
-              style: const TextStyle(
+              style: AppTextStyles.bodyStrong.copyWith(
                 color: AppColors.deliveryInk,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
               ),
             ),
           ],

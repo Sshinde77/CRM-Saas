@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../constants/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../../models/end_of_day_return_models.dart';
 import 'end_of_day_shared.dart';
 
@@ -108,11 +109,7 @@ class _StockReturnFormState extends State<StockReturnForm> {
                 padding: EdgeInsets.fromLTRB(14, 14, 14, 12),
                 child: Text(
                   'Stock Return',
-                  style: TextStyle(
-                    color: AppColors.deliveryInk,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppTextStyles.sectionHeading,
                 ),
               ),
               const Divider(height: 1, color: Color(0xFFE9EDF5)),
@@ -194,12 +191,7 @@ class _StockReturnFormState extends State<StockReturnForm> {
                           : item.productName,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.deliveryInk,
-                        fontSize: 14,
-                        height: 1.15,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: AppTextStyles.bodyStrong,
                     ),
                     if (item.variantId.isNotEmpty) ...[
                       const SizedBox(height: 4),
@@ -207,11 +199,7 @@ class _StockReturnFormState extends State<StockReturnForm> {
                         'Variant: ${item.variantId}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.textMuted,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: AppTextStyles.smallStrong,
                       ),
                     ],
                   ],
@@ -272,13 +260,11 @@ class _StockReturnFormState extends State<StockReturnForm> {
                 color: AppColors.deliveryRed.withValues(alpha: 0.10),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Text(
+              child: Text(
                 'Return exceeds loaded quantity',
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: AppTextStyles.smallStrong.copyWith(
                   color: AppColors.deliveryRed,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
@@ -311,11 +297,8 @@ class _QuantityChip extends StatelessWidget {
             qty(value),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: AppTextStyles.secondaryStrong.copyWith(
               color: AppColors.deliveryGreen,
-              fontSize: 13,
-              height: 1,
-              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 4),
@@ -323,11 +306,7 @@ class _QuantityChip extends StatelessWidget {
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: AppColors.textMuted,
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.smallStrong,
           ),
         ],
       ),

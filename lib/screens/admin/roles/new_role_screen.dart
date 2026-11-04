@@ -196,26 +196,29 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
                                     children: [
                                       Row(
                                         children: [
-                                          const Expanded(
+                                          Expanded(
                                             child: Column(
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.start,
                                               children: [
                                                 Text(
                                                   'Create a new role',
-                                                  style: TextStyle(
-                                                    color: Color(0xFF111827),
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w700,
-                                                  ),
+                                                  style: AppTextStyles.cardTitle
+                                                      .copyWith(
+                                                        color: Color(
+                                                          0xFF111827,
+                                                        ),
+                                                      ),
                                                 ),
                                                 SizedBox(height: 8),
                                                 Text(
                                                   'Configure module-level permissions for staff assigned to this role.',
-                                                  style: TextStyle(
-                                                    color: Color(0xFF64748B),
-                                                    fontSize: 14,
-                                                  ),
+                                                  style: AppTextStyles.body
+                                                      .copyWith(
+                                                        color: Color(
+                                                          0xFF64748B,
+                                                        ),
+                                                      ),
                                                 ),
                                               ],
                                             ),
@@ -245,26 +248,25 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      const Expanded(
+                                      Expanded(
                                         child: Column(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               'Create a new role',
-                                              style: TextStyle(
-                                                color: Color(0xFF111827),
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w700,
-                                              ),
+                                              style: AppTextStyles.cardTitle
+                                                  .copyWith(
+                                                    color: Color(0xFF111827),
+                                                  ),
                                             ),
                                             SizedBox(height: 8),
                                             Text(
                                               'Configure module-level permissions for staff assigned to this role.',
-                                              style: TextStyle(
-                                                color: Color(0xFF64748B),
-                                                fontSize: 14,
-                                              ),
+                                              style: AppTextStyles.body
+                                                  .copyWith(
+                                                    color: Color(0xFF64748B),
+                                                  ),
                                             ),
                                           ],
                                         ),
@@ -299,13 +301,11 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
                           Padding(
                             padding: const EdgeInsets.fromLTRB(18, 18, 18, 8),
                             child: Row(
-                              children: const [
+                              children: [
                                 Text(
                                   'Permissions',
-                                  style: TextStyle(
-                                    color: Color(0xFF111827),
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700,
+                                  style: AppTextStyles.bodyStrong.copyWith(
+                                    color: const Color(0xFF111827),
                                   ),
                                 ),
                               ],
@@ -485,11 +485,7 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: Color(0xFF111827),
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-          ),
+          style: AppTextStyles.bodyStrong.copyWith(color: Color(0xFF111827)),
         ),
         const SizedBox(height: 8),
         TextField(
@@ -532,11 +528,7 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: Color(0xFF111827),
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-          ),
+          style: AppTextStyles.bodyStrong.copyWith(color: Color(0xFF111827)),
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
@@ -602,27 +594,23 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       child: Row(
         children: [
-          const SizedBox(
+          SizedBox(
             width: 260,
             child: Text(
               'MODULES',
-              style: TextStyle(
+              style: AppTextStyles.bodyStrong.copyWith(
                 color: Color(0xFF94A3B8),
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
                 letterSpacing: 0.9,
               ),
             ),
           ),
-          const SizedBox(
+          SizedBox(
             width: 74,
             child: Center(
               child: Text(
                 'ALL',
-                style: TextStyle(
+                style: AppTextStyles.bodyStrong.copyWith(
                   color: Color(0xFF94A3B8),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
                   letterSpacing: 0.9,
                 ),
               ),
@@ -637,10 +625,8 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
                   Text(
                     permission.toUpperCase(),
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
+                    style: AppTextStyles.bodyStrong.copyWith(
                       color: Color(0xFF94A3B8),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
                       letterSpacing: 0.8,
                     ),
                   ),
@@ -669,10 +655,8 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
             width: 260,
             child: Text(
               module,
-              style: const TextStyle(
+              style: AppTextStyles.bodyStrong.copyWith(
                 color: Color(0xFF111827),
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
               ),
             ),
           ),

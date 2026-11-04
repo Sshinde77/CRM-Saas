@@ -110,24 +110,31 @@ class _DeliveryCustomerDetailScreenState
   }
 
   void _openCreateOrder() {
+    final customerId = _customer?.id ?? widget.customerId;
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const CreateDeliveryOrderScreen()),
+      MaterialPageRoute(
+        builder: (_) =>
+            CreateDeliveryOrderScreen(initialCustomerId: customerId),
+      ),
     );
   }
 
   void _openCreateCollection() {
+    final customerId = _customer?.id ?? widget.customerId;
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) =>
-            PaymentCollectionScreen(initialCustomerId: widget.customerId),
+        builder: (_) => PaymentCollectionScreen(initialCustomerId: customerId),
       ),
     );
   }
 
   void _openCreateVisit() {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => const CreateVisitPage()));
+    final customerId = _customer?.id ?? widget.customerId;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => CreateVisitPage(initialCustomerId: customerId),
+      ),
+    );
   }
 
   void _openEditCustomer() {
@@ -411,7 +418,6 @@ class _ProfileCard extends StatelessWidget {
             textAlign: TextAlign.center,
             style: AppTextStyles.sectionHeading.copyWith(
               color: AppColors.deliveryInk,
-              fontSize: 18,
             ),
           ),
           const SizedBox(height: 6),
@@ -427,10 +433,8 @@ class _ProfileCard extends StatelessWidget {
               Flexible(
                 child: Text(
                   customer.contactPerson ?? customer.name,
-                  style: const TextStyle(
+                  style: AppTextStyles.smallStrong.copyWith(
                     color: AppColors.deliveryInk,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -490,19 +494,13 @@ class _DateSummary extends StatelessWidget {
     children: [
       Text(
         label,
-        style: const TextStyle(
-          color: AppColors.textMuted,
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-        ),
+        style: AppTextStyles.smallStrong.copyWith(color: AppColors.textMuted),
       ),
       const SizedBox(height: 3),
       Text(
         _date(date),
-        style: const TextStyle(
+        style: AppTextStyles.secondaryStrong.copyWith(
           color: AppColors.deliveryInk,
-          fontSize: 13,
-          fontWeight: FontWeight.w700,
         ),
       ),
     ],
@@ -647,11 +645,10 @@ class _MetricCard extends StatelessWidget {
                 label,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: AppTextStyles.smallStrong.copyWith(
                   color: AppColors.textMuted,
                   fontSize: 10,
                   height: 1.2,
-                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -666,7 +663,6 @@ class _MetricCard extends StatelessWidget {
             maxLines: 1,
             style: AppTextStyles.importantNumber.copyWith(
               color: AppColors.deliveryInk,
-              fontSize: 15,
             ),
           ),
         ),
@@ -692,12 +688,7 @@ class _ActivityPanel extends StatelessWidget {
       children: [
         Row(
           children: List.generate(4, (index) {
-            const labels = [
-              'Orders',
-              'Collections',
-              'Visits',
-              'Details',
-            ];
+            const labels = ['Orders', 'Collections', 'Visits', 'Details'];
             final active = selected == index;
             return Expanded(
               child: InkWell(
@@ -720,12 +711,10 @@ class _ActivityPanel extends StatelessWidget {
                       labels[index],
                       maxLines: 1,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: AppTextStyles.smallStrong.copyWith(
                         color: active
                             ? AppColors.deliveryGreen
                             : AppColors.textSecondary,
-                        fontSize: 11,
-                        fontWeight: active ? FontWeight.w700 : FontWeight.w600,
                       ),
                     ),
                   ),
@@ -841,10 +830,8 @@ class _RecordTile extends StatelessWidget {
                       subtitle,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: AppTextStyles.small.copyWith(
                         color: AppColors.textMuted,
-                        fontSize: 12,
-                        height: 1.3,
                       ),
                     ),
                   ],
@@ -873,11 +860,7 @@ class _RecordTile extends StatelessWidget {
                     ),
                     child: Text(
                       _title(status),
-                      style: TextStyle(
-                        color: tone,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: AppTextStyles.smallStrong.copyWith(color: tone),
                     ),
                   ),
                 ],
@@ -957,7 +940,7 @@ class _TabActionButton extends StatelessWidget {
       icon: Icon(icon, size: 20),
       label: Text(
         label,
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+        style: AppTextStyles.bodyStrong.copyWith(color: Colors.white),
       ),
       style: FilledButton.styleFrom(
         backgroundColor: AppColors.deliveryGreen,
@@ -997,7 +980,6 @@ class _InfoSection extends StatelessWidget {
               title,
               style: AppTextStyles.cardTitle.copyWith(
                 color: AppColors.deliveryInk,
-                fontSize: 16,
               ),
             ),
           ],
@@ -1015,9 +997,8 @@ class _InfoSection extends StatelessWidget {
                     Expanded(
                       child: Text(
                         row.label,
-                        style: const TextStyle(
+                        style: AppTextStyles.small.copyWith(
                           color: AppColors.textMuted,
-                          fontSize: 12,
                         ),
                       ),
                     ),
@@ -1026,10 +1007,8 @@ class _InfoSection extends StatelessWidget {
                       child: Text(
                         row.value?.trim().isNotEmpty == true ? row.value! : '-',
                         textAlign: TextAlign.end,
-                        style: const TextStyle(
+                        style: AppTextStyles.bodyStrong.copyWith(
                           color: AppColors.deliveryInk,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
@@ -1069,10 +1048,8 @@ class _EmptyState extends StatelessWidget {
         const SizedBox(height: 10),
         Text(
           label,
-          style: const TextStyle(
+          style: AppTextStyles.secondaryStrong.copyWith(
             color: AppColors.textMuted,
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
           ),
         ),
       ],
@@ -1097,9 +1074,9 @@ class _ErrorState extends StatelessWidget {
             color: AppColors.textLightMuted,
           ),
           const SizedBox(height: 12),
-          const Text(
+          Text(
             'Could not load customer details',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+            style: AppTextStyles.sectionHeading,
           ),
           const SizedBox(height: 6),
           Text(
@@ -1107,7 +1084,7 @@ class _ErrorState extends StatelessWidget {
             textAlign: TextAlign.center,
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+            style: AppTextStyles.small,
           ),
           const SizedBox(height: 16),
           FilledButton(onPressed: onRetry, child: const Text('Try Again')),
@@ -1127,7 +1104,7 @@ class _InlineError extends StatelessWidget {
       children: [
         const Text(
           'Some activity could not be loaded.',
-          style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+          style: AppTextStyles.secondary,
         ),
         TextButton.icon(
           onPressed: onRetry,

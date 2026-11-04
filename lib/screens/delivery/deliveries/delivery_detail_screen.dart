@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../core/theme/app_text_styles.dart';
 import '../../../models/delivery_detail_model.dart';
 import '../../../providers/api_provider.dart';
 import '../../../services/api_service.dart';
@@ -610,10 +611,8 @@ class _Body extends StatelessWidget {
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 680),
               child: DefaultTextStyle(
-                style: const TextStyle(
+                style: AppTextStyles.body.copyWith(
                   color: AppColors.deliveryInk,
-                  fontSize: 14,
-                  height: 1.35,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -642,9 +641,8 @@ class _Body extends StatelessWidget {
                                       delivery.customerName,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w700,
+                                      style: AppTextStyles.cardTitle.copyWith(
+                                        color: AppColors.deliveryInk,
                                       ),
                                     ),
                                     const SizedBox(height: 3),
@@ -654,7 +652,9 @@ class _Body extends StatelessWidget {
                                           : delivery.customerPhone,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(fontSize: 13),
+                                      style: AppTextStyles.secondary.copyWith(
+                                        color: AppColors.deliveryInk,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -694,23 +694,23 @@ class _Body extends StatelessWidget {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      const Text(
+                                      Text(
                                         'Order Id',
-                                        style: TextStyle(
-                                          color: Color(0xFF356B4B),
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                        style: AppTextStyles.smallStrong
+                                            .copyWith(
+                                              color: const Color(0xFF356B4B),
+                                            ),
                                       ),
                                       Row(
                                         children: [
                                           Text(
                                             delivery.orderNumber,
-                                            style: const TextStyle(
-                                              color: Color(0xFF123D28),
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w700,
-                                            ),
+                                            style: AppTextStyles.smallStrong
+                                                .copyWith(
+                                                  color: const Color(
+                                                    0xFF123D28,
+                                                  ),
+                                                ),
                                           ),
                                           const SizedBox(width: 6),
                                           const Icon(
@@ -751,9 +751,8 @@ class _Body extends StatelessWidget {
                                         const SizedBox(width: 6),
                                         Text(
                                           delivery.customerPhone,
-                                          style: const TextStyle(
-                                            color: Color(0xFF40536A),
-                                            fontSize: 12,
+                                          style: AppTextStyles.small.copyWith(
+                                            color: const Color(0xFF40536A),
                                           ),
                                         ),
                                       ],
@@ -791,10 +790,12 @@ class _Body extends StatelessWidget {
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
                                               textAlign: TextAlign.right,
-                                              style: const TextStyle(
-                                                color: Color(0xFF40536A),
-                                                fontSize: 12,
-                                              ),
+                                              style: AppTextStyles.small
+                                                  .copyWith(
+                                                    color: const Color(
+                                                      0xFF40536A,
+                                                    ),
+                                                  ),
                                             ),
                                           ),
                                         ],
@@ -829,21 +830,17 @@ class _Body extends StatelessWidget {
                                   ),
                                 ),
                                 const SizedBox(width: 8),
-                                const Expanded(
+                                Expanded(
                                   child: Text(
                                     'Delivery Summary',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700,
-                                    ),
+                                    style: AppTextStyles.sectionHeading
+                                        .copyWith(color: AppColors.deliveryInk),
                                   ),
                                 ),
                                 Text(
                                   '${delivery.items.length} ${delivery.items.length == 1 ? 'item' : 'items'}',
-                                  style: const TextStyle(
+                                  style: AppTextStyles.smallStrong.copyWith(
                                     color: AppColors.primary,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ],
@@ -857,12 +854,14 @@ class _Body extends StatelessWidget {
                             heading: true,
                           ),
                           if (delivery.items.isEmpty)
-                            const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 24),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 24),
                               child: Text(
                                 'No items in this delivery.',
                                 textAlign: TextAlign.center,
-                                style: TextStyle(color: AppColors.textMuted),
+                                style: AppTextStyles.body.copyWith(
+                                  color: AppColors.textMuted,
+                                ),
                               ),
                             ),
                           for (final item in delivery.items)
@@ -913,12 +912,11 @@ class _Body extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(width: 9),
-                              const Expanded(
+                              Expanded(
                                 child: Text(
                                   'Delivery Details',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
+                                  style: AppTextStyles.sectionHeading.copyWith(
+                                    color: AppColors.deliveryInk,
                                   ),
                                 ),
                               ),
@@ -979,12 +977,10 @@ class _Body extends StatelessWidget {
                               collapsedShape: const Border(),
                               iconColor: AppColors.primary,
                               collapsedIconColor: AppColors.primary,
-                              title: const Text(
+                              title: Text(
                                 'More delivery details',
-                                style: TextStyle(
+                                style: AppTextStyles.bodyStrong.copyWith(
                                   color: AppColors.primary,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                               leading: const Icon(
@@ -1036,9 +1032,11 @@ class _Body extends StatelessWidget {
                             ),
                           if (delivery.notes.isNotEmpty) ...[
                             const SizedBox(height: 8),
-                            const Text(
+                            Text(
                               'Notes',
-                              style: TextStyle(fontWeight: FontWeight.w700),
+                              style: AppTextStyles.bodyStrong.copyWith(
+                                color: AppColors.deliveryInk,
+                              ),
                             ),
                             const SizedBox(height: 6),
                             Text(delivery.notes),
@@ -1049,9 +1047,11 @@ class _Body extends StatelessWidget {
                     if (delivery.podPhotos.isNotEmpty ||
                         delivery.signatureUrl.isNotEmpty) ...[
                       const Divider(height: 24, color: AppColors.border),
-                      const Text(
+                      Text(
                         'Proof of Delivery',
-                        style: TextStyle(fontWeight: FontWeight.w700),
+                        style: AppTextStyles.bodyStrong.copyWith(
+                          color: AppColors.deliveryInk,
+                        ),
                       ),
                       const SizedBox(height: 10),
                       Wrap(
@@ -1064,10 +1064,9 @@ class _Body extends StatelessWidget {
                       ),
                       if (delivery.signatureUrl.isNotEmpty) ...[
                         const SizedBox(height: 10),
-                        const Text(
+                        Text(
                           'Signature',
-                          style: TextStyle(
-                            fontSize: 14,
+                          style: AppTextStyles.body.copyWith(
                             color: AppColors.textMuted,
                           ),
                         ),
@@ -1111,9 +1110,8 @@ class _Body extends StatelessWidget {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        textStyle: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
+                        textStyle: AppTextStyles.bodyStrong.copyWith(
+                          color: Colors.white,
                         ),
                       ),
                     ),
@@ -1188,22 +1186,18 @@ class _PaymentConfirmationCard extends StatelessWidget {
                   color: Color(0xFF246936),
                 ),
                 const SizedBox(width: 7),
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Billing Summary',
-                    style: TextStyle(
-                      color: Color(0xFF174F28),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
+                    style: AppTextStyles.secondaryStrong.copyWith(
+                      color: const Color(0xFF174F28),
                     ),
                   ),
                 ),
                 Text(
                   '$itemCount ${itemCount == 1 ? 'item' : 'items'}',
-                  style: const TextStyle(
-                    color: Color(0xFF24713A),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
+                  style: AppTextStyles.smallStrong.copyWith(
+                    color: const Color(0xFF24713A),
                   ),
                 ),
               ],
@@ -1267,10 +1261,12 @@ class _PaymentConfirmationCard extends StatelessWidget {
                   color: Color(0xFF246936),
                 ),
                 const SizedBox(width: 8),
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Paid Amount',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                    style: AppTextStyles.smallStrong.copyWith(
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                 ),
                 SizedBox(
@@ -1282,9 +1278,8 @@ class _PaymentConfirmationCard extends StatelessWidget {
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
+                    style: AppTextStyles.secondaryStrong.copyWith(
+                      color: AppColors.textPrimary,
                     ),
                     decoration: InputDecoration(
                       prefixText: '₹ ',
@@ -1323,10 +1318,12 @@ class _PaymentConfirmationCard extends StatelessWidget {
           const Divider(height: 20, color: AppColors.border),
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Payment Type',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                  style: AppTextStyles.smallStrong.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
                 ),
               ),
               SizedBox(
@@ -1340,10 +1337,8 @@ class _PaymentConfirmationCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(7),
                     ),
                   ),
-                  style: const TextStyle(
+                  style: AppTextStyles.smallStrong.copyWith(
                     color: AppColors.deliveryInk,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
                   ),
                   items: const [
                     DropdownMenuItem(value: 'Cash', child: Text('Cash')),
@@ -1389,17 +1384,18 @@ class _PaymentConfirmationCard extends StatelessWidget {
           const Divider(height: 20, color: AppColors.border),
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Delivery Date',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                  style: AppTextStyles.smallStrong.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
                 ),
               ),
               Text(
                 _formatDate(deliveryDate),
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
+                style: AppTextStyles.smallStrong.copyWith(
+                  color: AppColors.textPrimary,
                 ),
               ),
             ],
@@ -1446,20 +1442,19 @@ class _BillingRow extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: TextStyle(
-                color: labelColor ?? AppColors.deliveryInk,
-                fontSize: 12,
-                fontWeight: strong ? FontWeight.w700 : FontWeight.w600,
-              ),
+              style: (strong ? AppTextStyles.smallStrong : AppTextStyles.small)
+                  .copyWith(color: labelColor ?? AppColors.deliveryInk),
             ),
           ),
           Text(
             value,
-            style: TextStyle(
-              color: valueColor ?? AppColors.deliveryInk,
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-            ),
+            style: strong
+                ? AppTextStyles.importantNumber.copyWith(
+                    color: valueColor ?? AppColors.deliveryInk,
+                  )
+                : AppTextStyles.small.copyWith(
+                    color: valueColor ?? AppColors.deliveryInk,
+                  ),
           ),
         ],
       ),
@@ -1496,14 +1491,10 @@ class _AmountStrip extends StatelessWidget {
               color: Color(0xFFFF4358),
               shape: BoxShape.circle,
             ),
-            child: const Center(
+            child: Center(
               child: Text(
                 '₹',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: AppTextStyles.smallStrong.copyWith(color: Colors.white),
               ),
             ),
           ),
@@ -1511,10 +1502,8 @@ class _AmountStrip extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: TextStyle(
+              style: AppTextStyles.smallStrong.copyWith(
                 color: strong ? AppColors.deliveryRed : const Color(0xFF31536B),
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -1531,11 +1520,15 @@ class _AmountStrip extends StatelessWidget {
                 : null,
             child: Text(
               value,
-              style: TextStyle(
-                color: strong ? AppColors.deliveryRed : const Color(0xFF213B50),
-                fontSize: strong ? 14 : 12,
-                fontWeight: FontWeight.w700,
-              ),
+              style:
+                  (strong
+                          ? AppTextStyles.importantNumber
+                          : AppTextStyles.smallStrong)
+                      .copyWith(
+                        color: strong
+                            ? AppColors.deliveryRed
+                            : const Color(0xFF213B50),
+                      ),
             ),
           ),
         ],
@@ -1587,10 +1580,10 @@ class _OrderProgressCard extends StatelessWidget {
                   color: AppColors.deliveryGreen,
                 ),
                 const SizedBox(width: 8),
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Order Progress',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                    style: AppTextStyles.sectionHeading,
                   ),
                 ),
                 if (isCancelled)
@@ -1603,12 +1596,10 @@ class _OrderProgressCard extends StatelessWidget {
                       color: AppColors.deliveryRed.withValues(alpha: 0.09),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Cancelled',
-                      style: TextStyle(
+                      style: AppTextStyles.smallStrong.copyWith(
                         color: AppColors.deliveryRed,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -1737,10 +1728,8 @@ class _ProgressStep extends StatelessWidget {
                 ),
                 child: Text(
                   '$number',
-                  style: TextStyle(
+                  style: AppTextStyles.smallStrong.copyWith(
                     color: completed ? Colors.white : stateColor,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -1753,18 +1742,18 @@ class _ProgressStep extends StatelessWidget {
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.center,
-          style: TextStyle(
-            color: cancelled
-                ? AppColors.deliveryRed
-                : completed
-                ? AppColors.deliveryInk
-                : AppColors.textMuted,
-            fontSize: 10,
-            height: 1.15,
-            fontWeight: completed || cancelled
-                ? FontWeight.w700
-                : FontWeight.w500,
-          ),
+          style:
+              (completed || cancelled
+                      ? AppTextStyles.smallStrong
+                      : AppTextStyles.small)
+                  .copyWith(
+                    color: cancelled
+                        ? AppColors.deliveryRed
+                        : completed
+                        ? AppColors.deliveryInk
+                        : AppColors.textMuted,
+                    height: 1.15,
+                  ),
         ),
       ],
     );
@@ -1791,11 +1780,7 @@ class _StatusPill extends StatelessWidget {
           const SizedBox(width: 4),
           Text(
             _statusLabel(status),
-            style: TextStyle(
-              color: color,
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.smallStrong.copyWith(color: color),
           ),
         ],
       ),
@@ -1819,7 +1804,7 @@ class _ConfirmationImageBox extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+        Text(label, style: AppTextStyles.fieldLabel),
         const SizedBox(height: 8),
         DeliveryImageUploadField(bytes: bytes, onTap: onTap, aspectRatio: 1.2),
       ],
@@ -1858,7 +1843,7 @@ BoxDecoration _cardDecoration() => BoxDecoration(
 // ignore: unused_element
 InputDecoration _inputDecoration(String label) => InputDecoration(
   labelText: label,
-  labelStyle: const TextStyle(fontSize: 13, color: AppColors.textMuted),
+  labelStyle: AppTextStyles.secondary,
   contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
   filled: true,
   fillColor: AppColors.deliveryCardSoft,
@@ -1894,10 +1879,8 @@ class _ItemColumns extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTextStyle(
-      style: TextStyle(
+      style: AppTextStyles.smallStrong.copyWith(
         color: heading ? AppColors.textMuted : AppColors.deliveryInk,
-        fontSize: heading ? 10 : 12,
-        fontWeight: heading ? FontWeight.w500 : FontWeight.w600,
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 9),
@@ -1956,10 +1939,8 @@ class _ItemRow extends StatelessWidget {
                         const SizedBox(height: 2),
                         Text(
                           _formatMoney(unitPrice),
-                          style: const TextStyle(
+                          style: AppTextStyles.smallStrong.copyWith(
                             color: AppColors.deliveryInk,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ],
@@ -1967,10 +1948,8 @@ class _ItemRow extends StatelessWidget {
                         const SizedBox(height: 3),
                         Text(
                           item.variant,
-                          style: const TextStyle(
+                          style: AppTextStyles.body.copyWith(
                             color: AppColors.textMuted,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
                           ),
                         ),
                       ],
@@ -2002,10 +1981,8 @@ class _ItemRow extends StatelessWidget {
               padding: const EdgeInsets.only(top: 4),
               child: Text(
                 'Up to ${capacity!.transferableSurplus} extra available on this run',
-                style: const TextStyle(
+                style: AppTextStyles.smallStrong.copyWith(
                   color: AppColors.deliveryGreen,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -2037,10 +2014,8 @@ class _QuantityStepper extends StatelessWidget {
         keyboardType: TextInputType.number,
         textInputAction: TextInputAction.done,
         textAlign: TextAlign.center,
-        style: const TextStyle(
+        style: AppTextStyles.secondaryStrong.copyWith(
           color: AppColors.deliveryInk,
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
         ),
         inputFormatters: [
           FilteringTextInputFormatter.digitsOnly,
@@ -2205,7 +2180,7 @@ class _DetailRow extends StatelessWidget {
             flex: 5,
             child: Text(
               label,
-              style: TextStyle(color: color, fontWeight: FontWeight.w600),
+              style: AppTextStyles.fieldLabel.copyWith(color: color),
             ),
           ),
           const SizedBox(width: 12),
@@ -2218,11 +2193,7 @@ class _DetailRow extends StatelessWidget {
                 child: Text(
                   value.trim().isEmpty ? '\u2014' : value,
                   textAlign: TextAlign.right,
-                  style: TextStyle(
-                    color: color,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w400,
-                  ),
+                  style: AppTextStyles.secondary.copyWith(color: color),
                 ),
               ),
             ),
@@ -2252,11 +2223,10 @@ class _ErrorState extends StatelessWidget {
               color: AppColors.textMuted,
             ),
             const SizedBox(height: 12),
-            const Text(
+            Text(
               'Delivery details could not load',
-              style: TextStyle(
+              style: AppTextStyles.bodyStrong.copyWith(
                 color: AppColors.deliveryInk,
-                fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 8),

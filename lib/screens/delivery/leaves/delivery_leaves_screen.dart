@@ -159,7 +159,16 @@ class _DeliveryLeavesScreenState extends State<DeliveryLeavesScreen> {
   void _showDetails(_LeaveRequest leave) {
     showDialog<void>(
       context: context,
-      builder: (context) => _LeaveDetailsDialog(leave: leave),
+      builder: (context) => _LeaveDetailsDialog(
+        leave: leave,
+        isBusy: _busyLeaveIds.contains(leave.id),
+        onCancel: leave.canCancel
+            ? () {
+                Navigator.of(context).pop();
+                _cancelLeave(leave);
+              }
+            : null,
+      ),
     );
   }
 
@@ -180,7 +189,12 @@ class _DeliveryLeavesScreenState extends State<DeliveryLeavesScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
+              Text(
+                title,
+                style: AppTextStyles.bodyStrong.copyWith(
+                  color: AppColors.surface,
+                ),
+              ),
               const SizedBox(height: 2),
               Text(message),
             ],
@@ -241,9 +255,11 @@ class _DeliveryLeavesScreenState extends State<DeliveryLeavesScreen> {
               borderRadius: BorderRadius.circular(AppSizes.pillRadius),
             ),
             icon: const Icon(Icons.add_rounded, size: 20),
-            label: const Text(
+            label: Text(
               'Apply Leave',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+              style: AppTextStyles.smallStrong.copyWith(
+                color: AppColors.surface,
+              ),
             ),
           ),
         ),
@@ -420,11 +436,8 @@ class _SummaryTile extends StatelessWidget {
                   info.value,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: AppTextStyles.cardTitle.copyWith(
                     color: AppColors.deliveryInk,
-                    fontSize: 16,
-                    height: 1.1,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 3),
@@ -432,11 +445,7 @@ class _SummaryTile extends StatelessWidget {
                   info.label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.textMuted,
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: AppTextStyles.smallStrong,
                 ),
               ],
             ),
@@ -506,10 +515,8 @@ class _FilterPill extends StatelessWidget {
           ),
           child: Text(
             label,
-            style: TextStyle(
+            style: AppTextStyles.smallStrong.copyWith(
               color: selected ? AppColors.surface : AppColors.deliveryInk,
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
             ),
           ),
         ),
@@ -548,12 +555,11 @@ class _LeavesPanel extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Text(
+            Text(
               'Leave Requests',
-              style: TextStyle(
+              style: AppTextStyles.cardTitle.copyWith(
                 color: AppColors.deliveryInk,
                 fontSize: 18,
-                fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(width: 8),
@@ -565,10 +571,8 @@ class _LeavesPanel extends StatelessWidget {
               ),
               child: Text(
                 '${leaves.length}',
-                style: const TextStyle(
+                style: AppTextStyles.smallStrong.copyWith(
                   color: AppColors.deliveryGreen,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
@@ -653,15 +657,9 @@ class _LeavesTable extends StatelessWidget {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: DataTable(
-        headingTextStyle: const TextStyle(
-          color: AppColors.textMuted,
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-        ),
-        dataTextStyle: const TextStyle(
+        headingTextStyle: AppTextStyles.smallStrong,
+        dataTextStyle: AppTextStyles.smallStrong.copyWith(
           color: AppColors.deliveryInk,
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
         ),
         columnSpacing: 18,
         horizontalMargin: 8,
@@ -776,10 +774,8 @@ class _LeaveCard extends StatelessWidget {
                             leave.leaveTypeLabel,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: AppTextStyles.secondaryStrong.copyWith(
                               color: AppColors.deliveryInk,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
                             ),
                           ),
                           const SizedBox(height: 3),
@@ -796,11 +792,7 @@ class _LeaveCard extends StatelessWidget {
                                   leave.dateRangeLabel,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    color: AppColors.textMuted,
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                                  style: AppTextStyles.smallStrong,
                                 ),
                               ),
                             ],
@@ -855,11 +847,8 @@ class _LeaveCard extends StatelessWidget {
                             leave.reason,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: AppTextStyles.small.copyWith(
                               color: AppColors.deliveryInk,
-                              fontSize: 11.5,
-                              height: 1.3,
-                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ),
@@ -893,11 +882,10 @@ class _LeaveCard extends StatelessWidget {
                                     ),
                                   )
                                 : const Icon(Icons.close_rounded, size: 16),
-                            label: const Text(
+                            label: Text(
                               'Cancel',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
+                              style: AppTextStyles.smallStrong.copyWith(
+                                color: AppColors.surface,
                               ),
                             ),
                           ),
@@ -940,21 +928,12 @@ class _CardFact extends StatelessWidget {
               ? CrossAxisAlignment.end
               : CrossAxisAlignment.start,
           children: [
-            Text(
-              label,
-              style: const TextStyle(
-                color: AppColors.textMuted,
-                fontSize: 9.5,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            Text(label, style: AppTextStyles.smallStrong),
             const SizedBox(height: 2),
             Text(
               value,
-              style: const TextStyle(
+              style: AppTextStyles.smallStrong.copyWith(
                 color: AppColors.deliveryInk,
-                fontSize: 11.5,
-                fontWeight: FontWeight.w700,
               ),
             ),
           ],
@@ -1168,12 +1147,11 @@ class _ApplyLeaveSheetState extends State<_ApplyLeaveSheet> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
+                  Text(
                     'Apply Leave',
-                    style: TextStyle(
+                    style: AppTextStyles.cardTitle.copyWith(
                       color: AppColors.deliveryInk,
                       fontSize: 18,
-                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -1316,7 +1294,9 @@ class _DateField extends StatelessWidget {
           value == null ? 'Select' : _formatDate(value!),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+          style: AppTextStyles.secondaryStrong.copyWith(
+            color: AppColors.textPrimary,
+          ),
         ),
       ),
     );
@@ -1363,10 +1343,8 @@ class _DayPreview extends StatelessWidget {
                   : daysCount == 0
                   ? 'Select dates to preview leave duration.'
                   : '$daysCount day${daysCount == 1 ? '' : 's'} selected.',
-              style: const TextStyle(
+              style: AppTextStyles.smallStrong.copyWith(
                 color: AppColors.deliveryInk,
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -1377,9 +1355,15 @@ class _DayPreview extends StatelessWidget {
 }
 
 class _LeaveDetailsDialog extends StatelessWidget {
-  const _LeaveDetailsDialog({required this.leave});
+  const _LeaveDetailsDialog({
+    required this.leave,
+    required this.isBusy,
+    required this.onCancel,
+  });
 
   final _LeaveRequest leave;
+  final bool isBusy;
+  final VoidCallback? onCancel;
 
   @override
   Widget build(BuildContext context) {
@@ -1403,13 +1387,12 @@ class _LeaveDetailsDialog extends StatelessWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const Expanded(
+                    Expanded(
                       child: Text(
                         'Leave Details',
-                        style: TextStyle(
+                        style: AppTextStyles.screenHeading.copyWith(
                           color: AppColors.deliveryInk,
                           fontSize: 20,
-                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
@@ -1465,29 +1448,64 @@ class _LeaveDetailsDialog extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  height: AppSizes.buttonHeight,
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.deliveryGreen,
-                      side: const BorderSide(
-                        color: AppColors.deliveryGreen,
-                        width: 1.2,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                          AppSizes.controlRadius,
+                Row(
+                  children: [
+                    if (onCancel != null) ...[
+                      Expanded(
+                        child: SizedBox(
+                          height: AppSizes.buttonHeight,
+                          child: FilledButton.icon(
+                            onPressed: isBusy ? null : onCancel,
+                            icon: isBusy
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: AppColors.surface,
+                                    ),
+                                  )
+                                : const Icon(Icons.close_rounded, size: 18),
+                            label: const Text('Cancel Leave'),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: AppColors.deliveryRed,
+                              foregroundColor: AppColors.surface,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  AppSizes.controlRadius,
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                      textStyle: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
+                      const SizedBox(width: 12),
+                    ],
+                    Expanded(
+                      child: SizedBox(
+                        height: AppSizes.buttonHeight,
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.deliveryGreen,
+                            side: const BorderSide(
+                              color: AppColors.deliveryGreen,
+                              width: 1.2,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                AppSizes.controlRadius,
+                              ),
+                            ),
+                            textStyle: AppTextStyles.bodyStrong.copyWith(
+                              color: AppColors.deliveryGreen,
+                            ),
+                          ),
+                          child: const Text('Close'),
+                        ),
                       ),
                     ),
-                    child: const Text('Close'),
-                  ),
+                  ],
                 ),
               ],
             ),
@@ -1548,10 +1566,8 @@ class _DetailRow extends StatelessWidget {
             width: 112,
             child: Text(
               label,
-              style: const TextStyle(
-                color: Color(0xFF536074),
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
+              style: AppTextStyles.secondaryStrong.copyWith(
+                color: const Color(0xFF536074),
               ),
             ),
           ),
@@ -1560,11 +1576,9 @@ class _DetailRow extends StatelessWidget {
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: const TextStyle(
+              style: AppTextStyles.bodyStrong.copyWith(
                 color: AppColors.deliveryInk,
                 fontSize: 13,
-                height: 1.35,
-                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -1596,11 +1610,7 @@ class _StatusBadge extends StatelessWidget {
           const SizedBox(width: 4),
           Text(
             _statusLabel(status),
-            style: TextStyle(
-              color: tone.foreground,
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.smallStrong.copyWith(color: tone.foreground),
           ),
         ],
       ),
@@ -1620,23 +1630,14 @@ class _InlineMetric extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: AppColors.textMuted,
-            fontSize: 10,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        Text(label, style: AppTextStyles.small),
         const SizedBox(height: 2),
         Text(
           value,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
+          style: AppTextStyles.smallStrong.copyWith(
             color: AppColors.deliveryInk,
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
           ),
         ),
       ],
@@ -1746,23 +1747,17 @@ class _ErrorState extends StatelessWidget {
             color: AppColors.deliveryRed,
           ),
           const SizedBox(height: 10),
-          const Text(
+          Text(
             'Leave requests could not load',
-            style: TextStyle(
+            style: AppTextStyles.cardTitle.copyWith(
               color: AppColors.deliveryInk,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 6),
           Text(
             message,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: AppColors.textMuted,
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-            ),
+            style: AppTextStyles.secondaryStrong,
           ),
           const SizedBox(height: 14),
           FilledButton.icon(
@@ -1805,10 +1800,8 @@ class _EmptyState extends StatelessWidget {
             const SizedBox(height: 10),
             Text(
               hasFilters ? 'No matching leave requests' : 'No leave requests',
-              style: const TextStyle(
+              style: AppTextStyles.cardTitle.copyWith(
                 color: AppColors.deliveryInk,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 6),
@@ -1817,10 +1810,8 @@ class _EmptyState extends StatelessWidget {
                   ? 'Clear filters to view every request.'
                   : 'Your applied leaves will appear here.',
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: AppTextStyles.fieldLabel.copyWith(
                 color: AppColors.textMuted,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
               ),
             ),
             if (hasFilters) ...[

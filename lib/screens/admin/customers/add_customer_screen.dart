@@ -901,7 +901,9 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                       child: Text(
                         snapshot.error.toString(),
                         textAlign: TextAlign.center,
-                        style: const TextStyle(color: AppColors.textSecondary),
+                        style: AppTextStyles.body.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     );
                   }
@@ -1002,27 +1004,18 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             ),
             child: Text(
               widget.isEditMode ? 'Update customer' : 'Customer setup',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-              ),
+              style: AppTextStyles.bodyStrong.copyWith(color: Colors.white),
             ),
           ),
           const SizedBox(height: 18),
           Text(
             widget.isEditMode ? 'Edit Customer' : 'Add Customer',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              height: 1.1,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.cardTitle.copyWith(color: Colors.white),
           ),
           const SizedBox(height: 10),
-          const Text(
+          Text(
             'Capture customer identity, billing details, delivery address, ownership, and credit in one clean flow.',
-            style: TextStyle(color: Colors.white70, fontSize: 14, height: 1.45),
+            style: AppTextStyles.body.copyWith(color: Colors.white70),
           ),
           const SizedBox(height: 20),
           _introBullet('Basic identity and contact details'),
@@ -1041,13 +1034,9 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Quick snapshot',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppTextStyles.bodyStrong.copyWith(color: Colors.white),
                 ),
                 const SizedBox(height: 12),
                 Row(
@@ -1103,12 +1092,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           Expanded(
             child: Text(
               text,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                height: 1.3,
-              ),
+              style: AppTextStyles.bodyStrong.copyWith(color: Colors.white),
             ),
           ),
         ],
@@ -1129,20 +1113,12 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
         children: [
           Text(
             label,
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
+            style: AppTextStyles.bodyStrong.copyWith(color: Colors.white70),
           ),
           const SizedBox(height: 4),
           Text(
             value,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.bodyStrong.copyWith(color: Colors.white),
           ),
         ],
       ),
@@ -1175,24 +1151,20 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Column(
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 'Customer Setup',
-                style: TextStyle(
+                style: AppTextStyles.cardTitle.copyWith(
                   color: AppColors.textPrimary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
                 ),
               ),
               SizedBox(height: 6),
               Text(
                 'Complete the customer profile in 9 steps.',
-                style: TextStyle(
+                style: AppTextStyles.body.copyWith(
                   color: AppColors.textSecondary,
-                  fontSize: 14,
-                  height: 1.35,
                 ),
               ),
             ],
@@ -1257,14 +1229,10 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                           const SizedBox(height: 8),
                           Text(
                             _customerStepShortLabel(step.title),
-                            style: TextStyle(
+                            style: AppTextStyles.bodyStrong.copyWith(
                               color: isActive
                                   ? AppColors.primary
                                   : AppColors.textSecondary,
-                              fontSize: 14,
-                              fontWeight: isActive
-                                  ? FontWeight.w700
-                                  : FontWeight.w500,
                             ),
                           ),
                         ],
@@ -1312,11 +1280,10 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
         children: [
           if (widget.isEditMode) ...[
             if (_customerLoadFailed) ...[
-              const Text(
+              Text(
                 'Could not refresh customer details. The form still has the last loaded values.',
-                style: TextStyle(
+                style: AppTextStyles.body.copyWith(
                   color: AppColors.statusInactiveText,
-                  fontSize: 14,
                 ),
               ),
               const SizedBox(height: 12),
@@ -1354,7 +1321,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                 ),
                 child: Text(
                   _currentStep == 0 ? 'Cancel' : 'Back',
-                  style: const TextStyle(fontWeight: FontWeight.w700),
+                  style: AppTextStyles.bodyStrong,
                 ),
               ),
               const SizedBox(width: 12),
@@ -1387,7 +1354,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                                   ? 'Save Changes'
                                   : 'Add New Customer')
                             : 'Next',
-                        style: const TextStyle(fontWeight: FontWeight.w700),
+                        style: AppTextStyles.bodyStrong,
                       ),
               ),
             ],
@@ -1410,21 +1377,13 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           alignment: Alignment.center,
           child: Text(
             '${_currentStep + 1}',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.bodyStrong.copyWith(color: Colors.white),
           ),
         ),
         const SizedBox(width: 10),
         Text(
           step.title,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-          ),
+          style: AppTextStyles.cardTitle.copyWith(color: AppColors.textPrimary),
         ),
       ],
     );
@@ -1541,20 +1500,14 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
         children: [
           Text(
             title,
-            style: const TextStyle(
+            style: AppTextStyles.cardTitle.copyWith(
               color: AppColors.textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 6),
           Text(
             subtitle,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 14,
-              height: 1.35,
-            ),
+            style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 18),
           const Divider(height: 1, color: AppColors.borderStrong),
@@ -1753,13 +1706,11 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                   ),
                 ),
                 const SizedBox(width: 4),
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Shipping address same as billing address',
-                    style: TextStyle(
+                    style: AppTextStyles.bodyStrong.copyWith(
                       color: AppColors.textPrimary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -1769,10 +1720,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           const SizedBox(height: 16),
           Text(
             'Country / State / City',
-            style: const TextStyle(
+            style: AppTextStyles.bodyStrong.copyWith(
               color: AppColors.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 8),
@@ -1804,18 +1753,14 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                 color: AppColors.borderStrong.withValues(alpha: 0.25),
               ),
             ),
-            selectedItemStyle: const TextStyle(
+            selectedItemStyle: AppTextStyles.body.copyWith(
               color: AppColors.textPrimary,
-              fontSize: 14,
             ),
-            dropdownHeadingStyle: const TextStyle(
+            dropdownHeadingStyle: AppTextStyles.cardTitle.copyWith(
               color: AppColors.textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
             ),
-            dropdownItemStyle: const TextStyle(
+            dropdownItemStyle: AppTextStyles.body.copyWith(
               color: AppColors.textPrimary,
-              fontSize: 14,
             ),
             dropdownDialogRadius: 12,
             searchBarRadius: 12,
@@ -1932,13 +1877,11 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                   checkColor: Colors.white,
                 ),
                 const SizedBox(width: 4),
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Tax Exempt',
-                    style: TextStyle(
+                    style: AppTextStyles.bodyStrong.copyWith(
                       color: AppColors.textPrimary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -2289,11 +2232,10 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             alignment: Alignment.center,
             clipBehavior: Clip.antiAlias,
             child: bytes == null
-                ? const Text(
+                ? Text(
                     'Preview',
-                    style: TextStyle(
+                    style: AppTextStyles.bodyStrong.copyWith(
                       color: Color(0xFF98A2B3),
-                      fontWeight: FontWeight.w600,
                     ),
                   )
                 : Image.memory(bytes, fit: BoxFit.cover),
@@ -2305,18 +2247,15 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: AppTextStyles.bodyStrong.copyWith(
                     color: AppColors.textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   mimeHint,
-                  style: const TextStyle(
+                  style: AppTextStyles.body.copyWith(
                     color: AppColors.textSecondary,
-                    fontSize: 14,
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -2348,10 +2287,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                           horizontal: 16,
                           vertical: 12,
                         ),
-                        textStyle: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        textStyle: AppTextStyles.bodyStrong,
                       ),
                     ),
                     OutlinedButton.icon(
@@ -2368,10 +2304,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                           horizontal: 16,
                           vertical: 12,
                         ),
-                        textStyle: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        textStyle: AppTextStyles.bodyStrong,
                       ),
                     ),
                   ],
@@ -2382,21 +2315,17 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                     name,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: AppTextStyles.bodyStrong.copyWith(
                       color: AppColors.textPrimary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
                 if (isUploaded) ...[
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     'Uploaded and ready to attach on save',
-                    style: TextStyle(
+                    style: AppTextStyles.bodyStrong.copyWith(
                       color: AppColors.primary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ],
@@ -2427,35 +2356,30 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Column(
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 'Add Customer',
-                style: TextStyle(
+                style: AppTextStyles.cardTitle.copyWith(
                   color: AppColors.textPrimary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
                 ),
               ),
               SizedBox(height: 6),
               Text(
                 'Keep the customer profile, addresses, and account settings in one place.',
-                style: TextStyle(
+                style: AppTextStyles.body.copyWith(
                   color: AppColors.textSecondary,
-                  fontSize: 14,
-                  height: 1.4,
                 ),
               ),
             ],
           ),
           if (widget.isEditMode && _customerLoadFailed) ...[
             const SizedBox(height: 12),
-            const Text(
+            Text(
               'Could not refresh customer details. The form still has the last loaded values.',
-              style: TextStyle(
+              style: AppTextStyles.body.copyWith(
                 color: AppColors.statusInactiveText,
-                fontSize: 14,
               ),
             ),
           ],
@@ -2579,13 +2503,11 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                   ),
                 ),
                 const SizedBox(width: 4),
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Delivery address same as billing',
-                    style: TextStyle(
+                    style: AppTextStyles.bodyStrong.copyWith(
                       color: AppColors.textPrimary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -2660,13 +2582,11 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
               ),
               child: Row(
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'Customer is active',
-                      style: TextStyle(
+                      style: AppTextStyles.bodyStrong.copyWith(
                         color: AppColors.textPrimary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -2760,11 +2680,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           alignment: Alignment.center,
           child: Text(
             step,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.bodyStrong.copyWith(color: Colors.white),
           ),
         ),
         const SizedBox(width: 10),
@@ -2791,10 +2707,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           padding: const EdgeInsets.only(left: 2, bottom: 6),
           child: Text(
             label,
-            style: const TextStyle(
+            style: AppTextStyles.bodyStrong.copyWith(
               color: AppColors.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
             ),
           ),
         ),
@@ -2805,7 +2719,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           keyboardType: keyboardType,
           maxLines: maxLines,
           onChanged: onChanged,
-          style: const TextStyle(color: AppColors.textPrimary),
+          style: AppTextStyles.body.copyWith(color: AppColors.textPrimary),
           decoration: _inputDecoration(hintText, suffixIcon: suffixIcon),
         ),
       ],
@@ -2822,14 +2736,12 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
+        Padding(
           padding: EdgeInsets.only(left: 2, bottom: 6),
           child: Text(
             'Assigned Sales Officer',
-            style: TextStyle(
+            style: AppTextStyles.bodyStrong.copyWith(
               color: AppColors.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
             ),
           ),
         ),
@@ -2868,14 +2780,12 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
+        Padding(
           padding: EdgeInsets.only(left: 2, bottom: 6),
           child: Text(
             'Type',
-            style: TextStyle(
+            style: AppTextStyles.bodyStrong.copyWith(
               color: AppColors.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
             ),
           ),
         ),
@@ -2931,10 +2841,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                     value: item,
                     child: Text(
                       '$item',
-                      style: const TextStyle(
+                      style: AppTextStyles.fieldLabel.copyWith(
                         color: AppColors.textPrimary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
@@ -2961,10 +2869,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                     value: item,
                     child: Text(
                       '$item',
-                      style: const TextStyle(
+                      style: AppTextStyles.fieldLabel.copyWith(
                         color: AppColors.textPrimary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
@@ -2992,10 +2898,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           padding: const EdgeInsets.only(left: 2, bottom: 6),
           child: Text(
             label,
-            style: const TextStyle(
+            style: AppTextStyles.bodyStrong.copyWith(
               color: AppColors.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
             ),
           ),
         ),
@@ -3018,10 +2922,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                   value: item,
                   child: Text(
                     '$item',
-                    style: const TextStyle(
+                    style: AppTextStyles.fieldLabel.copyWith(
                       color: AppColors.textPrimary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),

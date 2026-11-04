@@ -119,10 +119,10 @@ class _SidebarHeader extends StatelessWidget {
           ),
         ],
       ),
-      child: const Row(
+      child: Row(
         children: [
-          _SidebarBrandMark(),
-          SizedBox(width: AppSpacing.md),
+          const _SidebarBrandMark(),
+          const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,21 +131,15 @@ class _SidebarHeader extends StatelessWidget {
                   'Delivery Partner',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppTextStyles.cardTitle.copyWith(color: Colors.white),
                 ),
-                SizedBox(height: AppSpacing.xs),
+                const SizedBox(height: AppSpacing.xs),
                 Text(
                   'Route operations',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
+                  style: AppTextStyles.bodyStrong.copyWith(
                     color: AppColors.activeMenuBg,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],

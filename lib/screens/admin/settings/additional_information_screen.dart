@@ -7,6 +7,7 @@ import '../../../models/auth_models.dart';
 import '../../../providers/api_provider.dart';
 import '../../../services/api_service.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
+import 'package:crm_saas/core/theme/app_text_styles.dart';
 
 const Color kAdditionalTitleColor = Color(0xFF0F172A);
 const Color kAdditionalMutedColor = Color(0xFF64748B);
@@ -148,7 +149,7 @@ class _AdditionalInformationScreenState
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+        textStyle: AppTextStyles.bodyStrong,
       ),
     );
   }
@@ -235,10 +236,8 @@ class _AdditionalInformationScreenState
             padding: const EdgeInsets.only(bottom: 8),
             child: Text(
               label,
-              style: const TextStyle(
+              style: AppTextStyles.bodyStrong.copyWith(
                 color: kAdditionalTitleColor,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -257,7 +256,7 @@ class _AdditionalInformationScreenState
       enabled: _isEditing,
       maxLines: maxLines,
       minLines: maxLines > 1 ? maxLines : 1,
-      style: const TextStyle(fontSize: 14, color: kAdditionalTitleColor),
+      style: AppTextStyles.body.copyWith(color: kAdditionalTitleColor),
       decoration: _fieldDecoration(),
     );
   }

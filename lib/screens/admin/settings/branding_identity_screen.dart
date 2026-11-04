@@ -10,6 +10,7 @@ import '../../../models/auth_models.dart';
 import '../../../providers/api_provider.dart';
 import '../../../services/api_service.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
+import 'package:crm_saas/core/theme/app_text_styles.dart';
 
 const Color kBrandingTitleColor = Color(0xFF0F172A);
 const Color kBrandingMutedColor = Color(0xFF64748B);
@@ -295,7 +296,7 @@ class _BrandingIdentityScreenState extends State<BrandingIdentityScreen> {
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+        textStyle: AppTextStyles.bodyStrong,
       ),
     );
   }
@@ -380,16 +381,12 @@ class _SectionShell extends StatelessWidget {
       children: [
         Text(
           title,
-          style: const TextStyle(
-            color: kBrandingTitleColor,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-          ),
+          style: AppTextStyles.cardTitle.copyWith(color: kBrandingTitleColor),
         ),
         const SizedBox(height: 4),
         Text(
           subtitle,
-          style: const TextStyle(color: kBrandingMutedColor, fontSize: 14),
+          style: AppTextStyles.body.copyWith(color: kBrandingMutedColor),
         ),
         const SizedBox(height: 14),
         child,
@@ -470,11 +467,10 @@ class _BrandUploadCard extends StatelessWidget {
             alignment: Alignment.center,
             clipBehavior: Clip.antiAlias,
             child: bytes == null
-                ? const Text(
+                ? Text(
                     'Preview',
-                    style: TextStyle(
+                    style: AppTextStyles.bodyStrong.copyWith(
                       color: Color(0xFF98A2B3),
-                      fontWeight: FontWeight.w600,
                     ),
                   )
                 : Image.memory(bytes!, fit: BoxFit.cover),
@@ -486,18 +482,15 @@ class _BrandUploadCard extends StatelessWidget {
               children: [
                 Text(
                   asset.title + (asset.required ? ' *' : ''),
-                  style: const TextStyle(
+                  style: AppTextStyles.bodyStrong.copyWith(
                     color: kBrandingTitleColor,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   asset.mimeHint,
-                  style: const TextStyle(
+                  style: AppTextStyles.body.copyWith(
                     color: kBrandingMutedColor,
-                    fontSize: 14,
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -520,10 +513,7 @@ class _BrandUploadCard extends StatelessWidget {
                           horizontal: 16,
                           vertical: 12,
                         ),
-                        textStyle: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        textStyle: AppTextStyles.bodyStrong,
                       ),
                     ),
                     OutlinedButton.icon(
@@ -542,10 +532,7 @@ class _BrandUploadCard extends StatelessWidget {
                           horizontal: 16,
                           vertical: 12,
                         ),
-                        textStyle: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        textStyle: AppTextStyles.bodyStrong,
                       ),
                     ),
                   ],
@@ -556,10 +543,8 @@ class _BrandUploadCard extends StatelessWidget {
                     name!,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: AppTextStyles.bodyStrong.copyWith(
                       color: kBrandingTitleColor,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],

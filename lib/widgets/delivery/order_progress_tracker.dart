@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../constants/app_colors.dart';
+import '../../core/theme/app_text_styles.dart';
 
 class OrderProgressTracker extends StatelessWidget {
   const OrderProgressTracker({super.key, required this.status});
@@ -56,10 +57,7 @@ class OrderProgressTracker extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 const Expanded(
-                  child: Text(
-                    'Order Progress',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                  ),
+                  child: Text('Order Progress', style: AppTextStyles.cardTitle),
                 ),
                 if (isCancelled)
                   Container(
@@ -71,12 +69,10 @@ class OrderProgressTracker extends StatelessWidget {
                       color: AppColors.deliveryRed.withValues(alpha: 0.09),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Cancelled',
-                      style: TextStyle(
+                      style: AppTextStyles.smallStrong.copyWith(
                         color: AppColors.deliveryRed,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -205,10 +201,8 @@ class _ProgressStep extends StatelessWidget {
                 ),
                 child: Text(
                   '$number',
-                  style: TextStyle(
+                  style: AppTextStyles.smallStrong.copyWith(
                     color: completed ? Colors.white : stateColor,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -221,18 +215,18 @@ class _ProgressStep extends StatelessWidget {
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.center,
-          style: TextStyle(
-            color: cancelled
-                ? AppColors.deliveryRed
-                : completed
-                ? AppColors.deliveryInk
-                : AppColors.textMuted,
-            fontSize: 10,
-            height: 1.15,
-            fontWeight: completed || cancelled
-                ? FontWeight.w700
-                : FontWeight.w500,
-          ),
+          style:
+              (completed || cancelled
+                      ? AppTextStyles.smallStrong
+                      : AppTextStyles.small)
+                  .copyWith(
+                    color: cancelled
+                        ? AppColors.deliveryRed
+                        : completed
+                        ? AppColors.deliveryInk
+                        : AppColors.textMuted,
+                    height: 1.15,
+                  ),
         ),
       ],
     );

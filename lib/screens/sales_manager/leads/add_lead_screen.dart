@@ -484,10 +484,8 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
         children: [
           Text(
             _isEditMode ? 'Edit Lead Information' : 'Lead Information',
-            style: const TextStyle(
-              color: Color(0xFF0F172A),
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
+            style: AppTextStyles.cardTitle.copyWith(
+              color: const Color(0xFF0F172A),
             ),
           ),
           const SizedBox(height: 4),
@@ -495,7 +493,7 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
             _isEditMode
                 ? 'Review and update the fields below.'
                 : 'Fill in the details below to create a new lead.',
-            style: const TextStyle(color: Color(0xFF64748B), fontSize: 14),
+            style: AppTextStyles.body.copyWith(color: const Color(0xFF64748B)),
           ),
           if (_formError != null) ...[
             const SizedBox(height: 14),
@@ -730,10 +728,8 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
               _notesController.text.trim().isEmpty
                   ? 'No notes added yet.'
                   : _notesController.text.trim(),
-              style: const TextStyle(
-                color: Color(0xFF475569),
-                fontSize: 14,
-                height: 1.45,
+              style: AppTextStyles.body.copyWith(
+                color: const Color(0xFF475569),
               ),
             ),
           ),
@@ -762,27 +758,25 @@ class _Header extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Home > Leads',
-                style: TextStyle(
-                  color: Color(0xFF08783D),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
+                style: AppTextStyles.bodyStrong.copyWith(
+                  color: const Color(0xFF08783D),
                 ),
               ),
               const SizedBox(height: 6),
               Text(
                 title,
-                style: const TextStyle(
-                  color: Color(0xFF0F172A),
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
+                style: AppTextStyles.screenHeading.copyWith(
+                  color: const Color(0xFF0F172A),
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 subtitle,
-                style: const TextStyle(color: Color(0xFF64748B), fontSize: 14),
+                style: AppTextStyles.body.copyWith(
+                  color: const Color(0xFF64748B),
+                ),
               ),
             ],
           ),
@@ -1067,10 +1061,8 @@ class _ProductPickerState extends State<_ProductPicker> {
                 for (final product in widget.selected)
                   InputChip(
                     label: Text(product),
-                    labelStyle: const TextStyle(
-                      color: Color(0xFF0F172A),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
+                    labelStyle: AppTextStyles.bodyStrong.copyWith(
+                      color: const Color(0xFF0F172A),
                     ),
                     backgroundColor: const Color(0xFFEFF8F2),
                     side: const BorderSide(color: Color(0xFFCDECD7)),
@@ -1140,10 +1132,8 @@ class _InfoCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(
-                    color: Color(0xFF0F172A),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
+                  style: AppTextStyles.bodyStrong.copyWith(
+                    color: const Color(0xFF0F172A),
                   ),
                 ),
               ),
@@ -1173,7 +1163,9 @@ class _TipLine extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: const TextStyle(color: Color(0xFF475569), fontSize: 14),
+              style: AppTextStyles.body.copyWith(
+                color: const Color(0xFF475569),
+              ),
             ),
           ),
         ],
@@ -1199,17 +1191,17 @@ class _PreviewRow extends StatelessWidget {
             width: 96,
             child: Text(
               label,
-              style: const TextStyle(color: Color(0xFF64748B), fontSize: 14),
+              style: AppTextStyles.body.copyWith(
+                color: const Color(0xFF64748B),
+              ),
             ),
           ),
           Expanded(
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: const TextStyle(
-                color: Color(0xFF0F172A),
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
+              style: AppTextStyles.bodyStrong.copyWith(
+                color: const Color(0xFF0F172A),
               ),
             ),
           ),
@@ -1241,10 +1233,8 @@ class _Alert extends StatelessWidget {
           Expanded(
             child: Text(
               message,
-              style: const TextStyle(
-                color: Color(0xFF991B1B),
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
+              style: AppTextStyles.bodyStrong.copyWith(
+                color: const Color(0xFF991B1B),
               ),
             ),
           ),
@@ -1277,10 +1267,8 @@ class _LabeledField extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             errorText!,
-            style: const TextStyle(
-              color: Color(0xFFDC2626),
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
+            style: AppTextStyles.bodyStrong.copyWith(
+              color: const Color(0xFFDC2626),
             ),
           ),
         ],
@@ -1318,17 +1306,17 @@ class _CenteredState extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               title,
-              style: const TextStyle(
-                color: Color(0xFF0F172A),
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
+              style: AppTextStyles.screenHeading.copyWith(
+                color: const Color(0xFF0F172A),
               ),
             ),
             const SizedBox(height: 6),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Color(0xFF64748B), fontSize: 14),
+              style: AppTextStyles.body.copyWith(
+                color: const Color(0xFF64748B),
+              ),
             ),
             if (actionLabel != null && onAction != null) ...[
               const SizedBox(height: 14),

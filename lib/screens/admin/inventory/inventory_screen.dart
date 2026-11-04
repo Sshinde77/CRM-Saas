@@ -2,9 +2,14 @@ import '../../../models/list_pagination.dart';
 import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
 
+import 'package:crm_saas/core/theme/app_text_styles.dart';
+
 import '../../../constants/app_colors.dart';
+import '../../../providers/api_provider.dart';
+import '../../../utils/product_image_url.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
+import '../../../widgets/product_image.dart';
 
 // Place this file at: lib/screens/inventory/inventory_screen.dart
 
@@ -31,9 +36,12 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
   String _query = '';
   String _selectedCategory = 'All Categories';
+  bool _isLoading = false;
+  String? _errorMessage;
+  ApiProvider? _apiProvider;
+  bool _providerReady = false;
 
-  // Mock inventory — replace with your providers / API calls.
-  final List<_InventoryItem> _items = const [
+  List<_InventoryItem> _items = const [
     _InventoryItem(
       name: 'Packaged Drinking Water (250ml)',
       category: 'Packaged Water',
@@ -199,10 +207,50 @@ class _InventoryScreenState extends State<InventoryScreen> {
   ];
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_providerReady) return;
+    _apiProvider = ApiProviderScope.of(context);
+    _providerReady = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _loadInventory();
+    });
+  }
+
+  @override
   void dispose() {
     _pagination.dispose();
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadInventory() async {
+    if (_isLoading) return;
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    try {
+      final raw = await _apiProvider!.fetchStockBoard(
+        search: _query.trim().isEmpty ? null : _query.trim(),
+      );
+      if (!mounted) return;
+      final items = raw
+          .map((json) => _InventoryItem.fromJson(json))
+          .where((i) => i.name.isNotEmpty)
+          .toList();
+      setState(() {
+        _items = items;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        // Keep existing items on error so the list stays visible.
+        if (_items.isEmpty) _errorMessage = e.toString();
+      });
+    }
   }
 
   // ---- Derived data ----
@@ -287,18 +335,11 @@ class _InventoryScreenState extends State<InventoryScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Inventory',
-                      style: TextStyle(
-                        color: textPrimary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                    const Text('Inventory', style: AppTextStyles.screenHeading),
                     const SizedBox(height: 4),
-                    const Text(
+                    Text(
                       'Track stock levels, reorder points, and stock value across your catalog',
-                      style: TextStyle(color: textSecondary, fontSize: 14),
+                      style: AppTextStyles.body.copyWith(color: textSecondary),
                     ),
                     const SizedBox(height: 20),
 
@@ -307,16 +348,12 @@ class _InventoryScreenState extends State<InventoryScreen> {
                     const SizedBox(height: 24),
                     const Text(
                       'Stock Levels',
-                      style: TextStyle(
-                        color: textPrimary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: AppTextStyles.sectionHeading,
                     ),
                     const SizedBox(height: 4),
-                    const Text(
+                    Text(
                       'Browse stock by category',
-                      style: TextStyle(color: textSecondary, fontSize: 14),
+                      style: AppTextStyles.body.copyWith(color: textSecondary),
                     ),
                     const SizedBox(height: 12),
                     _buildCategoryCatalog(),
@@ -332,15 +369,41 @@ class _InventoryScreenState extends State<InventoryScreen> {
                     ),
 
                     const SizedBox(height: 16),
-                    if (filtered.isEmpty)
+                    if (_isLoading)
                       const Padding(
                         padding: EdgeInsets.symmetric(vertical: 40),
+                        child: Center(child: CircularProgressIndicator()),
+                      )
+                    else if (_errorMessage != null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 40),
+                        child: Center(
+                          child: Column(
+                            children: [
+                              Text(
+                                _errorMessage!,
+                                style: AppTextStyles.body.copyWith(
+                                  color: AppColors.red,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 12),
+                              TextButton(
+                                onPressed: _loadInventory,
+                                child: const Text('Retry'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    else if (filtered.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 40),
                         child: Center(
                           child: Text(
                             'No inventory items match your filters.',
-                            style: TextStyle(
+                            style: AppTextStyles.body.copyWith(
                               color: textSecondary,
-                              fontSize: 14,
                             ),
                           ),
                         ),
@@ -439,10 +502,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
               Expanded(
                 child: Text(
                   stat.label,
-                  style: const TextStyle(
+                  style: AppTextStyles.fieldLabel.copyWith(
                     color: textSecondary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -460,14 +521,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
             ],
           ),
           const SizedBox(height: 10),
-          Text(
-            stat.value,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: textPrimary,
-            ),
-          ),
+          Text(stat.value, style: AppTextStyles.importantNumber),
         ],
       ),
     );
@@ -509,20 +563,17 @@ class _InventoryScreenState extends State<InventoryScreen> {
                     category,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
+                    style: AppTextStyles.bodyStrong.copyWith(
                       color: selected ? Colors.white : textPrimary,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     '$count item${count == 1 ? '' : 's'}',
-                    style: TextStyle(
+                    style: AppTextStyles.body.copyWith(
                       color: selected
                           ? Colors.white.withValues(alpha: 0.85)
                           : textSecondary,
-                      fontSize: 14,
                     ),
                   ),
                 ],
@@ -554,14 +605,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Inventory Catalog',
-            style: TextStyle(
-              color: textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
+          const Text('Inventory Catalog', style: AppTextStyles.sectionHeading),
           const SizedBox(height: 14),
           TextField(
             controller: _searchController,
@@ -594,7 +638,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
             alignment: Alignment.centerRight,
             child: Text(
               '$resultCount results',
-              style: const TextStyle(color: textSecondary, fontSize: 14),
+              style: AppTextStyles.body.copyWith(color: textSecondary),
             ),
           ),
         ],
@@ -633,36 +677,45 @@ class _InventoryScreenState extends State<InventoryScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Text(
-                  item.name,
-                  style: const TextStyle(
-                    color: AppColors.purple,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+              ProductImage(
+                imageUrl: item.imageUrl,
+                size: 52,
+                borderRadius: 10,
+                seed: item.name,
               ),
-              const SizedBox(width: 10),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: statusColor.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: statusColor.withValues(alpha: 0.35),
-                  ),
-                ),
-                child: Text(
-                  status,
-                  style: TextStyle(
-                    color: statusColor,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.name,
+                      style: AppTextStyles.bodyStrong.copyWith(
+                        color: AppColors.purple,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: statusColor.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: statusColor.withValues(alpha: 0.35),
+                        ),
+                      ),
+                      child: Text(
+                        status,
+                        style: AppTextStyles.bodyStrong.copyWith(
+                          color: statusColor,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -711,20 +764,12 @@ class _InventoryScreenState extends State<InventoryScreen> {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: textSecondary,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTextStyles.fieldLabel.copyWith(color: textSecondary),
         ),
         const SizedBox(height: 3),
         Text(
           value,
-          style: const TextStyle(
-            color: textPrimary,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTextStyles.bodyStrong,
           overflow: TextOverflow.ellipsis,
         ),
       ],
@@ -766,6 +811,7 @@ class _InventoryItem {
   final int minStock;
   final int reorderLevel;
   final double unitCost;
+  final String? imageUrl;
 
   const _InventoryItem({
     required this.name,
@@ -775,5 +821,61 @@ class _InventoryItem {
     required this.minStock,
     required this.reorderLevel,
     required this.unitCost,
+    this.imageUrl,
   });
+
+  factory _InventoryItem.fromJson(Map<String, dynamic> json) {
+    String readText(List<String> keys, {String fallback = ''}) {
+      for (final k in keys) {
+        final v = json[k]?.toString().trim();
+        if (v != null && v.isNotEmpty) return v;
+      }
+      return fallback;
+    }
+
+    int readInt(List<String> keys) {
+      for (final k in keys) {
+        final v = json[k];
+        if (v is num) return v.toInt();
+        final parsed = int.tryParse(v?.toString() ?? '');
+        if (parsed != null) return parsed;
+      }
+      return 0;
+    }
+
+    double readDbl(List<String> keys) {
+      for (final k in keys) {
+        final v = json[k];
+        if (v is num) return v.toDouble();
+        final parsed = double.tryParse(v?.toString() ?? '');
+        if (parsed != null) return parsed;
+      }
+      return 0;
+    }
+
+    return _InventoryItem(
+      name: readText(const ['name', 'product_name', 'title']),
+      category: readText(const ['category', 'category_name']),
+      hsnSac: readText(const ['hsn_sac_code', 'hsn', 'sac', 'hsn_code']),
+      currentStock: readInt(const [
+        'current_stock',
+        'available_quantity',
+        'stock',
+        'quantity',
+      ]),
+      minStock: readInt(const ['min_stock', 'minimum_stock', 'safety_stock']),
+      reorderLevel: readInt(const [
+        'reorder_level',
+        'reorder_point',
+        'reorder_quantity',
+      ]),
+      unitCost: readDbl(const [
+        'unit_cost',
+        'cost_price',
+        'purchase_price',
+        'price',
+      ]),
+      imageUrl: productImageUrlFromJson(json),
+    );
+  }
 }

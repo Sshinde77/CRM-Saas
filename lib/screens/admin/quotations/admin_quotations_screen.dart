@@ -204,16 +204,15 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-          title: const Text(
+          title: Text(
             'Delete Quotation',
-            style: TextStyle(
+            style: AppTextStyles.bodyStrong.copyWith(
               color: AppColors.textPrimary,
-              fontWeight: FontWeight.w700,
             ),
           ),
           content: Text(
             'Delete ${record.number}? This action cannot be undone.',
-            style: const TextStyle(color: AppColors.textSecondary),
+            style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
           ),
           actions: [
             TextButton(
@@ -222,12 +221,9 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text(
+              child: Text(
                 'Delete',
-                style: TextStyle(
-                  color: AppColors.red,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: AppTextStyles.bodyStrong.copyWith(color: AppColors.red),
               ),
             ),
           ],
@@ -504,19 +500,15 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
             children: [
               Text(
                 '${quotations.length} of ${_quotations.length}',
-                style: const TextStyle(
+                style: AppTextStyles.bodyStrong.copyWith(
                   color: Color(0xFF94A3B8),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
                 ),
               ),
               const Spacer(),
-              const Text(
+              Text(
                 'Quotations',
-                style: TextStyle(
+                style: AppTextStyles.bodyStrong.copyWith(
                   color: Color(0xFF94A3B8),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -586,13 +578,11 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(24),
-                  child: const Center(
+                  child: Center(
                     child: Text(
                       'No quotations found.',
-                      style: TextStyle(
+                      style: AppTextStyles.bodyStrong.copyWith(
                         color: Color(0xFF64748B),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -607,19 +597,15 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
             children: [
               Text(
                 '${quotations.length} of ${_quotations.length}',
-                style: const TextStyle(
+                style: AppTextStyles.bodyStrong.copyWith(
                   color: Color(0xFF94A3B8),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
                 ),
               ),
               const Spacer(),
-              const Text(
+              Text(
                 'Quotations',
-                style: TextStyle(
+                style: AppTextStyles.bodyStrong.copyWith(
                   color: Color(0xFF94A3B8),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -724,10 +710,8 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
               child: Text(
                 status,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: AppTextStyles.bodyStrong.copyWith(
                   color: Color(0xFF0F172A),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -744,16 +728,12 @@ class _AdminQuotationsScreenState extends State<AdminQuotationsScreen> {
 
   Widget _buildQuotationCardList(List<_QuotationRecord> quotations) {
     if (quotations.isEmpty) {
-      return const Padding(
+      return Padding(
         padding: EdgeInsets.all(24),
         child: Center(
           child: Text(
             'No quotations found.',
-            style: TextStyle(
-              color: Color(0xFF64748B),
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
+            style: AppTextStyles.bodyStrong.copyWith(color: Color(0xFF64748B)),
           ),
         ),
       );
@@ -818,26 +798,18 @@ class _QuotationPageHero extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Quotation workspace',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppTextStyles.cardTitle.copyWith(color: Colors.white),
                 ),
                 SizedBox(height: 4),
                 Text(
                   'Create, track and convert customer quotations.',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 12,
-                    height: 1.35,
-                  ),
+                  style: AppTextStyles.small.copyWith(color: Colors.white70),
                 ),
               ],
             ),
@@ -853,15 +825,11 @@ class _QuotationPageHero extends StatelessWidget {
               children: [
                 Text(
                   '$visible / $total',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppTextStyles.bodyStrong.copyWith(color: Colors.white),
                 ),
-                const Text(
+                Text(
                   'visible',
-                  style: TextStyle(color: Colors.white70, fontSize: 11),
+                  style: AppTextStyles.small.copyWith(color: Colors.white70),
                 ),
               ],
             ),
@@ -1086,10 +1054,8 @@ class _QuotationCard extends StatelessWidget {
                             record.number,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: AppTextStyles.bodyStrong.copyWith(
                               color: AppColors.textPrimary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
                               letterSpacing: 0,
                             ),
                           ),
@@ -1107,10 +1073,8 @@ class _QuotationCard extends StatelessWidget {
                       record.customer,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: AppTextStyles.bodyStrong.copyWith(
                         color: AppColors.textSecondary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -1186,10 +1150,8 @@ class _QuotationCard extends StatelessWidget {
             text,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: AppTextStyles.fieldLabel.copyWith(
               color: AppColors.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
               letterSpacing: 0,
             ),
           ),
@@ -1302,10 +1264,8 @@ class _StatusChip extends StatelessWidget {
         children: [
           Text(
             label,
-            style: TextStyle(
+            style: AppTextStyles.smallStrong.copyWith(
               color: foreground,
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
               letterSpacing: 0,
             ),
           ),

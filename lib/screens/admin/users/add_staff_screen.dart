@@ -905,25 +905,21 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
         children: [
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Staff Setup',
-                      style: TextStyle(
+                      style: AppTextStyles.cardTitle.copyWith(
                         color: AppColors.textPrimary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     SizedBox(height: 6),
                     Text(
                       'Complete the staff profile in 8 steps.',
-                      style: TextStyle(
+                      style: AppTextStyles.body.copyWith(
                         color: AppColors.textSecondary,
-                        fontSize: 14,
-                        height: 1.35,
                       ),
                     ),
                   ],
@@ -989,14 +985,10 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                           const SizedBox(height: 8),
                           Text(
                             _stepShortLabel(step.title),
-                            style: TextStyle(
+                            style: AppTextStyles.bodyStrong.copyWith(
                               color: isActive
                                   ? AppColors.primary
                                   : AppColors.textSecondary,
-                              fontSize: 14,
-                              fontWeight: isActive
-                                  ? FontWeight.w700
-                                  : FontWeight.w500,
                             ),
                           ),
                         ],
@@ -1069,10 +1061,8 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                 padding: const EdgeInsets.only(bottom: 14),
                 child: Text(
                   _editLoadError!,
-                  style: const TextStyle(
+                  style: AppTextStyles.fieldLabel.copyWith(
                     color: AppColors.statusInactiveText,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
@@ -1105,7 +1095,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                 ),
                 child: Text(
                   _currentStep == 0 ? 'Cancel' : 'Back',
-                  style: const TextStyle(fontWeight: FontWeight.w700),
+                  style: AppTextStyles.bodyStrong,
                 ),
               ),
               const SizedBox(width: 12),
@@ -1136,7 +1126,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                         _currentStep == _steps.length - 1
                             ? _submitLabel
                             : 'Next',
-                        style: const TextStyle(fontWeight: FontWeight.w700),
+                        style: AppTextStyles.bodyStrong,
                       ),
               ),
             ],
@@ -1159,21 +1149,13 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
           alignment: Alignment.center,
           child: Text(
             '${_currentStep + 1}',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.bodyStrong.copyWith(color: Colors.white),
           ),
         ),
         const SizedBox(width: 10),
         Text(
           step.title,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-          ),
+          style: AppTextStyles.cardTitle.copyWith(color: AppColors.textPrimary),
         ),
       ],
     );
@@ -1249,22 +1231,16 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Basic Information',
-            style: TextStyle(
+            style: AppTextStyles.cardTitle.copyWith(
               color: AppColors.textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
+          Text(
             'Employee identity and personal profile details.',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 14,
-              height: 1.35,
-            ),
+            style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 18),
           const Divider(height: 1, color: AppColors.borderStrong),
@@ -1351,22 +1327,16 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Contact Information',
-            style: TextStyle(
+            style: AppTextStyles.cardTitle.copyWith(
               color: AppColors.textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
+          Text(
             'Primary, secondary, and emergency contact details.',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 14,
-              height: 1.35,
-            ),
+            style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 18),
           const Divider(height: 1, color: AppColors.borderStrong),
@@ -1441,10 +1411,8 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                           value: item,
                           child: Text(
                             item,
-                            style: const TextStyle(
+                            style: AppTextStyles.fieldLabel.copyWith(
                               color: AppColors.textPrimary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ),
@@ -1480,22 +1448,16 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Address Information',
-            style: TextStyle(
+            style: AppTextStyles.cardTitle.copyWith(
               color: AppColors.textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
+          Text(
             'Residential and regional address details.',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 14,
-              height: 1.35,
-            ),
+            style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 18),
           const Divider(height: 1, color: AppColors.borderStrong),
@@ -1541,18 +1503,14 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                     color: AppColors.borderStrong.withValues(alpha: 0.25),
                   ),
                 ),
-                selectedItemStyle: const TextStyle(
+                selectedItemStyle: AppTextStyles.body.copyWith(
                   color: AppColors.textPrimary,
-                  fontSize: 14,
                 ),
-                dropdownHeadingStyle: const TextStyle(
+                dropdownHeadingStyle: AppTextStyles.cardTitle.copyWith(
                   color: AppColors.textPrimary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
                 ),
-                dropdownItemStyle: const TextStyle(
+                dropdownItemStyle: AppTextStyles.body.copyWith(
                   color: AppColors.textPrimary,
-                  fontSize: 14,
                 ),
                 dropdownDialogRadius: 12,
                 searchBarRadius: 12,
@@ -1619,21 +1577,17 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Employment Information',
-                    style: TextStyle(
+                    style: AppTextStyles.cardTitle.copyWith(
                       color: AppColors.textPrimary,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 6),
-                  const Text(
+                  Text(
                     'Role, reporting, joining, location, and employee status.',
-                    style: TextStyle(
+                    style: AppTextStyles.body.copyWith(
                       color: AppColors.textSecondary,
-                      fontSize: 14,
-                      height: 1.35,
                     ),
                   ),
                   const SizedBox(height: 18),
@@ -1759,22 +1713,16 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Payroll Information',
-            style: TextStyle(
+            style: AppTextStyles.cardTitle.copyWith(
               color: AppColors.textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
+          Text(
             'Salary bank and payment details.',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 14,
-              height: 1.35,
-            ),
+            style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 18),
           const Divider(height: 1, color: AppColors.borderStrong),
@@ -1842,22 +1790,16 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Login & Security',
-            style: TextStyle(
+            style: AppTextStyles.cardTitle.copyWith(
               color: AppColors.textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
+          Text(
             'Authentication credentials and invitation settings.',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 14,
-              height: 1.35,
-            ),
+            style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 18),
           const Divider(height: 1, color: AppColors.borderStrong),
@@ -1909,12 +1851,10 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
         }),
         checkColor: Colors.white,
         controlAffinity: ListTileControlAffinity.leading,
-        title: const Text(
+        title: Text(
           'Send a notification to the user for this new role.',
-          style: TextStyle(
+          style: AppTextStyles.fieldLabel.copyWith(
             color: AppColors.textPrimary,
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
           ),
         ),
         onChanged: (value) {
@@ -1938,12 +1878,10 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Profile Photo',
-            style: TextStyle(
+            style: AppTextStyles.bodyStrong.copyWith(
               color: AppColors.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 14),
@@ -1967,10 +1905,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(999),
                 ),
-                textStyle: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
+                textStyle: AppTextStyles.bodyStrong,
               ),
             ),
           ),
@@ -1992,10 +1927,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(999),
                 ),
-                textStyle: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
+                textStyle: AppTextStyles.bodyStrong,
               ),
             ),
           ),
@@ -2006,13 +1938,11 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
 
   Widget _profilePhotoPreview() {
     final content = _photoBytes == null
-        ? const Center(
+        ? Center(
             child: Text(
               'Preview',
-              style: TextStyle(
+              style: AppTextStyles.bodyStrong.copyWith(
                 color: AppColors.textLightMuted,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
               ),
             ),
           )
@@ -2054,22 +1984,16 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Uploads',
-            style: TextStyle(
+            style: AppTextStyles.cardTitle.copyWith(
               color: AppColors.textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
+          Text(
             'Compliance, onboarding, and qualification documents.',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 14,
-              height: 1.35,
-            ),
+            style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 18),
           const Divider(height: 1, color: AppColors.borderStrong),
@@ -2162,22 +2086,16 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'System Preferences',
-            style: TextStyle(
+            style: AppTextStyles.cardTitle.copyWith(
               color: AppColors.textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
+          Text(
             'Application language, timezone, and account status.',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 14,
-              height: 1.35,
-            ),
+            style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 18),
           const Divider(height: 1, color: AppColors.borderStrong),
@@ -2255,11 +2173,10 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
             alignment: Alignment.center,
             clipBehavior: Clip.antiAlias,
             child: bytes == null
-                ? const Text(
+                ? Text(
                     'Preview',
-                    style: TextStyle(
+                    style: AppTextStyles.bodyStrong.copyWith(
                       color: Color(0xFF98A2B3),
-                      fontWeight: FontWeight.w600,
                     ),
                   )
                 : Image.memory(bytes, fit: BoxFit.cover),
@@ -2284,10 +2201,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                     horizontal: 16,
                     vertical: 12,
                   ),
-                  textStyle: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  textStyle: AppTextStyles.bodyStrong,
                 ),
               ),
               OutlinedButton.icon(
@@ -2304,10 +2218,7 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                     horizontal: 16,
                     vertical: 12,
                   ),
-                  textStyle: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  textStyle: AppTextStyles.bodyStrong,
                 ),
               ),
             ],
@@ -2320,10 +2231,8 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                 title,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: AppTextStyles.bodyStrong.copyWith(
                   color: AppColors.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
                 ),
               ),
               if (secondaryWidget != null) ...[
@@ -2333,9 +2242,8 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                 const SizedBox(height: 4),
                 Text(
                   mimeHint,
-                  style: const TextStyle(
+                  style: AppTextStyles.body.copyWith(
                     color: AppColors.textSecondary,
-                    fontSize: 14,
                   ),
                 ),
               ],
@@ -2373,19 +2281,17 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
               style: AppTextStyles.fieldLabel,
               children: [
                 TextSpan(text: cleaned),
-                const TextSpan(
+                TextSpan(
                   text: ' *',
-                  style: TextStyle(color: Color(0xFFEF4444)),
+                  style: AppTextStyles.body.copyWith(color: Color(0xFFEF4444)),
                 ),
               ],
             ),
           )
         : Text(
             label,
-            style: const TextStyle(
+            style: AppTextStyles.bodyStrong.copyWith(
               color: AppColors.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
             ),
           );
   }
@@ -2409,7 +2315,9 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
           ? null
           : Text(
               hintText,
-              style: const TextStyle(color: AppColors.textLightMuted),
+              style: AppTextStyles.body.copyWith(
+                color: AppColors.textLightMuted,
+              ),
             ),
       decoration: _inputDecoration(''),
       dropdownColor: Colors.white,
@@ -2420,10 +2328,8 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
               value: item,
               child: Text(
                 '$item',
-                style: const TextStyle(
+                style: AppTextStyles.fieldLabel.copyWith(
                   color: AppColors.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
@@ -2519,10 +2425,8 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
               value: role.id,
               child: Text(
                 role.name,
-                style: const TextStyle(
+                style: AppTextStyles.fieldLabel.copyWith(
                   color: AppColors.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
@@ -2566,10 +2470,8 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
               value: user.id,
               child: Text(
                 user.name.trim().isNotEmpty ? user.name : user.email,
-                style: const TextStyle(
+                style: AppTextStyles.fieldLabel.copyWith(
                   color: AppColors.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),

@@ -477,7 +477,7 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
+              Text(title, style: AppTextStyles.bodyStrong),
               const SizedBox(height: 2),
               Text(message),
             ],
@@ -822,11 +822,11 @@ class _FilterTab extends StatelessWidget {
             tab.label,
             maxLines: 1,
             softWrap: false,
-            style: TextStyle(
+            style: AppTextStyles.smallStrong.copyWith(
               color: selected ? AppColors.surface : AppColors.textSecondary,
               fontSize: 12 * scale,
               height: 1.05,
-              fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -875,20 +875,17 @@ class _SummaryCard extends StatelessWidget {
               children: [
                 Text(
                   'My Deliveries',
-                  style: TextStyle(
-                    color: AppColors.deliveryInk,
-                    fontSize: compact ? 14 : 16,
-                    height: 1.15,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style:
+                      (compact
+                              ? AppTextStyles.bodyStrong
+                              : AppTextStyles.cardTitle)
+                          .copyWith(color: AppColors.deliveryInk, height: 1.15),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   '$total Deliveries',
-                  style: TextStyle(
-                    color: Color(0xFF4F5870),
-                    fontSize: compact ? 10.5 : 11.5,
-                    fontWeight: FontWeight.w700,
+                  style: AppTextStyles.smallStrong.copyWith(
+                    color: const Color(0xFF4F5870),
                   ),
                 ),
               ],
@@ -913,10 +910,8 @@ class _SummaryCard extends StatelessWidget {
               children: [
                 Text(
                   compact ? sort.shortLabel : 'Sort by: ${sort.label}',
-                  style: TextStyle(
-                    color: Color(0xFF31394D),
-                    fontSize: compact ? 10.5 : 11.5,
-                    fontWeight: FontWeight.w700,
+                  style: AppTextStyles.smallStrong.copyWith(
+                    color: const Color(0xFF31394D),
                   ),
                 ),
                 const SizedBox(width: AppSpacing.xs),
@@ -1027,11 +1022,8 @@ class _DeliveryCard extends StatelessWidget {
                                     delivery.orderNumber,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      color: AppColors.deliveryInk,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w700,
-                                    ),
+                                    style: AppTextStyles.secondaryStrong
+                                        .copyWith(color: AppColors.deliveryInk),
                                   ),
                                 ),
                                 const SizedBox(width: 5),
@@ -1056,10 +1048,8 @@ class _DeliveryCard extends StatelessWidget {
                                     delivery.formattedDate,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
+                                    style: AppTextStyles.small.copyWith(
                                       color: AppColors.textMuted,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w400,
                                     ),
                                   ),
                                 ),
@@ -1082,11 +1072,10 @@ class _DeliveryCard extends StatelessWidget {
                                         delivery.customerName,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          color: AppColors.deliveryInk,
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w700,
-                                        ),
+                                        style: AppTextStyles.smallStrong
+                                            .copyWith(
+                                              color: AppColors.deliveryInk,
+                                            ),
                                       ),
                                     ],
                                   ),
@@ -1113,11 +1102,10 @@ class _DeliveryCard extends StatelessWidget {
                                         delivery.paymentLabel,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          color: AppColors.deliveryInk,
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w700,
-                                        ),
+                                        style: AppTextStyles.smallStrong
+                                            .copyWith(
+                                              color: AppColors.deliveryInk,
+                                            ),
                                       ),
                                     ],
                                   ),
@@ -1142,11 +1130,9 @@ class _DeliveryCard extends StatelessWidget {
                           delivery.formattedAmountDue,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: AppTextStyles.importantNumber.copyWith(
                             color: AppColors.deliveryGreen,
-                            fontSize: 15,
                             height: 1,
-                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
@@ -1319,10 +1305,11 @@ class _DeliveryActionButton extends StatelessWidget {
                   child: Text(
                     action.label,
                     maxLines: 1,
-                    style: TextStyle(
+                    style: AppTextStyles.smallStrong.copyWith(
+                      color: action.foreground,
                       fontSize: compact ? 10.5 : 12,
                       height: 1,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -1409,11 +1396,10 @@ class _DeliveryCardLabel extends StatelessWidget {
       label,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      style: TextStyle(
+      style: AppTextStyles.smallStrong.copyWith(
         color: AppColors.textMuted,
         fontSize: compact ? 10.5 : 12,
         height: 1,
-        fontWeight: FontWeight.w600,
       ),
     );
   }
@@ -1667,11 +1653,10 @@ class _StatusPill extends StatelessWidget {
           const SizedBox(width: 3),
           Text(
             delivery.statusLabel,
-            style: TextStyle(
+            style: AppTextStyles.smallStrong.copyWith(
               color: tone.foreground,
               fontSize: compact ? 10.5 : 12,
               height: 1,
-              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -1781,10 +1766,8 @@ class _EmptyState extends StatelessWidget {
             const SizedBox(height: 10),
             Text(
               hasFilters ? 'No matching deliveries' : 'No assigned deliveries',
-              style: const TextStyle(
+              style: AppTextStyles.sectionHeading.copyWith(
                 color: AppColors.deliveryInk,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 6),
@@ -1793,10 +1776,8 @@ class _EmptyState extends StatelessWidget {
                   ? 'Clear filters to view your assigned queue.'
                   : 'New deliveries assigned by admin will appear here.',
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Color(0xFF586176),
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
+              style: AppTextStyles.fieldLabel.copyWith(
+                color: const Color(0xFF586176),
               ),
             ),
             if (hasFilters) ...[

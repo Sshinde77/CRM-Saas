@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/theme/app_text_styles.dart';
 import '../../../constants/app_colors.dart';
 import '../../../models/end_of_day_return_models.dart';
 import '../../../providers/api_provider.dart';
@@ -349,11 +350,8 @@ class _EndOfDayProgress extends StatelessWidget {
                           : session.vehicleNumber,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: AppTextStyles.cardTitle.copyWith(
                         color: AppColors.deliveryInk,
-                        fontSize: 16,
-                        height: 1.15,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 3),
@@ -361,11 +359,7 @@ class _EndOfDayProgress extends StatelessWidget {
                       '${session.items.length} products to close',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.textMuted,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: AppTextStyles.smallStrong,
                     ),
                   ],
                 ),
@@ -444,23 +438,14 @@ class _EndOfDayMetric extends StatelessWidget {
             value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: color,
-              fontSize: 14,
-              height: 1,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.bodyStrong.copyWith(color: color),
           ),
           const SizedBox(height: 4),
           Text(
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: AppColors.textMuted,
-              fontSize: 10.5,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.smallStrong,
           ),
         ],
       ),
@@ -514,10 +499,8 @@ class _StepPill extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: const TextStyle(
+        style: AppTextStyles.smallStrong.copyWith(
           color: AppColors.deliveryGreen,
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
         ),
       ),
     );
@@ -541,14 +524,7 @@ class _StepDot extends StatelessWidget {
           size: 18,
         ),
         const SizedBox(height: 3),
-        Text(
-          label,
-          style: TextStyle(
-            color: color,
-            fontSize: 10.5,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
+        Text(label, style: AppTextStyles.smallStrong.copyWith(color: color)),
       ],
     );
   }

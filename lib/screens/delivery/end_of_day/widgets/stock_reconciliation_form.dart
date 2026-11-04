@@ -105,11 +105,7 @@ class _StockReconciliationFormState extends State<StockReconciliationForm> {
                 padding: EdgeInsets.fromLTRB(14, 14, 14, 12),
                 child: Text(
                   'Physical Count',
-                  style: TextStyle(
-                    color: AppColors.deliveryInk,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppTextStyles.sectionHeading,
                 ),
               ),
               const Divider(height: 1, color: Color(0xFFE9EDF5)),
@@ -132,14 +128,7 @@ class _StockReconciliationFormState extends State<StockReconciliationForm> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Notes (Optional)',
-                style: TextStyle(
-                  color: AppColors.deliveryInk,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+              const Text('Notes (Optional)', style: AppTextStyles.fieldLabel),
               const SizedBox(height: 10),
               TextField(
                 controller: _notesController,
@@ -224,12 +213,7 @@ class _StockReconciliationFormState extends State<StockReconciliationForm> {
                           : item.productName,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.deliveryInk,
-                        fontSize: 14,
-                        height: 1.15,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: AppTextStyles.bodyStrong,
                     ),
                     if (item.variantId.isNotEmpty) ...[
                       const SizedBox(height: 4),
@@ -237,11 +221,7 @@ class _StockReconciliationFormState extends State<StockReconciliationForm> {
                         'Variant: ${item.variantId}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.textMuted,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: AppTextStyles.smallStrong,
                       ),
                     ],
                   ],
@@ -316,11 +296,8 @@ class _QuantityChip extends StatelessWidget {
             qty(value),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: AppTextStyles.secondaryStrong.copyWith(
               color: AppColors.deliveryGreen,
-              fontSize: 13,
-              height: 1,
-              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 4),
@@ -328,11 +305,7 @@ class _QuantityChip extends StatelessWidget {
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: AppColors.textMuted,
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.smallStrong,
           ),
         ],
       ),

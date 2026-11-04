@@ -480,14 +480,13 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
                       ),
                       child: Text(
                         _tabs[index],
-                        style: TextStyle(
+                        style: AppTextStyles.body.copyWith(
                           color: selected
                               ? AppColors.primary
                               : AppColors.textSecondary,
-                          fontSize: 14,
                           fontWeight: selected
-                              ? FontWeight.w700
-                              : FontWeight.w600,
+                              ? FontWeight.w600
+                              : FontWeight.w500,
                         ),
                       ),
                     ),
@@ -569,11 +568,7 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
         controller: _searchController,
         onChanged: (_) => _loadStock(),
         cursorColor: AppColors.primary,
-        style: const TextStyle(
-          color: AppColors.textPrimary,
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-        ),
+        style: AppTextStyles.fieldLabel.copyWith(color: AppColors.textPrimary),
         decoration: InputDecoration(
           hintText: 'Search products, brands, SKU',
           hintStyle: AppTextStyles.inputHint,
@@ -643,10 +638,8 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
                   child: Text(
                     category.label,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: AppTextStyles.bodyStrong.copyWith(
                       color: AppColors.textPrimary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -693,10 +686,8 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
                   child: Text(
                     sort,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: AppTextStyles.bodyStrong.copyWith(
                       color: AppColors.textPrimary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -752,10 +743,8 @@ class _SummaryCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(
+                  style: AppTextStyles.fieldLabel.copyWith(
                     color: AppColors.textSecondary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
@@ -771,14 +760,7 @@ class _SummaryCard extends StatelessWidget {
             ],
           ),
           const Spacer(),
-          Text(
-            value,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
+          Text(value, style: AppTextStyles.importantNumber),
         ],
       ),
     );
@@ -826,33 +808,24 @@ class _StockProductCard extends StatelessWidget {
                       item.name,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 16,
-                        height: 1.25,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: AppTextStyles.cardTitle,
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'SKU: ${item.sku}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: AppTextStyles.smallStrong.copyWith(
                         color: AppColors.textLightMuted,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'Availability: ${item.stock}',
-                      style: TextStyle(
+                      style: AppTextStyles.bodyStrong.copyWith(
                         color: item.stock <= 0
                             ? AppColors.red
                             : AppColors.orange,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -866,17 +839,16 @@ class _StockProductCard extends StatelessWidget {
                                 ? '\u20B9 ${item.price.toStringAsFixed(2)}'
                                 : '--',
                             style: const TextStyle(
+                              fontFamily: AppTextStyles.fontFamily,
                               color: AppColors.textPrimary,
                               fontSize: 18,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                           TextSpan(
                             text: ' / ${item.unit}',
-                            style: const TextStyle(
+                            style: AppTextStyles.fieldLabel.copyWith(
                               color: AppColors.textSecondary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
@@ -961,23 +933,14 @@ class _StockStatePanel extends StatelessWidget {
         children: [
           Icon(icon, color: AppColors.textSecondary, size: 28),
           const SizedBox(height: 8),
-          Text(
-            title,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
+          Text(title, style: AppTextStyles.bodyStrong),
           if (subtitle != null) ...[
             const SizedBox(height: 4),
             Text(
               subtitle!,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: AppTextStyles.fieldLabel.copyWith(
                 color: AppColors.textSecondary,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
               ),
             ),
           ],

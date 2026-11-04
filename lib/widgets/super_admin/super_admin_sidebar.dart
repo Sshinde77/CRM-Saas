@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../constants/app_colors.dart';
+import '../../core/theme/app_text_styles.dart';
 import '../sidebar_logout_button.dart';
 
 class SuperAdminSidebarDrawer extends StatelessWidget {
@@ -72,25 +73,16 @@ class SuperAdminSidebar extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 10),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'SAAS CRM',
-                          style: TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        SizedBox(height: 2),
+                        const Text('SAAS CRM', style: AppTextStyles.bodyStrong),
+                        const SizedBox(height: 2),
                         Text(
                           'Super Admin',
-                          style: TextStyle(
+                          style: AppTextStyles.bodyStrong.copyWith(
                             color: AppColors.primary,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],
@@ -104,10 +96,8 @@ class SuperAdminSidebar extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(18, 14, 18, 10),
               child: Text(
                 'MAIN MENU',
-                style: TextStyle(
+                style: AppTextStyles.bodyStrong.copyWith(
                   color: AppColors.textSecondary.withValues(alpha: 0.72),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
                   letterSpacing: 1.2,
                 ),
               ),
@@ -176,14 +166,10 @@ class SuperAdminSidebar extends StatelessWidget {
                               Expanded(
                                 child: Text(
                                   item.label,
-                                  style: TextStyle(
+                                  style: AppTextStyles.bodyStrong.copyWith(
                                     color: selected
                                         ? AppColors.textPrimary
                                         : AppColors.textSecondary,
-                                    fontSize: 14,
-                                    fontWeight: selected
-                                        ? FontWeight.w700
-                                        : FontWeight.w600,
                                   ),
                                 ),
                               ),

@@ -395,9 +395,7 @@ class _CreateDeliveryCustomerScreenState
         const SizedBox(width: 8),
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w800,
+          style: AppTextStyles.sectionHeading.copyWith(
             color: AppColors.deliveryDashboardHeaderEnd,
           ),
         ),
@@ -516,10 +514,9 @@ class _CreateDeliveryCustomerScreenState
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          const Text(
+                          Text(
                             'Profile Image (Optional)',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w700,
+                            style: AppTextStyles.bodyStrong.copyWith(
                               color: AppColors.deliveryDashboardHeaderEnd,
                             ),
                           ),
@@ -731,10 +728,10 @@ class _CreateDeliveryCustomerScreenState
                                       color: Colors.white,
                                     ),
                                   )
-                                : const Text(
+                                : Text(
                                     'CREATE CUSTOMER',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w700,
+                                    style: AppTextStyles.bodyStrong.copyWith(
+                                      color: AppColors.surface,
                                       letterSpacing: 0.4,
                                     ),
                                   ),
@@ -760,11 +757,10 @@ class _CreateDeliveryCustomerScreenState
           TextSpan(text: title),
           TextSpan(
             text: required ? ' *' : ' (Optional)',
-            style: TextStyle(
+            style: AppTextStyles.body.copyWith(
               color: required
                   ? AppColors.deliveryRed
                   : AppColors.textLightMuted,
-              fontWeight: FontWeight.w400,
             ),
           ),
         ],
@@ -886,20 +882,16 @@ class _VoiceEntryCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Fill with voice',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-                ),
-                SizedBox(height: 3),
+                Text('Fill with voice', style: AppTextStyles.bodyStrong),
+                const SizedBox(height: 3),
                 Text(
                   'Hold the mic and say field names first, e.g. "Shop name ABC Traders, mobile number 9876543210, city Pune, pincode 411001".',
-                  style: TextStyle(
+                  style: AppTextStyles.small.copyWith(
                     color: AppColors.textSecondary,
-                    fontSize: 12,
                   ),
                 ),
               ],
@@ -951,10 +943,8 @@ class _VoiceReviewBanner extends StatelessWidget {
           Expanded(
             child: Text(
               message,
-              style: const TextStyle(
+              style: AppTextStyles.secondaryStrong.copyWith(
                 color: AppColors.deliveryDashboardHeaderEnd,
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -989,12 +979,10 @@ class _FieldAssist extends StatelessWidget {
           Expanded(
             child: Text(
               warning ?? 'Auto-filled from voice',
-              style: TextStyle(
+              style: AppTextStyles.smallStrong.copyWith(
                 color: isWarning
                     ? AppColors.deliveryOrange
                     : AppColors.deliveryGreen,
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
               ),
             ),
           ),

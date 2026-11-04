@@ -216,18 +216,11 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Invoices',
-                      style: TextStyle(
-                        color: textPrimary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                    const Text('Invoices', style: AppTextStyles.screenHeading),
                     const SizedBox(height: 4),
-                    const Text(
+                    Text(
                       'Switch between sales and purchase invoices',
-                      style: TextStyle(color: textSecondary, fontSize: 14),
+                      style: AppTextStyles.body.copyWith(color: textSecondary),
                     ),
                     const SizedBox(height: 20),
                     Container(
@@ -284,20 +277,15 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
                         children: [
                           Text(
                             isSales ? 'Sales Invoices' : 'Purchase Invoices',
-                            style: const TextStyle(
-                              color: textPrimary,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                            ),
+                            style: AppTextStyles.sectionHeading,
                           ),
                           const SizedBox(height: 4),
                           Text(
                             isSales
                                 ? 'Search by invoice, customer, date, status, or total.'
                                 : 'Search by invoice, supplier, date, status, or total.',
-                            style: const TextStyle(
+                            style: AppTextStyles.body.copyWith(
                               color: textSecondary,
-                              fontSize: 14,
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -381,9 +369,9 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
         alignment: Alignment.center,
         child: Text(
           label,
-          style: TextStyle(
+          style: AppTextStyles.fieldLabel.copyWith(
             color: selected ? Colors.white : textSecondary,
-            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+            fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
           ),
         ),
       ),
@@ -392,12 +380,12 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
 
   Widget _buildSalesList(List<_SalesInvoice> invoices) {
     if (invoices.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 40),
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 40),
         child: Center(
           child: Text(
             'No sales invoices match your search.',
-            style: TextStyle(color: textSecondary, fontSize: 14),
+            style: AppTextStyles.body.copyWith(color: textSecondary),
           ),
         ),
       );
@@ -424,12 +412,12 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
 
   Widget _buildPurchaseList(List<_PurchaseInvoice> invoices) {
     if (invoices.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 40),
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 40),
         child: Center(
           child: Text(
             'No purchase invoices match your search.',
-            style: TextStyle(color: textSecondary, fontSize: 14),
+            style: AppTextStyles.body.copyWith(color: textSecondary),
           ),
         ),
       );
@@ -501,21 +489,11 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      invoiceNo,
-                      style: const TextStyle(
-                        color: textPrimary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                    Text(invoiceNo, style: AppTextStyles.bodyStrong),
                     const SizedBox(height: 2),
                     Text(
                       primaryLabel,
-                      style: const TextStyle(
-                        color: textSecondary,
-                        fontSize: 14,
-                      ),
+                      style: AppTextStyles.body.copyWith(color: textSecondary),
                     ),
                   ],
                 ),
@@ -534,11 +512,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
                 ),
                 child: Text(
                   status,
-                  style: TextStyle(
-                    color: statusColor,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppTextStyles.bodyStrong.copyWith(color: statusColor),
                 ),
               ),
             ],
@@ -564,21 +538,10 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: textSecondary,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTextStyles.fieldLabel.copyWith(color: textSecondary),
         ),
         const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            color: textPrimary,
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
+        Text(value, style: AppTextStyles.body),
       ],
     );
   }

@@ -153,20 +153,17 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      const Text(
+                                      Text(
                                         'Roles & Permissions',
-                                        style: TextStyle(
+                                        style: AppTextStyles.cardTitle.copyWith(
                                           color: Color(0xFF111827),
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w700,
                                         ),
                                       ),
                                       const SizedBox(height: 8),
-                                      const Text(
+                                      Text(
                                         'Create custom roles and configure module-level access for staff.',
-                                        style: TextStyle(
+                                        style: AppTextStyles.body.copyWith(
                                           color: Color(0xFF64748B),
-                                          fontSize: 14,
                                         ),
                                       ),
                                       const SizedBox(height: 12),
@@ -184,26 +181,25 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      const Expanded(
+                                      Expanded(
                                         child: Column(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               'Roles & Permissions',
-                                              style: TextStyle(
-                                                color: Color(0xFF111827),
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w700,
-                                              ),
+                                              style: AppTextStyles.cardTitle
+                                                  .copyWith(
+                                                    color: Color(0xFF111827),
+                                                  ),
                                             ),
                                             SizedBox(height: 8),
                                             Text(
                                               'Create custom roles and configure module-level access for staff.',
-                                              style: TextStyle(
-                                                color: Color(0xFF64748B),
-                                                fontSize: 14,
-                                              ),
+                                              style: AppTextStyles.body
+                                                  .copyWith(
+                                                    color: Color(0xFF64748B),
+                                                  ),
                                             ),
                                           ],
                                         ),
@@ -249,19 +245,15 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
                                   roles.isEmpty
                                       ? '0 to 0 of 0'
                                       : '1 to ${roles.length} of ${roles.length}',
-                                  style: const TextStyle(
+                                  style: AppTextStyles.bodyStrong.copyWith(
                                     color: Color(0xFF94A3B8),
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                                 const Spacer(),
-                                const Text(
+                                Text(
                                   'Roles',
-                                  style: TextStyle(
+                                  style: AppTextStyles.bodyStrong.copyWith(
                                     color: Color(0xFF94A3B8),
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ],
@@ -302,10 +294,7 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(999),
           ),
-          textStyle: TextStyle(
-            fontSize: compact ? 12.5 : 13,
-            fontWeight: FontWeight.w700,
-          ),
+          textStyle: AppTextStyles.secondaryStrong,
         ),
       ),
     );
@@ -369,16 +358,12 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
 
   Widget _buildCompactList(List<_RoleRecord> roles) {
     if (roles.isEmpty) {
-      return const Padding(
+      return Padding(
         padding: EdgeInsets.symmetric(vertical: 28),
         child: Center(
           child: Text(
             'No roles found.',
-            style: TextStyle(
-              color: Color(0xFF94A3B8),
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
+            style: AppTextStyles.bodyStrong.copyWith(color: Color(0xFF94A3B8)),
           ),
         ),
       );
@@ -423,10 +408,8 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
                                 Expanded(
                                   child: Text(
                                     role.name,
-                                    style: const TextStyle(
+                                    style: AppTextStyles.bodyStrong.copyWith(
                                       color: Color(0xFF111827),
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
                                 ),
@@ -436,9 +419,8 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
                             const SizedBox(height: 8),
                             Text(
                               role.accessSummary,
-                              style: const TextStyle(
+                              style: AppTextStyles.body.copyWith(
                                 color: Color(0xFF64748B),
-                                fontSize: 14,
                               ),
                             ),
                           ],
@@ -520,10 +502,8 @@ class _RoleRow extends StatelessWidget {
                 Expanded(
                   child: Text(
                     role.name,
-                    style: const TextStyle(
+                    style: AppTextStyles.bodyStrong.copyWith(
                       color: Color(0xFF111827),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
@@ -535,10 +515,8 @@ class _RoleRow extends StatelessWidget {
           Expanded(
             child: Text(
               role.accessSummary,
-              style: const TextStyle(
+              style: AppTextStyles.fieldLabel.copyWith(
                 color: Color(0xFF334155),
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
               ),
             ),
           ),
@@ -575,13 +553,9 @@ class _DefaultPill extends StatelessWidget {
         borderRadius: BorderRadius.circular(999),
         border: Border.all(color: const Color(0xFFE6ECD9)),
       ),
-      child: const Text(
+      child: Text(
         'Default',
-        style: TextStyle(
-          color: Color(0xFF0D1F42),
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
-        ),
+        style: AppTextStyles.bodyStrong.copyWith(color: Color(0xFF0D1F42)),
       ),
     );
   }
@@ -596,10 +570,8 @@ class _HeaderLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       label,
-      style: const TextStyle(
+      style: AppTextStyles.bodyStrong.copyWith(
         color: Color(0xFF94A3B8),
-        fontSize: 14,
-        fontWeight: FontWeight.w700,
         letterSpacing: 0.9,
       ),
     );

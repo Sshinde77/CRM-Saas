@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../constants/app_colors.dart';
+import '../../core/theme/app_text_styles.dart';
 
 class ManagementKpiData {
   final String label;
@@ -67,11 +68,10 @@ class ManagementPageSummary extends StatelessWidget {
                       title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
+                      style: AppTextStyles.sectionHeading.copyWith(
                         color: AppColors.deliveryInk,
                         fontSize: compact ? 14 : 16,
                         height: 1.15,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -79,10 +79,9 @@ class ManagementPageSummary extends StatelessWidget {
                       subtitle,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
+                      style: AppTextStyles.smallStrong.copyWith(
                         color: const Color(0xFF4F5870),
-                        fontSize: compact ? 10.5 : 11.5,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
                       ),
                     ),
                   ],
@@ -173,11 +172,10 @@ class _KpiTile extends StatelessWidget {
                   data.value,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: AppTextStyles.importantNumber.copyWith(
                     color: AppColors.deliveryInk,
                     fontSize: 14,
                     height: 1.1,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 3),
@@ -185,10 +183,8 @@ class _KpiTile extends StatelessWidget {
                   data.label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(0xFF586176),
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w700,
+                  style: AppTextStyles.smallStrong.copyWith(
+                    color: const Color(0xFF586176),
                   ),
                 ),
               ],

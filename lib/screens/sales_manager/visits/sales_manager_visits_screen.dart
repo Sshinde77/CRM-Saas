@@ -2,6 +2,7 @@ import '../../../models/list_pagination.dart';
 import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
 
+import '../../../core/theme/app_text_styles.dart';
 import '../../../constants/app_colors.dart';
 import '../../../models/customer_model.dart';
 import '../../../providers/api_provider.dart';
@@ -371,26 +372,20 @@ class _VisitsOverview extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Customer visits',
-                  style: TextStyle(
+                  style: AppTextStyles.sectionHeading.copyWith(
                     color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
                   'Check in and keep every customer interaction organised.',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 12,
-                    height: 1.35,
-                  ),
+                  style: AppTextStyles.small.copyWith(color: Colors.white70),
                 ),
               ],
             ),
@@ -406,15 +401,13 @@ class _VisitsOverview extends StatelessWidget {
               children: [
                 Text(
                   '$totalVisits',
-                  style: const TextStyle(
+                  style: AppTextStyles.importantNumber.copyWith(
                     color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
-                const Text(
+                Text(
                   'visits',
-                  style: TextStyle(color: Colors.white70, fontSize: 11),
+                  style: AppTextStyles.small.copyWith(color: Colors.white70),
                 ),
               ],
             ),
@@ -442,7 +435,9 @@ class _LogVisitResult {
 }
 
 class CreateVisitPage extends StatefulWidget {
-  const CreateVisitPage({super.key});
+  final String? initialCustomerId;
+
+  const CreateVisitPage({super.key, this.initialCustomerId});
 
   @override
   State<CreateVisitPage> createState() => _CreateVisitPageState();
@@ -462,6 +457,9 @@ class _CreateVisitPageState extends State<CreateVisitPage> {
   @override
   void initState() {
     super.initState();
+    if (widget.initialCustomerId?.trim().isNotEmpty == true) {
+      _visitType = 'customer';
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadParties());
   }
 
@@ -525,10 +523,16 @@ class _CreateVisitPageState extends State<CreateVisitPage> {
         } while (page <= totalPages);
       }
       if (!mounted) return;
+      final initialCustomerId = widget.initialCustomerId?.trim();
+      final initialParty =
+          initialCustomerId == null || initialCustomerId.isEmpty
+          ? null
+          : parties.where((party) => party.id == initialCustomerId).firstOrNull;
       setState(() {
         _parties = parties
             .where((party) => party.id.isNotEmpty && party.name.isNotEmpty)
             .toList();
+        _selectedParty = initialParty;
         _loadingParties = false;
         _partyLoadError = null;
       });
@@ -747,7 +751,7 @@ class _CreateVisitPageState extends State<CreateVisitPage> {
                   icon: const Icon(Icons.location_on_rounded, size: 20),
                   label: const Text(
                     'Log Visit',
-                    style: TextStyle(fontWeight: FontWeight.w700),
+                    style: TextStyle(fontWeight: FontWeight.w600),
                   ),
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.primary,
@@ -833,31 +837,19 @@ class _VisitLeadPickerCard extends StatelessWidget {
         child: hasSelection
             ? Row(
                 children: [
-                  CustomerAvatar(
-                    name: selected!.name,
-                    size: 40,
-                  ),
+                  CustomerAvatar(name: selected!.name, size: 40),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          selected!.name,
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                        Text(selected!.name, style: AppTextStyles.bodyStrong),
                         if (selected!.code.isNotEmpty) ...[
                           const SizedBox(height: 2),
                           Text(
                             selected!.code,
-                            style: const TextStyle(
+                            style: AppTextStyles.smallStrong.copyWith(
                               color: AppColors.primary,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
@@ -874,12 +866,10 @@ class _VisitLeadPickerCard extends StatelessWidget {
                       color: AppColors.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Change',
-                      style: TextStyle(
+                      style: AppTextStyles.smallStrong.copyWith(
                         color: AppColors.primary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -921,11 +911,10 @@ class _VisitLeadPickerCard extends StatelessWidget {
                       loading
                           ? 'Loading leads...'
                           : (error ?? 'Tap to search and select a lead'),
-                      style: TextStyle(
+                      style: AppTextStyles.body.copyWith(
                         color: error != null
                             ? AppColors.red
                             : AppColors.textSecondary,
-                        fontSize: 14,
                       ),
                     ),
                   ),
@@ -968,11 +957,7 @@ class _VisitPersonAvatar extends StatelessWidget {
       child: Center(
         child: Text(
           initials.isEmpty ? '?' : initials,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-          ),
+          style: AppTextStyles.bodyStrong.copyWith(color: Colors.white),
         ),
       ),
     );
@@ -1159,22 +1144,13 @@ class _VisitPartyPickerCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          selected!.name,
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                        Text(selected!.name, style: AppTextStyles.bodyStrong),
                         if (selected!.code.isNotEmpty) ...[
                           const SizedBox(height: 2),
                           Text(
                             selected!.code,
-                            style: const TextStyle(
+                            style: AppTextStyles.smallStrong.copyWith(
                               color: AppColors.primary,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
@@ -1182,12 +1158,10 @@ class _VisitPartyPickerCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  const Text(
+                  Text(
                     'Change',
-                    style: TextStyle(
+                    style: AppTextStyles.smallStrong.copyWith(
                       color: AppColors.primary,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   if (onClear != null) ...[
@@ -1229,11 +1203,10 @@ class _VisitPartyPickerCard extends StatelessWidget {
                           ? 'Loading ${entityLabel.toLowerCase()}s...'
                           : (error ??
                                 'Tap to search and select a ${entityLabel.toLowerCase()}'),
-                      style: TextStyle(
+                      style: AppTextStyles.body.copyWith(
                         color: error != null
                             ? AppColors.red
                             : AppColors.textSecondary,
-                        fontSize: 14,
                       ),
                     ),
                   ),
@@ -1349,14 +1322,7 @@ class _VisitFieldLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      label,
-      style: const TextStyle(
-        color: AppColors.textPrimary,
-        fontSize: 13,
-        fontWeight: FontWeight.w600,
-      ),
-    );
+    return Text(label, style: AppTextStyles.fieldLabel);
   }
 }
 
@@ -1377,17 +1343,10 @@ class _VisitInputBox extends StatelessWidget {
       controller: controller,
       maxLines: maxLines,
       cursorColor: AppColors.primary,
-      style: const TextStyle(
-        fontSize: 14,
-        color: AppColors.textPrimary,
-        fontWeight: FontWeight.w500,
-      ),
+      style: AppTextStyles.fieldValue,
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: const TextStyle(
-          color: AppColors.textSecondary,
-          fontSize: 14,
-        ),
+        hintStyle: AppTextStyles.inputHint,
         filled: true,
         fillColor: Colors.white,
         contentPadding: const EdgeInsets.symmetric(
@@ -1429,14 +1388,7 @@ class _VisitHistoryPanel extends StatelessWidget {
       children: [
         const Padding(
           padding: EdgeInsets.only(left: 4, bottom: 12),
-          child: Text(
-            'Visit History',
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
+          child: Text('Visit History', style: AppTextStyles.sectionHeading),
         ),
         for (var i = 0; i < visits.length; i++) ...[
           _VisitHistoryCard(
@@ -1492,11 +1444,7 @@ class _VisitHistoryCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       record.customer,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: AppTextStyles.bodyStrong,
                     ),
                   ),
                   _StatusPill(label: record.status, color: AppColors.green),
@@ -1517,13 +1465,7 @@ class _VisitHistoryCard extends StatelessWidget {
                 color: AppColors.border.withValues(alpha: 0.75),
               ),
               const SizedBox(height: 12),
-              Text(
-                record.notes,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 14,
-                ),
-              ),
+              Text(record.notes, style: AppTextStyles.body),
               if (record.status != 'Completed') ...[
                 const SizedBox(height: 12),
                 SizedBox(
@@ -1569,10 +1511,8 @@ class _VisitTime extends StatelessWidget {
         const SizedBox(width: 4),
         Text(
           '$label: $value',
-          style: const TextStyle(
+          style: AppTextStyles.smallStrong.copyWith(
             color: AppColors.textSecondary,
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
           ),
         ),
       ],
@@ -1596,11 +1536,7 @@ class _StatusPill extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: TextStyle(
-          color: color,
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-        ),
+        style: AppTextStyles.smallStrong.copyWith(color: color),
       ),
     );
   }
@@ -1737,14 +1673,7 @@ class _VisitDetailPageState extends State<_VisitDetailPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          _record.customer,
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
+                        Text(_record.customer, style: AppTextStyles.cardTitle),
                         const SizedBox(height: 16),
                         _VisitDetailRow(
                           icon: Icons.login_rounded,
@@ -1764,23 +1693,14 @@ class _VisitDetailPageState extends State<_VisitDetailPage> {
                           value: _record.status,
                         ),
                         const SizedBox(height: 20),
-                        const Text(
+                        Text(
                           'Visit notes',
-                          style: TextStyle(
+                          style: AppTextStyles.smallStrong.copyWith(
                             color: AppColors.textSecondary,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
                           ),
                         ),
                         const SizedBox(height: 6),
-                        Text(
-                          _record.notes,
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 14,
-                            height: 1.5,
-                          ),
-                        ),
+                        Text(_record.notes, style: AppTextStyles.body),
                       ],
                     ),
                   ),
@@ -1840,20 +1760,12 @@ class _VisitDetailRow extends StatelessWidget {
           children: [
             Text(
               label,
-              style: const TextStyle(
+              style: AppTextStyles.small.copyWith(
                 color: AppColors.textSecondary,
-                fontSize: 12,
               ),
             ),
             const SizedBox(height: 3),
-            Text(
-              value,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            Text(value, style: AppTextStyles.bodyStrong),
           ],
         ),
       ),

@@ -160,10 +160,7 @@ class _PlansScreenState extends State<PlansScreen> {
                             ),
                             child: const Text(
                               'Upgrade Plan',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                              ),
+                              style: AppTextStyles.bodyStrong,
                             ),
                           ),
                         ),
@@ -295,21 +292,16 @@ class _PlansScreenState extends State<PlansScreen> {
           Text(
             title,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: AppTextStyles.cardTitle.copyWith(
               color: AppColors.textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              height: 1.1,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             subtitle,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: AppTextStyles.bodyStrong.copyWith(
               color: AppColors.statusActiveText,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -369,10 +361,8 @@ class _PlansScreenState extends State<PlansScreen> {
                   children: [
                     Text(
                       currentPlan.name,
-                      style: const TextStyle(
+                      style: AppTextStyles.cardTitle.copyWith(
                         color: AppColors.textPrimary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     Container(
@@ -395,10 +385,8 @@ class _PlansScreenState extends State<PlansScreen> {
                           const SizedBox(width: 6),
                           Text(
                             statusLabel,
-                            style: const TextStyle(
+                            style: AppTextStyles.bodyStrong.copyWith(
                               color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ],
@@ -409,18 +397,14 @@ class _PlansScreenState extends State<PlansScreen> {
                 const SizedBox(height: 6),
                 RichText(
                   text: TextSpan(
-                    style: const TextStyle(
-                      fontFamily: AppTextStyles.fontFamily,
+                    style: AppTextStyles.body.copyWith(
                       color: AppColors.textSecondary,
-                      fontSize: 14,
                     ),
                     children: [
                       TextSpan(
                         text: _formatCyclePrice(currentPlan),
-                        style: const TextStyle(
+                        style: AppTextStyles.bodyStrong.copyWith(
                           color: AppColors.statusActiveText,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14,
                         ),
                       ),
                       TextSpan(text: '  $subtitle'),
@@ -519,10 +503,8 @@ class _PlansScreenState extends State<PlansScreen> {
         ),
         child: Text(
           label,
-          style: TextStyle(
+          style: AppTextStyles.bodyStrong.copyWith(
             color: isActive ? Colors.white : AppColors.textSecondary,
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
           ),
         ),
       ),
@@ -573,10 +555,8 @@ class _PlansScreenState extends State<PlansScreen> {
                 isCurrent
                     ? 'Current Plan'
                     : (isTopPlan ? 'Upgrade Your Plan' : plan.name),
-                style: const TextStyle(
+                style: AppTextStyles.bodyStrong.copyWith(
                   color: AppColors.statusActiveText,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
@@ -584,20 +564,14 @@ class _PlansScreenState extends State<PlansScreen> {
           const SizedBox(height: 12),
           Text(
             plan.name,
-            style: const TextStyle(
+            style: AppTextStyles.cardTitle.copyWith(
               color: AppColors.textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             _planSubtitle(plan),
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 14,
-              height: 1.3,
-            ),
+            style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 12),
           ..._buildFeatureRows(plan),
@@ -614,27 +588,21 @@ class _PlansScreenState extends State<PlansScreen> {
             children: [
               Text(
                 _formatPrice(price),
-                style: const TextStyle(
+                style: AppTextStyles.cardTitle.copyWith(
                   color: AppColors.statusActiveText,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
                 ),
               ),
               Text(
                 _isMonthly ? '/month' : '/year',
-                style: const TextStyle(
+                style: AppTextStyles.bodyStrong.copyWith(
                   color: AppColors.textSecondary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
                 ),
               ),
               if (originalPrice != null && originalPrice > price)
                 Text(
                   _formatPrice(originalPrice),
-                  style: const TextStyle(
+                  style: AppTextStyles.bodyStrong.copyWith(
                     color: AppColors.textLightMuted,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
                     decoration: TextDecoration.lineThrough,
                   ),
                 ),
@@ -663,10 +631,8 @@ class _PlansScreenState extends State<PlansScreen> {
                     const SizedBox(width: 6),
                     Text(
                       'Save $savings%',
-                      style: const TextStyle(
+                      style: AppTextStyles.bodyStrong.copyWith(
                         color: AppColors.statusActiveText,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ],
@@ -680,10 +646,8 @@ class _PlansScreenState extends State<PlansScreen> {
                     ? 'Best value across available plans'
                     : 'Flexible upgrade option',
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: AppTextStyles.bodyStrong.copyWith(
                   color: AppColors.textSecondary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -742,11 +706,7 @@ class _PlansScreenState extends State<PlansScreen> {
             padding: const EdgeInsets.only(top: 1),
             child: Text(
               text,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 14,
-                height: 1.3,
-              ),
+              style: AppTextStyles.body.copyWith(color: AppColors.textPrimary),
             ),
           ),
         ),
@@ -786,19 +746,19 @@ class _PlansScreenState extends State<PlansScreen> {
               size: 42,
             ),
             const SizedBox(height: 12),
-            const Text(
+            Text(
               'Could not load plans',
-              style: TextStyle(
+              style: AppTextStyles.cardTitle.copyWith(
                 color: AppColors.textPrimary,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.textSecondary),
+              style: AppTextStyles.body.copyWith(
+                color: AppColors.textSecondary,
+              ),
             ),
             const SizedBox(height: 16),
             ElevatedButton(
@@ -816,10 +776,10 @@ class _PlansScreenState extends State<PlansScreen> {
   }
 
   Widget _buildEmptyState() {
-    return const Center(
+    return Center(
       child: Text(
         'No plans available right now.',
-        style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+        style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
       ),
     );
   }

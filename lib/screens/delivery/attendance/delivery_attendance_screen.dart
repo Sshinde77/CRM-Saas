@@ -239,10 +239,8 @@ class _CheckpointsCard extends StatelessWidget {
                   const SizedBox(width: 4),
                   Text(
                     dateLabel,
-                    style: const TextStyle(
+                    style: AppTextStyles.smallStrong.copyWith(
                       color: AppColors.deliveryInk,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
@@ -250,10 +248,10 @@ class _CheckpointsCard extends StatelessWidget {
             ),
           ),
           if (error != null) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 20),
             _InlineError(message: error!, onDismiss: onDismissError),
           ],
-          const SizedBox(height: 10),
+          const SizedBox(height: 14),
           checkInTime == null
               ? _CheckpointActionButton(
                   checkpoint: _CheckpointType.officeCheckIn,
@@ -266,7 +264,7 @@ class _CheckpointsCard extends StatelessWidget {
                   onMarkNow: () => onMarkNow(_CheckpointType.officeCheckIn),
                 )
               : _OnDutyStatus(time: formatAttendanceTime(checkInTime)),
-          const SizedBox(height: 8),
+          const SizedBox(height: 14),
           Row(
             children: [
               Expanded(
@@ -280,7 +278,7 @@ class _CheckpointsCard extends StatelessWidget {
                   onMarkNow: () => onMarkNow(_CheckpointType.departure),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 20),
               Expanded(
                 child: _CheckpointActionButton(
                   checkpoint: _CheckpointType.returnToOffice,
@@ -296,7 +294,7 @@ class _CheckpointsCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 14),
           _CheckpointActionButton(
             checkpoint: _CheckpointType.finalCheckOut,
             label: 'Check Out',
@@ -342,32 +340,16 @@ class _OnDutyStatus extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'You are',
-                  style: TextStyle(
-                    color: AppColors.textMuted,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                Text('You are', style: AppTextStyles.smallStrong),
                 SizedBox(height: 1),
-                Text(
-                  'On Duty',
-                  style: TextStyle(
-                    color: AppColors.deliveryGreen,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                Text('On Duty', style: AppTextStyles.cardTitle),
               ],
             ),
           ),
           Text(
             time,
-            style: const TextStyle(
+            style: AppTextStyles.secondaryStrong.copyWith(
               color: AppColors.deliveryInk,
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(width: 8),
@@ -437,10 +419,7 @@ class _CheckpointActionButton extends StatelessWidget {
             foregroundColor: Colors.white,
             disabledBackgroundColor: softColor,
             disabledForegroundColor: color,
-            textStyle: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
+            textStyle: AppTextStyles.bodyStrong,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
@@ -481,11 +460,8 @@ class _CheckpointActionButton extends StatelessWidget {
                         label,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: AppTextStyles.secondaryStrong.copyWith(
                           color: AppColors.deliveryInk,
-                          fontSize: 13,
-                          height: 1.1,
-                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
@@ -516,10 +492,8 @@ class _CheckpointActionButton extends StatelessWidget {
                     label,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: AppTextStyles.bodyStrong.copyWith(
                       color: AppColors.deliveryInk,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
@@ -563,10 +537,8 @@ class _CheckpointTime extends StatelessWidget {
           time,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: TextStyle(
+          style: AppTextStyles.smallStrong.copyWith(
             color: recorded ? AppColors.deliveryInk : AppColors.textMuted,
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
           ),
         ),
       ],
@@ -620,7 +592,7 @@ class _CheckpointMarkButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 4),
           minimumSize: const Size(0, 30),
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+          textStyle: AppTextStyles.smallStrong,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppSizes.pillRadius),
           ),
@@ -684,10 +656,8 @@ class _MonthlyAttendanceSummary extends StatelessWidget {
         children: [
           Text(
             '$currentMonth Month Attendance',
-            style: const TextStyle(
+            style: AppTextStyles.bodyStrong.copyWith(
               color: AppColors.deliveryInk,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 8),
@@ -775,24 +745,14 @@ class _MonthlyAttendanceMetric extends StatelessWidget {
                     value,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: color,
-                      fontSize: 14,
-                      height: 1.1,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: AppTextStyles.bodyStrong.copyWith(color: color),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     label,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: color,
-                      fontSize: 11,
-                      height: 1.1,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: AppTextStyles.smallStrong.copyWith(color: color),
                   ),
                 ],
               ),
@@ -842,10 +802,7 @@ class _HistoryCardState extends State<_HistoryCard> {
                 padding: const EdgeInsets.symmetric(horizontal: 9),
                 minimumSize: const Size(0, 28),
               ),
-              child: const Text(
-                'View All',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
-              ),
+              child: const Text('View All', style: AppTextStyles.smallStrong),
             ),
           ),
           const SizedBox(height: 10),
@@ -949,20 +906,14 @@ class _HistoryRow extends StatelessWidget {
                   formatAttendanceDate(record.date),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
+                  style: AppTextStyles.smallStrong.copyWith(
                     color: AppColors.deliveryInk,
                   ),
                 ),
                 const SizedBox(height: 1),
                 Text(
                   attendanceWeekday(record.date),
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w400,
-                    color: AppColors.textMuted,
-                  ),
+                  style: AppTextStyles.small,
                 ),
               ],
             ),
@@ -1057,10 +1008,8 @@ class _InlineError extends StatelessWidget {
           Expanded(
             child: Text(
               message,
-              style: const TextStyle(
-                color: Color(0xFFB00000),
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
+              style: AppTextStyles.bodyStrong.copyWith(
+                color: const Color(0xFFB00000),
               ),
             ),
           ),
@@ -1107,9 +1056,7 @@ class _HistoryMessage extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
+              style: AppTextStyles.bodyStrong.copyWith(
                 color: AppColors.deliveryInk,
               ),
             ),
@@ -1119,7 +1066,7 @@ class _HistoryMessage extends StatelessWidget {
               textAlign: TextAlign.center,
               maxLines: 4,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 14, color: AppColors.textMuted),
+              style: AppTextStyles.body.copyWith(color: AppColors.textMuted),
             ),
             if (action != null && onAction != null) ...[
               const SizedBox(height: 10),
@@ -1185,11 +1132,7 @@ class _StatusBadge extends StatelessWidget {
             const SizedBox(width: 4),
             Text(
               label,
-              style: TextStyle(
-                color: color,
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-              ),
+              style: AppTextStyles.smallStrong.copyWith(color: color),
             ),
           ],
         ),
@@ -1209,11 +1152,7 @@ class _HeaderText extends StatelessWidget {
       text,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      style: const TextStyle(
-        color: AppColors.textMuted,
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-      ),
+      style: AppTextStyles.smallStrong,
     );
   }
 }
@@ -1238,12 +1177,10 @@ class _TimeText extends StatelessWidget {
             text,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
+            style: AppTextStyles.smallStrong.copyWith(
               color: text == '--:-- --'
                   ? AppColors.textMuted
                   : AppColors.deliveryInk,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
             ),
           ),
         ),

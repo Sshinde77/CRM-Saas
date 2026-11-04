@@ -206,18 +206,11 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Expenses',
-                      style: TextStyle(
-                        color: textPrimary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                    const Text('Expenses', style: AppTextStyles.screenHeading),
                     const SizedBox(height: 4),
-                    const Text(
+                    Text(
                       'Track submitted expenses and approval status',
-                      style: TextStyle(color: textSecondary, fontSize: 14),
+                      style: AppTextStyles.body.copyWith(color: textSecondary),
                     ),
                     const SizedBox(height: 20),
                     LayoutBuilder(
@@ -290,18 +283,13 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                         children: [
                           const Text(
                             'All Expenses',
-                            style: TextStyle(
-                              color: textPrimary,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                            ),
+                            style: AppTextStyles.sectionHeading,
                           ),
                           const SizedBox(height: 4),
-                          const Text(
+                          Text(
                             'Search by expense ID, category, description, submitted by, date, amount, or status.',
-                            style: TextStyle(
+                            style: AppTextStyles.body.copyWith(
                               color: textSecondary,
-                              fontSize: 14,
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -347,14 +335,13 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                           ),
                           const SizedBox(height: 16),
                           if (expenses.isEmpty)
-                            const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 40),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 40),
                               child: Center(
                                 child: Text(
                                   'No expenses match your search.',
-                                  style: TextStyle(
+                                  style: AppTextStyles.body.copyWith(
                                     color: textSecondary,
-                                    fontSize: 14,
                                   ),
                                 ),
                               ),
@@ -419,21 +406,12 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  value,
-                  style: const TextStyle(
-                    color: textPrimary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                Text(value, style: AppTextStyles.importantNumber),
                 const SizedBox(height: 2),
                 Text(
                   label,
-                  style: const TextStyle(
+                  style: AppTextStyles.fieldLabel.copyWith(
                     color: textSecondary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -484,21 +462,11 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      expense.expenseId,
-                      style: const TextStyle(
-                        color: textPrimary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                    Text(expense.expenseId, style: AppTextStyles.bodyStrong),
                     const SizedBox(height: 2),
                     Text(
                       expense.category,
-                      style: const TextStyle(
-                        color: textSecondary,
-                        fontSize: 14,
-                      ),
+                      style: AppTextStyles.body.copyWith(color: textSecondary),
                     ),
                   ],
                 ),
@@ -517,11 +485,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                 ),
                 child: Text(
                   expense.status,
-                  style: TextStyle(
-                    color: statusColor,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppTextStyles.bodyStrong.copyWith(color: statusColor),
                 ),
               ),
             ],
@@ -549,21 +513,10 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: textSecondary,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTextStyles.fieldLabel.copyWith(color: textSecondary),
         ),
         const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            color: textPrimary,
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
+        Text(value, style: AppTextStyles.body),
       ],
     );
   }

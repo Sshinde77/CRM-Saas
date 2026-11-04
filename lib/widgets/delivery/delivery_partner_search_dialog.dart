@@ -101,13 +101,12 @@ class _DeliveryPartnerSearchDialogState
                     size: 26,
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'Search Delivery Partner',
-                      style: TextStyle(
+                      style: AppTextStyles.screenHeading.copyWith(
                         color: _heading,
-                        fontSize: 19,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 18,
                       ),
                     ),
                   ),
@@ -124,7 +123,7 @@ class _DeliveryPartnerSearchDialogState
               child: TextField(
                 controller: _search,
                 onChanged: (_) => setState(() {}),
-                style: const TextStyle(color: _heading, fontSize: 13),
+                style: AppTextStyles.secondary.copyWith(color: _heading),
                 decoration: InputDecoration(
                   isDense: true,
                   contentPadding: const EdgeInsets.symmetric(
@@ -220,10 +219,8 @@ class _DeliveryPartnerSearchDialogState
                           partner.name.trim().isEmpty
                               ? 'Delivery Partner'
                               : partner.name,
-                          style: const TextStyle(
+                          style: AppTextStyles.cardTitle.copyWith(
                             color: _heading,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
                           ),
                         ),
                         const SizedBox(height: 10),
@@ -275,7 +272,7 @@ class _DeliveryPartnerSearchDialogState
             Expanded(
               child: Text(
                 value,
-                style: const TextStyle(color: _muted, fontSize: 13),
+                style: AppTextStyles.secondary.copyWith(color: _muted),
               ),
             ),
           ],

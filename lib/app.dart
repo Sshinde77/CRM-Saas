@@ -22,10 +22,20 @@ class _BeassuiteAppState extends State<BeassuiteApp> {
   static const double _maxTextScale = 1.2;
   static const double _maxWidthTextScale = 1.15;
 
+  Future<void>? _authRestoreFuture;
+
   @override
   void initState() {
     super.initState();
     _apiProvider = ApiProvider();
+    // On app restart with a saved session, fetch user details so provider.currentUser
+    // is populated before the dashboard tries to read it.
+    if ((ApiService.accessToken ?? '').trim().isNotEmpty) {
+      _authRestoreFuture = _apiProvider
+          .fetchAuthMe()
+          .then<void>((_) {})
+          .catchError((_) {});
+    }
   }
 
   @override
@@ -55,7 +65,19 @@ class _BeassuiteAppState extends State<BeassuiteApp> {
           );
         },
         home: hasSession
-            ? RoleHomeScreen.forRole(savedRole)
+            ? FutureBuilder<void>(
+                future: _authRestoreFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Scaffold(
+                      body: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                  // fetchAuthMe completed (success or offline error) — show the
+                  // dashboard now that provider.currentUser is populated.
+                  return RoleHomeScreen.forRole(savedRole);
+                },
+              )
             : const LoginScreen(),
         routes: AppRouter.routes,
         onGenerateRoute: AppRouter.onGenerateRoute,

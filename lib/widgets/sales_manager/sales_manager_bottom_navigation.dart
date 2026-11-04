@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../constants/app_colors.dart';
+import '../../core/theme/app_text_styles.dart';
 import '../../screens/admin/customers/add_customer_screen.dart';
 import '../../screens/admin/leads/admin_leads_screen.dart';
 import '../../screens/admin/orders/admin_orders_screen.dart';
@@ -370,10 +371,9 @@ class _CreateActionTile extends StatelessWidget {
               child: Text(
                 label,
                 maxLines: 1,
-                style: TextStyle(
-                  fontSize: 11 * scale,
+                style: AppTextStyles.bottomNavLabel.copyWith(
+                  fontSize: 12 * scale,
                   height: 1.05,
-                  fontWeight: FontWeight.w700,
                   color: AppColors.surface,
                   shadows: const [Shadow(color: Colors.black54, blurRadius: 4)],
                 ),
@@ -434,13 +434,12 @@ class _NavItem extends StatelessWidget {
               child: Text(
                 info.label,
                 maxLines: 1,
-                style: TextStyle(
+                style: AppTextStyles.bottomNavLabel.copyWith(
                   color: selected
                       ? AppColors.primary
                       : AppColors.surface.withValues(alpha: 0.88),
-                  fontSize: 11.5 * scale,
+                  fontSize: 12 * scale,
                   height: 1.05,
-                  fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
                 ),
               ),
             ),

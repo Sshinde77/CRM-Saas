@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../constants/app_colors.dart';
 import '../core/theme/app_sizes.dart';
+import '../core/theme/app_text_styles.dart';
 
 Future<DateTime?> showAppCalendarDatePicker({
   required BuildContext context,
@@ -110,19 +111,15 @@ class _AppCalendarDatePickerState extends State<AppCalendarDatePicker> {
                       widget.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: AppTextStyles.cardTitle.copyWith(
                         color: AppColors.deliveryInk,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       _monthTitle(_visibleMonth),
-                      style: const TextStyle(
+                      style: AppTextStyles.smallStrong.copyWith(
                         color: AppColors.textMuted,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ],
@@ -196,7 +193,7 @@ class _AppCalendarDatePickerState extends State<AppCalendarDatePicker> {
                       },
                 child: const Text(
                   'Today',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                  style: AppTextStyles.secondaryStrong,
                 ),
               ),
               const Spacer(),
@@ -204,7 +201,7 @@ class _AppCalendarDatePickerState extends State<AppCalendarDatePicker> {
                 onPressed: widget.onCancel,
                 child: const Text(
                   'Cancel',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                  style: AppTextStyles.secondaryStrong,
                 ),
               ),
               const SizedBox(width: 6),
@@ -215,10 +212,7 @@ class _AppCalendarDatePickerState extends State<AppCalendarDatePicker> {
                   foregroundColor: Colors.white,
                   minimumSize: const Size(82, 40),
                   padding: const EdgeInsets.symmetric(horizontal: 14),
-                  textStyle: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  textStyle: AppTextStyles.bodyStrong,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppSizes.pillRadius),
                   ),
@@ -289,11 +283,7 @@ class _DateCell extends StatelessWidget {
           ),
           child: Text(
             '${date.day}',
-            style: TextStyle(
-              color: textColor,
-              fontSize: 13,
-              fontWeight: selected ? FontWeight.w700 : FontWeight.w700,
-            ),
+            style: AppTextStyles.secondaryStrong.copyWith(color: textColor),
           ),
         ),
       ),
@@ -345,11 +335,7 @@ class _WeekdayCell extends StatelessWidget {
       child: Text(
         label,
         textAlign: TextAlign.center,
-        style: const TextStyle(
-          color: AppColors.textMuted,
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-        ),
+        style: AppTextStyles.smallStrong.copyWith(color: AppColors.textMuted),
       ),
     );
   }

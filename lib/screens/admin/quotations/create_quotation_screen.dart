@@ -7,9 +7,11 @@ import '../../../constants/app_colors.dart';
 import '../../../models/app_user.dart';
 import '../../../models/customer_model.dart';
 import '../../../providers/api_provider.dart';
+import '../../../utils/product_image_url.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
 import '../../../widgets/customer_avatar.dart';
+import '../../../widgets/product_image.dart';
 import '../../../widgets/app_calendar_date_picker.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
@@ -546,12 +548,10 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
                                 )
                               : Text(
                                   '${i + 1}',
-                                  style: TextStyle(
+                                  style: AppTextStyles.bodyStrong.copyWith(
                                     color: _step >= i
                                         ? Colors.white
                                         : AppColors.textMuted,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700,
                                   ),
                                 ),
                         ),
@@ -571,12 +571,10 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
                   const SizedBox(height: 5),
                   Text(
                     labels[i],
-                    style: TextStyle(
+                    style: AppTextStyles.bodyStrong.copyWith(
                       color: _step == i
                           ? const Color(0xFF1234D8)
                           : AppColors.textMuted,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ],
@@ -610,7 +608,8 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
               leading: _selectedCustomer == null
                   ? null
                   : CustomerAvatar(
-                      name: _selectedCustomer!.businessName ??
+                      name:
+                          _selectedCustomer!.businessName ??
                           _selectedCustomer!.name,
                       photoUrl: _selectedCustomer!.profilePhotoUrl,
                       size: 28,
@@ -1031,10 +1030,8 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
                     Expanded(
                       child: Text(
                         title,
-                        style: const TextStyle(
+                        style: AppTextStyles.cardTitle.copyWith(
                           color: AppColors.textPrimary,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
@@ -1068,17 +1065,11 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
                             leading: leading?.call(item),
                             title: Text(
                               label(item),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 14,
-                              ),
+                              style: AppTextStyles.bodyStrong,
                             ),
                             subtitle: sub.isEmpty
                                 ? null
-                                : Text(
-                                    sub,
-                                    style: const TextStyle(fontSize: 14),
-                                  ),
+                                : Text(sub, style: AppTextStyles.body),
                             onTap: () => Navigator.of(context).pop(item),
                           );
                         },
@@ -1176,13 +1167,11 @@ class _QuickAddCustomerDialogState extends State<_QuickAddCustomerDialog> {
           children: [
             Row(
               children: [
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Add Customer',
-                    style: TextStyle(
+                    style: AppTextStyles.cardTitle.copyWith(
                       color: AppColors.textPrimary,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
@@ -1357,10 +1346,8 @@ class _SegmentButton extends StatelessWidget {
         child: Text(
           label,
           textAlign: TextAlign.center,
-          style: TextStyle(
+          style: AppTextStyles.bodyStrong.copyWith(
             color: selected ? Colors.white : AppColors.textSecondary,
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
           ),
         ),
       ),
@@ -1414,12 +1401,10 @@ class _SelectTile extends StatelessWidget {
                   child: Text(
                     hasValue ? value! : hint,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
+                    style: AppTextStyles.bodyStrong.copyWith(
                       color: hasValue
                           ? AppColors.textSecondary
                           : AppColors.textLightMuted,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
@@ -1487,7 +1472,7 @@ class _AppTextField extends StatelessWidget {
           minLines: minLines,
           maxLines: maxLines,
           keyboardType: keyboardType,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+          style: AppTextStyles.bodyStrong,
           decoration: _inputDecoration('Enter $label'),
         ),
       ],
@@ -1523,7 +1508,7 @@ class _ProductPickerRow extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _ProductThumb(product.name),
+          _ProductThumb(product.name, imageUrl: product.imageUrl),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -1533,19 +1518,15 @@ class _ProductPickerRow extends StatelessWidget {
                   product.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: AppTextStyles.bodyStrong.copyWith(
                     color: AppColors.textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   '${product.sku}  |  ${_money(product.unitPrice)}',
-                  style: const TextStyle(
+                  style: AppTextStyles.bodyStrong.copyWith(
                     color: AppColors.textMuted,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
@@ -1590,7 +1571,7 @@ class _QuoteItemRow extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _ProductThumb(item.product.name),
+          _ProductThumb(item.product.name, imageUrl: item.product.imageUrl),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -1599,19 +1580,15 @@ class _QuoteItemRow extends StatelessWidget {
                 Text(
                   item.product.name,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: AppTextStyles.bodyStrong.copyWith(
                     color: AppColors.textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   '${_money(item.product.unitPrice)} x ${_qty(item.quantity)} ${item.product.uom}',
-                  style: const TextStyle(
+                  style: AppTextStyles.bodyStrong.copyWith(
                     color: AppColors.textMuted,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
@@ -1620,17 +1597,11 @@ class _QuoteItemRow extends StatelessWidget {
           _QtyButton(icon: Icons.remove_rounded, onTap: onDecrease),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Text(
-              _qty(item.quantity),
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-            ),
+            child: Text(_qty(item.quantity), style: AppTextStyles.bodyStrong),
           ),
           _QtyButton(icon: Icons.add_rounded, onTap: onIncrease),
           const SizedBox(width: 8),
-          Text(
-            _money(item.lineTotal),
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-          ),
+          Text(_money(item.lineTotal), style: AppTextStyles.bodyStrong),
           IconButton(
             onPressed: onRemove,
             icon: const Icon(
@@ -1684,10 +1655,8 @@ class _ReviewRow extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: const TextStyle(
+              style: AppTextStyles.bodyStrong.copyWith(
                 color: AppColors.textMuted,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -1696,10 +1665,8 @@ class _ReviewRow extends StatelessWidget {
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: const TextStyle(
+              style: AppTextStyles.bodyStrong.copyWith(
                 color: AppColors.textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -1718,7 +1685,11 @@ class _ReviewItemRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        _ProductThumb(item.product.name, size: 42),
+        _ProductThumb(
+          item.product.name,
+          size: 42,
+          imageUrl: item.product.imageUrl,
+        ),
         const SizedBox(width: 10),
         Expanded(
           child: Column(
@@ -1726,26 +1697,18 @@ class _ReviewItemRow extends StatelessWidget {
             children: [
               Text(
                 item.product.name,
-                style: const TextStyle(
+                style: AppTextStyles.bodyStrong.copyWith(
                   color: AppColors.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
                 ),
               ),
               Text(
                 '${_qty(item.quantity)} x ${_money(item.product.unitPrice)}',
-                style: const TextStyle(
-                  color: AppColors.textMuted,
-                  fontSize: 14,
-                ),
+                style: AppTextStyles.body.copyWith(color: AppColors.textMuted),
               ),
             ],
           ),
         ),
-        Text(
-          _money(item.lineTotal),
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-        ),
+        Text(_money(item.lineTotal), style: AppTextStyles.bodyStrong),
       ],
     );
   }
@@ -1804,20 +1767,20 @@ class _TotalRow extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: TextStyle(
-                color: strong ? AppColors.textPrimary : AppColors.textMuted,
-                fontSize: strong ? 13 : 12,
-                fontWeight: strong ? FontWeight.w700 : FontWeight.w700,
-              ),
+              style: strong
+                  ? AppTextStyles.secondaryStrong.copyWith(
+                      color: AppColors.textPrimary,
+                    )
+                  : AppTextStyles.small.copyWith(color: AppColors.textMuted),
             ),
           ),
           Text(
             _money(value),
-            style: TextStyle(
-              color: strong ? AppColors.textPrimary : AppColors.textSecondary,
-              fontSize: strong ? 14 : 12,
-              fontWeight: FontWeight.w700,
-            ),
+            style: strong
+                ? AppTextStyles.importantNumber.copyWith(
+                    color: AppColors.textPrimary,
+                  )
+                : AppTextStyles.small.copyWith(color: AppColors.textSecondary),
           ),
         ],
       ),
@@ -1828,29 +1791,17 @@ class _TotalRow extends StatelessWidget {
 class _ProductThumb extends StatelessWidget {
   final String seed;
   final double size;
+  final String? imageUrl;
 
-  const _ProductThumb(this.seed, {this.size = 48});
+  const _ProductThumb(this.seed, {this.size = 48, this.imageUrl});
 
   @override
   Widget build(BuildContext context) {
-    final colors = [
-      const Color(0xFFE0F2FE),
-      const Color(0xFFDCFCE7),
-      const Color(0xFFFFEDD5),
-      const Color(0xFFF3E8FF),
-    ];
-    final color = colors[seed.hashCode.abs() % colors.length];
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: const Icon(
-        Icons.inventory_2_outlined,
-        color: AppColors.textSecondary,
-      ),
+    return ProductImage(
+      imageUrl: imageUrl,
+      size: size,
+      borderRadius: 12,
+      seed: seed,
     );
   }
 }
@@ -1872,7 +1823,7 @@ class _EmptyInline extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: const TextStyle(color: AppColors.textMuted, fontSize: 14),
+        style: AppTextStyles.body.copyWith(color: AppColors.textMuted),
       ),
     );
   }
@@ -1909,17 +1860,15 @@ class _CenteredState extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: AppTextStyles.cardTitle.copyWith(
                 color: AppColors.textPrimary,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 6),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.textMuted, fontSize: 14),
+              style: AppTextStyles.body.copyWith(color: AppColors.textMuted),
             ),
             if (actionLabel != null && onAction != null) ...[
               const SizedBox(height: 14),
@@ -1989,6 +1938,7 @@ class _ProductOption {
   final String uom;
   final double unitPrice;
   final double taxRate;
+  final String? imageUrl;
 
   const _ProductOption({
     required this.id,
@@ -1998,6 +1948,7 @@ class _ProductOption {
     required this.uom,
     required this.unitPrice,
     required this.taxRate,
+    this.imageUrl,
   });
 
   factory _ProductOption.fromJson(Map<String, dynamic> json) {
@@ -2034,6 +1985,7 @@ class _ProductOption {
         'gst',
         'gst_rate',
       ]),
+      imageUrl: productImageUrlFromJson(data),
     );
   }
 }

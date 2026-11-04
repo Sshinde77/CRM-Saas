@@ -291,9 +291,9 @@ class _ProductsScreenState extends State<ProductsScreen> {
       builder: (_) => AlertDialog(
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        title: const Text(
+        title: Text(
           'Delete product?',
-          style: TextStyle(color: textPrimary, fontWeight: FontWeight.w700),
+          style: AppTextStyles.sectionHeading.copyWith(color: textPrimary),
         ),
         content: Text(
           'This will permanently remove "${product.name}" from your catalog.',
@@ -336,10 +336,8 @@ class _ProductsScreenState extends State<ProductsScreen> {
                   Expanded(
                     child: Text(
                       product.name,
-                      style: const TextStyle(
+                      style: AppTextStyles.sectionHeading.copyWith(
                         color: textPrimary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -371,17 +369,13 @@ class _ProductsScreenState extends State<ProductsScreen> {
             width: 120,
             child: Text(
               label,
-              style: const TextStyle(color: textSecondary, fontSize: 14),
+              style: AppTextStyles.body.copyWith(color: textSecondary),
             ),
           ),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
-                color: textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
+              style: AppTextStyles.bodyStrong.copyWith(color: textPrimary),
             ),
           ),
         ],
@@ -474,10 +468,10 @@ class _ProductsScreenState extends State<ProductsScreen> {
   Widget _buildCommandRow() {
     return Row(
       children: [
-        const Expanded(
+        Expanded(
           child: Text(
             'Manage products, pricing, and stock from one catalog.',
-            style: TextStyle(color: textSecondary, fontSize: 14),
+            style: AppTextStyles.body.copyWith(color: textSecondary),
           ),
         ),
         const SizedBox(width: 12),
@@ -493,10 +487,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
-            textStyle: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
+            textStyle: AppTextStyles.bodyStrong,
           ),
         ),
       ],
@@ -513,7 +504,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
               _query = value;
               _pagination.reset();
             }),
-            style: const TextStyle(color: textPrimary, fontSize: 14),
+            style: AppTextStyles.fieldValue.copyWith(color: textPrimary),
             decoration: InputDecoration(
               hintText: 'Search products...',
               hintStyle: AppTextStyles.inputHint,
@@ -551,22 +542,15 @@ class _ProductsScreenState extends State<ProductsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Total Products',
-                style: TextStyle(
-                  color: textSecondary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: AppTextStyles.bodyStrong.copyWith(color: textSecondary),
               ),
               const SizedBox(height: 4),
               Text(
                 '$count',
-                style: const TextStyle(
+                style: AppTextStyles.importantNumber.copyWith(
                   color: AppColors.primary,
-                  fontSize: 16,
-                  height: 1,
-                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],
@@ -592,9 +576,9 @@ class _ProductsScreenState extends State<ProductsScreen> {
         children: [
           const Icon(Icons.sort_rounded, size: 20, color: AppColors.textMuted),
           const SizedBox(width: 8),
-          const Text(
+          Text(
             'Sort by:',
-            style: TextStyle(color: textSecondary, fontSize: 14),
+            style: AppTextStyles.body.copyWith(color: textSecondary),
           ),
           const SizedBox(width: 5),
           DropdownButtonHideUnderline(
@@ -606,11 +590,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
               ),
               dropdownColor: AppColors.surface,
               borderRadius: BorderRadius.circular(8),
-              style: const TextStyle(
-                color: textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-              ),
+              style: AppTextStyles.bodyStrong.copyWith(color: textPrimary),
               items: _sortOptions
                   .map(
                     (option) =>
@@ -668,10 +648,8 @@ class _ProductsScreenState extends State<ProductsScreen> {
                               product.name,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
+                              style: AppTextStyles.cardTitle.copyWith(
                                 color: textPrimary,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
@@ -682,10 +660,8 @@ class _ProductsScreenState extends State<ProductsScreen> {
                       const SizedBox(height: 6),
                       Text(
                         'Rs. ${_formatPrice(product.price)}',
-                        style: const TextStyle(
+                        style: AppTextStyles.importantNumber.copyWith(
                           color: AppColors.primary,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
                         ),
                       ),
                       const SizedBox(height: 9),
@@ -693,9 +669,8 @@ class _ProductsScreenState extends State<ProductsScreen> {
                         '${product.brand} - ${product.category}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: AppTextStyles.body.copyWith(
                           color: textSecondary,
-                          fontSize: 14,
                         ),
                       ),
                       const SizedBox(height: 7),
@@ -706,20 +681,16 @@ class _ProductsScreenState extends State<ProductsScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
+                                Text(
                                   'Stock',
-                                  style: TextStyle(
+                                  style: AppTextStyles.fieldLabel.copyWith(
                                     color: textSecondary,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                                 Text(
                                   '${product.stock}',
-                                  style: TextStyle(
+                                  style: AppTextStyles.bodyStrong.copyWith(
                                     color: statusColor,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
                                   ),
                                 ),
                               ],
@@ -877,11 +848,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
       ),
       child: Text(
         label,
-        style: TextStyle(
-          color: color,
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
-        ),
+        style: AppTextStyles.bodyStrong.copyWith(color: color),
       ),
     );
   }
@@ -919,21 +886,17 @@ class _ProductsScreenState extends State<ProductsScreen> {
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: AppColors.borderLight),
       ),
-      child: const Column(
+      child: Column(
         children: [
-          Icon(
+          const Icon(
             Icons.inventory_2_outlined,
             color: AppColors.textLightMuted,
             size: 42,
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           Text(
             'No products match your filters.',
-            style: TextStyle(
-              color: textSecondary,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.bodyStrong.copyWith(color: textSecondary),
           ),
         ],
       ),
@@ -956,12 +919,10 @@ class _ProductsScreenState extends State<ProductsScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Filter Products',
-                    style: TextStyle(
+                    style: AppTextStyles.sectionHeading.copyWith(
                       color: textPrimary,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 18),
@@ -1019,7 +980,10 @@ class _ProductsScreenState extends State<ProductsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: textSecondary, fontSize: 14)),
+        Text(
+          label,
+          style: AppTextStyles.fieldLabel.copyWith(color: textSecondary),
+        ),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -1427,10 +1391,8 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
                   Expanded(
                     child: Text(
                       _isEditing ? 'Edit Product' : 'Add Product',
-                      style: const TextStyle(
+                      style: AppTextStyles.sectionHeading.copyWith(
                         color: textPrimary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -1608,7 +1570,7 @@ class _ProductFormDialogState extends State<_ProductFormDialog> {
             Icons.keyboard_arrow_down_rounded,
             color: textSecondary,
           ),
-          style: const TextStyle(color: textPrimary, fontSize: 14),
+          style: AppTextStyles.fieldValue.copyWith(color: textPrimary),
           dropdownColor: AppColors.surface,
           borderRadius: BorderRadius.circular(8),
           items: options

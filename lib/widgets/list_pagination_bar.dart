@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../constants/app_colors.dart';
+import '../core/theme/app_text_styles.dart';
 import '../models/list_pagination.dart';
 
 class ListPaginationBar extends StatelessWidget {
@@ -122,9 +123,8 @@ class ListPaginationBar extends StatelessWidget {
                 children: [
                   Text(
                     'Showing $first–$last of ${pagination.total}',
-                    style: const TextStyle(
+                    style: AppTextStyles.small.copyWith(
                       color: AppColors.textSecondary,
-                      fontSize: 12,
                     ),
                   ),
                 ],
@@ -208,20 +208,16 @@ class ListPaginationPageSize extends StatelessWidget {
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
+          Text(
             'Per page:',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+            style: AppTextStyles.small.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(width: 4),
           DropdownButton<int>(
             value: pagination.pageSize,
             isDense: true,
             underline: const SizedBox.shrink(),
-            style: const TextStyle(
-              color: AppColors.primary,
-              fontWeight: FontWeight.w700,
-              fontSize: 12,
-            ),
+            style: AppTextStyles.smallStrong.copyWith(color: AppColors.primary),
             items: ({10, 25, 50, 100, pagination.pageSize}.toList()..sort())
                 .map(
                   (size) => DropdownMenuItem(value: size, child: Text('$size')),

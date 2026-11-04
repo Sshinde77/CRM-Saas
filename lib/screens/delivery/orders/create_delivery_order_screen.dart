@@ -23,12 +23,14 @@ class CreateDeliveryOrderScreen extends StatefulWidget {
   final Widget? drawer;
   final bool assignDeliveryPartner;
   final VoidCallback? onCreated;
+  final String? initialCustomerId;
 
   const CreateDeliveryOrderScreen({
     super.key,
     this.drawer,
     this.assignDeliveryPartner = false,
     this.onCreated,
+    this.initialCustomerId,
   });
 
   @override
@@ -125,7 +127,18 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
     await Future.wait([
       _loadSection('Customers', () async {
         final customers = await api.fetchCustomers(isActive: true);
-        if (mounted) setState(() => _customers = customers);
+        if (mounted) {
+          final initialId = widget.initialCustomerId?.trim();
+          final initialCustomer = initialId == null || initialId.isEmpty
+              ? null
+              : customers
+                    .where((customer) => customer.id == initialId)
+                    .firstOrNull;
+          setState(() {
+            _customers = customers;
+            if (initialCustomer != null) _customer = initialCustomer;
+          });
+        }
       }),
       _loadSection('Products', () async {
         final rows = await api.fetchProducts(isActive: true);
@@ -623,13 +636,12 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                   children: [
                     Text(
                       '${_selected.length} items',
-                      style: const TextStyle(fontSize: 14),
+                      style: AppTextStyles.body,
                     ),
                     Text(
                       _money(_total),
-                      style: const TextStyle(
+                      style: AppTextStyles.importantNumber.copyWith(
                         color: _green,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ],
@@ -708,9 +720,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                                     children: [
                                       const Text(
                                         'Some order details are unavailable',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w700,
-                                        ),
+                                        style: AppTextStyles.bodyStrong,
                                       ),
                                       const SizedBox(height: 6),
                                       ..._loadErrors.entries.map(
@@ -799,8 +809,9 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                                                               8,
                                                             ),
                                                         child: CustomerAvatar(
-                                                          name: _customer!
-                                                              .businessName ??
+                                                          name:
+                                                              _customer!
+                                                                  .businessName ??
                                                               _customer!.name,
                                                           photoUrl: _customer!
                                                               .profilePhotoUrl,
@@ -843,11 +854,11 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                                                     selectedCustomer
                                                         .billingAddress ??
                                                     'No address available',
-                                                style: const TextStyle(
-                                                  fontSize: 14,
-                                                  color:
-                                                      AppColors.textLightMuted,
-                                                ),
+                                                style: AppTextStyles.body
+                                                    .copyWith(
+                                                      color: AppColors
+                                                          .textLightMuted,
+                                                    ),
                                               ),
                                             ),
                                           ],
@@ -954,11 +965,10 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                                             Expanded(
                                               child: Text(
                                                 _stockError!,
-                                                style: const TextStyle(
-                                                  color: AppColors.red,
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
+                                                style: AppTextStyles.smallStrong
+                                                    .copyWith(
+                                                      color: AppColors.red,
+                                                    ),
                                               ),
                                             ),
                                             TextButton(
@@ -1205,63 +1215,54 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                                         return Wrap(
                                           spacing: spacing,
                                           runSpacing: spacing,
-                                          children:
-                                              [
-                                                    'Cash',
-                                                    'Phone Pe',
-                                                    'Other',
-                                                    'Google Pay',
-                                                  ]
-                                                  .map(
-                                                    (p) => SizedBox(
-                                                      width: itemWidth,
-                                                      child: Align(
-                                                        alignment: Alignment
-                                                            .centerLeft,
-                                                        child: ChoiceChip(
-                                                          avatar: Icon(
-                                                            _payment == p
-                                                                ? Icons
-                                                                      .radio_button_checked
-                                                                : Icons
-                                                                      .radio_button_off,
-                                                            color: _green,
-                                                            size: 18,
-                                                          ),
-                                                          label: Text(p),
-                                                          labelStyle: TextStyle(
+                                          children: ['Cash', 'Phone Pe', 'Other', 'Google Pay']
+                                              .map(
+                                                (p) => SizedBox(
+                                                  width: itemWidth,
+                                                  child: Align(
+                                                    alignment:
+                                                        Alignment.centerLeft,
+                                                    child: ChoiceChip(
+                                                      avatar: Icon(
+                                                        _payment == p
+                                                            ? Icons
+                                                                  .radio_button_checked
+                                                            : Icons
+                                                                  .radio_button_off,
+                                                        color: _green,
+                                                        size: 18,
+                                                      ),
+                                                      label: Text(p),
+                                                      labelStyle: AppTextStyles
+                                                          .bodyStrong
+                                                          .copyWith(
                                                             color: _payment == p
                                                                 ? AppColors
                                                                       .primary
                                                                 : AppColors
                                                                       .textPrimary,
-                                                            fontWeight:
-                                                                FontWeight.w600,
                                                           ),
-                                                          selected:
-                                                              _payment == p,
-                                                          showCheckmark: false,
-                                                          selectedColor: _green
-                                                              .withValues(
-                                                                alpha: 0.12,
-                                                              ),
-                                                          side: BorderSide(
-                                                            color: _payment == p
-                                                                ? _green
-                                                                : AppColors
-                                                                      .border,
-                                                            width: 0.7,
+                                                      selected: _payment == p,
+                                                      showCheckmark: false,
+                                                      selectedColor: _green
+                                                          .withValues(
+                                                            alpha: 0.12,
                                                           ),
-                                                          onSelected: (_) =>
-                                                              setState(
-                                                                () => _payment =
-                                                                    p,
-                                                              ),
-                                                        ),
+                                                      side: BorderSide(
+                                                        color: _payment == p
+                                                            ? _green
+                                                            : AppColors.border,
+                                                        width: 0.7,
                                                       ),
+                                                      onSelected: (_) =>
+                                                          setState(
+                                                            () => _payment = p,
+                                                          ),
                                                     ),
-                                                  )
-                                                  .toList(),
+                                                  ),
+                                                ),
+                                              )
+                                              .toList(),
                                         );
                                       },
                                     ),
@@ -1280,16 +1281,18 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        const Expanded(
+                                        Expanded(
                                           child: Padding(
-                                            padding: EdgeInsets.only(top: 12),
+                                            padding: const EdgeInsets.only(
+                                              top: 12,
+                                            ),
                                             child: Text(
                                               'Discount',
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w600,
-                                                color: AppColors.textSecondary,
-                                              ),
+                                              style: AppTextStyles.bodyStrong
+                                                  .copyWith(
+                                                    color:
+                                                        AppColors.textSecondary,
+                                                  ),
                                             ),
                                           ),
                                         ),
@@ -1302,17 +1305,13 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                                                   decimal: true,
                                                 ),
                                             textAlign: TextAlign.right,
-                                            style: const TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w600,
-                                            ),
+                                            style: AppTextStyles.bodyStrong,
                                             decoration: _decoration('0')
                                                 .copyWith(
                                                   prefixText: '₹ ',
-                                                  prefixStyle: const TextStyle(
-                                                    color: _green,
-                                                    fontWeight: FontWeight.w700,
-                                                  ),
+                                                  prefixStyle: AppTextStyles
+                                                      .bodyStrong
+                                                      .copyWith(color: _green),
                                                 ),
                                             onChanged: (_) => setState(() {}),
                                             validator: (v) {
@@ -1404,47 +1403,32 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    p.name,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
-                    ),
-                  ),
+                  Text(p.name, style: AppTextStyles.bodyStrong),
                   if (p.sku.isNotEmpty)
                     Text(
                       'SKU: ${p.sku}',
-                      style: const TextStyle(
-                        fontSize: 11,
+                      style: AppTextStyles.small.copyWith(
                         color: AppColors.textLightMuted,
                       ),
                     ),
                   const SizedBox(height: 3),
                   Text(
                     _availabilityLabel(rawStock, quantity),
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
+                    style: AppTextStyles.small.copyWith(
                       color: _availabilityColor(rawStock, quantity),
                     ),
                   ),
                   RichText(
                     text: TextSpan(
-                      style: const TextStyle(
-                        fontFamily: AppTextStyles.fontFamily,
-                        color: AppColors.textPrimary,
-                        fontSize: 14,
-                      ),
+                      style: AppTextStyles.body,
                       children: [
                         TextSpan(
                           text: _money(p.price),
-                          style: const TextStyle(fontWeight: FontWeight.w700),
+                          style: AppTextStyles.bodyStrong,
                         ),
                         TextSpan(
                           text: ' / ${p.unit}',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
+                          style: AppTextStyles.smallStrong.copyWith(
                             color: AppColors.textSecondary,
                           ),
                         ),
@@ -1469,10 +1453,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                         decimal: true,
                       ),
                       textAlign: TextAlign.right,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: AppTextStyles.bodyStrong,
                       decoration: const InputDecoration(
                         prefixText: '\u20b9 ',
                         isDense: true,
@@ -1503,7 +1484,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                       icon: const Icon(Icons.remove, size: 18),
                     ),
                     SizedBox(
-                      width: 28,
+                      width: 48,
                       child: TextField(
                         key: ValueKey('order-quantity-${p.id}'),
                         controller: _quantityControllerFor(p),
@@ -1511,10 +1492,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
                         textAlign: TextAlign.center,
                         enabled: !_stockLoading,
                         cursorWidth: 1.5,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: AppTextStyles.bodyStrong,
                         decoration: const InputDecoration(
                           isDense: true,
                           isCollapsed: true,
@@ -1606,20 +1584,15 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
         Expanded(
           child: Text(
             title,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: bold ? FontWeight.w700 : FontWeight.w500,
-            ),
+            style: bold ? AppTextStyles.bodyStrong : AppTextStyles.fieldLabel,
           ),
         ),
         const SizedBox(width: 12),
         Text(
           value,
-          style: TextStyle(
-            fontSize: 14,
-            color: bold ? _green : null,
-            fontWeight: bold ? FontWeight.w700 : FontWeight.w600,
-          ),
+          style: bold
+              ? AppTextStyles.importantNumber.copyWith(color: _green)
+              : AppTextStyles.bodyStrong,
         ),
       ],
     ),
@@ -1701,15 +1674,11 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
               ],
             ),
             const SizedBox(height: 6),
-            Text(
-              title,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-            ),
+            Text(title, style: AppTextStyles.bodyStrong),
             const SizedBox(height: 4),
             Text(
               subtitle,
-              style: const TextStyle(
-                fontSize: 12,
+              style: AppTextStyles.small.copyWith(
                 color: AppColors.textLightMuted,
               ),
             ),
@@ -1836,6 +1805,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
     final value = _paidController.text.trim();
     return value.isEmpty ? 0 : double.tryParse(value);
   }
+
   String get _submitLabel {
     if (_submitting) {
       return _createdOrderId == null
@@ -1853,6 +1823,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
       () => TextEditingController(text: '${item.quantity}'),
     );
   }
+
   String _date(DateTime date) =>
       '${date.day.toString().padLeft(2, '0')} ${const ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][date.month - 1]} ${date.year}';
   String _apiDate(DateTime date) =>
@@ -2171,10 +2142,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
             children: [
               Text(
                 _error!,
-                style: const TextStyle(
-                  color: _red,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: AppTextStyles.bodyStrong.copyWith(color: _red),
               ),
               for (final shortage in _stockShortages)
                 Padding(
@@ -2217,322 +2185,312 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
       },
       child: Scaffold(
         backgroundColor: AppColors.deliveryBackground,
-      bottomNavigationBar: SafeArea(
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
-          decoration: const BoxDecoration(
-            color: AppColors.surface,
-            border: Border(top: BorderSide(color: AppColors.border)),
-          ),
-          child: SizedBox(
-            height: 52,
-            child: FilledButton.icon(
-              onPressed:
-                  _items.isEmpty ||
-                      _submitting ||
-                      _stockShortages.isNotEmpty ||
-                      _createdOrderId == ''
-                  ? null
-                  : _createOrder,
-              icon: _submitting
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Icon(Icons.shopping_bag_outlined, size: 19),
-              label: Text(_submitLabel),
-              style: FilledButton.styleFrom(
-                backgroundColor: _green,
-                foregroundColor: AppColors.surface,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
+        bottomNavigationBar: SafeArea(
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+            decoration: const BoxDecoration(
+              color: AppColors.surface,
+              border: Border(top: BorderSide(color: AppColors.border)),
             ),
-          ),
-        ),
-      ),
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            DeliveryTopBar(
-              title: 'Sales Order Preview',
-              subtitle: 'Review order details before creating',
-              leadingIcon: Icons.arrow_back_rounded,
-              onLeadingTap: _handleBackPressed,
-            ),
-            Expanded(
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 720),
-                  child: ListView(
-                    controller: _previewScrollController,
-                    padding: const EdgeInsets.fromLTRB(16, 18, 16, 24),
-                    children: [
-                      const Text(
-                        'Draft Sales Order',
-                        style: TextStyle(
-                          color: _header,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
+            child: SizedBox(
+              height: 52,
+              child: FilledButton.icon(
+                onPressed:
+                    _items.isEmpty ||
+                        _submitting ||
+                        _stockShortages.isNotEmpty ||
+                        _createdOrderId == ''
+                    ? null
+                    : _createOrder,
+                icon: _submitting
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
                         ),
-                      ),
-                      if (_error != null) ...[
-                        const SizedBox(height: 12),
-                        _errorCard(),
-                      ],
-                      const SizedBox(height: 12),
-                      _card(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            CircleAvatar(
-                              radius: 24,
-                              backgroundColor: AppColors.deliveryGreenSoft,
-                              child: const Icon(
-                                Icons.storefront_outlined,
-                                color: _green,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    widget.customer.name,
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                  if (address != null && address.isNotEmpty)
-                                    Text(
-                                      address,
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                        color: AppColors.textSecondary,
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      _card(
-                        child: Column(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: AppColors.surfaceSoft,
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              child: Row(
-                                children: [
-                                  _summaryIcon(Icons.receipt_long_outlined),
-                                  const SizedBox(width: 10),
-                                  const Expanded(
-                                    child: Text(
-                                      'Order Summary',
-                                      style: TextStyle(
-                                        color: AppColors.primary,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                  ),
-                                  Text(
-                                    '${_items.length} ${_items.length == 1 ? 'item' : 'items'}',
-                                    style: const TextStyle(
-                                      color: _green,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            _productTable(),
-                            const Divider(height: 24, color: AppColors.border),
-                            _summaryRow(
-                              'Subtotal',
-                              _money(_subtotal),
-                              icon: Icons.sell_outlined,
-                            ),
-                            _summaryRow(
-                              'Tax',
-                              _money(_tax),
-                              icon: Icons.receipt_long_outlined,
-                            ),
-                            _summaryRow(
-                              'Discount',
-                              '− ${_money(_discount)}',
-                              icon: Icons.percent_rounded,
-                              color: _green,
-                            ),
-                            const Divider(height: 18, color: AppColors.border),
-                            _summaryRow(
-                              'Total',
-                              _money(_total),
-                              icon: Icons.account_balance_wallet_outlined,
-                              strong: true,
-                            ),
-                            _summaryRow(
-                              'Previous Balance',
-                              '+ ${_money(_previousBalance)}',
-                              icon: Icons.receipt_long_outlined,
-                            ),
-                            _summaryRow(
-                              'Grand Total',
-                              _money(_grandTotal),
-                              icon: Icons.shopping_bag_outlined,
-                              highlight: true,
-                              color: AppColors.primary,
-                              strong: true,
-                            ),
-                            const SizedBox(height: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 10,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.surfaceSoft,
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              child: Row(
-                                children: [
-                                  _summaryIcon(Icons.payments_outlined),
-                                  const SizedBox(width: 10),
-                                  const Expanded(
-                                    child: Text(
-                                      'Paid Amount',
-                                      style: TextStyle(
-                                        color: AppColors.textPrimary,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                  ),
-                                  Flexible(
-                                    child: TextField(
-                                      controller: _paidController,
-                                      focusNode: _paidFocusNode,
-                                      readOnly: _createdOrderId != null,
-                                      keyboardType:
-                                          const TextInputType.numberWithOptions(
-                                            decimal: true,
-                                          ),
-                                      textAlign: TextAlign.right,
-                                      style: const TextStyle(
-                                        color: AppColors.textPrimary,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                      decoration: InputDecoration(
-                                        hintText: _paidFocusNode.hasFocus
-                                            ? null
-                                            : '0',
-                                        prefixText: '₹ ',
-                                        prefixStyle: const TextStyle(
-                                          color: _green,
-                                        ),
-                                        filled: true,
-                                        fillColor: AppColors.surface,
-                                        isDense: true,
-                                        contentPadding:
-                                            const EdgeInsets.symmetric(
-                                              horizontal: 10,
-                                              vertical: 9,
-                                            ),
-                                        border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                          borderSide: const BorderSide(
-                                            color: AppColors.border,
-                                          ),
-                                        ),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                          borderSide: const BorderSide(
-                                            color: AppColors.border,
-                                          ),
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                          borderSide: const BorderSide(
-                                            color: _green,
-                                            width: 1.5,
-                                          ),
-                                        ),
-                                      ),
-                                      onTap: () => setState(() {
-                                        _error = null;
-                                      }),
-                                      onChanged: (_) =>
-                                          setState(() => _error = null),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            _summaryRow(
-                              'Balance',
-                              _money(_grandTotal - (_paid ?? 0)),
-                              icon: Icons.account_balance_wallet_outlined,
-                              color: _red,
-                              strong: true,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      _card(
-                        child: Column(
-                          children: [
-                            _detailRow('Order Date', _date(widget.orderDate)),
-                            _detailRow(
-                              'Delivery Date',
-                              _date(widget.deliveryDate),
-                            ),
-                            _detailRow('Warehouse', warehouseName),
-                            _detailRow('Payment Type', widget.paymentType),
-                            _detailRow(
-                              'Delivery Method',
-                              widget.homeDelivery
-                                  ? 'Home Delivery'
-                                  : 'Takeaway / Self Pickup',
-                            ),
-                            _detailRow(
-                              'Order Delivery By',
-                              widget.deliveryPartner?.name ??
-                                  (widget.homeDelivery
-                                      ? 'Home Delivery'
-                                      : 'Self Pickup'),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                      )
+                    : const Icon(Icons.shopping_bag_outlined, size: 19),
+                label: Text(_submitLabel),
+                style: FilledButton.styleFrom(
+                  backgroundColor: _green,
+                  foregroundColor: AppColors.surface,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
                 ),
               ),
             ),
-          ],
+          ),
         ),
-      ),
+        body: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              DeliveryTopBar(
+                title: 'Sales Order Preview',
+                subtitle: 'Review order details before creating',
+                leadingIcon: Icons.arrow_back_rounded,
+                onLeadingTap: _handleBackPressed,
+              ),
+              Expanded(
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 720),
+                    child: ListView(
+                      controller: _previewScrollController,
+                      padding: const EdgeInsets.fromLTRB(16, 18, 16, 24),
+                      children: [
+                        Text(
+                          'Draft Sales Order',
+                          style: AppTextStyles.screenHeading.copyWith(
+                            color: _header,
+                          ),
+                        ),
+                        if (_error != null) ...[
+                          const SizedBox(height: 12),
+                          _errorCard(),
+                        ],
+                        const SizedBox(height: 12),
+                        _card(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              CircleAvatar(
+                                radius: 24,
+                                backgroundColor: AppColors.deliveryGreenSoft,
+                                child: const Icon(
+                                  Icons.storefront_outlined,
+                                  color: _green,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      widget.customer.name,
+                                      style: AppTextStyles.cardTitle,
+                                    ),
+                                    if (address != null && address.isNotEmpty)
+                                      Text(
+                                        address,
+                                        style: AppTextStyles.body.copyWith(
+                                          color: AppColors.textSecondary,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        _card(
+                          child: Column(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: AppColors.surfaceSoft,
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                child: Row(
+                                  children: [
+                                    _summaryIcon(Icons.receipt_long_outlined),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        'Order Summary',
+                                        style: AppTextStyles.sectionHeading
+                                            .copyWith(color: AppColors.primary),
+                                      ),
+                                    ),
+                                    Text(
+                                      '${_items.length} ${_items.length == 1 ? 'item' : 'items'}',
+                                      style: AppTextStyles.bodyStrong.copyWith(
+                                        color: _green,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              _productTable(),
+                              const Divider(
+                                height: 24,
+                                color: AppColors.border,
+                              ),
+                              _summaryRow(
+                                'Subtotal',
+                                _money(_subtotal),
+                                icon: Icons.sell_outlined,
+                              ),
+                              _summaryRow(
+                                'Tax',
+                                _money(_tax),
+                                icon: Icons.receipt_long_outlined,
+                              ),
+                              _summaryRow(
+                                'Discount',
+                                '− ${_money(_discount)}',
+                                icon: Icons.percent_rounded,
+                                color: _green,
+                              ),
+                              const Divider(
+                                height: 18,
+                                color: AppColors.border,
+                              ),
+                              _summaryRow(
+                                'Total',
+                                _money(_total),
+                                icon: Icons.account_balance_wallet_outlined,
+                                strong: true,
+                              ),
+                              _summaryRow(
+                                'Previous Balance',
+                                '+ ${_money(_previousBalance)}',
+                                icon: Icons.receipt_long_outlined,
+                              ),
+                              _summaryRow(
+                                'Grand Total',
+                                _money(_grandTotal),
+                                icon: Icons.shopping_bag_outlined,
+                                highlight: true,
+                                color: AppColors.primary,
+                                strong: true,
+                              ),
+                              const SizedBox(height: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 10,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.surfaceSoft,
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                child: Row(
+                                  children: [
+                                    _summaryIcon(Icons.payments_outlined),
+                                    const SizedBox(width: 10),
+                                    const Expanded(
+                                      child: Text(
+                                        'Paid Amount',
+                                        style: AppTextStyles.bodyStrong,
+                                      ),
+                                    ),
+                                    Flexible(
+                                      child: TextField(
+                                        controller: _paidController,
+                                        focusNode: _paidFocusNode,
+                                        readOnly: _createdOrderId != null,
+                                        keyboardType:
+                                            const TextInputType.numberWithOptions(
+                                              decimal: true,
+                                            ),
+                                        textAlign: TextAlign.right,
+                                        style: AppTextStyles.bodyStrong,
+                                        decoration: InputDecoration(
+                                          hintText: _paidFocusNode.hasFocus
+                                              ? null
+                                              : '0',
+                                          prefixText: '₹ ',
+                                          prefixStyle: const TextStyle(
+                                            color: _green,
+                                          ),
+                                          filled: true,
+                                          fillColor: AppColors.surface,
+                                          isDense: true,
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                horizontal: 10,
+                                                vertical: 9,
+                                              ),
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                            borderSide: const BorderSide(
+                                              color: AppColors.border,
+                                            ),
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                            borderSide: const BorderSide(
+                                              color: AppColors.border,
+                                            ),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                            borderSide: const BorderSide(
+                                              color: _green,
+                                              width: 1.5,
+                                            ),
+                                          ),
+                                        ),
+                                        onTap: () => setState(() {
+                                          _error = null;
+                                        }),
+                                        onChanged: (_) =>
+                                            setState(() => _error = null),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              _summaryRow(
+                                'Balance',
+                                _money(_grandTotal - (_paid ?? 0)),
+                                icon: Icons.account_balance_wallet_outlined,
+                                color: _red,
+                                strong: true,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        _card(
+                          child: Column(
+                            children: [
+                              _detailRow('Order Date', _date(widget.orderDate)),
+                              _detailRow(
+                                'Delivery Date',
+                                _date(widget.deliveryDate),
+                              ),
+                              _detailRow('Warehouse', warehouseName),
+                              _detailRow('Payment Type', widget.paymentType),
+                              _detailRow(
+                                'Delivery Method',
+                                widget.homeDelivery
+                                    ? 'Home Delivery'
+                                    : 'Takeaway / Self Pickup',
+                              ),
+                              _detailRow(
+                                'Order Delivery By',
+                                widget.deliveryPartner?.name ??
+                                    (widget.homeDelivery
+                                        ? 'Home Delivery'
+                                        : 'Self Pickup'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -2578,10 +2536,9 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
         Expanded(
           child: Text(
             label,
-            style: TextStyle(
-              color: color ?? AppColors.textPrimary,
-              fontWeight: strong ? FontWeight.w700 : FontWeight.w500,
-            ),
+            style:
+                (strong ? AppTextStyles.bodyStrong : AppTextStyles.fieldLabel)
+                    .copyWith(color: color ?? AppColors.textPrimary),
           ),
         ),
         const SizedBox(width: 12),
@@ -2591,10 +2548,14 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: TextStyle(
-                color: color ?? AppColors.textPrimary,
-                fontWeight: strong ? FontWeight.w700 : FontWeight.w500,
-              ),
+              style: highlight
+                  ? AppTextStyles.importantNumber.copyWith(
+                      color: color ?? AppColors.textPrimary,
+                    )
+                  : (strong
+                            ? AppTextStyles.bodyStrong
+                            : AppTextStyles.fieldLabel)
+                        .copyWith(color: color ?? AppColors.textPrimary),
             ),
           ),
         ),
@@ -2612,10 +2573,8 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
         Expanded(
           child: Text(
             label,
-            style: TextStyle(
+            style: AppTextStyles.small.copyWith(
               color: color ?? AppColors.textPrimary,
-              fontSize: 12,
-              fontWeight: FontWeight.w300,
             ),
           ),
         ),
@@ -2625,9 +2584,8 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
           child: Text(
             value,
             textAlign: TextAlign.right,
-            style: TextStyle(
+            style: AppTextStyles.smallStrong.copyWith(
               color: color ?? AppColors.textPrimary,
-              fontWeight: FontWeight.w700,
             ),
           ),
         ),
@@ -2652,7 +2610,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                           flex: 4,
                           child: Text(
                             'Product',
-                            style: TextStyle(fontWeight: FontWeight.w700),
+                            style: AppTextStyles.bodyStrong,
                           ),
                         ),
                         Expanded(
@@ -2660,7 +2618,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                           child: Text(
                             'Qty',
                             textAlign: TextAlign.center,
-                            style: TextStyle(fontWeight: FontWeight.w700),
+                            style: AppTextStyles.bodyStrong,
                           ),
                         ),
                         Expanded(
@@ -2668,7 +2626,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                           child: Text(
                             'Unit Price',
                             textAlign: TextAlign.right,
-                            style: TextStyle(fontWeight: FontWeight.w700),
+                            style: AppTextStyles.bodyStrong,
                           ),
                         ),
                         Expanded(
@@ -2676,7 +2634,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                           child: Text(
                             'Total',
                             textAlign: TextAlign.right,
-                            style: TextStyle(fontWeight: FontWeight.w700),
+                            style: AppTextStyles.bodyStrong,
                           ),
                         ),
                       ],
@@ -2718,16 +2676,12 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                                     children: [
                                       Text(
                                         item.product.name,
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w700,
-                                        ),
+                                        style: AppTextStyles.bodyStrong,
                                       ),
                                       if (item.product.sku.isNotEmpty)
                                         Text(
                                           'SKU: ${item.product.sku}',
-                                          style: const TextStyle(
-                                            fontSize: 14,
+                                          style: AppTextStyles.body.copyWith(
                                             color: AppColors.textMuted,
                                           ),
                                         ),
@@ -2751,37 +2705,35 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                                       : null,
                                   child: const Icon(Icons.remove, size: 16),
                                 ),
-                                  SizedBox(
-                                    width: 28,
-                                    child: TextField(
-                                      controller: _quantityControllerFor(item),
-                                      keyboardType: TextInputType.number,
-                                      textAlign: TextAlign.center,
-                                      enabled: _createdOrderId == null,
-                                      cursorWidth: 1.5,
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                      decoration: const InputDecoration(
-                                        isDense: true,
-                                        isCollapsed: true,
-                                        contentPadding: EdgeInsets.zero,
-                                        border: InputBorder.none,
-                                      ),
-                                      onChanged: (value) =>
-                                          _setManualQuantity(item, value),
-                                      onEditingComplete: () {
-                                        final value = int.tryParse(
-                                          _quantityControllerFor(item).text
-                                              .trim(),
-                                        );
-                                        if (value != null) {
-                                          _setQuantity(item, value);
-                                        }
-                                        FocusScope.of(context).unfocus();
-                                      },
+                                SizedBox(
+                                  width: 28,
+                                  child: TextField(
+                                    controller: _quantityControllerFor(item),
+                                    keyboardType: TextInputType.number,
+                                    textAlign: TextAlign.center,
+                                    enabled: _createdOrderId == null,
+                                    cursorWidth: 1.5,
+                                    style: AppTextStyles.bodyStrong,
+                                    decoration: const InputDecoration(
+                                      isDense: true,
+                                      isCollapsed: true,
+                                      contentPadding: EdgeInsets.zero,
+                                      border: InputBorder.none,
                                     ),
+                                    onChanged: (value) =>
+                                        _setManualQuantity(item, value),
+                                    onEditingComplete: () {
+                                      final value = int.tryParse(
+                                        _quantityControllerFor(
+                                          item,
+                                        ).text.trim(),
+                                      );
+                                      if (value != null) {
+                                        _setQuantity(item, value);
+                                      }
+                                      FocusScope.of(context).unfocus();
+                                    },
+                                  ),
                                 ),
                                 InkWell(
                                   onTap: _createdOrderId == null
@@ -2804,7 +2756,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                             child: Text(
                               _money(item.unitPrice),
                               textAlign: TextAlign.right,
-                              style: const TextStyle(fontSize: 14),
+                              style: AppTextStyles.body,
                             ),
                           ),
                           Expanded(
@@ -2812,10 +2764,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                             child: Text(
                               _money(item.unitPrice * item.quantity),
                               textAlign: TextAlign.right,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                              ),
+                              style: AppTextStyles.bodyStrong,
                             ),
                           ),
                         ],
@@ -2884,9 +2833,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                           item.product.name,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
+                          style: AppTextStyles.secondaryStrong.copyWith(
                             height: 1.2,
                           ),
                         ),
@@ -2896,8 +2843,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                             'SKU: ${item.product.sku}',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 11,
+                            style: AppTextStyles.small.copyWith(
                               color: AppColors.textMuted,
                             ),
                           ),
@@ -2905,8 +2851,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                         const SizedBox(height: 2),
                         Text(
                           '${_money(item.unitPrice)} / ${item.product.unit}',
-                          style: const TextStyle(
-                            fontSize: 11,
+                          style: AppTextStyles.small.copyWith(
                             color: AppColors.textSecondary,
                           ),
                         ),
@@ -2921,11 +2866,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                   Expanded(
                     child: Text(
                       _money(item.unitPrice * item.quantity),
-                      style: const TextStyle(
-                        color: _green,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: AppTextStyles.smallStrong.copyWith(color: _green),
                     ),
                   ),
                   IconButton.filledTonal(
@@ -2952,10 +2893,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
                       textAlign: TextAlign.center,
                       enabled: _createdOrderId == null,
                       cursorWidth: 1.5,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: AppTextStyles.secondaryStrong,
                       decoration: const InputDecoration(
                         isDense: true,
                         isCollapsed: true,

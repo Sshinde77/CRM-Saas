@@ -99,23 +99,20 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Column(
+                        Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               'Add a new supplier',
-                              style: TextStyle(
+                              style: AppTextStyles.cardTitle.copyWith(
                                 color: Color(0xFF111827),
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
                               ),
                             ),
                             SizedBox(height: 8),
                             Text(
                               'Track contact details, category and GST information for every vendor.',
-                              style: TextStyle(
+                              style: AppTextStyles.body.copyWith(
                                 color: Color(0xFF64748B),
-                                fontSize: 14,
                               ),
                             ),
                           ],
@@ -284,11 +281,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
           alignment: Alignment.center,
           child: Text(
             step,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.bodyStrong.copyWith(color: Colors.white),
           ),
         ),
         const SizedBox(width: 10),
@@ -309,11 +302,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: Color(0xFF111827),
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
+          style: AppTextStyles.fieldLabel.copyWith(color: Color(0xFF111827)),
         ),
         const SizedBox(height: 8),
         TextField(
@@ -357,11 +346,7 @@ class _AddSupplierScreenState extends State<AddSupplierScreen> {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: Color(0xFF111827),
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
+          style: AppTextStyles.fieldLabel.copyWith(color: Color(0xFF111827)),
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(

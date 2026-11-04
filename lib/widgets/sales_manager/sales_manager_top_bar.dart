@@ -26,7 +26,7 @@ class SalesManagerTopBar extends StatelessWidget {
     this.profileName,
     this.profileRole,
     this.onSignOut,
-    this.titleFontWeight = FontWeight.w700,
+    this.titleFontWeight = FontWeight.w600,
     this.titleFontSize = 16,
   });
 

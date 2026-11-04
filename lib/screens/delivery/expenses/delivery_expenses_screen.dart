@@ -438,20 +438,16 @@ class _HeaderCard extends StatelessWidget {
               children: [
                 Text(
                   'My Expense Claims',
-                  style: TextStyle(
+                  style: AppTextStyles.cardTitle.copyWith(
                     color: AppColors.deliveryInk,
                     fontSize: compact ? 14 : 16,
-                    height: 1.15,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   '${data.expenses.length} Claims',
-                  style: TextStyle(
+                  style: AppTextStyles.smallStrong.copyWith(
                     color: const Color(0xFF4F5870),
-                    fontSize: compact ? 10.5 : 11.5,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
@@ -581,11 +577,8 @@ class _MetricTile extends StatelessWidget {
                   info.value,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: AppTextStyles.bodyStrong.copyWith(
                     color: AppColors.deliveryInk,
-                    fontSize: 14,
-                    height: 1.1,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 3),
@@ -593,10 +586,8 @@ class _MetricTile extends StatelessWidget {
                   info.label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(0xFF586176),
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w700,
+                  style: AppTextStyles.smallStrong.copyWith(
+                    color: const Color(0xFF586176),
                   ),
                 ),
               ],
@@ -631,7 +622,9 @@ class _FiltersCard extends StatelessWidget {
           TextField(
             controller: searchController,
             onChanged: onSearchChanged,
-            style: const TextStyle(fontSize: 13, color: AppColors.textPrimary),
+            style: AppTextStyles.secondary.copyWith(
+              color: AppColors.textPrimary,
+            ),
             decoration: InputDecoration(
               hintText: 'Search category, purpose, or claim id',
               hintStyle: AppTextStyles.inputHint,
@@ -679,12 +672,10 @@ class _FiltersCard extends StatelessWidget {
                   showCheckmark: selected,
                   checkmarkColor: AppColors.surface,
                   padding: const EdgeInsets.symmetric(horizontal: 7),
-                  labelStyle: TextStyle(
+                  labelStyle: AppTextStyles.smallStrong.copyWith(
                     color: selected
                         ? AppColors.surface
                         : AppColors.textSecondary,
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w700,
                   ),
                   selectedColor: AppColors.deliveryGreen,
                   backgroundColor: AppColors.surface,
@@ -772,11 +763,8 @@ class _ExpenseCard extends StatelessWidget {
                                     expense.expenseId,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      color: AppColors.deliveryInk,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w700,
-                                    ),
+                                    style: AppTextStyles.secondaryStrong
+                                        .copyWith(color: AppColors.deliveryInk),
                                   ),
                                 ),
                                 const SizedBox(width: 5),
@@ -800,11 +788,7 @@ class _ExpenseCard extends StatelessWidget {
                                     '${_formatDate(expense.expenseDate)} - ${expense.paymentMode}',
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      color: AppColors.textMuted,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w400,
-                                    ),
+                                    style: AppTextStyles.small,
                                   ),
                                 ),
                               ],
@@ -826,11 +810,10 @@ class _ExpenseCard extends StatelessWidget {
                                         expense.category,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          color: AppColors.deliveryInk,
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w700,
-                                        ),
+                                        style: AppTextStyles.smallStrong
+                                            .copyWith(
+                                              color: AppColors.deliveryInk,
+                                            ),
                                       ),
                                     ],
                                   ),
@@ -859,11 +842,10 @@ class _ExpenseCard extends StatelessWidget {
                                             : 'No receipt',
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          color: AppColors.deliveryInk,
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w700,
-                                        ),
+                                        style: AppTextStyles.smallStrong
+                                            .copyWith(
+                                              color: AppColors.deliveryInk,
+                                            ),
                                       ),
                                     ],
                                   ),
@@ -876,12 +858,10 @@ class _ExpenseCard extends StatelessWidget {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     textAlign: TextAlign.right,
-                                    style: const TextStyle(
-                                      color: AppColors.deliveryGreen,
-                                      fontSize: 13,
-                                      height: 1,
-                                      fontWeight: FontWeight.w700,
-                                    ),
+                                    style: AppTextStyles.secondaryStrong
+                                        .copyWith(
+                                          color: AppColors.deliveryGreen,
+                                        ),
                                   ),
                                 ),
                               ],
@@ -935,10 +915,9 @@ class _ExpenseDetailsDialog extends StatelessWidget {
                   Expanded(
                     child: Text(
                       expense.category,
-                      style: const TextStyle(
+                      style: AppTextStyles.cardTitle.copyWith(
                         color: AppColors.deliveryInk,
                         fontSize: 18,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -1121,14 +1100,7 @@ class _NoReceiptPreview extends StatelessWidget {
             color: AppColors.textMuted,
           ),
           SizedBox(width: 6),
-          Text(
-            'No receipt',
-            style: TextStyle(
-              color: AppColors.textMuted,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          Text('No receipt', style: AppTextStyles.smallStrong),
         ],
       ),
     );
@@ -1153,7 +1125,10 @@ class _FullReceiptPage extends StatelessWidget {
           'Receipt · $expenseId',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+          style: AppTextStyles.appBarTitle.copyWith(
+            color: Colors.white,
+            fontSize: 18,
+          ),
         ),
       ),
       body: SafeArea(
@@ -1168,21 +1143,21 @@ class _FullReceiptPage extends StatelessWidget {
               loadingBuilder: (context, child, progress) => progress == null
                   ? child
                   : const CircularProgressIndicator(color: Colors.white),
-              errorBuilder: (_, _, _) => const Padding(
-                padding: EdgeInsets.all(24),
+              errorBuilder: (_, _, _) => Padding(
+                padding: const EdgeInsets.all(24),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.broken_image_outlined,
                       color: Colors.white70,
                       size: 48,
                     ),
-                    SizedBox(height: 12),
+                    const SizedBox(height: 12),
                     Text(
                       'Receipt preview could not be loaded.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white70, fontSize: 14),
+                      style: AppTextStyles.body.copyWith(color: Colors.white70),
                     ),
                   ],
                 ),
@@ -1327,20 +1302,15 @@ class _ExpenseFormSheetState extends State<_ExpenseFormSheet> {
                     const SizedBox(height: 16),
                     Text(
                       editing ? 'Update Expense' : 'Add Expense',
-                      style: const TextStyle(
+                      style: AppTextStyles.cardTitle.copyWith(
                         color: AppColors.deliveryInk,
                         fontSize: 18,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 4),
                     const Text(
                       'Submit receipt and claim details',
-                      style: TextStyle(
-                        color: AppColors.textMuted,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                      ),
+                      style: AppTextStyles.secondaryStrong,
                     ),
                     const SizedBox(height: 20),
                     DropdownButtonFormField<String>(
@@ -1483,10 +1453,8 @@ class _DetailRow extends StatelessWidget {
             flex: 4,
             child: Text(
               label,
-              style: const TextStyle(
+              style: AppTextStyles.smallStrong.copyWith(
                 color: AppColors.textSecondary,
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -1496,11 +1464,8 @@ class _DetailRow extends StatelessWidget {
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: const TextStyle(
+              style: AppTextStyles.bodyStrong.copyWith(
                 color: AppColors.textPrimary,
-                fontSize: 13,
-                height: 1.3,
-                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -1550,11 +1515,7 @@ class _ExpenseCardLabel extends StatelessWidget {
       label,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      style: TextStyle(
-        color: AppColors.textMuted,
-        fontSize: compact ? 8.5 : 9.5,
-        fontWeight: FontWeight.w600,
-      ),
+      style: AppTextStyles.smallStrong,
     );
   }
 }
@@ -1607,11 +1568,7 @@ class _StatusBadge extends StatelessWidget {
         status,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          color: color,
-          fontSize: compact ? 9.5 : 11,
-          fontWeight: FontWeight.w700,
-        ),
+        style: AppTextStyles.smallStrong.copyWith(color: color),
       ),
     );
   }
@@ -1670,21 +1627,15 @@ class _StateView extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: AppTextStyles.cardTitle.copyWith(
                 color: AppColors.deliveryInk,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 6),
             Text(
               subtitle,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 13,
-                height: 1.35,
-              ),
+              style: AppTextStyles.subtitle,
             ),
             if (onRetry != null) ...[
               const SizedBox(height: 14),
@@ -1788,7 +1739,7 @@ class _ExpenseException implements Exception {
 InputDecoration _inputDecoration(String label) {
   return InputDecoration(
     labelText: label,
-    labelStyle: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+    labelStyle: AppTextStyles.cardBody,
     isDense: true,
     filled: true,
     fillColor: AppColors.surfaceSoft,

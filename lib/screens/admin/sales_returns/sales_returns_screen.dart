@@ -243,19 +243,15 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
                         children: [
                           Text(
                             '${returns.length} to ${returns.isEmpty ? 0 : returns.length}',
-                            style: const TextStyle(
+                            style: AppTextStyles.bodyStrong.copyWith(
                               color: Color(0xFF94A3B8),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
                             ),
                           ),
                           const Spacer(),
-                          const Text(
+                          Text(
                             'Sales Returns',
-                            style: TextStyle(
+                            style: AppTextStyles.bodyStrong.copyWith(
                               color: Color(0xFF94A3B8),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
@@ -342,11 +338,7 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
           ),
           dropdownColor: Colors.white,
           borderRadius: BorderRadius.circular(14),
-          style: const TextStyle(
-            color: textPrimary,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTextStyles.bodyStrong.copyWith(color: textPrimary),
           selectedItemBuilder: (context) {
             return _statusOptions
                 .map(
@@ -354,10 +346,8 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
                     alignment: Alignment.centerLeft,
                     child: Text(
                       status,
-                      style: const TextStyle(
+                      style: AppTextStyles.bodyStrong.copyWith(
                         color: textPrimary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -370,13 +360,10 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
                   value: status,
                   child: Text(
                     status,
-                    style: TextStyle(
+                    style: AppTextStyles.bodyStrong.copyWith(
                       color: status == 'All status'
                           ? AppColors.primary
                           : const Color(0xFF475569),
-                      fontWeight: status == 'All status'
-                          ? FontWeight.w700
-                          : FontWeight.w500,
                     ),
                   ),
                 ),
@@ -407,10 +394,7 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
           vertical: compact ? 10 : 14,
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-        textStyle: TextStyle(
-          fontSize: compact ? 13 : 13.5,
-          fontWeight: FontWeight.w700,
-        ),
+        textStyle: AppTextStyles.secondaryStrong,
       ),
     );
   }
@@ -421,19 +405,15 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
       child: Center(
         child: Column(
           children: [
-            const Text(
+            Text(
               'No sales returns found',
-              style: TextStyle(
-                color: textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-              ),
+              style: AppTextStyles.bodyStrong.copyWith(color: textPrimary),
             ),
             const SizedBox(height: 6),
-            const Text(
+            Text(
               'Raise a return request against an existing invoice.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: textSecondary, fontSize: 14),
+              style: AppTextStyles.body.copyWith(color: textSecondary),
             ),
             const SizedBox(height: 18),
             _newReturnButton(compact: true),
@@ -470,21 +450,15 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
               children: [
                 Text(
                   item.returnNo,
-                  style: const TextStyle(
-                    color: textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppTextStyles.bodyStrong.copyWith(color: textPrimary),
                 ),
                 const SizedBox(height: 3),
                 Text(
                   '${item.customer} - ${_formatDate(item.date)}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: AppTextStyles.fieldLabel.copyWith(
                     color: textSecondary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -499,11 +473,7 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
             ),
             child: Text(
               item.status,
-              style: TextStyle(
-                color: statusColor,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-              ),
+              style: AppTextStyles.bodyStrong.copyWith(color: statusColor),
             ),
           ),
         ],

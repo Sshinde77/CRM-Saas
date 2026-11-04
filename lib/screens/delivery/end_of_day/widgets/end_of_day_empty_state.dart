@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../widgets/app_skeleton.dart';
 
 import '../../../../constants/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../../routes/app_router.dart';
 import 'end_of_day_shared.dart';
 
@@ -33,24 +34,15 @@ class EndOfDayEmptyState extends StatelessWidget {
             const Text(
               'No active loading session',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: AppColors.deliveryInk,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-              ),
+              style: AppTextStyles.cardTitle,
             ),
             const SizedBox(height: 18),
-            const SizedBox(
+            SizedBox(
               width: 260,
               child: Text(
                 'You need to record an opening load before you can do end of day return.',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: AppColors.textMuted,
-                  fontSize: 14,
-                  height: 1.35,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: AppTextStyles.secondary,
               ),
             ),
             const SizedBox(height: 28),

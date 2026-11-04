@@ -337,7 +337,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _openOrganizationOnMap(String address) async {
-    final uri = Uri.https('www.google.com', '/maps/search/', {'api': '1', 'query': address});
+    final uri = Uri.https('www.google.com', '/maps/search/', {
+      'api': '1',
+      'query': address,
+    });
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
@@ -461,17 +464,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 14),
           Text(
             displayName,
-            style: const TextStyle(
+            style: AppTextStyles.cardTitle.copyWith(
               color: AppColors.deliveryInk,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
             ),
           ),
           if ((user.email).trim().isNotEmpty) ...[
             const SizedBox(height: 4),
             Text(
               user.email,
-              style: const TextStyle(color: AppColors.textMuted, fontSize: 14),
+              style: AppTextStyles.body.copyWith(color: AppColors.textMuted),
             ),
           ],
           const SizedBox(height: 10),
@@ -506,11 +507,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _DetailGrid(
             rows: [
               _DetailField('Phone', user.phone ?? '-', Icons.call_outlined),
-              _DetailField(
-                'Role',
-                roleLabel,
-                Icons.verified_user_outlined,
-              ),
+              _DetailField('Role', roleLabel, Icons.verified_user_outlined),
               _DetailField(
                 'Joined',
                 _formatDate(user.createdAt),
@@ -553,7 +550,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     _DetailField('Last Name', user.lastName ?? '-'),
                     _DetailField('Display Name', user.displayName ?? '-'),
                     _DetailField('Gender', user.gender ?? '-'),
-                    _DetailField('Date of Birth', _formatDate(user.dateOfBirth)),
+                    _DetailField(
+                      'Date of Birth',
+                      _formatDate(user.dateOfBirth),
+                    ),
                     _DetailField('Marital Status', user.maritalStatus ?? '-'),
                     _DetailField('Blood Group', user.bloodGroup ?? '-'),
                     _DetailField(
@@ -611,11 +611,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         const SizedBox(height: 12),
         _FormRow2(
-          _DateField(
-            label: 'Date of Birth',
-            value: _dob,
-            onTap: _pickDob,
-          ),
+          _DateField(label: 'Date of Birth', value: _dob, onTap: _pickDob),
           _DropdownField(
             label: 'Marital Status',
             value: _maritalStatus,
@@ -804,9 +800,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _DetailField('Financial Year', text(['financial_year'])),
               _DetailField(
                 'Created',
-                _formatDate(
-                  DateTime.tryParse(text(['created_at', 'created'])),
-                ),
+                _formatDate(DateTime.tryParse(text(['created_at', 'created']))),
               ),
             ],
           ),
@@ -835,21 +829,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       children: [
                         Text(
                           address,
-                          style: const TextStyle(
+                          style: AppTextStyles.bodyStrong.copyWith(
                             color: AppColors.deliveryInk,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
                           ),
                         ),
                         const SizedBox(height: 6),
                         GestureDetector(
                           onTap: () => _openOrganizationOnMap(address),
-                          child: const Text(
+                          child: Text(
                             'View on Map',
-                            style: TextStyle(
+                            style: AppTextStyles.bodyStrong.copyWith(
                               color: AppColors.deliveryBlue,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
@@ -895,12 +885,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 Row(
                   children: [
-                    const Text(
+                    Text(
                       'Push Notifications',
-                      style: TextStyle(
+                      style: AppTextStyles.cardTitle.copyWith(
                         color: AppColors.deliveryInk,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -913,9 +901,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ],
                 ),
                 const SizedBox(height: 6),
-                const Text(
+                Text(
                   'Turn this on to get notifications for things that need your attention.',
-                  style: TextStyle(color: AppColors.textMuted, fontSize: 14),
+                  style: AppTextStyles.body.copyWith(
+                    color: AppColors.textMuted,
+                  ),
                 ),
                 if (!granted) ...[
                   const SizedBox(height: 10),
@@ -999,7 +989,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         TextField(
           controller: controller,
           obscureText: obscure,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+          style: AppTextStyles.bodyStrong,
           decoration: InputDecoration(
             filled: true,
             fillColor: AppColors.deliveryCardSoft,
@@ -1019,11 +1009,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.deliverySurfaceBorder),
+              borderSide: const BorderSide(
+                color: AppColors.deliverySurfaceBorder,
+              ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.deliverySurfaceBorder),
+              borderSide: const BorderSide(
+                color: AppColors.deliverySurfaceBorder,
+              ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -1048,7 +1042,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         TextField(
           controller: controller,
           maxLines: maxLines,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+          style: AppTextStyles.bodyStrong,
           decoration: InputDecoration(
             filled: true,
             fillColor: AppColors.deliveryCardSoft,
@@ -1058,11 +1052,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.deliverySurfaceBorder),
+              borderSide: const BorderSide(
+                color: AppColors.deliverySurfaceBorder,
+              ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.deliverySurfaceBorder),
+              borderSide: const BorderSide(
+                color: AppColors.deliverySurfaceBorder,
+              ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -1092,7 +1090,7 @@ class _FormField extends StatelessWidget {
         TextField(
           controller: controller,
           keyboardType: keyboardType,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+          style: AppTextStyles.bodyStrong,
           decoration: InputDecoration(
             filled: true,
             fillColor: AppColors.deliveryCardSoft,
@@ -1102,11 +1100,15 @@ class _FormField extends StatelessWidget {
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.deliverySurfaceBorder),
+              borderSide: const BorderSide(
+                color: AppColors.deliverySurfaceBorder,
+              ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.deliverySurfaceBorder),
+              borderSide: const BorderSide(
+                color: AppColors.deliverySurfaceBorder,
+              ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -1142,10 +1144,8 @@ class _DropdownField extends StatelessWidget {
         DropdownButtonFormField<String>(
           initialValue: value,
           isExpanded: true,
-          style: const TextStyle(
+          style: AppTextStyles.bodyStrong.copyWith(
             color: AppColors.deliveryInk,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
           ),
           decoration: InputDecoration(
             filled: true,
@@ -1156,11 +1156,15 @@ class _DropdownField extends StatelessWidget {
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.deliverySurfaceBorder),
+              borderSide: const BorderSide(
+                color: AppColors.deliverySurfaceBorder,
+              ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.deliverySurfaceBorder),
+              borderSide: const BorderSide(
+                color: AppColors.deliverySurfaceBorder,
+              ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -1186,7 +1190,11 @@ class _DateField extends StatelessWidget {
   final DateTime? value;
   final VoidCallback onTap;
 
-  const _DateField({required this.label, required this.value, required this.onTap});
+  const _DateField({
+    required this.label,
+    required this.value,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1216,12 +1224,10 @@ class _DateField extends StatelessWidget {
                 const SizedBox(width: 10),
                 Text(
                   value == null ? 'Select date' : _formatDate(value),
-                  style: TextStyle(
+                  style: AppTextStyles.bodyStrong.copyWith(
                     color: value == null
                         ? AppColors.textLightMuted
                         : AppColors.deliveryInk,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -1244,9 +1250,7 @@ class _FormRow2 extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         if (constraints.maxWidth < 420) {
-          return Column(
-            children: [first, const SizedBox(height: 12), second],
-          );
+          return Column(children: [first, const SizedBox(height: 12), second]);
         }
         return Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1304,15 +1308,17 @@ class _DetailGrid extends StatelessWidget {
                       Row(
                         children: [
                           if (row.icon != null) ...[
-                            Icon(row.icon, size: 15, color: AppColors.textMuted),
+                            Icon(
+                              row.icon,
+                              size: 15,
+                              color: AppColors.textMuted,
+                            ),
                             const SizedBox(width: 6),
                           ],
                           Text(
                             row.label.toUpperCase(),
-                            style: const TextStyle(
+                            style: AppTextStyles.bodyStrong.copyWith(
                               color: AppColors.textMuted,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
                               letterSpacing: 0.3,
                             ),
                           ),
@@ -1321,10 +1327,8 @@ class _DetailGrid extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         row.value.trim().isEmpty ? '-' : row.value,
-                        style: const TextStyle(
+                        style: AppTextStyles.bodyStrong.copyWith(
                           color: AppColors.deliveryInk,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ],
@@ -1347,10 +1351,8 @@ class _CardTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: const TextStyle(
+      style: AppTextStyles.sectionHeading.copyWith(
         color: AppColors.deliveryInk,
-        fontSize: 16,
-        fontWeight: FontWeight.w700,
       ),
     );
   }
@@ -1399,11 +1401,7 @@ class _StatusChip extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: TextStyle(
-          color: color,
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
-        ),
+        style: AppTextStyles.bodyStrong.copyWith(color: color),
       ),
     );
   }
@@ -1414,7 +1412,11 @@ class _MiniStat extends StatelessWidget {
   final String label;
   final String value;
 
-  const _MiniStat({required this.icon, required this.label, required this.value});
+  const _MiniStat({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1432,17 +1434,15 @@ class _MiniStat extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             label,
-            style: const TextStyle(color: AppColors.textMuted, fontSize: 14),
+            style: AppTextStyles.body.copyWith(color: AppColors.textMuted),
           ),
           const SizedBox(height: 2),
           Text(
             value.trim().isEmpty ? '-' : value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: AppTextStyles.bodyStrong.copyWith(
               color: AppColors.deliveryInk,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -1473,7 +1473,7 @@ class _ErrorState extends StatelessWidget {
             const SizedBox(height: 12),
             const Text(
               'Could not load your profile',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+              style: AppTextStyles.screenHeading,
             ),
             const SizedBox(height: 6),
             Text(
@@ -1481,7 +1481,7 @@ class _ErrorState extends StatelessWidget {
               textAlign: TextAlign.center,
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 14, color: AppColors.textMuted),
+              style: AppTextStyles.body.copyWith(color: AppColors.textMuted),
             ),
             const SizedBox(height: 16),
             FilledButton(onPressed: onRetry, child: const Text('Try Again')),

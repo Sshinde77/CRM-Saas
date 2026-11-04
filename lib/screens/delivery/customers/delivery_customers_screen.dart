@@ -321,11 +321,10 @@ class _HeaderCard extends StatelessWidget {
                   'My Customers',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
+                  style: AppTextStyles.cardTitle.copyWith(
                     color: AppColors.deliveryInk,
                     fontSize: compact ? 14 : 16,
                     height: 1.15,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -333,10 +332,9 @@ class _HeaderCard extends StatelessWidget {
                   '$total Customers',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
+                  style: AppTextStyles.smallStrong.copyWith(
                     color: const Color(0xFF4F5870),
-                    fontSize: compact ? 10.5 : 11.5,
-                    fontWeight: FontWeight.w700,
+                    fontSize: compact ? 10 : 12,
                   ),
                 ),
               ],
@@ -464,11 +462,9 @@ class _MetricTile extends StatelessWidget {
                   info.value,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: AppTextStyles.bodyStrong.copyWith(
                     color: AppColors.deliveryInk,
-                    fontSize: 14,
                     height: 1.1,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 3),
@@ -476,10 +472,9 @@ class _MetricTile extends StatelessWidget {
                   info.label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(0xFF586176),
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w700,
+                  style: AppTextStyles.smallStrong.copyWith(
+                    color: const Color(0xFF586176),
+                    fontSize: 10,
                   ),
                 ),
               ],
@@ -514,10 +509,8 @@ class _SearchCard extends StatelessWidget {
           controller: controller,
           onChanged: onChanged,
           textInputAction: TextInputAction.search,
-          style: const TextStyle(
+          style: AppTextStyles.bodyStrong.copyWith(
             color: AppColors.deliveryInk,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
           ),
           decoration: InputDecoration(
             hintText: 'Search by name, phone, ID or city',
@@ -642,11 +635,10 @@ class _CustomerCard extends StatelessWidget {
                                       businessName,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w700,
-                                        color: AppColors.deliveryInk,
-                                      ),
+                                      style: AppTextStyles.secondaryStrong
+                                          .copyWith(
+                                            color: AppColors.deliveryInk,
+                                          ),
                                     ),
                                   ),
                                   const SizedBox(width: 6),
@@ -654,12 +646,11 @@ class _CustomerCard extends StatelessWidget {
                                     outstanding > 0
                                         ? 'Order Pending'
                                         : 'No Pending Order',
-                                    style: TextStyle(
+                                    style: AppTextStyles.smallStrong.copyWith(
                                       color: outstanding > 0
                                           ? AppColors.deliveryOrange
                                           : AppColors.textMuted,
                                       fontSize: 10,
-                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
                                   const SizedBox(width: 6),
@@ -683,10 +674,8 @@ class _CustomerCard extends StatelessWidget {
                                 ]),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
+                                style: AppTextStyles.smallStrong.copyWith(
                                   color: AppColors.textMuted,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                               const SizedBox(height: 8),
@@ -795,9 +784,8 @@ class _CustomerCardDetail extends StatelessWidget {
           label,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
+          style: AppTextStyles.small.copyWith(
             fontSize: 10,
-            fontWeight: FontWeight.w400,
             color: AppColors.textMuted,
           ),
         ),
@@ -806,9 +794,7 @@ class _CustomerCardDetail extends StatelessWidget {
           value,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
+          style: AppTextStyles.smallStrong.copyWith(
             color: AppColors.deliveryInk,
           ),
         ),
@@ -868,10 +854,8 @@ class _InlineInfo extends StatelessWidget {
             text,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: AppTextStyles.smallStrong.copyWith(
               color: AppColors.textMuted,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -955,11 +939,7 @@ class _StatusBadge extends StatelessWidget {
         label,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          color: color,
-          fontSize: 9.5,
-          fontWeight: FontWeight.w700,
-        ),
+        style: AppTextStyles.smallStrong.copyWith(color: color, fontSize: 10),
       ),
     );
   }
@@ -1028,21 +1008,15 @@ class _StateView extends StatelessWidget {
                 Text(
                   title,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: AppTextStyles.sectionHeading.copyWith(
                     color: AppColors.deliveryInk,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   subtitle,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 13,
-                    height: 1.35,
-                  ),
+                  style: AppTextStyles.subtitle,
                 ),
                 if (onRetry != null) ...[
                   const SizedBox(height: 14),

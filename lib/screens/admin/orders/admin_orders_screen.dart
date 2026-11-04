@@ -698,11 +698,8 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                 _tabs[index],
                 maxLines: 1,
                 softWrap: false,
-                style: TextStyle(
+                style: AppTextStyles.smallStrong.copyWith(
                   color: selected ? AppColors.surface : AppColors.textSecondary,
-                  fontSize: 12,
-                  height: 1.05,
-                  fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
                 ),
               ),
             ),
@@ -796,10 +793,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(999),
                   ),
-                  textStyle: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  textStyle: AppTextStyles.bodyStrong,
                 ),
               ),
             ),
@@ -837,10 +831,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(999),
                 ),
-                textStyle: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
+                textStyle: AppTextStyles.bodyStrong,
               ),
             ),
           ),
@@ -890,10 +881,8 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                   Expanded(
                     child: Text(
                       metric.label,
-                      style: TextStyle(
+                      style: AppTextStyles.smallStrong.copyWith(
                         color: AppColors.textSecondary,
-                        fontSize: mobile ? 10.5 : 11.5,
-                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -916,14 +905,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                 ],
               ),
               const Spacer(),
-              Text(
-                metric.value,
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: mobile ? 15 : 17,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+              Text(metric.value, style: AppTextStyles.importantNumber),
             ],
           ),
         );
@@ -1045,12 +1027,10 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 3),
                   child: Text(
                     _tabs[index],
-                    style: TextStyle(
+                    style: AppTextStyles.bodyStrong.copyWith(
                       color: selected
                           ? const Color(0xFF0D1F42)
                           : AppColors.textSecondary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -1118,7 +1098,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
           setState(() => _currentPage = 1);
           _loadOrders();
         },
-        style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+        style: AppTextStyles.body.copyWith(color: AppColors.textPrimary),
         cursorColor: const Color(0xFF0D1F42),
         decoration: InputDecoration(
           filled: true,
@@ -1165,10 +1145,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
           Expanded(
             child: Text(
               hint,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 14,
-              ),
+              style: AppTextStyles.body.copyWith(color: AppColors.textPrimary),
             ),
           ),
           const Icon(
@@ -1223,11 +1200,10 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
               value: option,
               child: Text(
                 option,
-                style: TextStyle(
+                style: AppTextStyles.bodyStrong.copyWith(
                   color: value == option
                       ? const Color(0xFF0D1F42)
                       : AppColors.textPrimary,
-                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -1251,11 +1227,10 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
           value: 'All payments',
           child: Text(
             'All payments',
-            style: TextStyle(
+            style: AppTextStyles.bodyStrong.copyWith(
               color: _selectedPayment == 'All payments'
                   ? const Color(0xFF0D1F42)
                   : AppColors.textPrimary,
-              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -1264,11 +1239,10 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
             value: payment,
             child: Text(
               payment,
-              style: TextStyle(
+              style: AppTextStyles.bodyStrong.copyWith(
                 color: _selectedPayment == payment
                     ? const Color(0xFF0D1F42)
                     : AppColors.textPrimary,
-                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -1287,9 +1261,8 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
             Expanded(
               child: Text(
                 _selectedPayment,
-                style: const TextStyle(
+                style: AppTextStyles.body.copyWith(
                   color: AppColors.textPrimary,
-                  fontSize: 14,
                 ),
               ),
             ),
@@ -1306,10 +1279,8 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
   Widget _desktopTableHeader() {
     Text header(String label) => Text(
       label,
-      style: const TextStyle(
+      style: AppTextStyles.bodyStrong.copyWith(
         color: Color(0xFF94A3B8),
-        fontSize: 14,
-        fontWeight: FontWeight.w700,
         letterSpacing: 0.8,
       ),
     );
@@ -1335,12 +1306,12 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
 
   Widget _mobileOrdersList(List<_OrderRecord> orders) {
     if (orders.isEmpty) {
-      return const Padding(
+      return Padding(
         padding: EdgeInsets.symmetric(vertical: 18),
         child: Center(
           child: Text(
             'No orders found.',
-            style: TextStyle(color: Color(0xFF6B7280)),
+            style: AppTextStyles.body.copyWith(color: Color(0xFF6B7280)),
           ),
         ),
       );
@@ -1384,10 +1355,8 @@ class _DesktopOrderRow extends StatelessWidget {
               flex: 17,
               child: Text(
                 record.number,
-                style: const TextStyle(
+                style: AppTextStyles.bodyStrong.copyWith(
                   color: AppColors.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
@@ -1395,9 +1364,8 @@ class _DesktopOrderRow extends StatelessWidget {
               flex: 22,
               child: Text(
                 record.customer,
-                style: const TextStyle(
+                style: AppTextStyles.body.copyWith(
                   color: AppColors.textPrimary,
-                  fontSize: 14,
                 ),
               ),
             ),
@@ -1405,9 +1373,8 @@ class _DesktopOrderRow extends StatelessWidget {
               flex: 12,
               child: Text(
                 record.date,
-                style: const TextStyle(
+                style: AppTextStyles.body.copyWith(
                   color: AppColors.textPrimary,
-                  fontSize: 14,
                 ),
               ),
             ),
@@ -1415,9 +1382,8 @@ class _DesktopOrderRow extends StatelessWidget {
               flex: 8,
               child: Text(
                 record.items,
-                style: const TextStyle(
+                style: AppTextStyles.body.copyWith(
                   color: AppColors.textPrimary,
-                  fontSize: 14,
                 ),
               ),
             ),
@@ -1425,10 +1391,8 @@ class _DesktopOrderRow extends StatelessWidget {
               flex: 11,
               child: Text(
                 record.total,
-                style: const TextStyle(
+                style: AppTextStyles.bodyStrong.copyWith(
                   color: AppColors.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
@@ -1452,9 +1416,8 @@ class _DesktopOrderRow extends StatelessWidget {
               flex: 12,
               child: Text(
                 record.sourceLabel,
-                style: const TextStyle(
+                style: AppTextStyles.body.copyWith(
                   color: AppColors.textPrimary,
-                  fontSize: 14,
                 ),
               ),
             ),
@@ -1462,9 +1425,8 @@ class _DesktopOrderRow extends StatelessWidget {
               flex: 16,
               child: Text(
                 record.deliveryPartner,
-                style: const TextStyle(
+                style: AppTextStyles.body.copyWith(
                   color: AppColors.textPrimary,
-                  fontSize: 14,
                 ),
               ),
             ),
@@ -1523,20 +1485,15 @@ class _SalesOrdersSummary extends StatelessWidget {
               children: [
                 Text(
                   'My Sales Orders',
-                  style: TextStyle(
+                  style: AppTextStyles.cardTitle.copyWith(
                     color: AppColors.deliveryInk,
-                    fontSize: compact ? 14 : 16,
-                    height: 1.15,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   '$total Orders',
-                  style: TextStyle(
+                  style: AppTextStyles.smallStrong.copyWith(
                     color: const Color(0xFF4F5870),
-                    fontSize: compact ? 10.5 : 11.5,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
@@ -1617,11 +1574,8 @@ class _SalesOrderCard extends StatelessWidget {
                                     record.number,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      color: AppColors.deliveryInk,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w700,
-                                    ),
+                                    style: AppTextStyles.secondaryStrong
+                                        .copyWith(color: AppColors.deliveryInk),
                                   ),
                                 ),
                                 const SizedBox(width: 5),
@@ -1647,10 +1601,8 @@ class _SalesOrderCard extends StatelessWidget {
                                     record.date,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
+                                    style: AppTextStyles.small.copyWith(
                                       color: AppColors.textMuted,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w400,
                                     ),
                                   ),
                                 ),
@@ -1701,11 +1653,8 @@ class _SalesOrderCard extends StatelessWidget {
                           record.total,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: AppTextStyles.bodyStrong.copyWith(
                             color: AppColors.primary,
-                            fontSize: 15,
-                            height: 1,
-                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
@@ -1717,10 +1666,8 @@ class _SalesOrderCard extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text(
                         '${record.items} items',
-                        style: const TextStyle(
+                        style: AppTextStyles.smallStrong.copyWith(
                           color: AppColors.textSecondary,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
@@ -1753,22 +1700,15 @@ class _SalesOrderField extends StatelessWidget {
       children: [
         Text(
           label,
-          style: TextStyle(
-            color: AppColors.textMuted,
-            fontSize: compact ? 10.5 : 12,
-            height: 1,
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTextStyles.smallStrong.copyWith(color: AppColors.textMuted),
         ),
         const SizedBox(height: 2),
         Text(
           value,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
+          style: AppTextStyles.smallStrong.copyWith(
             color: AppColors.deliveryInk,
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
           ),
         ),
       ],
@@ -1846,12 +1786,7 @@ class _SalesStatusPill extends StatelessWidget {
           const SizedBox(width: 3),
           Text(
             label,
-            style: TextStyle(
-              color: foreground,
-              fontSize: compact ? 10.5 : 12,
-              height: 1,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.smallStrong.copyWith(color: foreground),
           ),
         ],
       ),
@@ -1882,10 +1817,8 @@ class _SalesOrderMeta extends StatelessWidget {
           const SizedBox(width: 5),
           Text(
             label,
-            style: const TextStyle(
+            style: AppTextStyles.smallStrong.copyWith(
               color: AppColors.textPrimary,
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -1924,16 +1857,15 @@ class _SalesOrderState extends StatelessWidget {
           Text(
             title,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+            style: AppTextStyles.cardTitle,
           ),
           if (subtitle != null) ...[
             const SizedBox(height: 6),
             Text(
               subtitle!,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: AppTextStyles.secondary.copyWith(
                 color: AppColors.textSecondary,
-                fontSize: 13,
               ),
             ),
           ],
@@ -1992,19 +1924,15 @@ class _OrderMobileCard extends StatelessWidget {
                     children: [
                       Text(
                         record.number,
-                        style: const TextStyle(
+                        style: AppTextStyles.bodyStrong.copyWith(
                           color: AppColors.textPrimary,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         record.customer,
-                        style: const TextStyle(
+                        style: AppTextStyles.bodyStrong.copyWith(
                           color: AppColors.textSecondary,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
@@ -2039,10 +1967,8 @@ class _OrderMobileCard extends StatelessWidget {
                   child: Text(
                     '${record.sourceLabel}  |  ${record.deliveryPartner}',
                     textAlign: TextAlign.right,
-                    style: const TextStyle(
+                    style: AppTextStyles.bodyStrong.copyWith(
                       color: AppColors.textPrimary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -2060,19 +1986,13 @@ class _OrderMobileCard extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: Color(0xFF94A3B8),
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-          ),
+          style: AppTextStyles.bodyStrong.copyWith(color: Color(0xFF94A3B8)),
         ),
         const SizedBox(height: 2),
         Text(
           value,
-          style: const TextStyle(
+          style: AppTextStyles.bodyStrong.copyWith(
             color: AppColors.textPrimary,
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
           ),
         ),
       ],
@@ -2101,11 +2021,7 @@ class _StatusChip extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: TextStyle(
-          color: foreground,
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
-        ),
+        style: AppTextStyles.bodyStrong.copyWith(color: foreground),
       ),
     );
   }
@@ -2175,10 +2091,8 @@ class _OrdersStatePanel extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             title,
-            style: const TextStyle(
+            style: AppTextStyles.bodyStrong.copyWith(
               color: AppColors.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
             ),
           ),
           if (subtitle != null) ...[
@@ -2186,10 +2100,8 @@ class _OrdersStatePanel extends StatelessWidget {
             Text(
               subtitle!,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: AppTextStyles.bodyStrong.copyWith(
                 color: AppColors.textSecondary,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
               ),
             ),
           ],

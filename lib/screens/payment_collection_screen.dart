@@ -222,7 +222,7 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
             children: [
               const Text(
                 'Add Payment Proof',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                style: AppTextStyles.sectionHeading,
               ),
               const SizedBox(height: 12),
               ListTile(
@@ -465,10 +465,7 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
                     child: Text(
                       _selectedCustomer?.name ?? 'Select customer',
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: AppTextStyles.bodyStrong,
                     ),
                   ),
                 ),
@@ -501,10 +498,8 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
                     Expanded(
                       child: Text(
                         _selectedCustomer!.address!,
-                        style: const TextStyle(
-                          color: Color(0xFF7C8491),
-                          fontSize: 12,
-                          height: 1.3,
+                        style: AppTextStyles.small.copyWith(
+                          color: const Color(0xFF7C8491),
                         ),
                       ),
                     ),
@@ -521,7 +516,7 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
             children: [
               const Text(
                 'Payment Details',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                style: AppTextStyles.sectionHeading,
               ),
               const SizedBox(height: 16),
               const _Label('Amount Due'),
@@ -534,10 +529,8 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
                     )
                   : Text(
                       _formatMoney(_amountDue),
-                      style: const TextStyle(
-                        color: Color(0xFFD93838),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
+                      style: AppTextStyles.importantNumber.copyWith(
+                        color: const Color(0xFFD93838),
                       ),
                     ),
               const SizedBox(height: 20),
@@ -747,21 +740,17 @@ class _Footer extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Pending Amount',
-                  style: TextStyle(
-                    color: Color(0xFFD44A4A),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
+                  style: AppTextStyles.smallStrong.copyWith(
+                    color: const Color(0xFFD44A4A),
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   _formatMoney(pendingAmount),
-                  style: const TextStyle(
-                    color: Color(0xFFD93838),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
+                  style: AppTextStyles.importantNumber.copyWith(
+                    color: const Color(0xFFD93838),
                   ),
                 ),
               ],
@@ -778,10 +767,7 @@ class _Footer extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-            ),
+            child: const Text('Cancel', style: AppTextStyles.secondaryStrong),
           ),
           const SizedBox(width: 12),
           FilledButton(
@@ -807,7 +793,7 @@ class _Footer extends StatelessWidget {
                   )
                 : const Text(
                     'Record Collection',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    style: AppTextStyles.secondaryStrong,
                   ),
           ),
         ],
@@ -856,17 +842,15 @@ class _MetaValue extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(color: Color(0xFF4B515B), fontSize: 12),
+          style: AppTextStyles.small.copyWith(color: const Color(0xFF4B515B)),
         ),
         const SizedBox(height: 4),
         Text(
           value,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: Color(0xFF15191F),
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
+          style: AppTextStyles.bodyStrong.copyWith(
+            color: const Color(0xFF15191F),
           ),
         ),
       ],
@@ -961,9 +945,8 @@ class _ProofPreview extends StatelessWidget {
                   fileName,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(0xFF7C8491),
-                    fontSize: 11,
+                  style: AppTextStyles.small.copyWith(
+                    color: const Color(0xFF7C8491),
                   ),
                 ),
               ),
@@ -1018,10 +1001,8 @@ class _ErrorState extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Color(0xFF334155),
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
+              style: AppTextStyles.bodyStrong.copyWith(
+                color: const Color(0xFF334155),
               ),
             ),
             const SizedBox(height: 16),

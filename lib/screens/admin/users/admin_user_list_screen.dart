@@ -148,13 +148,13 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
       builder: (_) => AlertDialog(
         backgroundColor: AppColors.background,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text(
+        title: Text(
           'Delete user?',
-          style: TextStyle(color: textPrimary, fontWeight: FontWeight.w700),
+          style: AppTextStyles.bodyStrong.copyWith(color: textPrimary),
         ),
         content: Text(
           'This will remove ${user.name.trim().isEmpty ? 'this user' : user.name} from the user list.',
-          style: const TextStyle(color: textSecondary),
+          style: AppTextStyles.body.copyWith(color: textSecondary),
         ),
         actions: [
           TextButton(
@@ -201,13 +201,10 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
         actionsPadding: const EdgeInsets.fromLTRB(22, 0, 22, 22),
         title: Row(
           children: [
-            const Expanded(
+            Expanded(
               child: Text(
                 'Change Status',
-                style: TextStyle(
-                  color: textPrimary,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: AppTextStyles.bodyStrong.copyWith(color: textPrimary),
               ),
             ),
             InkWell(
@@ -224,13 +221,9 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Current status',
-              style: TextStyle(
-                color: textSecondary,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
+              style: AppTextStyles.fieldLabel.copyWith(color: textSecondary),
             ),
             const SizedBox(height: 10),
             Container(
@@ -256,9 +249,8 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
                       user.name.trim().isEmpty
                           ? '?'
                           : user.name.trim()[0].toUpperCase(),
-                      style: const TextStyle(
+                      style: AppTextStyles.bodyStrong.copyWith(
                         color: textPrimary,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -271,10 +263,8 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
                           user.name.trim().isEmpty ? 'Unnamed user' : user.name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: AppTextStyles.bodyStrong.copyWith(
                             color: textPrimary,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -282,9 +272,8 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
                           user.email.trim().isEmpty ? 'No email' : user.email,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: AppTextStyles.body.copyWith(
                             color: textSecondary,
-                            fontSize: 14,
                           ),
                         ),
                       ],
@@ -309,12 +298,10 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
                     ),
                     child: Text(
                       isCurrentlyActive ? 'active' : 'inactive',
-                      style: TextStyle(
+                      style: AppTextStyles.bodyStrong.copyWith(
                         color: isCurrentlyActive
                             ? const Color(0xFF107C41)
                             : AppColors.red,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -326,7 +313,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
               nextIsActive
                   ? 'This will change the user to active.'
                   : 'This will change the user to inactive.',
-              style: const TextStyle(color: textSecondary, fontSize: 14),
+              style: AppTextStyles.body.copyWith(color: textSecondary),
             ),
           ],
         ),
@@ -355,7 +342,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
             ),
             child: Text(
               nextIsActive ? 'Set Active' : 'Set Inactive',
-              style: const TextStyle(fontWeight: FontWeight.w700),
+              style: AppTextStyles.bodyStrong,
             ),
           ),
         ],
@@ -489,11 +476,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
         minimumSize: const Size(0, 40),
         padding: const EdgeInsets.symmetric(horizontal: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        textStyle: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0,
-        ),
+        textStyle: AppTextStyles.bodyStrong.copyWith(letterSpacing: 0),
       ),
     );
   }
@@ -510,11 +493,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
                 _query = value;
                 _pagination.reset();
               }),
-              style: const TextStyle(
-                color: textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
+              style: AppTextStyles.fieldLabel.copyWith(color: textPrimary),
               decoration: InputDecoration(
                 hintText: 'Search staff',
                 hintStyle: AppTextStyles.inputHint,
@@ -618,11 +597,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
           Icons.keyboard_arrow_down_rounded,
           color: textSecondary,
         ),
-        style: const TextStyle(
-          color: textPrimary,
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-        ),
+        style: AppTextStyles.fieldLabel.copyWith(color: textPrimary),
         dropdownColor: Colors.white,
         borderRadius: BorderRadius.circular(14),
       ),
@@ -649,9 +624,8 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
                     onTap: () => Navigator.of(context).pop(item),
                     title: Text(
                       item,
-                      style: const TextStyle(
+                      style: AppTextStyles.bodyStrong.copyWith(
                         color: textPrimary,
-                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     trailing: _selectedStatusFilter == item
@@ -704,15 +678,15 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
         children: [
           const Icon(Icons.cloud_off_rounded, color: textSecondary, size: 42),
           const SizedBox(height: 12),
-          const Text(
+          Text(
             'Could not load users',
-            style: TextStyle(color: textPrimary, fontWeight: FontWeight.w700),
+            style: AppTextStyles.bodyStrong.copyWith(color: textPrimary),
           ),
           const SizedBox(height: 8),
           Text(
             message,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: textSecondary, fontSize: 14),
+            style: AppTextStyles.body.copyWith(color: textSecondary),
           ),
           const SizedBox(height: 14),
           SoftActionButton(
@@ -731,7 +705,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
       child: Center(
         child: Text(
           message,
-          style: const TextStyle(color: textSecondary, fontSize: 14),
+          style: AppTextStyles.body.copyWith(color: textSecondary),
         ),
       ),
     );
@@ -825,10 +799,8 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
                             displayName,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: AppTextStyles.bodyStrong.copyWith(
                               color: textPrimary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -836,10 +808,8 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
                             roleLabel,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: AppTextStyles.bodyStrong.copyWith(
                               color: textSecondary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
@@ -850,10 +820,8 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
                       user.createdAt == null
                           ? 'No date'
                           : _formatShortDate(user.createdAt!),
-                      style: const TextStyle(
+                      style: AppTextStyles.bodyStrong.copyWith(
                         color: AppColors.textLightMuted,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
@@ -936,11 +904,7 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
       alignment: Alignment.center,
       child: Text(
         initials.isEmpty ? '?' : initials,
-        style: const TextStyle(
-          color: AppColors.primary,
-          fontWeight: FontWeight.w700,
-          fontSize: 16,
-        ),
+        style: AppTextStyles.cardTitle.copyWith(color: AppColors.primary),
       ),
     );
   }
@@ -955,10 +919,8 @@ class _AdminUserListScreenState extends State<AdminUserListScreen> {
             value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: AppTextStyles.fieldLabel.copyWith(
               color: textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
               letterSpacing: 0,
             ),
           ),
@@ -1066,13 +1028,11 @@ class _ResetPasswordDialogState extends State<_ResetPasswordDialog> {
                 padding: const EdgeInsets.fromLTRB(22, 20, 16, 16),
                 child: Row(
                   children: [
-                    const Expanded(
+                    Expanded(
                       child: Text(
                         'Reset Password',
-                        style: TextStyle(
+                        style: AppTextStyles.cardTitle.copyWith(
                           color: AppColors.textPrimary,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
@@ -1097,12 +1057,10 @@ class _ResetPasswordDialogState extends State<_ResetPasswordDialog> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Resetting password for',
-                        style: TextStyle(
+                        style: AppTextStyles.fieldLabel.copyWith(
                           color: AppColors.textSecondary,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -1131,10 +1089,8 @@ class _ResetPasswordDialogState extends State<_ResetPasswordDialog> {
                                 userName.isEmpty
                                     ? '?'
                                     : userName[0].toUpperCase(),
-                                style: const TextStyle(
+                                style: AppTextStyles.cardTitle.copyWith(
                                   color: AppColors.textPrimary,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 16,
                                 ),
                               ),
                             ),
@@ -1147,10 +1103,8 @@ class _ResetPasswordDialogState extends State<_ResetPasswordDialog> {
                                     userName,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
+                                    style: AppTextStyles.bodyStrong.copyWith(
                                       color: AppColors.textPrimary,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
@@ -1158,9 +1112,8 @@ class _ResetPasswordDialogState extends State<_ResetPasswordDialog> {
                                     userEmail,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
+                                    style: AppTextStyles.body.copyWith(
                                       color: AppColors.textSecondary,
-                                      fontSize: 14,
                                     ),
                                   ),
                                 ],
@@ -1258,7 +1211,7 @@ class _ResetPasswordDialogState extends State<_ResetPasswordDialog> {
                       ),
                       child: const Text(
                         'Reset Password',
-                        style: TextStyle(fontWeight: FontWeight.w700),
+                        style: AppTextStyles.bodyStrong,
                       ),
                     ),
                   ],

@@ -1,3 +1,4 @@
+import 'package:crm_saas/core/theme/app_text_styles.dart';
 import 'package:crm_saas/theme/app_colors_ext.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -91,9 +92,8 @@ class ThemeSettingsPage extends StatelessWidget {
             ),
             child: Text(
               'Your workspace, your colour',
-              style: TextStyle(
+              style: AppTextStyles.bodyStrong.copyWith(
                 color: AppColorsExt.foreground(c.gradientStart),
-                fontWeight: FontWeight.bold,
               ),
             ),
           ),

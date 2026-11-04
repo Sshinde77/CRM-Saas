@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../constants/app_colors.dart';
+import '../../core/theme/app_text_styles.dart';
 import '../../models/auth_models.dart';
 import '../../providers/api_provider.dart';
 import '../../screens/auth/login_screen.dart';
@@ -36,7 +37,7 @@ class DeliveryTopBar extends StatefulWidget {
     this.profileName,
     this.profileRole,
     this.onSignOut,
-    this.titleFontWeight = FontWeight.w700,
+    this.titleFontWeight = FontWeight.w600,
     this.titleFontSize = 16,
   });
 
@@ -109,10 +110,7 @@ class _DeliveryTopBarState extends State<DeliveryTopBar> {
           ),
           title: const Text(
             'Confirm Logout',
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.sectionHeading,
           ),
           content: const Text(
             'Are you sure you want to sign out?',
@@ -128,11 +126,10 @@ class _DeliveryTopBarState extends State<DeliveryTopBar> {
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text(
+              child: Text(
                 'Sign Out',
-                style: TextStyle(
-                  color: Color(0xFFFF4D4F),
-                  fontWeight: FontWeight.w700,
+                style: AppTextStyles.bodyStrong.copyWith(
+                  color: const Color(0xFFFF4D4F),
                 ),
               ),
             ),
@@ -210,11 +207,9 @@ class _DeliveryTopBarState extends State<DeliveryTopBar> {
                         subtitle,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
+                        style: AppTextStyles.small.copyWith(
                           color: Colors.white.withValues(alpha: 0.78),
-                          fontSize: 12,
                           height: 1.25,
-                          fontWeight: FontWeight.w400,
                         ),
                       ),
                     ],
@@ -367,9 +362,9 @@ class _DeliveryAvatar extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       onSelected: (value) {
         if (value == _ProfileMenuAction.viewProfile) {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const ProfileScreen()),
-          );
+          Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (_) => const ProfileScreen()));
         } else if (value == _ProfileMenuAction.signOut && onSignOut != null) {
           onSignOut!();
         }
@@ -393,29 +388,24 @@ class _DeliveryAvatar extends StatelessWidget {
                 size: 20,
               ),
               SizedBox(width: 10),
-              Text(
-                'My Profile',
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+              Text('My Profile', style: AppTextStyles.fieldLabel),
             ],
           ),
         ),
-        const PopupMenuItem<_ProfileMenuAction>(
+        PopupMenuItem<_ProfileMenuAction>(
           value: _ProfileMenuAction.signOut,
           child: Row(
             children: [
-              Icon(Icons.logout_rounded, color: Color(0xFFFF4D4F), size: 20),
-              SizedBox(width: 10),
+              const Icon(
+                Icons.logout_rounded,
+                color: Color(0xFFFF4D4F),
+                size: 20,
+              ),
+              const SizedBox(width: 10),
               Text(
                 'Sign Out',
-                style: TextStyle(
-                  color: Color(0xFFFF4D4F),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                style: AppTextStyles.fieldLabel.copyWith(
+                  color: const Color(0xFFFF4D4F),
                 ),
               ),
             ],
@@ -441,21 +431,15 @@ class _DeliveryAvatar extends StatelessWidget {
                 errorBuilder: (context, error, stackTrace) {
                   return Text(
                     _initials,
-                    style: const TextStyle(
+                    style: AppTextStyles.bodyStrong.copyWith(
                       color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
                     ),
                   );
                 },
               )
             : Text(
                 _initials,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 14,
-                ),
+                style: AppTextStyles.bodyStrong.copyWith(color: Colors.white),
               ),
       ),
     );
@@ -481,22 +465,13 @@ class _ProfileMenuHeader extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            profileName,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          Text(profileName, style: AppTextStyles.bodyStrong),
           if (profileRole.trim().isNotEmpty) ...[
             const SizedBox(height: 4),
             Text(
               profileRole,
-              style: const TextStyle(
+              style: AppTextStyles.fieldLabel.copyWith(
                 color: AppColors.textSecondary,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
               ),
             ),
           ],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../widgets/app_skeleton.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../core/theme/app_text_styles.dart';
 import '../../../models/list_pagination.dart';
 import '../../../models/notification_model.dart';
 import '../../../providers/api_provider.dart';
@@ -197,27 +198,22 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 children: [
                   Text(
                     item.title,
-                    style: const TextStyle(
+                    style: AppTextStyles.bodyStrong.copyWith(
                       color: AppColors.textPrimary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 5),
                   Text(
                     item.body,
-                    style: const TextStyle(
+                    style: AppTextStyles.body.copyWith(
                       color: AppColors.textSecondary,
-                      fontSize: 14,
-                      height: 1.35,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     _formatDate(item.createdAt),
-                    style: const TextStyle(
+                    style: AppTextStyles.small.copyWith(
                       color: AppColors.textSecondary,
-                      fontSize: 12,
                     ),
                   ),
                 ],

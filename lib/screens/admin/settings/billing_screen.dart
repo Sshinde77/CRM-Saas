@@ -318,11 +318,7 @@ class _BillingScreenState extends State<BillingScreen> {
           padding: const EdgeInsets.only(bottom: 8),
           child: Text(
             label,
-            style: const TextStyle(
-              color: _titleColor,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.bodyStrong.copyWith(color: _titleColor),
           ),
         ),
         child,
@@ -348,7 +344,7 @@ class _BillingScreenState extends State<BillingScreen> {
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+        textStyle: AppTextStyles.bodyStrong,
       ),
     );
   }
@@ -404,7 +400,7 @@ class _BillingScreenState extends State<BillingScreen> {
     return TextField(
       controller: controller,
       enabled: _isEditing,
-      style: const TextStyle(fontSize: 14, color: _titleColor),
+      style: AppTextStyles.body.copyWith(color: _titleColor),
       decoration: _fieldDecoration(),
     );
   }
@@ -424,7 +420,7 @@ class _BillingScreenState extends State<BillingScreen> {
       hint: hintText == null
           ? null
           : Text(hintText, style: AppTextStyles.inputHint),
-      style: const TextStyle(fontSize: 14, color: _titleColor),
+      style: AppTextStyles.body.copyWith(color: _titleColor),
       decoration: _fieldDecoration(),
       dropdownColor: Colors.white,
       borderRadius: BorderRadius.circular(16),
@@ -434,11 +430,7 @@ class _BillingScreenState extends State<BillingScreen> {
               value: item,
               child: Text(
                 '$item',
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: _titleColor,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: AppTextStyles.fieldLabel.copyWith(color: _titleColor),
               ),
             ),
           )
@@ -485,18 +477,15 @@ class _SectionShell extends StatelessWidget {
       children: [
         Text(
           title,
-          style: const TextStyle(
+          style: AppTextStyles.cardTitle.copyWith(
             color: _BillingScreenState._titleColor,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
           ),
         ),
         const SizedBox(height: 4),
         Text(
           subtitle,
-          style: const TextStyle(
+          style: AppTextStyles.body.copyWith(
             color: _BillingScreenState._mutedColor,
-            fontSize: 14,
           ),
         ),
         const SizedBox(height: 14),
@@ -545,12 +534,10 @@ class _QrUploadCard extends StatelessWidget {
             alignment: Alignment.center,
             clipBehavior: Clip.antiAlias,
             child: qrBytes == null
-                ? const Text(
+                ? Text(
                     'Preview',
-                    style: TextStyle(
+                    style: AppTextStyles.bodyStrong.copyWith(
                       color: Color(0xFF98A2B3),
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
                     ),
                   )
                 : Image.memory(qrBytes!, fit: BoxFit.cover),
@@ -559,23 +546,19 @@ class _QrUploadCard extends StatelessWidget {
           final details = Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Google Pay / PhonePe / Paytm QR\nCode *',
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
+                style: AppTextStyles.bodyStrong.copyWith(
                   color: _BillingScreenState._titleColor,
-                  fontSize: 14,
-                  height: 1.28,
-                  fontWeight: FontWeight.w700,
                 ),
               ),
               const SizedBox(height: 6),
-              const Text(
+              Text(
                 'image/png,image/jpeg',
-                style: TextStyle(
+                style: AppTextStyles.body.copyWith(
                   color: _BillingScreenState._mutedColor,
-                  fontSize: 14,
                 ),
               ),
               const SizedBox(height: 14),
@@ -598,10 +581,7 @@ class _QrUploadCard extends StatelessWidget {
                         horizontal: 16,
                         vertical: 12,
                       ),
-                      textStyle: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      textStyle: AppTextStyles.bodyStrong,
                     ),
                   ),
                   OutlinedButton.icon(
@@ -620,10 +600,7 @@ class _QrUploadCard extends StatelessWidget {
                         horizontal: 16,
                         vertical: 12,
                       ),
-                      textStyle: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      textStyle: AppTextStyles.bodyStrong,
                     ),
                   ),
                 ],

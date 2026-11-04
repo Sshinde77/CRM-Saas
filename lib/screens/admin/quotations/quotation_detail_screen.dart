@@ -3,7 +3,9 @@ import '../../../widgets/app_skeleton.dart';
 
 import '../../../constants/app_colors.dart';
 import '../../../providers/api_provider.dart';
+import '../../../utils/product_image_url.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
+import '../../../widgets/product_image.dart';
 import '../../../widgets/admin/app_drawer.dart';
 import '../../../widgets/app_calendar_date_picker.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
@@ -20,6 +22,7 @@ import '../orders/admin_orders_screen.dart';
 import '../orders/new_admin_order_screen.dart';
 import '../orders/order_detail_screen.dart';
 import 'admin_quotations_screen.dart';
+import 'package:crm_saas/core/theme/app_text_styles.dart';
 
 class QuotationDetailScreen extends StatefulWidget {
   final String quotationId;
@@ -131,16 +134,15 @@ class _QuotationDetailScreenState extends State<QuotationDetailScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(22),
           ),
-          title: const Text(
+          title: Text(
             'Delete Quotation',
-            style: TextStyle(
+            style: AppTextStyles.bodyStrong.copyWith(
               color: AppColors.textPrimary,
-              fontWeight: FontWeight.w700,
             ),
           ),
           content: Text(
             'Delete ${quotation.number}? This action cannot be undone.',
-            style: const TextStyle(color: AppColors.textSecondary),
+            style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
           ),
           actions: [
             TextButton(
@@ -149,12 +151,9 @@ class _QuotationDetailScreenState extends State<QuotationDetailScreen> {
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text(
+              child: Text(
                 'Delete',
-                style: TextStyle(
-                  color: AppColors.red,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: AppTextStyles.bodyStrong.copyWith(color: AppColors.red),
               ),
             ),
           ],
@@ -531,10 +530,8 @@ class _HeroPanel extends StatelessWidget {
                       children: [
                         Text(
                           quotation.number,
-                          style: const TextStyle(
+                          style: AppTextStyles.cardTitle.copyWith(
                             color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
                           ),
                         ),
                         _StatusChip(
@@ -547,10 +544,8 @@ class _HeroPanel extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       quotation.customerName,
-                      style: TextStyle(
+                      style: AppTextStyles.bodyStrong.copyWith(
                         color: Colors.white.withValues(alpha: 0.86),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ],
@@ -628,11 +623,13 @@ class _ItemsSection extends StatelessWidget {
       title: 'Quotation Items',
       icon: Icons.list_alt_rounded,
       child: items.isEmpty
-          ? const Padding(
+          ? Padding(
               padding: EdgeInsets.all(12),
               child: Text(
                 'No quotation items found.',
-                style: TextStyle(color: AppColors.textSecondary),
+                style: AppTextStyles.body.copyWith(
+                  color: AppColors.textSecondary,
+                ),
               ),
             )
           : compact
@@ -692,10 +689,8 @@ class _ItemsTable extends StatelessWidget {
                       flex: 3,
                       child: Text(
                         item.productName,
-                        style: const TextStyle(
+                        style: AppTextStyles.bodyStrong.copyWith(
                           color: AppColors.textPrimary,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
@@ -808,12 +803,9 @@ class _ConvertQuotationDialogState extends State<_ConvertQuotationDialog> {
     return AlertDialog(
       backgroundColor: AppColors.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      title: const Text(
+      title: Text(
         'Convert to Order',
-        style: TextStyle(
-          color: AppColors.textPrimary,
-          fontWeight: FontWeight.w700,
-        ),
+        style: AppTextStyles.bodyStrong.copyWith(color: AppColors.textPrimary),
       ),
       content: SizedBox(
         width: 420,
@@ -853,7 +845,9 @@ class _ConvertQuotationDialogState extends State<_ConvertQuotationDialog> {
                   _deliveryDate == null
                       ? 'Select delivery date'
                       : _formatDate(_deliveryDate),
-                  style: const TextStyle(color: AppColors.textPrimary),
+                  style: AppTextStyles.body.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
                 ),
               ),
             ),
@@ -941,10 +935,8 @@ class _SectionCard extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 title,
-                style: const TextStyle(
+                style: AppTextStyles.bodyStrong.copyWith(
                   color: AppColors.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],
@@ -991,10 +983,8 @@ class _StatCard extends StatelessWidget {
               children: [
                 Text(
                   stat.label,
-                  style: const TextStyle(
+                  style: AppTextStyles.smallStrong.copyWith(
                     color: AppColors.textSecondary,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -1002,10 +992,8 @@ class _StatCard extends StatelessWidget {
                   stat.value,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: AppTextStyles.bodyStrong.copyWith(
                     color: AppColors.textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
@@ -1046,7 +1034,7 @@ class _ActionPill extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         minimumSize: const Size(0, 40),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+        textStyle: AppTextStyles.smallStrong,
       ),
     );
   }
@@ -1085,11 +1073,7 @@ class _StatusChip extends StatelessWidget {
           const SizedBox(width: 6),
           Text(
             label,
-            style: TextStyle(
-              color: foreground,
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.smallStrong.copyWith(color: foreground),
           ),
         ],
       ),
@@ -1116,10 +1100,8 @@ class _DetailRow extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: const TextStyle(
+              style: AppTextStyles.smallStrong.copyWith(
                 color: AppColors.textSecondary,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -1128,11 +1110,8 @@ class _DetailRow extends StatelessWidget {
             child: Text(
               value.isEmpty ? '-' : value,
               textAlign: TextAlign.end,
-              style: const TextStyle(
+              style: AppTextStyles.secondaryStrong.copyWith(
                 color: AppColors.textPrimary,
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                height: 1.3,
               ),
             ),
           ),
@@ -1151,12 +1130,7 @@ class _LongText extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       value,
-      style: const TextStyle(
-        color: AppColors.textPrimary,
-        fontSize: 14,
-        fontWeight: FontWeight.w600,
-        height: 1.35,
-      ),
+      style: AppTextStyles.bodyStrong.copyWith(color: AppColors.textPrimary),
     );
   }
 }
@@ -1188,19 +1162,18 @@ class _ItemMobileCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(
-                Icons.inventory_2_outlined,
-                color: AppColors.primary,
-                size: 18,
+              ProductImage(
+                imageUrl: item.imageUrl,
+                size: 40,
+                borderRadius: 8,
+                seed: item.productName,
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   item.productName,
-                  style: const TextStyle(
+                  style: AppTextStyles.bodyStrong.copyWith(
                     color: AppColors.textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -1231,11 +1204,7 @@ class _TableHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       label.toUpperCase(),
-      style: const TextStyle(
-        color: AppColors.textSecondary,
-        fontSize: 11,
-        fontWeight: FontWeight.w700,
-      ),
+      style: AppTextStyles.smallStrong.copyWith(color: AppColors.textSecondary),
     );
   }
 }
@@ -1251,11 +1220,7 @@ class _TableValue extends StatelessWidget {
       value,
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
-      style: const TextStyle(
-        color: AppColors.textPrimary,
-        fontSize: 14,
-        fontWeight: FontWeight.w700,
-      ),
+      style: AppTextStyles.bodyStrong.copyWith(color: AppColors.textPrimary),
     );
   }
 }
@@ -1286,7 +1251,7 @@ class _ErrorPanel extends StatelessWidget {
           Text(
             message,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.textSecondary),
+            style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 10),
           OutlinedButton(onPressed: onRetry, child: const Text('Retry')),
@@ -1432,6 +1397,7 @@ class _QuotationItem {
   final double discount;
   final double taxRate;
   final double lineTotal;
+  final String? imageUrl;
 
   const _QuotationItem({
     required this.productName,
@@ -1441,6 +1407,7 @@ class _QuotationItem {
     required this.discount,
     required this.taxRate,
     required this.lineTotal,
+    this.imageUrl,
   });
 
   factory _QuotationItem.fromJson(Map<String, dynamic> json) {
@@ -1455,6 +1422,12 @@ class _QuotationItem {
     final subtotal = quantity * unitPrice;
     final discounted = subtotal - (subtotal * discount / 100);
     final taxAmount = discounted * taxRate / 100;
+
+    // Merge nested product data to find the image URL.
+    final nested = json['product'];
+    final merged = nested is Map<String, dynamic>
+        ? <String, dynamic>{...nested, ...json}
+        : json;
 
     return _QuotationItem(
       productName: _jsonText(
@@ -1472,6 +1445,7 @@ class _QuotationItem {
         'lineTotal',
         'total',
       ], fallback: discounted + taxAmount),
+      imageUrl: productImageUrlFromJson(merged),
     );
   }
 

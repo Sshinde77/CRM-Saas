@@ -123,12 +123,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       child: ListView(
                         padding: const EdgeInsets.fromLTRB(26, 20, 26, 34),
                         children: [
-                          const Text(
+                          Text(
                             'Update the admin account password.',
-                            style: TextStyle(
+                            style: AppTextStyles.body.copyWith(
                               color: _mutedColor,
-                              fontSize: 14,
-                              height: 1.35,
                             ),
                           ),
                           const SizedBox(height: 18),
@@ -223,10 +221,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(22),
                                   ),
-                                  textStyle: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                  ),
+                                  textStyle: AppTextStyles.cardTitle,
                                 ),
                               ),
                             ),
@@ -256,28 +251,23 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           child: hasRequiredMark
               ? RichText(
                   text: TextSpan(
-                    style: const TextStyle(
-                      fontFamily: AppTextStyles.fontFamily,
+                    style: AppTextStyles.bodyStrong.copyWith(
                       color: _titleColor,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
                     ),
                     children: [
                       TextSpan(text: cleanLabel),
-                      const TextSpan(
+                      TextSpan(
                         text: ' *',
-                        style: TextStyle(color: Color(0xFFEF4444)),
+                        style: AppTextStyles.body.copyWith(
+                          color: Color(0xFFEF4444),
+                        ),
                       ),
                     ],
                   ),
                 )
               : Text(
                   label,
-                  style: const TextStyle(
-                    color: _titleColor,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppTextStyles.bodyStrong.copyWith(color: _titleColor),
                 ),
         ),
         child,
@@ -294,7 +284,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     return TextField(
       controller: controller,
       obscureText: obscureText,
-      style: const TextStyle(fontSize: 14, color: _titleColor),
+      style: AppTextStyles.body.copyWith(color: _titleColor),
       decoration: InputDecoration(
         filled: true,
         fillColor: _fieldBg,

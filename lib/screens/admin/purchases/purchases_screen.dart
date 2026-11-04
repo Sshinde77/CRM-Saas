@@ -62,7 +62,6 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  static const Color textPrimary = AppColors.textPrimary;
   static const Color textSecondary = AppColors.textSecondary;
 
   // Mock data â€” replace with your providers / API calls.
@@ -120,10 +119,7 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
       builder: (_) => AlertDialog(
         backgroundColor: AppColors.background,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text(
-          'Delete invoice?',
-          style: TextStyle(color: textPrimary, fontWeight: FontWeight.w700),
-        ),
+        title: const Text('Delete invoice?', style: AppTextStyles.cardTitle),
         content: Text(
           'This will permanently remove "${invoice.poNumber}" from your purchase records.',
           style: const TextStyle(color: textSecondary),
@@ -188,24 +184,19 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Expanded(
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
+                              const Text(
                                 'Purchase Invoices',
-                                style: TextStyle(
-                                  color: textPrimary,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                ),
+                                style: AppTextStyles.screenHeading,
                               ),
-                              SizedBox(height: 4),
+                              const SizedBox(height: 4),
                               Text(
                                 'Manage all your purchase invoices',
-                                style: TextStyle(
+                                style: AppTextStyles.body.copyWith(
                                   color: textSecondary,
-                                  fontSize: 14,
                                 ),
                               ),
                             ],
@@ -233,14 +224,13 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                     ),
                     const SizedBox(height: 20),
                     if (_invoices.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 40),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 40),
                         child: Center(
                           child: Text(
                             'No purchase invoices yet.',
-                            style: TextStyle(
+                            style: AppTextStyles.body.copyWith(
                               color: textSecondary,
-                              fontSize: 14,
                             ),
                           ),
                         ),
@@ -309,21 +299,11 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      invoice.poNumber,
-                      style: const TextStyle(
-                        color: textPrimary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                    Text(invoice.poNumber, style: AppTextStyles.bodyStrong),
                     const SizedBox(height: 2),
                     Text(
                       _formatDate(invoice.date),
-                      style: const TextStyle(
-                        color: textSecondary,
-                        fontSize: 14,
-                      ),
+                      style: AppTextStyles.body.copyWith(color: textSecondary),
                     ),
                   ],
                 ),
@@ -346,14 +326,7 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                   color: textSecondary,
                 ),
                 const SizedBox(width: 6),
-                Text(
-                  invoice.supplier,
-                  style: const TextStyle(
-                    color: textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                Text(invoice.supplier, style: AppTextStyles.bodyStrong),
               ],
             ),
           ),
@@ -373,21 +346,17 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Total Amount',
-                        style: TextStyle(
+                        style: AppTextStyles.fieldLabel.copyWith(
                           color: textSecondary,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'â‚¹${_formatMoney(invoice.totalAmount)}',
-                        style: const TextStyle(
+                        style: AppTextStyles.importantNumber.copyWith(
                           color: AppColors.purple,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ],
@@ -408,21 +377,17 @@ class _PurchasesScreenState extends State<PurchasesScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Items',
-                        style: TextStyle(
+                        style: AppTextStyles.fieldLabel.copyWith(
                           color: textSecondary,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         '${invoice.itemCount}',
-                        style: const TextStyle(
+                        style: AppTextStyles.cardTitle.copyWith(
                           color: AppColors.green,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ],
@@ -517,7 +482,6 @@ class _PurchaseInvoiceFormDialog extends StatefulWidget {
 
 class _PurchaseInvoiceFormDialogState
     extends State<_PurchaseInvoiceFormDialog> {
-  static const Color textPrimary = AppColors.textPrimary;
   static const Color textSecondary = AppColors.textSecondary;
 
   late final TextEditingController _supplierController;
@@ -661,11 +625,7 @@ class _PurchaseInvoiceFormDialogState
                       _isEditing
                           ? 'Edit Purchase Invoice'
                           : 'Add Purchase Invoice',
-                      style: const TextStyle(
-                        color: textPrimary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: AppTextStyles.cardTitle,
                     ),
                   ),
                   GestureDetector(
@@ -759,10 +719,7 @@ class _PurchaseInvoiceFormDialogState
                                       Expanded(
                                         child: Text(
                                           _formatDate(_date),
-                                          style: const TextStyle(
-                                            color: textPrimary,
-                                            fontSize: 14,
-                                          ),
+                                          style: AppTextStyles.fieldValue,
                                         ),
                                       ),
                                       const Icon(
@@ -783,14 +740,7 @@ class _PurchaseInvoiceFormDialogState
                     Row(
                       children: [
                         const Expanded(
-                          child: Text(
-                            'Items',
-                            style: TextStyle(
-                              color: textPrimary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
+                          child: Text('Items', style: AppTextStyles.bodyStrong),
                         ),
                         TextButton.icon(
                           onPressed: _addItemRow,
@@ -799,11 +749,10 @@ class _PurchaseInvoiceFormDialogState
                             size: 16,
                             color: AppColors.purple,
                           ),
-                          label: const Text(
+                          label: Text(
                             'Add Item',
-                            style: TextStyle(
+                            style: AppTextStyles.bodyStrong.copyWith(
                               color: AppColors.purple,
-                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
@@ -814,9 +763,8 @@ class _PurchaseInvoiceFormDialogState
                         padding: const EdgeInsets.only(bottom: 6),
                         child: Text(
                           _itemsError!,
-                          style: const TextStyle(
+                          style: AppTextStyles.fieldValue.copyWith(
                             color: AppColors.red,
-                            fontSize: 14,
                           ),
                         ),
                       ),
@@ -839,18 +787,12 @@ class _PurchaseInvoiceFormDialogState
                         children: [
                           const Text(
                             'Total Amount',
-                            style: TextStyle(
-                              color: textPrimary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            style: AppTextStyles.bodyStrong,
                           ),
                           Text(
                             'â‚¹${_totalAmount.toStringAsFixed(2)}',
-                            style: const TextStyle(
+                            style: AppTextStyles.importantNumber.copyWith(
                               color: AppColors.purple,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ],
@@ -926,7 +868,7 @@ class _PurchaseInvoiceFormDialogState
                     controller: row.nameController,
                     onChanged: (_) => setState(() {}),
                     decoration: _decoration(hint: 'Item name'),
-                    style: const TextStyle(fontSize: 14),
+                    style: AppTextStyles.fieldValue,
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -953,7 +895,7 @@ class _PurchaseInvoiceFormDialogState
                     keyboardType: TextInputType.number,
                     onChanged: (_) => setState(() {}),
                     decoration: _decoration(hint: 'Qty'),
-                    style: const TextStyle(fontSize: 14),
+                    style: AppTextStyles.fieldValue,
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -965,7 +907,7 @@ class _PurchaseInvoiceFormDialogState
                     ),
                     onChanged: (_) => setState(() {}),
                     decoration: _decoration(hint: 'Unit Price'),
-                    style: const TextStyle(fontSize: 14),
+                    style: AppTextStyles.fieldValue,
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -974,11 +916,7 @@ class _PurchaseInvoiceFormDialogState
                   child: Text(
                     'â‚¹${row.lineTotal.toStringAsFixed(0)}',
                     textAlign: TextAlign.right,
-                    style: const TextStyle(
-                      color: textPrimary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: AppTextStyles.bodyStrong,
                   ),
                 ),
               ],

@@ -214,7 +214,13 @@ class _SalesManagerDashboardScreenState
                         ),
                         child: Column(
                           children: [
-                            _SalesDashboardHero(data: data),
+                            _SalesDashboardHero(
+                              data: data,
+                              onCustomersTap: _openCustomers,
+                              onVisitsTap: _openVisits,
+                              onFollowUpsTap: _openFollowUps,
+                              onOrdersTap: _openSalesOrders,
+                            ),
                             Center(
                               child: ConstrainedBox(
                                 constraints: const BoxConstraints(
@@ -353,8 +359,18 @@ class _SalesManagerDashboardScreenState
 
 class _SalesDashboardHero extends StatelessWidget {
   final _DashboardData data;
+  final VoidCallback onCustomersTap;
+  final VoidCallback onVisitsTap;
+  final VoidCallback onFollowUpsTap;
+  final VoidCallback onOrdersTap;
 
-  const _SalesDashboardHero({required this.data});
+  const _SalesDashboardHero({
+    required this.data,
+    required this.onCustomersTap,
+    required this.onVisitsTap,
+    required this.onFollowUpsTap,
+    required this.onOrdersTap,
+  });
 
   static const double _statsOverlap = 44;
 
@@ -379,7 +395,13 @@ class _SalesDashboardHero extends StatelessWidget {
             child: Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 820),
-                child: _StatsGrid(data: data),
+                child: _StatsGrid(
+                  data: data,
+                  onCustomersTap: onCustomersTap,
+                  onVisitsTap: onVisitsTap,
+                  onFollowUpsTap: onFollowUpsTap,
+                  onOrdersTap: onOrdersTap,
+                ),
               ),
             ),
           ),
@@ -451,21 +473,15 @@ class _SalesIdentityHeader extends StatelessWidget {
                           'Hello, ${data.userName}',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: AppTextStyles.cardTitle.copyWith(
                             color: AppColors.surface,
-                            fontSize: 16,
-                            height: 1.15,
-                            fontWeight: FontWeight.w700,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           'Sales Person',
-                          style: TextStyle(
+                          style: AppTextStyles.small.copyWith(
                             color: AppColors.surface.withValues(alpha: 0.78),
-                            fontSize: 12,
-                            height: 1.2,
-                            fontWeight: FontWeight.w400,
                           ),
                         ),
                       ],
@@ -526,10 +542,8 @@ class _SalesDatePill extends StatelessWidget {
         children: [
           Text(
             'Today ${now.day} ${months[now.month - 1]} ${now.year}',
-            style: const TextStyle(
+            style: AppTextStyles.smallStrong.copyWith(
               color: AppColors.deliveryDashboardHeaderEnd,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -540,8 +554,18 @@ class _SalesDatePill extends StatelessWidget {
 
 class _StatsGrid extends StatelessWidget {
   final _DashboardData data;
+  final VoidCallback onCustomersTap;
+  final VoidCallback onVisitsTap;
+  final VoidCallback onFollowUpsTap;
+  final VoidCallback onOrdersTap;
 
-  const _StatsGrid({required this.data});
+  const _StatsGrid({
+    required this.data,
+    required this.onCustomersTap,
+    required this.onVisitsTap,
+    required this.onFollowUpsTap,
+    required this.onOrdersTap,
+  });
 
   static const double _tileHeight = 78;
   static const double _spacing = 8;
@@ -592,9 +616,55 @@ class _StatsGrid extends StatelessWidget {
             crossAxisSpacing: 6,
             mainAxisSpacing: _spacing,
           ),
-          itemBuilder: (context, index) => _StatCard(data: stats[index]),
+          itemBuilder: (context, index) {
+            final taps = [
+              onCustomersTap,
+              onVisitsTap,
+              onFollowUpsTap,
+              onOrdersTap,
+            ];
+            return _StatCardTapTarget(
+              label: 'Open ${stats[index].title}',
+              onTap: taps[index],
+              child: _StatCard(data: stats[index]),
+            );
+          },
         );
       },
+    );
+  }
+}
+
+class _StatCardTapTarget extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+  final Widget child;
+
+  const _StatCardTapTarget({
+    required this.label,
+    required this.onTap,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        child,
+        Material(
+          type: MaterialType.transparency,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(10),
+            onTap: onTap,
+            child: Semantics(
+              button: true,
+              label: label,
+              child: const SizedBox.expand(),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -646,15 +716,13 @@ class _SalesTargetCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
               Expanded(
                 child: Text(
                   'Sales Target',
-                  style: TextStyle(
+                  style: AppTextStyles.bodyStrong.copyWith(
                     color: AppColors.deliveryDashboardText,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -688,11 +756,8 @@ class _SalesTargetCard extends StatelessWidget {
                     children: [
                       Text(
                         _currency(data.monthlySales),
-                        style: const TextStyle(
+                        style: AppTextStyles.importantNumber.copyWith(
                           color: AppColors.deliveryDashboardText,
-                          fontSize: 16,
-                          height: 1,
-                          fontWeight: FontWeight.w700,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -700,21 +765,15 @@ class _SalesTargetCard extends StatelessWidget {
                         'Monthly sales of ${_currency(_SalesManagerDashboardScreenState._monthlyTarget)} target',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.textMuted,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w400,
-                        ),
+                        style: AppTextStyles.small,
                       ),
                     ],
                   ),
                 ),
                 Text(
                   '$percent%',
-                  style: const TextStyle(
+                  style: AppTextStyles.bodyStrong.copyWith(
                     color: AppColors.primary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
@@ -785,11 +844,8 @@ class _SalesSummaryTile extends StatelessWidget {
               children: [
                 Text(
                   data.value,
-                  style: const TextStyle(
+                  style: AppTextStyles.bodyStrong.copyWith(
                     color: AppColors.deliveryDashboardText,
-                    fontSize: 14,
-                    height: 1,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 3),
@@ -797,11 +853,7 @@ class _SalesSummaryTile extends StatelessWidget {
                   data.label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.textMuted,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w400,
-                  ),
+                  style: AppTextStyles.small,
                 ),
               ],
             ),
@@ -1053,11 +1105,8 @@ class _StatCard extends StatelessWidget {
                   data.value,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: AppTextStyles.importantNumber.copyWith(
                     color: AppColors.deliveryDashboardText,
-                    fontSize: 18,
-                    height: 1,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -1065,11 +1114,8 @@ class _StatCard extends StatelessWidget {
                   data.title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: AppTextStyles.small.copyWith(
                     color: AppColors.deliveryDashboardText,
-                    fontSize: 11,
-                    height: 1.1,
-                    fontWeight: FontWeight.w400,
                   ),
                 ),
               ],
@@ -1111,21 +1157,15 @@ class _PriorityRow extends StatelessWidget {
                       row.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: AppTextStyles.bodyStrong,
                     ),
                     const SizedBox(height: 2),
                     Text(
                       row.subtitle,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: AppTextStyles.bodyStrong.copyWith(
                         color: AppColors.textMuted,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
@@ -1133,11 +1173,7 @@ class _PriorityRow extends StatelessWidget {
               ),
               Text(
                 row.count.toString(),
-                style: TextStyle(
-                  color: row.color,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: AppTextStyles.importantNumber.copyWith(color: row.color),
               ),
               const SizedBox(width: 5),
               const Icon(
@@ -1176,24 +1212,14 @@ class _StatusTile extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  data.count.toString(),
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 14,
-                    height: 1,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                Text(data.count.toString(), style: AppTextStyles.bodyStrong),
                 const SizedBox(height: 2),
                 Text(
                   data.label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: AppTextStyles.fieldLabel.copyWith(
                     color: AppColors.textMuted,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
@@ -1279,21 +1305,15 @@ class _ListRow extends StatelessWidget {
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppTextStyles.bodyStrong,
                 ),
                 const SizedBox(height: 2),
                 Text(
                   subtitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: AppTextStyles.bodyStrong.copyWith(
                     color: AppColors.textMuted,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -1307,11 +1327,8 @@ class _ListRow extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.right,
-              style: const TextStyle(
+              style: AppTextStyles.bodyStrong.copyWith(
                 color: AppColors.textSecondary,
-                fontSize: 14,
-                height: 1.3,
-                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -1355,10 +1372,7 @@ class _SectionTitle extends StatelessWidget {
             padding: EdgeInsets.zero,
             minimumSize: Size.zero,
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            textStyle: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
+            textStyle: AppTextStyles.bodyStrong,
           ),
         ),
       ],
@@ -1411,10 +1425,8 @@ class _InitialsAvatar extends StatelessWidget {
       alignment: Alignment.center,
       child: Text(
         initials.isEmpty ? 'SM' : initials,
-        style: const TextStyle(
-          color: Color(0xFF2563EB),
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
+        style: AppTextStyles.bodyStrong.copyWith(
+          color: const Color(0xFF2563EB),
         ),
       ),
     );
@@ -1439,11 +1451,7 @@ class _Pill extends StatelessWidget {
         label,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          color: color,
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
-        ),
+        style: AppTextStyles.smallStrong.copyWith(color: color),
       ),
     );
   }
@@ -1489,11 +1497,7 @@ class _EmptyInline extends StatelessWidget {
       child: Text(
         message,
         textAlign: TextAlign.center,
-        style: const TextStyle(
-          color: AppColors.textMuted,
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
-        ),
+        style: AppTextStyles.body.copyWith(color: AppColors.textMuted),
       ),
     );
   }
@@ -1508,11 +1512,7 @@ class _FooterNote extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: const TextStyle(
-        color: AppColors.textMuted,
-        fontSize: 14,
-        fontWeight: FontWeight.w700,
-      ),
+      style: AppTextStyles.body.copyWith(color: AppColors.textMuted),
     );
   }
 }
@@ -1549,11 +1549,7 @@ class _ErrorState extends StatelessWidget {
               const SizedBox(height: 10),
               const Text(
                 'Dashboard could not load',
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: AppTextStyles.cardTitle,
               ),
               const SizedBox(height: 5),
               Text(

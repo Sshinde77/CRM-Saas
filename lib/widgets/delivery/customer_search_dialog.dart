@@ -114,13 +114,12 @@ class _CustomerSearchDialogState extends State<CustomerSearchDialog> {
                 children: [
                   const Icon(Icons.person_outline, color: _heading, size: 26),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'Search Customer',
-                      style: TextStyle(
+                      style: AppTextStyles.screenHeading.copyWith(
                         color: _heading,
-                        fontSize: 19,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 18,
                       ),
                     ),
                   ),
@@ -137,7 +136,7 @@ class _CustomerSearchDialogState extends State<CustomerSearchDialog> {
               child: TextField(
                 controller: _search,
                 onChanged: (_) => setState(() {}),
-                style: const TextStyle(color: _heading, fontSize: 13),
+                style: AppTextStyles.secondary.copyWith(color: _heading),
                 decoration: InputDecoration(
                   isDense: true,
                   contentPadding: const EdgeInsets.symmetric(
@@ -212,11 +211,10 @@ class _CustomerSearchDialogState extends State<CustomerSearchDialog> {
                     ),
                     onPressed: _creating ? null : _createCustomer,
                     icon: const Icon(Icons.add, size: 22),
-                    label: const Text(
+                    label: Text(
                       'Create Customer',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
+                      style: AppTextStyles.bodyStrong.copyWith(
+                        color: AppColors.surface,
                       ),
                     ),
                   ),
@@ -276,10 +274,8 @@ class _CustomerSearchDialogState extends State<CustomerSearchDialog> {
                       children: [
                         Text(
                           title,
-                          style: const TextStyle(
+                          style: AppTextStyles.cardTitle.copyWith(
                             color: _heading,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
                           ),
                         ),
                         const SizedBox(height: 10),
@@ -361,7 +357,7 @@ class _CustomerSearchDialogState extends State<CustomerSearchDialog> {
             Expanded(
               child: Text(
                 value,
-                style: const TextStyle(color: _muted, fontSize: 13),
+                style: AppTextStyles.secondary.copyWith(color: _muted),
               ),
             ),
           ],

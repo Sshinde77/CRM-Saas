@@ -168,26 +168,29 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      const Expanded(
+                                      Expanded(
                                         child: Column(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               'Categories',
-                                              style: TextStyle(
-                                                color: Color(0xFF111827),
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w700,
-                                              ),
+                                              style: AppTextStyles.screenHeading
+                                                  .copyWith(
+                                                    color: const Color(
+                                                      0xFF111827,
+                                                    ),
+                                                  ),
                                             ),
-                                            SizedBox(height: 8),
+                                            const SizedBox(height: 8),
                                             Text(
                                               'Create and manage product categories used across catalog items.',
-                                              style: TextStyle(
-                                                color: Color(0xFF64748B),
-                                                fontSize: 14,
-                                              ),
+                                              style: AppTextStyles.body
+                                                  .copyWith(
+                                                    color: const Color(
+                                                      0xFF64748B,
+                                                    ),
+                                                  ),
                                             ),
                                           ],
                                         ),
@@ -198,26 +201,29 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                                   )
                                 : Row(
                                     children: [
-                                      const Expanded(
+                                      Expanded(
                                         child: Column(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               'Categories',
-                                              style: TextStyle(
-                                                color: Color(0xFF111827),
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w700,
-                                              ),
+                                              style: AppTextStyles.screenHeading
+                                                  .copyWith(
+                                                    color: const Color(
+                                                      0xFF111827,
+                                                    ),
+                                                  ),
                                             ),
-                                            SizedBox(height: 8),
+                                            const SizedBox(height: 8),
                                             Text(
                                               'Create and manage product categories used across catalog items.',
-                                              style: TextStyle(
-                                                color: Color(0xFF64748B),
-                                                fontSize: 14,
-                                              ),
+                                              style: AppTextStyles.body
+                                                  .copyWith(
+                                                    color: const Color(
+                                                      0xFF64748B,
+                                                    ),
+                                                  ),
                                             ),
                                           ],
                                         ),
@@ -267,19 +273,15 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                               children: [
                                 Text(
                                   '${categories.length} to ${categories.isEmpty ? 0 : categories.length}',
-                                  style: const TextStyle(
-                                    color: Color(0xFF94A3B8),
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
+                                  style: AppTextStyles.bodyStrong.copyWith(
+                                    color: const Color(0xFF94A3B8),
                                   ),
                                 ),
                                 const Spacer(),
-                                const Text(
+                                Text(
                                   'Categories',
-                                  style: TextStyle(
-                                    color: Color(0xFF94A3B8),
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
+                                  style: AppTextStyles.bodyStrong.copyWith(
+                                    color: const Color(0xFF94A3B8),
                                   ),
                                 ),
                               ],
@@ -321,10 +323,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(999),
           ),
-          textStyle: TextStyle(
-            fontSize: compact ? 12.5 : 13,
-            fontWeight: FontWeight.w700,
-          ),
+          textStyle: AppTextStyles.secondaryStrong,
         ),
       ),
     );
@@ -381,15 +380,13 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
   Widget _buildCompactList(List<CategoryRecord> categories) {
     if (categories.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 56),
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 56),
         child: Center(
           child: Text(
             'No categories found.',
-            style: TextStyle(
-              color: Color(0xFF64748B),
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
+            style: AppTextStyles.fieldLabel.copyWith(
+              color: const Color(0xFF64748B),
             ),
           ),
         ),
@@ -435,15 +432,13 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           ),
         ),
         if (categories.isEmpty)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 56),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 56),
             child: Center(
               child: Text(
                 'No categories found.',
-                style: TextStyle(
-                  color: Color(0xFF64748B),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                style: AppTextStyles.fieldLabel.copyWith(
+                  color: const Color(0xFF64748B),
                 ),
               ),
             ),
@@ -475,20 +470,16 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                   backgroundColor: const Color(0xFFF8FAFC),
                   child: Text(
                     category.imageLabel,
-                    style: const TextStyle(
-                      color: Color(0xFF0D1F42),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
+                    style: AppTextStyles.bodyStrong.copyWith(
+                      color: const Color(0xFF0D1F42),
                     ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Text(
                   category.name,
-                  style: const TextStyle(
-                    color: Color(0xFF0F172A),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
+                  style: AppTextStyles.bodyStrong.copyWith(
+                    color: const Color(0xFF0F172A),
                   ),
                 ),
               ],
@@ -502,10 +493,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
             width: _descriptionWidth,
             child: Text(
               category.description.trim().isEmpty ? '-' : category.description,
-              style: const TextStyle(
-                color: Color(0xFF64748B),
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
+              style: AppTextStyles.fieldLabel.copyWith(
+                color: const Color(0xFF64748B),
               ),
             ),
           ),
@@ -555,10 +544,8 @@ class _CategoryCompactCard extends StatelessWidget {
             backgroundColor: const Color(0xFFF8FAFC),
             child: Text(
               category.imageLabel,
-              style: const TextStyle(
-                color: Color(0xFF0D1F42),
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
+              style: AppTextStyles.bodyStrong.copyWith(
+                color: const Color(0xFF0D1F42),
               ),
             ),
           ),
@@ -569,10 +556,8 @@ class _CategoryCompactCard extends StatelessWidget {
               children: [
                 Text(
                   category.name,
-                  style: const TextStyle(
-                    color: Color(0xFF0F172A),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
+                  style: AppTextStyles.bodyStrong.copyWith(
+                    color: const Color(0xFF0F172A),
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -585,9 +570,8 @@ class _CategoryCompactCard extends StatelessWidget {
                         category.description.trim().isEmpty
                             ? '-'
                             : category.description,
-                        style: const TextStyle(
-                          color: Color(0xFF64748B),
-                          fontSize: 14,
+                        style: AppTextStyles.body.copyWith(
+                          color: const Color(0xFF64748B),
                         ),
                       ),
                     ),
@@ -622,10 +606,8 @@ class _TableHead extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: const TextStyle(
-        color: Color(0xFF94A3B8),
-        fontSize: 14,
-        fontWeight: FontWeight.w700,
+      style: AppTextStyles.bodyStrong.copyWith(
+        color: const Color(0xFF94A3B8),
         letterSpacing: 1.0,
       ),
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../constants/app_colors.dart';
+import '../core/theme/app_text_styles.dart';
 import 'delivery/voice_input_sheet.dart';
 
 Future<String?> showCompletionFeedbackSheet({
@@ -97,10 +98,9 @@ class _CompletionFeedbackSheetState extends State<_CompletionFeedbackSheet> {
                   Expanded(
                     child: Text(
                       widget.title,
-                      style: const TextStyle(
+                      style: AppTextStyles.screenHeading.copyWith(
                         color: AppColors.textPrimary,
                         fontSize: 18,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -114,9 +114,8 @@ class _CompletionFeedbackSheetState extends State<_CompletionFeedbackSheet> {
               const SizedBox(height: 4),
               Text(
                 'Add the outcome or customer feedback for ${widget.subjectLabel}.',
-                style: const TextStyle(
+                style: AppTextStyles.secondary.copyWith(
                   color: AppColors.textSecondary,
-                  fontSize: 13,
                 ),
               ),
               const SizedBox(height: 16),

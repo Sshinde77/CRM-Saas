@@ -6,29 +6,28 @@ class AppTextStyles {
   const AppTextStyles._();
 
   static const String fontFamily = 'Open Sans';
-  static const String headingFontFamily = 'DM Sans';
 
   static const TextStyle appBarTitle = TextStyle(
-    fontFamily: headingFontFamily,
+    fontFamily: fontFamily,
     fontSize: 16,
     height: 1.2,
-    fontWeight: FontWeight.w700,
+    fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
   );
 
   static const TextStyle screenHeading = TextStyle(
-    fontFamily: headingFontFamily,
+    fontFamily: fontFamily,
     fontSize: 16,
     height: 1.2,
-    fontWeight: FontWeight.w700,
+    fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
   );
 
   static const TextStyle sectionHeading = TextStyle(
-    fontFamily: headingFontFamily,
+    fontFamily: fontFamily,
     fontSize: 16,
     height: 1.25,
-    fontWeight: FontWeight.w700,
+    fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
   );
 
@@ -89,7 +88,7 @@ class AppTextStyles {
   );
 
   static const TextStyle importantNumber = TextStyle(
-    fontFamily: headingFontFamily,
+    fontFamily: fontFamily,
     fontSize: 16,
     height: 1.15,
     fontWeight: FontWeight.w700,
@@ -105,10 +104,10 @@ class AppTextStyles {
   );
 
   static const TextStyle cardTitle = TextStyle(
-    fontFamily: headingFontFamily,
+    fontFamily: fontFamily,
     fontSize: 16,
     height: 1.25,
-    fontWeight: FontWeight.w700,
+    fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
   );
 

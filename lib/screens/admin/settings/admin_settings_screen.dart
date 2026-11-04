@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../constants/app_colors.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
+import 'package:crm_saas/core/theme/app_text_styles.dart';
 
 class AdminSettingsScreen extends StatefulWidget {
   const AdminSettingsScreen({super.key});
@@ -86,24 +87,21 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Expanded(
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 'Operational Settings',
-                                style: TextStyle(
+                                style: AppTextStyles.cardTitle.copyWith(
                                   color: textPrimary,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                               SizedBox(height: 4),
                               Text(
                                 'Configure invoicing, payments, products, and alerts',
-                                style: TextStyle(
+                                style: AppTextStyles.body.copyWith(
                                   color: textSecondary,
-                                  fontSize: 14,
                                 ),
                               ),
                             ],
@@ -138,18 +136,18 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'GST & Tax Defaults',
-                            style: TextStyle(
+                            style: AppTextStyles.cardTitle.copyWith(
                               color: textPrimary,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
                             ),
                           ),
                           const SizedBox(height: 16),
-                          const Text(
+                          Text(
                             'Default GST Rate',
-                            style: TextStyle(color: textPrimary),
+                            style: AppTextStyles.body.copyWith(
+                              color: textPrimary,
+                            ),
                           ),
                           const SizedBox(height: 8),
                           DropdownButtonFormField<String>(
@@ -176,9 +174,11 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                                 setState(() => _roundOffInvoices = value),
                             activeThumbColor: AppColors.purple,
                             contentPadding: EdgeInsets.zero,
-                            title: const Text(
+                            title: Text(
                               'Round off invoice totals to nearest rupee',
-                              style: TextStyle(color: textPrimary),
+                              style: AppTextStyles.body.copyWith(
+                                color: textPrimary,
+                              ),
                             ),
                           ),
                         ],
@@ -205,12 +205,10 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'Payment Methods',
-                            style: TextStyle(
+                            style: AppTextStyles.cardTitle.copyWith(
                               color: textPrimary,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -242,12 +240,10 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'Notification Preferences',
-                            style: TextStyle(
+                            style: AppTextStyles.cardTitle.copyWith(
                               color: textPrimary,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
                             ),
                           ),
                           const SizedBox(height: 12),
@@ -263,7 +259,9 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                               contentPadding: EdgeInsets.zero,
                               title: Text(
                                 entry.key,
-                                style: const TextStyle(color: textPrimary),
+                                style: AppTextStyles.body.copyWith(
+                                  color: textPrimary,
+                                ),
                               ),
                             ),
                           ),
@@ -290,11 +288,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
       children: [
         Text(
           title,
-          style: const TextStyle(
-            color: textPrimary,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-          ),
+          style: AppTextStyles.cardTitle.copyWith(color: textPrimary),
         ),
         const SizedBox(height: 16),
         Wrap(

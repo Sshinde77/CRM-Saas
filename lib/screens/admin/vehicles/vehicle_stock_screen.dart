@@ -338,12 +338,10 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
                                 ),
                               if (_isDelivery) ...[
                                 const SizedBox(height: 16),
-                                const Text(
+                                Text(
                                   'History',
-                                  style: TextStyle(
+                                  style: AppTextStyles.sectionHeading.copyWith(
                                     color: AppColors.deliveryInk,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
                                   ),
                                 ),
                                 const SizedBox(height: 8),
@@ -417,13 +415,11 @@ class _AdminListFilter extends StatelessWidget {
     return _SurfaceCard(
       child: Row(
         children: [
-          const Expanded(
+          Expanded(
             child: Text(
               'Filter by delivery partner',
-              style: TextStyle(
+              style: AppTextStyles.bodyStrong.copyWith(
                 color: AppColors.deliveryInk,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -468,10 +464,8 @@ class _PartnerFilter extends StatelessWidget {
           value: value,
           isExpanded: true,
           icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
-          style: const TextStyle(
+          style: AppTextStyles.bodyStrong.copyWith(
             color: AppColors.deliveryInk,
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
           ),
           items: partners
               .map(
@@ -512,7 +506,7 @@ class _DeliveryHistoryToolbar extends StatelessWidget {
               controller: controller,
               onChanged: onSearchChanged,
               textInputAction: TextInputAction.search,
-              style: const TextStyle(fontSize: 13),
+              style: AppTextStyles.secondary,
               decoration: InputDecoration(
                 hintText: 'Search history',
                 hintStyle: AppTextStyles.inputHint,
@@ -607,15 +601,12 @@ class _DeliveryStockOverview extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       "Today's Loading",
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
+                      style: AppTextStyles.cardTitle.copyWith(
                         color: AppColors.deliveryInk,
-                        fontSize: 16,
-                        height: 1.15,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 3),
@@ -625,11 +616,7 @@ class _DeliveryStockOverview extends StatelessWidget {
                           : '${session.vehicleNumber}  •  ${session.items.length} products',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.textMuted,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: AppTextStyles.smallStrong,
                     ),
                   ],
                 ),
@@ -643,10 +630,7 @@ class _DeliveryStockOverview extends StatelessWidget {
                   foregroundColor: Colors.white,
                   minimumSize: const Size(0, 38),
                   padding: const EdgeInsets.symmetric(horizontal: 12),
-                  textStyle: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  textStyle: AppTextStyles.bodyStrong,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -661,10 +645,8 @@ class _DeliveryStockOverview extends StatelessWidget {
               const Spacer(),
               Text(
                 'Current stock',
-                style: TextStyle(
+                style: AppTextStyles.smallStrong.copyWith(
                   color: AppColors.deliveryGreen.withValues(alpha: 0.9),
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],
@@ -735,23 +717,14 @@ class _OverviewMetric extends StatelessWidget {
             value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: color,
-              fontSize: 15,
-              height: 1,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.bodyStrong.copyWith(color: color),
           ),
           const SizedBox(height: 4),
           Text(
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: AppColors.textMuted,
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.smallStrong,
           ),
         ],
       ),
@@ -823,10 +796,7 @@ class _VehicleListCard extends StatelessWidget {
                               : session.vehicleNumber,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            height: 1.15,
-                            fontWeight: FontWeight.w700,
+                          style: AppTextStyles.cardTitle.copyWith(
                             color: AppColors.deliveryInk,
                           ),
                         ),
@@ -841,11 +811,7 @@ class _VehicleListCard extends StatelessWidget {
                               : subtitle,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textMuted,
-                          ),
+                          style: AppTextStyles.smallStrong,
                         ),
                       ],
                     ),
@@ -927,23 +893,14 @@ class _MiniStockStat extends StatelessWidget {
             value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: color,
-              fontSize: 13,
-              height: 1,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.secondaryStrong.copyWith(color: color),
           ),
           const SizedBox(height: 4),
           Text(
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: AppColors.textMuted,
-              fontSize: 10.5,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.smallStrong,
           ),
         ],
       ),
@@ -1030,13 +987,11 @@ class _DeliveryStockSummary extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Stock summary',
-                  style: TextStyle(
+                  style: AppTextStyles.sectionHeading.copyWith(
                     color: AppColors.deliveryInk,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -1135,23 +1090,14 @@ class _DeliverySummaryMetric extends StatelessWidget {
               children: [
                 Text(
                   _qty(value),
-                  style: TextStyle(
-                    color: color,
-                    fontSize: 15,
-                    height: 1,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppTextStyles.bodyStrong.copyWith(color: color),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.textMuted,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: AppTextStyles.smallStrong,
                 ),
               ],
             ),
@@ -1181,13 +1127,11 @@ class _DeliveryLoadingDetails extends StatelessWidget {
                 background: AppColors.deliveryGreenSoft,
               ),
               const SizedBox(width: 10),
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Loading Details',
-                  style: TextStyle(
+                  style: AppTextStyles.sectionHeading.copyWith(
                     color: AppColors.deliveryInk,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -1242,14 +1186,7 @@ class _DeliveryDetailField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: AppColors.textMuted,
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        Text(label, style: AppTextStyles.smallStrong),
         const SizedBox(height: 4),
         Container(
           width: double.infinity,
@@ -1269,10 +1206,8 @@ class _DeliveryDetailField extends StatelessWidget {
                   value.trim().isEmpty ? '-' : value,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: AppTextStyles.secondaryStrong.copyWith(
                     color: AppColors.deliveryInk,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -1309,18 +1244,16 @@ class _DeliveryStockProductsState extends State<_DeliveryStockProducts> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Products',
-            style: TextStyle(
+            style: AppTextStyles.sectionHeading.copyWith(
               color: AppColors.deliveryInk,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 10),
           TextField(
             onChanged: (value) => setState(() => _query = value),
-            style: const TextStyle(fontSize: 13),
+            style: AppTextStyles.secondary,
             decoration: InputDecoration(
               hintText: 'Search products by name or SKU',
               hintStyle: AppTextStyles.inputHint,
@@ -1391,11 +1324,8 @@ class _DeliveryProductRow extends StatelessWidget {
                 item.productName.isEmpty ? 'Unnamed product' : item.productName,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: AppTextStyles.secondaryStrong.copyWith(
                   color: AppColors.deliveryInk,
-                  fontSize: 13,
-                  height: 1.2,
-                  fontWeight: FontWeight.w700,
                 ),
               ),
               if (item.variantId.isNotEmpty) ...[
@@ -1404,10 +1334,7 @@ class _DeliveryProductRow extends StatelessWidget {
                   'SKU: ${item.variantId}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.textMuted,
-                    fontSize: 11,
-                  ),
+                  style: AppTextStyles.small,
                 ),
               ],
               const SizedBox(height: 8),
@@ -1461,22 +1388,11 @@ class _DeliveryProductQuantity extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: AppColors.textMuted,
-            fontSize: 10,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        Text(label, style: AppTextStyles.smallStrong),
         const SizedBox(height: 2),
         Text(
           _qty(value),
-          style: TextStyle(
-            color: color,
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-          ),
+          style: AppTextStyles.smallStrong.copyWith(color: color),
         ),
       ],
     );
@@ -1503,13 +1419,11 @@ class _SessionInfoCard extends StatelessWidget {
                 background: Color(0xFFE9F7EA),
               ),
               const SizedBox(width: 10),
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Active Session',
-                  style: TextStyle(
-                    color: Color(0xFF065F1B),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
+                  style: AppTextStyles.sectionHeading.copyWith(
+                    color: const Color(0xFF065F1B),
                   ),
                 ),
               ),
@@ -1603,10 +1517,8 @@ class _InfoField extends StatelessWidget {
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: AppTextStyles.fieldLabel.copyWith(
                     color: AppColors.textMuted,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -1614,10 +1526,8 @@ class _InfoField extends StatelessWidget {
                   value.trim().isEmpty ? '-' : value,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: AppTextStyles.bodyStrong.copyWith(
                     color: AppColors.deliveryInk,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
@@ -1640,21 +1550,19 @@ class _StockItemsTable extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.inventory_2_outlined,
                 color: Color(0xFF0D7A24),
                 size: 22,
               ),
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   'Vehicle Stock Items',
-                  style: TextStyle(
+                  style: AppTextStyles.sectionHeading.copyWith(
                     color: AppColors.deliveryInk,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -1712,11 +1620,8 @@ class _StockProductCard extends StatelessWidget {
                           : item.productName,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: AppTextStyles.bodyStrong.copyWith(
                         color: AppColors.deliveryInk,
-                        fontSize: 14,
-                        height: 1.15,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     if (item.variantId.isNotEmpty) ...[
@@ -1725,11 +1630,7 @@ class _StockProductCard extends StatelessWidget {
                         'Variant: ${item.variantId}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.textMuted,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: AppTextStyles.smallStrong,
                       ),
                     ],
                   ],
@@ -1804,23 +1705,14 @@ class _QuantityBadge extends StatelessWidget {
             _qty(value),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: color,
-              fontSize: 14,
-              height: 1,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.importantNumber.copyWith(color: color),
           ),
           const SizedBox(height: 3),
           Text(
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: color,
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.smallStrong.copyWith(color: color),
           ),
         ],
       ),
@@ -1855,23 +1747,14 @@ class _StockMetricChip extends StatelessWidget {
             _qty(value),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: color,
-              fontSize: 13,
-              height: 1,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.secondaryStrong.copyWith(color: color),
           ),
           const SizedBox(height: 4),
           Text(
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: AppColors.textMuted,
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.smallStrong,
           ),
         ],
       ),
@@ -1959,25 +1842,21 @@ class _RemainingSummary extends StatelessWidget {
             background: Color(0xFFE9F7EA),
           ),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Remaining Vehicle Stock',
-                  style: TextStyle(
-                    color: Color(0xFF065F1B),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
+                  style: AppTextStyles.bodyStrong.copyWith(
+                    color: const Color(0xFF065F1B),
                   ),
                 ),
-                SizedBox(height: 3),
+                const SizedBox(height: 3),
                 Text(
                   'Total remaining units across all products',
-                  style: TextStyle(
+                  style: AppTextStyles.fieldLabel.copyWith(
                     color: AppColors.textMuted,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -1989,19 +1868,14 @@ class _RemainingSummary extends StatelessWidget {
             children: [
               Text(
                 _qty(total),
-                style: const TextStyle(
-                  color: Color(0xFF065F1B),
-                  fontSize: 16,
-                  height: 1,
-                  fontWeight: FontWeight.w700,
+                style: AppTextStyles.importantNumber.copyWith(
+                  color: const Color(0xFF065F1B),
                 ),
               ),
-              const Text(
+              Text(
                 'Units',
-                style: TextStyle(
-                  color: Color(0xFF065F1B),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
+                style: AppTextStyles.bodyStrong.copyWith(
+                  color: const Color(0xFF065F1B),
                 ),
               ),
             ],
@@ -2039,11 +1913,7 @@ class _StatusPill extends StatelessWidget {
         label,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          color: color,
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
-        ),
+        style: AppTextStyles.smallStrong.copyWith(color: color),
       ),
     );
   }

@@ -402,13 +402,11 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                           ),
                         ),
                         const SizedBox(width: 10),
-                        const Expanded(
+                        Expanded(
                           child: Text(
                             'Filter Leads',
-                            style: TextStyle(
+                            style: AppTextStyles.screenHeading.copyWith(
                               color: AppColors.deliveryInk,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
@@ -473,11 +471,10 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                               });
                               Navigator.pop(context);
                             },
-                            child: const Text(
+                            child: Text(
                               'Reset Filters',
-                              style: TextStyle(
+                              style: AppTextStyles.bodyStrong.copyWith(
                                 color: AppColors.textSecondary,
-                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
@@ -504,9 +501,9 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                               });
                               Navigator.pop(context);
                             },
-                            child: const Text(
+                            child: Text(
                               'Apply Filters',
-                              style: TextStyle(fontWeight: FontWeight.w700),
+                              style: AppTextStyles.bodyStrong,
                             ),
                           ),
                         ),
@@ -533,10 +530,8 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: AppTextStyles.smallStrong.copyWith(
             color: AppColors.textSecondary,
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
           ),
         ),
         const SizedBox(height: 6),
@@ -560,10 +555,8 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
                   value: opt,
                   child: Text(
                     opt,
-                    style: const TextStyle(
+                    style: AppTextStyles.secondaryStrong.copyWith(
                       color: AppColors.deliveryInk,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 );
@@ -900,11 +893,9 @@ class _HeaderCard extends StatelessWidget {
                   'Sales Leads',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
+                  style: AppTextStyles.screenHeading.copyWith(
                     color: Colors.white,
                     fontSize: compact ? 16 : 18,
-                    height: 1.15,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -912,10 +903,8 @@ class _HeaderCard extends StatelessWidget {
                   '$total leads in your sales pipeline',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
+                  style: AppTextStyles.smallStrong.copyWith(
                     color: Colors.white70,
-                    fontSize: compact ? 11 : 12,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -1069,11 +1058,8 @@ class _MetricTile extends StatelessWidget {
                   info.value,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: AppTextStyles.bodyStrong.copyWith(
                     color: AppColors.deliveryInk,
-                    fontSize: 14,
-                    height: 1.1,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 3),
@@ -1081,10 +1067,8 @@ class _MetricTile extends StatelessWidget {
                   info.label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(0xFF586176),
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w700,
+                  style: AppTextStyles.smallStrong.copyWith(
+                    color: const Color(0xFF586176),
                   ),
                 ),
               ],
@@ -1126,10 +1110,8 @@ class _SearchCard extends StatelessWidget {
                 controller: controller,
                 onChanged: onChanged,
                 textInputAction: TextInputAction.search,
-                style: const TextStyle(
+                style: AppTextStyles.fieldValue.copyWith(
                   color: AppColors.deliveryInk,
-                  fontSize: 13.5,
-                  fontWeight: FontWeight.w600,
                 ),
                 decoration: InputDecoration(
                   hintText: 'Search by name, company, mobile...',
@@ -1285,13 +1267,15 @@ class _QuickFiltersRow extends StatelessWidget {
                   ),
                   child: Text(
                     status == 'All Status' ? 'All Leads' : status,
-                    style: TextStyle(
-                      color: isSelected ? Colors.white : AppColors.deliveryInk,
-                      fontSize: 12,
-                      fontWeight: isSelected
-                          ? FontWeight.w700
-                          : FontWeight.w600,
-                    ),
+                    style:
+                        (isSelected
+                                ? AppTextStyles.smallStrong
+                                : AppTextStyles.small)
+                            .copyWith(
+                              color: isSelected
+                                  ? Colors.white
+                                  : AppColors.deliveryInk,
+                            ),
                   ),
                 ),
               ),
@@ -1331,10 +1315,8 @@ class _SectionHeader extends StatelessWidget {
             ),
             child: Text(
               '$count',
-              style: const TextStyle(
+              style: AppTextStyles.smallStrong.copyWith(
                 color: AppColors.deliveryInk,
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -1419,9 +1401,7 @@ class _LeadCard extends StatelessWidget {
                                       lead.personName,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        fontSize: 13.5,
-                                        fontWeight: FontWeight.w700,
+                                      style: AppTextStyles.bodyStrong.copyWith(
                                         color: AppColors.deliveryInk,
                                       ),
                                     ),
@@ -1456,10 +1436,8 @@ class _LeadCard extends StatelessWidget {
                                           : lead.companyName,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
+                                      style: AppTextStyles.small.copyWith(
                                         color: AppColors.textMuted,
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
                                   ),
@@ -1511,10 +1489,8 @@ class _LeadCard extends StatelessWidget {
                         const SizedBox(width: 4),
                         Text(
                           lead.lastActivity,
-                          style: const TextStyle(
+                          style: AppTextStyles.small.copyWith(
                             color: AppColors.textMuted,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
                           ),
                         ),
                         const Spacer(),
@@ -1621,21 +1597,15 @@ class _CardMiniField extends StatelessWidget {
           label,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: AppColors.textMuted,
-            fontSize: 10,
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTextStyles.smallStrong.copyWith(color: AppColors.textMuted),
         ),
         const SizedBox(height: 1),
         Text(
           value.isEmpty || value == '-' ? 'General' : value,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
+          style: AppTextStyles.smallStrong.copyWith(
             color: AppColors.deliveryInk,
-            fontSize: 11.5,
-            fontWeight: FontWeight.w700,
           ),
         ),
       ],
@@ -1696,11 +1666,7 @@ class _StatusBadge extends StatelessWidget {
       ),
       child: Text(
         label.isEmpty ? 'New' : label,
-        style: TextStyle(
-          color: color,
-          fontSize: 10,
-          fontWeight: FontWeight.w700,
-        ),
+        style: AppTextStyles.smallStrong.copyWith(color: color),
       ),
     );
   }
@@ -1781,10 +1747,8 @@ class _StateView extends StatelessWidget {
               Text(
                 errorMessage!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: AppTextStyles.secondaryStrong.copyWith(
                   color: AppColors.textPrimary,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
                 ),
               ),
               if (onRetry != null) ...[
@@ -1829,10 +1793,8 @@ class _StateView extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               hasSearch ? 'No matching leads found' : 'No leads available yet',
-              style: const TextStyle(
+              style: AppTextStyles.bodyStrong.copyWith(
                 color: AppColors.deliveryInk,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 4),
@@ -1841,10 +1803,8 @@ class _StateView extends StatelessWidget {
                   ? 'Try searching with different keywords or reset filters.'
                   : 'Tap the "+" button to add your first sales lead.',
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: AppTextStyles.smallStrong.copyWith(
                 color: AppColors.textMuted,
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
               ),
             ),
           ],

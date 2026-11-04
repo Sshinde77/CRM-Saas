@@ -12,6 +12,7 @@ import 'general_information_screen.dart';
 import 'online_presence_screen.dart';
 import '../../../widgets/admin/app_drawer.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
+import 'package:crm_saas/core/theme/app_text_styles.dart';
 
 class CompanySettingsScreen extends StatefulWidget {
   const CompanySettingsScreen({super.key});
@@ -119,14 +120,12 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
                 children: [
                   _buildCompletionCard(),
                   const SizedBox(height: 18),
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.only(left: 4, bottom: 8),
                     child: Text(
                       'BUSINESS SETTINGS',
-                      style: TextStyle(
+                      style: AppTextStyles.bodyStrong.copyWith(
                         color: AppColors.textMuted,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
                         letterSpacing: 0.8,
                       ),
                     ),
@@ -276,25 +275,21 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
             ),
           ),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Profile Completion',
-                  style: TextStyle(
+                  style: AppTextStyles.bodyStrong.copyWith(
                     color: AppColors.textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 SizedBox(height: 4),
                 Text(
                   '80% completed',
-                  style: TextStyle(
+                  style: AppTextStyles.fieldLabel.copyWith(
                     color: AppColors.textSecondary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 SizedBox(height: 12),
@@ -375,19 +370,15 @@ class _SettingsTile extends StatelessWidget {
                   children: [
                     Text(
                       section.label,
-                      style: const TextStyle(
+                      style: AppTextStyles.bodyStrong.copyWith(
                         color: AppColors.textPrimary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 3),
                     Text(
                       section.subtitle,
-                      style: const TextStyle(
+                      style: AppTextStyles.body.copyWith(
                         color: AppColors.textSecondary,
-                        fontSize: 14,
-                        height: 1.2,
                       ),
                     ),
                   ],

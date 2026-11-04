@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../constants/app_colors.dart';
+import '../../core/theme/app_text_styles.dart';
 import '../../screens/delivery/attendance/delivery_attendance_screen.dart';
 import '../../screens/delivery/deliveries/assigned_deliveries_screen.dart';
 import '../../screens/delivery/expenses/delivery_expenses_screen.dart';
@@ -76,10 +77,8 @@ class SalesManagerSidebar extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(18, 18, 18, 12),
               child: Text(
                 'MAIN MENU',
-                style: TextStyle(
+                style: AppTextStyles.bodyStrong.copyWith(
                   color: AppColors.textSecondary.withValues(alpha: 0.72),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
                   letterSpacing: 1.2,
                 ),
               ),
@@ -145,14 +144,10 @@ class SalesManagerSidebar extends StatelessWidget {
                               Expanded(
                                 child: Text(
                                   item.label,
-                                  style: TextStyle(
+                                  style: AppTextStyles.bodyStrong.copyWith(
                                     color: selected
                                         ? AppColors.textPrimary
                                         : AppColors.textSecondary,
-                                    fontSize: 14,
-                                    fontWeight: selected
-                                        ? FontWeight.w700
-                                        : FontWeight.w600,
                                   ),
                                 ),
                               ),

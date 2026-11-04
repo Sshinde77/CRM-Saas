@@ -245,18 +245,15 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: AppTextStyles.cardTitle.copyWith(
                     color: kGeneralInfoTitleColor,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   name ?? 'Selected file',
-                  style: const TextStyle(
+                  style: AppTextStyles.body.copyWith(
                     color: kGeneralInfoMutedColor,
-                    fontSize: 14,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -916,13 +913,12 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
                                               }
                                             });
                                           },
-                                          title: const Text(
+                                          title: Text(
                                             'Billing address same as registered address',
-                                            style: TextStyle(
-                                              color: kGeneralInfoTitleColor,
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w600,
-                                            ),
+                                            style: AppTextStyles.bodyStrong
+                                                .copyWith(
+                                                  color: kGeneralInfoTitleColor,
+                                                ),
                                           ),
                                         ),
                                         const SizedBox(height: 6),
@@ -954,13 +950,12 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
                                               }
                                             });
                                           },
-                                          title: const Text(
+                                          title: Text(
                                             'Shipping/Warehouse address same as billing address',
-                                            style: TextStyle(
-                                              color: kGeneralInfoTitleColor,
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w600,
-                                            ),
+                                            style: AppTextStyles.bodyStrong
+                                                .copyWith(
+                                                  color: kGeneralInfoTitleColor,
+                                                ),
                                           ),
                                         ),
                                         const SizedBox(height: 6),
@@ -1010,7 +1005,7 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+        textStyle: AppTextStyles.bodyStrong,
       ),
     );
   }
@@ -1119,10 +1114,8 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
             padding: const EdgeInsets.only(bottom: 8),
             child: Text(
               label,
-              style: const TextStyle(
+              style: AppTextStyles.bodyStrong.copyWith(
                 color: kGeneralInfoTitleColor,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -1143,7 +1136,7 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
       keyboardType: keyboardType,
       maxLines: maxLines,
       minLines: maxLines > 1 ? maxLines : 1,
-      style: const TextStyle(fontSize: 14, color: kGeneralInfoTitleColor),
+      style: AppTextStyles.body.copyWith(color: kGeneralInfoTitleColor),
       decoration: _fieldDecoration(hintText: hintText),
     );
   }
@@ -1163,7 +1156,7 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
       hint: hintText == null
           ? null
           : Text(hintText, style: AppTextStyles.inputHint),
-      style: const TextStyle(fontSize: 14, color: kGeneralInfoTitleColor),
+      style: AppTextStyles.body.copyWith(color: kGeneralInfoTitleColor),
       decoration: _fieldDecoration(),
       dropdownColor: Colors.white,
       borderRadius: BorderRadius.circular(16),
@@ -1173,10 +1166,8 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
               value: item,
               child: Text(
                 '$item',
-                style: const TextStyle(
-                  fontSize: 14,
+                style: AppTextStyles.fieldLabel.copyWith(
                   color: kGeneralInfoTitleColor,
-                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
@@ -1265,19 +1256,16 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
+                      style: AppTextStyles.bodyStrong.copyWith(
                         color: kGeneralInfoTitleColor,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     if (subtitle.trim().isNotEmpty) ...[
                       const SizedBox(height: 4),
                       Text(
                         subtitle,
-                        style: const TextStyle(
+                        style: AppTextStyles.body.copyWith(
                           color: kGeneralInfoMutedColor,
-                          fontSize: 14,
                         ),
                       ),
                     ],
@@ -1335,7 +1323,7 @@ class _GeneralInformationScreenState extends State<GeneralInformationScreen> {
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+        textStyle: AppTextStyles.bodyStrong,
       ),
     );
   }
@@ -1395,10 +1383,8 @@ class _GeneralInfoSectionCard extends StatelessWidget {
                     alignment: Alignment.center,
                     child: Text(
                       number,
-                      style: const TextStyle(
+                      style: AppTextStyles.bodyStrong.copyWith(
                         color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -1409,19 +1395,15 @@ class _GeneralInfoSectionCard extends StatelessWidget {
                       children: [
                         Text(
                           title,
-                          style: const TextStyle(
+                          style: AppTextStyles.cardTitle.copyWith(
                             color: kGeneralInfoTitleColor,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
                           ),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           subtitle,
-                          style: const TextStyle(
+                          style: AppTextStyles.body.copyWith(
                             color: kGeneralInfoMutedColor,
-                            fontSize: 14,
-                            height: 1.2,
                           ),
                         ),
                       ],

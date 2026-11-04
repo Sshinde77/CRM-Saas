@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../constants/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 
 class EndOfDayCard extends StatelessWidget {
   final Widget child;
@@ -64,10 +65,8 @@ class EndOfDayErrorBanner extends StatelessWidget {
           Expanded(
             child: Text(
               message,
-              style: const TextStyle(
-                color: Color(0xFFB00000),
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
+              style: AppTextStyles.bodyStrong.copyWith(
+                color: const Color(0xFFB00000),
               ),
             ),
           ),
@@ -154,11 +153,7 @@ class VarianceBadge extends StatelessWidget {
         textAlign: TextAlign.center,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          color: color,
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
-        ),
+        style: AppTextStyles.bodyStrong.copyWith(color: color),
       ),
     );
   }

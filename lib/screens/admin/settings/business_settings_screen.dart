@@ -215,10 +215,8 @@ class _BusinessSettingsScreenState extends State<BusinessSettingsScreen> {
             padding: const EdgeInsets.only(bottom: 8),
             child: Text(
               label,
-              style: const TextStyle(
+              style: AppTextStyles.bodyStrong.copyWith(
                 color: kBusinessTitleColor,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -248,7 +246,7 @@ class _BusinessSettingsScreenState extends State<BusinessSettingsScreen> {
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+        textStyle: AppTextStyles.bodyStrong,
       ),
     );
   }
@@ -383,7 +381,7 @@ class _BusinessSettingsScreenState extends State<BusinessSettingsScreen> {
       enabled: _isEditing,
       maxLines: maxLines,
       minLines: maxLines > 1 ? maxLines : 1,
-      style: const TextStyle(fontSize: 14, color: kBusinessTitleColor),
+      style: AppTextStyles.body.copyWith(color: kBusinessTitleColor),
       decoration: _fieldDecoration(hintText: hintText),
     );
   }
@@ -403,7 +401,7 @@ class _BusinessSettingsScreenState extends State<BusinessSettingsScreen> {
       hint: hintText == null
           ? null
           : Text(hintText, style: AppTextStyles.inputHint),
-      style: const TextStyle(fontSize: 14, color: kBusinessTitleColor),
+      style: AppTextStyles.body.copyWith(color: kBusinessTitleColor),
       decoration: _fieldDecoration(),
       dropdownColor: Colors.white,
       borderRadius: BorderRadius.circular(16),
@@ -413,10 +411,8 @@ class _BusinessSettingsScreenState extends State<BusinessSettingsScreen> {
               value: item,
               child: Text(
                 '$item',
-                style: const TextStyle(
-                  fontSize: 14,
+                style: AppTextStyles.fieldLabel.copyWith(
                   color: kBusinessTitleColor,
-                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),

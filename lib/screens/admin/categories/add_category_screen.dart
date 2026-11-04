@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:typed_data';
 
 import '../../../constants/app_colors.dart';
+import '../../../core/theme/app_text_styles.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
 import 'category_image_picker.dart';
@@ -152,20 +153,17 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
                                 children: [
                                   _buildBreadcrumb(),
                                   const SizedBox(height: 12),
-                                  const Text(
+                                  Text(
                                     'Create Category',
-                                    style: TextStyle(
-                                      color: Color(0xFF0F172A),
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700,
+                                    style: AppTextStyles.screenHeading.copyWith(
+                                      color: const Color(0xFF0F172A),
                                     ),
                                   ),
                                   const SizedBox(height: 6),
-                                  const Text(
+                                  Text(
                                     'Add a new category and organize products with optional subcategories.',
-                                    style: TextStyle(
-                                      color: Color(0xFF64748B),
-                                      fontSize: 14,
+                                    style: AppTextStyles.body.copyWith(
+                                      color: const Color(0xFF64748B),
                                     ),
                                   ),
                                 ],
@@ -238,12 +236,10 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
           ),
         ),
         const SizedBox(width: 10),
-        const Text(
+        Text(
           'Catalog / Categories / Create Category',
-          style: TextStyle(
-            color: Color(0xFF94A3B8),
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
+          style: AppTextStyles.fieldLabel.copyWith(
+            color: const Color(0xFF94A3B8),
           ),
         ),
       ],
@@ -269,12 +265,10 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Category Details',
-              style: TextStyle(
-                color: Color(0xFF111827),
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
+              style: AppTextStyles.bodyStrong.copyWith(
+                color: const Color(0xFF111827),
               ),
             ),
             const SizedBox(height: 16),
@@ -350,18 +344,18 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
               maxLines: 4,
             ),
             const SizedBox(height: 18),
-            const Text(
+            Text(
               'Subcategories',
-              style: TextStyle(
-                color: Color(0xFF111827),
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
+              style: AppTextStyles.bodyStrong.copyWith(
+                color: const Color(0xFF111827),
               ),
             ),
             const SizedBox(height: 6),
-            const Text(
+            Text(
               'Press Enter or click Add to include a subcategory.',
-              style: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+              style: AppTextStyles.body.copyWith(
+                color: const Color(0xFF94A3B8),
+              ),
             ),
             const SizedBox(height: 10),
             compact
@@ -522,18 +516,16 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
                         const SizedBox(height: 10),
                         Text(
                           hasImage ? 'Image selected' : 'No image yet',
-                          style: const TextStyle(
-                            color: Color(0xFF0F172A),
-                            fontWeight: FontWeight.w700,
+                          style: AppTextStyles.bodyStrong.copyWith(
+                            color: const Color(0xFF0F172A),
                           ),
                         ),
                         const SizedBox(height: 4),
-                        const Text(
+                        Text(
                           'Add an image URL or upload a file',
                           textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Color(0xFF94A3B8),
-                            fontSize: 14,
+                          style: AppTextStyles.body.copyWith(
+                            color: const Color(0xFF94A3B8),
                           ),
                         ),
                       ],
@@ -549,7 +541,9 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
               _selectedImageName!,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: Color(0xFF64748B), fontSize: 14),
+              style: AppTextStyles.body.copyWith(
+                color: const Color(0xFF64748B),
+              ),
             ),
           ),
         ],
@@ -599,7 +593,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(999),
           ),
-          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+          textStyle: AppTextStyles.bodyStrong,
         ),
       ),
     );
@@ -645,10 +639,8 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
         children: [
           Text(
             title,
-            style: const TextStyle(
-              color: Color(0xFF111827),
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
+            style: AppTextStyles.bodyStrong.copyWith(
+              color: const Color(0xFF111827),
             ),
           ),
           const SizedBox(height: 12),
@@ -665,7 +657,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
         children: [
           Text(
             label,
-            style: const TextStyle(color: Color(0xFF334155), fontSize: 14),
+            style: AppTextStyles.body.copyWith(color: const Color(0xFF334155)),
           ),
           const Spacer(),
           if (label == 'Status')
@@ -677,16 +669,16 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
               ),
               child: Text(
                 value,
-                style: const TextStyle(color: Color(0xFFB45309), fontSize: 14),
+                style: AppTextStyles.body.copyWith(
+                  color: const Color(0xFFB45309),
+                ),
               ),
             )
           else
             Text(
               value,
-              style: const TextStyle(
-                color: Color(0xFF0F172A),
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
+              style: AppTextStyles.bodyStrong.copyWith(
+                color: const Color(0xFF0F172A),
               ),
             ),
         ],
@@ -709,10 +701,8 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
         if (label != null) ...[
           Text(
             label,
-            style: const TextStyle(
-              color: Color(0xFF111827),
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
+            style: AppTextStyles.fieldLabel.copyWith(
+              color: const Color(0xFF111827),
             ),
           ),
           const SizedBox(height: 8),

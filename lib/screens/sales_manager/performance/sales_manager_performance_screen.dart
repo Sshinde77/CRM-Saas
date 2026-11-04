@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../core/theme/app_text_styles.dart';
 import '../../delivery/customers/delivery_customers_screen.dart';
 import '../../admin/leads/admin_leads_screen.dart';
 import '../../admin/orders/admin_orders_screen.dart';
@@ -272,32 +273,26 @@ class _SalesManagerPerformanceScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Expanded(
+              const Expanded(
                 child: Text(
                   'Overall Performance',
-                  style: TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppTextStyles.screenHeading,
                 ),
               ),
               Text(
                 '88%',
-                style: TextStyle(
+                style: AppTextStyles.importantNumber.copyWith(
                   color: AppColors.primary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 4),
-          const Text(
+          Text(
             "This month's combined target progress",
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+            style: AppTextStyles.small.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 12),
           ClipRRect(
@@ -367,7 +362,8 @@ class _PerformanceOverview extends StatelessWidget {
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: AppTextStyles.fontFamily,
                   ),
                 ),
                 SizedBox(height: 4),
@@ -376,7 +372,7 @@ class _PerformanceOverview extends StatelessWidget {
                   style: TextStyle(
                     color: Colors.white70,
                     fontSize: 12,
-                    height: 1.35,
+                    fontFamily: AppTextStyles.fontFamily,
                   ),
                 ),
               ],
@@ -393,15 +389,17 @@ class _PerformanceOverview extends StatelessWidget {
               children: [
                 Text(
                   '$percentage%',
-                  style: const TextStyle(
+                  style: AppTextStyles.importantNumber.copyWith(
                     color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const Text(
                   'overall',
-                  style: TextStyle(color: Colors.white70, fontSize: 11),
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
+                    fontFamily: AppTextStyles.fontFamily,
+                  ),
                 ),
               ],
             ),
@@ -445,18 +443,16 @@ class _MetricCard extends StatelessWidget {
                   children: [
                     Text(
                       data.title,
-                      style: const TextStyle(
+                      style: AppTextStyles.smallStrong.copyWith(
                         color: AppColors.textPrimary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       data.target,
-                      style: const TextStyle(
+                      style: AppTextStyles.body.copyWith(
                         color: AppColors.textSecondary,
-                        fontSize: 14,
                       ),
                     ),
                   ],
@@ -486,18 +482,15 @@ class _MetricCard extends StatelessWidget {
                   children: [
                     Text(
                       data.achieved,
-                      style: const TextStyle(
+                      style: AppTextStyles.importantNumber.copyWith(
                         color: AppColors.textPrimary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       data.achievedLabel,
-                      style: const TextStyle(
+                      style: AppTextStyles.small.copyWith(
                         color: AppColors.textSecondary,
-                        fontSize: 12,
                       ),
                     ),
                   ],
@@ -508,18 +501,15 @@ class _MetricCard extends StatelessWidget {
                 children: [
                   Text(
                     data.percentLabel,
-                    style: const TextStyle(
+                    style: AppTextStyles.bodyStrong.copyWith(
                       color: AppColors.primary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 2),
-                  const Text(
+                  Text(
                     'of target',
-                    style: TextStyle(
+                    style: AppTextStyles.small.copyWith(
                       color: AppColors.textLightMuted,
-                      fontSize: 11,
                     ),
                   ),
                 ],

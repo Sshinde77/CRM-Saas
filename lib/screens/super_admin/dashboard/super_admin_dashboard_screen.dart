@@ -505,11 +505,7 @@ class _SearchRow extends StatelessWidget {
       child: TextField(
         controller: controller,
         onChanged: onChanged,
-        style: const TextStyle(
-          color: AppColors.textPrimary,
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-        ),
+        style: AppTextStyles.fieldLabel,
         cursorColor: AppColors.primary,
         decoration: const InputDecoration(
           filled: true,
@@ -590,20 +586,11 @@ class _MetricCard extends StatelessWidget {
                   item.label,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: AppTextStyles.bodyStrong.copyWith(
                     color: AppColors.textSecondary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                Text(
-                  item.value,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                Text(item.value, style: AppTextStyles.importantNumber),
               ],
             ),
           ),
@@ -653,21 +640,11 @@ class _ChartCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
+          Text(title, style: AppTextStyles.bodyStrong),
           const SizedBox(height: 4),
           Text(
             subtitle,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 14,
-            ),
+            style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 14),
           child,
@@ -723,21 +700,12 @@ class _PlanChart extends StatelessWidget {
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    '$total',
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+                  Text('$total', style: AppTextStyles.importantNumber),
                   const SizedBox(height: 2),
-                  const Text(
+                  Text(
                     'Total',
-                    style: TextStyle(
+                    style: AppTextStyles.bodyStrong.copyWith(
                       color: AppColors.textSecondary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
@@ -766,11 +734,7 @@ class _PlanChart extends StatelessWidget {
                     const SizedBox(width: 6),
                     Text(
                       '${slice.label} ${slice.shareLabel}',
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: AppTextStyles.bodyStrong,
                     ),
                   ],
                 ),
@@ -819,18 +783,13 @@ class _OrganizationsCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Organizations',
-              style: TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
+            const Text('Organizations', style: AppTextStyles.bodyStrong),
             const SizedBox(height: 4),
-            const Text(
+            Text(
               'All organizations on the SAAS CRM platform',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+              style: AppTextStyles.body.copyWith(
+                color: AppColors.textSecondary,
+              ),
             ),
             const SizedBox(height: 12),
             Row(
@@ -846,24 +805,19 @@ class _OrganizationsCard extends StatelessWidget {
                     ),
                     child: TextField(
                       onChanged: onQueryChanged,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
+                      style: AppTextStyles.fieldLabel,
                       cursorColor: AppColors.primary,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         filled: true,
                         fillColor: Colors.white,
-                        prefixIcon: Icon(
+                        prefixIcon: const Icon(
                           Icons.search_rounded,
                           size: 18,
                           color: AppColors.textLightMuted,
                         ),
                         hintText: 'Search organizations...',
-                        hintStyle: TextStyle(
+                        hintStyle: AppTextStyles.inputHint.copyWith(
                           color: AppColors.textLightMuted,
-                          fontSize: 14,
                         ),
                         border: InputBorder.none,
                         contentPadding: EdgeInsets.symmetric(
@@ -877,10 +831,8 @@ class _OrganizationsCard extends StatelessWidget {
                 const Spacer(),
                 Text(
                   '${organizations.length} results',
-                  style: const TextStyle(
+                  style: AppTextStyles.bodyStrong.copyWith(
                     color: AppColors.textLightMuted,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -1004,11 +956,7 @@ class _OrganizationsListPageState extends State<_OrganizationsListPage> {
               children: [
                 const Text(
                   'Organizations List',
-                  style: TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: AppTextStyles.bodyStrong,
                 ),
                 const SizedBox(height: 12),
                 Row(
@@ -1048,10 +996,8 @@ class _OrganizationsListPageState extends State<_OrganizationsListPage> {
                   children: [
                     Text(
                       '${organizations.length} results',
-                      style: const TextStyle(
+                      style: AppTextStyles.bodyStrong.copyWith(
                         color: AppColors.textLightMuted,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
@@ -1204,19 +1150,13 @@ class _UpgradeRequestsPageState extends State<_UpgradeRequestsPage> {
                                 const SizedBox(height: 14),
                                 const Text(
                                   'No upgrade requests here',
-                                  style: TextStyle(
-                                    color: AppColors.textPrimary,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700,
-                                  ),
+                                  style: AppTextStyles.bodyStrong,
                                 ),
                                 const SizedBox(height: 6),
-                                const Text(
+                                Text(
                                   'Nothing to review in this view right now.',
-                                  style: TextStyle(
+                                  style: AppTextStyles.fieldLabel.copyWith(
                                     color: AppColors.textLightMuted,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
                               ],
@@ -1303,10 +1243,8 @@ class _UpgradeTabChip extends StatelessWidget {
           ),
           child: Text(
             label,
-            style: TextStyle(
+            style: AppTextStyles.bodyStrong.copyWith(
               color: selected ? AppColors.primary : AppColors.textSecondary,
-              fontSize: 14,
-              fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
             ),
           ),
         ),
@@ -1376,21 +1314,12 @@ class _UpgradeRequestCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  item.organization,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                Text(item.organization, style: AppTextStyles.bodyStrong),
                 const SizedBox(height: 3),
                 Text(
                   item.adminContact,
-                  style: const TextStyle(
+                  style: AppTextStyles.fieldLabel.copyWith(
                     color: AppColors.textSecondary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -1422,11 +1351,7 @@ class _UpgradeRequestCard extends StatelessWidget {
                 ),
                 child: Text(
                   item.status,
-                  style: TextStyle(
-                    color: statusColor,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppTextStyles.bodyStrong.copyWith(color: statusColor),
                 ),
               ),
             ],
@@ -1550,9 +1475,9 @@ class _PlansPageState extends State<_PlansPage> {
                   ),
                 ),
                 icon: const Icon(Icons.add_rounded, size: 18),
-                label: const Text(
+                label: Text(
                   'Create Plan',
-                  style: TextStyle(fontWeight: FontWeight.w700),
+                  style: AppTextStyles.bodyStrong.copyWith(color: Colors.white),
                 ),
               ),
             ],
@@ -1634,10 +1559,8 @@ class _TogglePill extends StatelessWidget {
           ),
           child: Text(
             label,
-            style: TextStyle(
+            style: AppTextStyles.bodyStrong.copyWith(
               color: selected ? AppColors.primary : AppColors.textSecondary,
-              fontSize: 14,
-              fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
             ),
           ),
         ),
@@ -1686,14 +1609,7 @@ class _PlanCard extends StatelessWidget {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    Text(
-                      data.name,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                    Text(data.name, style: AppTextStyles.cardTitle),
                     _Pill(
                       label: data.active ? 'Active' : 'Inactive',
                       color: badgeColor,
@@ -1728,22 +1644,13 @@ class _PlanCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
-                price,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+              Text(price, style: AppTextStyles.importantNumber),
               const SizedBox(width: 8),
               Text(
                 monthly ? data.yearlyPrice : data.monthlyPrice,
-                style: const TextStyle(
+                style: AppTextStyles.bodyStrong.copyWith(
                   color: AppColors.textLightMuted,
-                  fontSize: 14,
                   decoration: TextDecoration.lineThrough,
-                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -1753,10 +1660,8 @@ class _PlanCard extends StatelessWidget {
             monthly
                 ? data.subtitle
                 : data.subtitle.replaceFirst('per month', 'per year'),
-            style: const TextStyle(
+            style: AppTextStyles.fieldLabel.copyWith(
               color: AppColors.textSecondary,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
             ),
           ),
           const SizedBox(height: 14),
@@ -1775,10 +1680,8 @@ class _PlanCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       feature,
-                      style: const TextStyle(
+                      style: AppTextStyles.fieldLabel.copyWith(
                         color: AppColors.textSecondary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
@@ -1868,14 +1771,7 @@ class _CreatePlanDialogState extends State<_CreatePlanDialog> {
               child: Row(
                 children: [
                   const Expanded(
-                    child: Text(
-                      'Create Plan',
-                      style: TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                    child: Text('Create Plan', style: AppTextStyles.bodyStrong),
                   ),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
@@ -2000,18 +1896,12 @@ class _CreatePlanDialogState extends State<_CreatePlanDialog> {
                         },
                         title: const Text(
                           'Set as default plan',
-                          style: TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                          ),
+                          style: AppTextStyles.bodyStrong,
                         ),
-                        subtitle: const Text(
+                        subtitle: Text(
                           'Shown as the recommended plan for new organizations.',
-                          style: TextStyle(
+                          style: AppTextStyles.fieldLabel.copyWith(
                             color: AppColors.textSecondary,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
                           ),
                         ),
                         activeColor: AppColors.primary,
@@ -2038,9 +1928,11 @@ class _CreatePlanDialogState extends State<_CreatePlanDialog> {
                               borderRadius: BorderRadius.circular(999),
                             ),
                           ),
-                          child: const Text(
+                          child: Text(
                             'Cancel',
-                            style: TextStyle(fontWeight: FontWeight.w700),
+                            style: AppTextStyles.bodyStrong.copyWith(
+                              color: AppColors.textPrimary,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -2058,9 +1950,11 @@ class _CreatePlanDialogState extends State<_CreatePlanDialog> {
                               borderRadius: BorderRadius.circular(999),
                             ),
                           ),
-                          child: const Text(
+                          child: Text(
                             'Create Plan',
-                            style: TextStyle(fontWeight: FontWeight.w700),
+                            style: AppTextStyles.bodyStrong.copyWith(
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ],
@@ -2094,14 +1988,7 @@ class _DialogField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
+        Text(label, style: AppTextStyles.fieldLabel),
         const SizedBox(height: 6),
         TextField(
           controller: controller,
@@ -2155,14 +2042,7 @@ class _StatusDropdown extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
+        Text(label, style: AppTextStyles.fieldLabel),
         const SizedBox(height: 6),
         Container(
           height: 36,
@@ -2182,11 +2062,7 @@ class _StatusDropdown extends StatelessWidget {
               ),
               dropdownColor: Colors.white,
               borderRadius: BorderRadius.circular(14),
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
+              style: AppTextStyles.fieldLabel,
               onChanged: onChanged,
               items: options.map((option) {
                 final selected = option == value;
@@ -2204,13 +2080,9 @@ class _StatusDropdown extends StatelessWidget {
                     ),
                     child: Text(
                       option,
-                      style: TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 14,
-                        fontWeight: selected
-                            ? FontWeight.w700
-                            : FontWeight.w500,
-                      ),
+                      style: selected
+                          ? AppTextStyles.bodyStrong
+                          : AppTextStyles.fieldLabel,
                     ),
                   ),
                 );
@@ -2247,16 +2119,7 @@ class _OrganizationMobileCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Expanded(
-                child: Text(
-                  row.name,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
+              Expanded(child: Text(row.name, style: AppTextStyles.bodyStrong)),
               _OrganizationActionsMenu(
                 row: row,
                 onViewDetails: () => onViewDetails(row),
@@ -2266,10 +2129,8 @@ class _OrganizationMobileCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             row.phone == '—' ? 'Admin contact unavailable' : row.phone,
-            style: const TextStyle(
+            style: AppTextStyles.fieldLabel.copyWith(
               color: AppColors.textSecondary,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
             ),
           ),
           const SizedBox(height: 12),
@@ -2286,10 +2147,8 @@ class _OrganizationMobileCard extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             'Created: ${row.created}',
-            style: const TextStyle(
+            style: AppTextStyles.bodyStrong.copyWith(
               color: AppColors.textLightMuted,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -2315,23 +2174,15 @@ class _InfoChip extends StatelessWidget {
       ),
       child: RichText(
         text: TextSpan(
-          style: const TextStyle(
-            fontFamily: AppTextStyles.fontFamily,
-            fontSize: 14,
-            color: AppColors.textSecondary,
-          ),
+          style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
           children: [
             TextSpan(
               text: '$label: ',
-              style: const TextStyle(fontWeight: FontWeight.w700),
-            ),
-            TextSpan(
-              text: value,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w700,
+              style: AppTextStyles.bodyStrong.copyWith(
+                color: AppColors.textSecondary,
               ),
             ),
+            TextSpan(text: value, style: AppTextStyles.bodyStrong),
           ],
         ),
       ),
@@ -2508,18 +2359,13 @@ class _PlatformAnalyticsPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Recently Signed Up',
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+              const Text('Recently Signed Up', style: AppTextStyles.bodyStrong),
               const SizedBox(height: 4),
-              const Text(
+              Text(
                 'Newest organizations on the platform',
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+                style: AppTextStyles.body.copyWith(
+                  color: AppColors.textSecondary,
+                ),
               ),
               const SizedBox(height: 14),
               SingleChildScrollView(
@@ -2583,21 +2429,12 @@ class _AnalyticsStatCard extends StatelessWidget {
               children: [
                 Text(
                   stat.label,
-                  style: const TextStyle(
+                  style: AppTextStyles.bodyStrong.copyWith(
                     color: AppColors.textSecondary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 16),
-                Text(
-                  stat.value,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                Text(stat.value, style: AppTextStyles.importantNumber),
               ],
             ),
           ),
@@ -2649,14 +2486,7 @@ class _AnalyticsBreakdownCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
+          Text(title, style: AppTextStyles.bodyStrong),
           const SizedBox(height: 10),
           ...children,
         ],
@@ -2706,11 +2536,7 @@ class _BreakdownRow extends StatelessWidget {
                   const SizedBox(width: 6),
                   Text(
                     label,
-                    style: TextStyle(
-                      color: color,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: AppTextStyles.bodyStrong.copyWith(color: color),
                   ),
                 ],
               ),
@@ -2718,21 +2544,12 @@ class _BreakdownRow extends StatelessWidget {
           else
             Text(
               label,
-              style: const TextStyle(
+              style: AppTextStyles.fieldLabel.copyWith(
                 color: AppColors.textSecondary,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
               ),
             ),
           const Spacer(),
-          Text(
-            value,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
+          Text(value, style: AppTextStyles.bodyStrong),
         ],
       ),
     );
@@ -2744,10 +2561,8 @@ class _AnalyticsTableHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const style = TextStyle(
+    final style = AppTextStyles.smallStrong.copyWith(
       color: AppColors.textLightMuted,
-      fontSize: 14,
-      fontWeight: FontWeight.w700,
       letterSpacing: 0.9,
     );
 
@@ -2755,7 +2570,7 @@ class _AnalyticsTableHeader extends StatelessWidget {
       height: 36,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Row(
-        children: const [
+        children: [
           Expanded(flex: 4, child: Text('ORGANIZATION', style: style)),
           Expanded(flex: 2, child: Text('PLAN', style: style)),
           Expanded(flex: 2, child: Text('STATUS', style: style)),
@@ -2783,11 +2598,7 @@ class _AnalyticsTableRow extends StatelessWidget {
               flex: 4,
               child: Text(
                 row.organization,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: AppTextStyles.bodyStrong,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -2795,9 +2606,8 @@ class _AnalyticsTableRow extends StatelessWidget {
               flex: 2,
               child: Text(
                 row.plan,
-                style: const TextStyle(
+                style: AppTextStyles.body.copyWith(
                   color: AppColors.textSecondary,
-                  fontSize: 14,
                 ),
               ),
             ),
@@ -2809,9 +2619,8 @@ class _AnalyticsTableRow extends StatelessWidget {
               flex: 2,
               child: Text(
                 row.signedUp,
-                style: const TextStyle(
+                style: AppTextStyles.body.copyWith(
                   color: AppColors.textSecondary,
-                  fontSize: 14,
                 ),
               ),
             ),
@@ -2853,10 +2662,8 @@ class _AnalyticsSignupRow {
 class _TableHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    const style = TextStyle(
+    final style = AppTextStyles.smallStrong.copyWith(
       color: AppColors.textLightMuted,
-      fontSize: 14,
-      fontWeight: FontWeight.w700,
       letterSpacing: 0.9,
     );
 
@@ -2864,7 +2671,7 @@ class _TableHeader extends StatelessWidget {
       height: 36,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Row(
-        children: const [
+        children: [
           Expanded(flex: 3, child: Text('ORGANIZATION', style: style)),
           Expanded(flex: 1, child: Text('PLAN', style: style)),
           Expanded(flex: 1, child: Text('STATUS', style: style)),
@@ -2897,11 +2704,7 @@ class _OrganizationRowItem extends StatelessWidget {
               flex: 3,
               child: Text(
                 row.name,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: AppTextStyles.bodyStrong,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -2922,9 +2725,8 @@ class _OrganizationRowItem extends StatelessWidget {
               flex: 1,
               child: Text(
                 row.upgradeRequest,
-                style: const TextStyle(
+                style: AppTextStyles.body.copyWith(
                   color: AppColors.textSecondary,
-                  fontSize: 14,
                 ),
               ),
             ),
@@ -2932,9 +2734,8 @@ class _OrganizationRowItem extends StatelessWidget {
               flex: 1,
               child: Text(
                 row.businessType,
-                style: const TextStyle(
+                style: AppTextStyles.body.copyWith(
                   color: AppColors.textSecondary,
-                  fontSize: 14,
                 ),
               ),
             ),
@@ -2942,9 +2743,8 @@ class _OrganizationRowItem extends StatelessWidget {
               flex: 1,
               child: Text(
                 row.phone,
-                style: const TextStyle(
+                style: AppTextStyles.body.copyWith(
                   color: AppColors.textSecondary,
-                  fontSize: 14,
                 ),
               ),
             ),
@@ -2952,9 +2752,8 @@ class _OrganizationRowItem extends StatelessWidget {
               flex: 1,
               child: Text(
                 row.created,
-                style: const TextStyle(
+                style: AppTextStyles.body.copyWith(
                   color: AppColors.textSecondary,
-                  fontSize: 14,
                 ),
               ),
             ),
@@ -3004,14 +2803,7 @@ class _OrganizationActionsMenu extends StatelessWidget {
       itemBuilder: (context) => const [
         PopupMenuItem<String>(
           value: 'view_details',
-          child: Text(
-            'View details',
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          child: Text('View details', style: AppTextStyles.bodyStrong),
         ),
       ],
     );
@@ -3035,23 +2827,12 @@ class _DetailLine extends StatelessWidget {
             width: 130,
             child: Text(
               label,
-              style: const TextStyle(
+              style: AppTextStyles.bodyStrong.copyWith(
                 color: AppColors.textSecondary,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
               ),
             ),
           ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
+          Expanded(child: Text(value, style: AppTextStyles.bodyStrong)),
         ],
       ),
     );
@@ -3135,9 +2916,11 @@ class _OrganizationDetailsPageState extends State<_OrganizationDetailsPage> {
                         ),
                       ),
                       icon: const Icon(Icons.arrow_back_rounded, size: 18),
-                      label: const Text(
+                      label: Text(
                         'Back',
-                        style: TextStyle(fontWeight: FontWeight.w700),
+                        style: AppTextStyles.bodyStrong.copyWith(
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -3152,11 +2935,7 @@ class _OrganizationDetailsPageState extends State<_OrganizationDetailsPage> {
                             children: [
                               Text(
                                 widget.row.name,
-                                style: const TextStyle(
-                                  color: AppColors.textPrimary,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                ),
+                                style: AppTextStyles.cardTitle,
                               ),
                               _Pill(
                                 label: widget.row.status,
@@ -3165,12 +2944,10 @@ class _OrganizationDetailsPageState extends State<_OrganizationDetailsPage> {
                             ],
                           ),
                           const SizedBox(height: 3),
-                          const Text(
+                          Text(
                             'Organization Details',
-                            style: TextStyle(
+                            style: AppTextStyles.bodyStrong.copyWith(
                               color: AppColors.textSecondary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
@@ -3191,9 +2968,11 @@ class _OrganizationDetailsPageState extends State<_OrganizationDetailsPage> {
                         ),
                       ),
                       icon: const Icon(Icons.delete_outline_rounded, size: 18),
-                      label: const Text(
+                      label: Text(
                         'Delete Organization',
-                        style: TextStyle(fontWeight: FontWeight.w700),
+                        style: AppTextStyles.bodyStrong.copyWith(
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ],
@@ -3305,9 +3084,11 @@ class _OrganizationDetailsPageState extends State<_OrganizationDetailsPage> {
                                     borderRadius: BorderRadius.circular(999),
                                   ),
                                 ),
-                                child: const Text(
+                                child: Text(
                                   'Update Status',
-                                  style: TextStyle(fontWeight: FontWeight.w700),
+                                  style: AppTextStyles.bodyStrong.copyWith(
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
                             ],
@@ -3341,12 +3122,10 @@ class _OrganizationDetailsPageState extends State<_OrganizationDetailsPage> {
                                 ),
                               ],
                             );
-                            const planDetails = Text(
+                            final planDetails = Text(
                               'This organization has no active plan.',
-                              style: TextStyle(
+                              style: AppTextStyles.fieldLabel.copyWith(
                                 color: AppColors.textSecondary,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
                               ),
                             );
 
@@ -3465,9 +3244,11 @@ class _OrganizationDetailsViewState extends State<_OrganizationDetailsView> {
                   ),
                 ),
                 icon: const Icon(Icons.arrow_back_rounded, size: 18),
-                label: const Text(
+                label: Text(
                   'Back',
-                  style: TextStyle(fontWeight: FontWeight.w700),
+                  style: AppTextStyles.bodyStrong.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -3480,24 +3261,15 @@ class _OrganizationDetailsViewState extends State<_OrganizationDetailsView> {
                       runSpacing: 8,
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        Text(
-                          widget.row.name,
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
+                        Text(widget.row.name, style: AppTextStyles.cardTitle),
                         _Pill(label: widget.row.status, color: AppColors.blue),
                       ],
                     ),
                     const SizedBox(height: 3),
-                    const Text(
+                    Text(
                       'Organization Details',
-                      style: TextStyle(
+                      style: AppTextStyles.bodyStrong.copyWith(
                         color: AppColors.textSecondary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
@@ -3518,9 +3290,9 @@ class _OrganizationDetailsViewState extends State<_OrganizationDetailsView> {
                   ),
                 ),
                 icon: const Icon(Icons.delete_outline_rounded, size: 18),
-                label: const Text(
+                label: Text(
                   'Delete Organization',
-                  style: TextStyle(fontWeight: FontWeight.w700),
+                  style: AppTextStyles.bodyStrong.copyWith(color: Colors.white),
                 ),
               ),
             ],
@@ -3623,9 +3395,11 @@ class _OrganizationDetailsViewState extends State<_OrganizationDetailsView> {
                       borderRadius: BorderRadius.circular(999),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Update Status',
-                    style: TextStyle(fontWeight: FontWeight.w700),
+                    style: AppTextStyles.bodyStrong.copyWith(
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ],
@@ -3650,12 +3424,10 @@ class _OrganizationDetailsViewState extends State<_OrganizationDetailsView> {
                   const _DetailLine(label: 'Financial Year', value: '—'),
                 ],
               );
-              const planDetails = Text(
+              final planDetails = Text(
                 'This organization has no active plan.',
-                style: TextStyle(
+                style: AppTextStyles.fieldLabel.copyWith(
                   color: AppColors.textSecondary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
                 ),
               );
 
@@ -3725,21 +3497,12 @@ class _SummaryStatCard extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
+                  style: AppTextStyles.fieldLabel.copyWith(
                     color: AppColors.textSecondary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 const SizedBox(height: 18),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                Text(value, style: AppTextStyles.importantNumber),
               ],
             ),
           ),
@@ -3782,22 +3545,13 @@ class _DetailSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
+          Text(title, style: AppTextStyles.bodyStrong),
           if (subtitle != null) ...[
             const SizedBox(height: 6),
             Text(
               subtitle!,
-              style: const TextStyle(
+              style: AppTextStyles.fieldLabel.copyWith(
                 color: AppColors.textSecondary,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
               ),
             ),
           ],
@@ -3833,12 +3587,7 @@ class _Pill extends StatelessWidget {
         ),
         child: Text(
           label,
-          style: TextStyle(
-            fontFamily: AppTextStyles.fontFamily,
-            color: textColor,
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-          ),
+          style: AppTextStyles.smallStrong.copyWith(color: textColor),
         ),
       ),
     );
@@ -3891,12 +3640,7 @@ class _GrowthChartPainter extends CustomPainter {
       final painter = TextPainter(
         text: TextSpan(
           text: value.toString(),
-          style: TextStyle(
-            fontFamily: AppTextStyles.fontFamily,
-            color: textColor,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTextStyles.bodyStrong.copyWith(color: textColor),
         ),
         textDirection: TextDirection.ltr,
       )..layout();

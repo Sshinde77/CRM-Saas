@@ -185,13 +185,12 @@ class _DeliveryCustomerOrderDetailScreenState
                         _SectionHeader(itemCount: items.length),
                         const SizedBox(height: 12),
                         if (items.isEmpty)
-                          const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 20),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 20),
                             child: Text(
                               'No order items found',
-                              style: TextStyle(
+                              style: AppTextStyles.body.copyWith(
                                 color: AppColors.textSecondary,
-                                fontSize: 14,
                               ),
                             ),
                           )
@@ -233,6 +232,7 @@ class _DeliveryCustomerOrderDetailScreenState
                         _AmountRow(
                           label: 'Paid Amount',
                           value: paidAmount,
+                          strong: true,
                           valueColor: AppColors.deliveryGreen,
                         ),
                         _AmountRow(
@@ -348,19 +348,15 @@ class _OrderHeading extends StatelessWidget {
                   customer.isEmpty ? 'Customer Order' : customer,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: AppTextStyles.cardTitle.copyWith(
                     color: AppColors.deliveryInk,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   number,
-                  style: const TextStyle(
+                  style: AppTextStyles.smallStrong.copyWith(
                     color: AppColors.textSecondary,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -375,10 +371,8 @@ class _OrderHeading extends StatelessWidget {
             ),
             child: Text(
               status,
-              style: const TextStyle(
+              style: AppTextStyles.smallStrong.copyWith(
                 color: AppColors.deliveryGreen,
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -413,10 +407,8 @@ class _SectionHeader extends StatelessWidget {
           ),
           Text(
             '$itemCount ${itemCount == 1 ? 'item' : 'items'}',
-            style: const TextStyle(
+            style: AppTextStyles.smallStrong.copyWith(
               color: AppColors.deliveryGreen,
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -482,27 +474,22 @@ class _ProductRow extends StatelessWidget {
                 ], fallback: 'Product'),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: AppTextStyles.bodyStrong.copyWith(
                   color: AppColors.deliveryInk,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 '${_money(price)}${unit.isEmpty ? '' : ' / $unit'}',
-                style: const TextStyle(
+                style: AppTextStyles.small.copyWith(
                   color: AppColors.textSecondary,
-                  fontSize: 12,
                 ),
               ),
               const SizedBox(height: 6),
               Text(
                 _money(lineTotal),
-                style: const TextStyle(
+                style: AppTextStyles.secondaryStrong.copyWith(
                   color: AppColors.deliveryInk,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],
@@ -512,17 +499,17 @@ class _ProductRow extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            const Text(
+            Text(
               'Ordered',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
+              style: AppTextStyles.small.copyWith(
+                color: AppColors.textSecondary,
+              ),
             ),
             const SizedBox(height: 4),
             Text(
               _cleanNumber(quantity),
-              style: const TextStyle(
+              style: AppTextStyles.secondaryStrong.copyWith(
                 color: AppColors.deliveryInk,
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
               ),
             ),
           ],
@@ -568,20 +555,20 @@ class _AmountRow extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: TextStyle(
-                color: AppColors.deliveryInk,
-                fontSize: 13,
-                fontWeight: strong ? FontWeight.w700 : FontWeight.w500,
-              ),
+              style:
+                  (strong
+                          ? AppTextStyles.importantNumber
+                          : AppTextStyles.secondary)
+                      .copyWith(color: AppColors.deliveryInk),
             ),
           ),
           Text(
             '$prefix${_money(value)}',
-            style: TextStyle(
-              color: valueColor ?? AppColors.deliveryInk,
-              fontSize: 13,
-              fontWeight: strong ? FontWeight.w700 : FontWeight.w600,
-            ),
+            style:
+                (strong
+                        ? AppTextStyles.importantNumber
+                        : AppTextStyles.secondary)
+                    .copyWith(color: valueColor ?? AppColors.deliveryInk),
           ),
         ],
       ),
@@ -615,10 +602,8 @@ class _DetailRow extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: const TextStyle(
+              style: AppTextStyles.secondaryStrong.copyWith(
                 color: AppColors.textSecondary,
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
               ),
             ),
           ),
@@ -627,10 +612,8 @@ class _DetailRow extends StatelessWidget {
             child: Text(
               value.trim().isEmpty ? '-' : value,
               textAlign: TextAlign.right,
-              style: const TextStyle(
+              style: AppTextStyles.secondary.copyWith(
                 color: AppColors.deliveryInk,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -684,16 +667,13 @@ class _StateCard extends StatelessWidget {
           const SizedBox(height: 12),
           const Text(
             'Could not load order details',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+            style: AppTextStyles.sectionHeading,
           ),
           const SizedBox(height: 8),
           Text(
             message,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 13,
-            ),
+            style: AppTextStyles.subtitle,
           ),
           const SizedBox(height: 16),
           SizedBox(

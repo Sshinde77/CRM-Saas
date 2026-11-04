@@ -3,6 +3,7 @@ import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../core/theme/app_text_styles.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
 
@@ -108,14 +109,13 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
                     _filterChips(),
                     const SizedBox(height: 18),
                     if (entries.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 40),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 40),
                         child: Center(
                           child: Text(
                             'No audit logs found for this filter.',
-                            style: TextStyle(
+                            style: AppTextStyles.body.copyWith(
                               color: textSecondary,
-                              fontSize: 14,
                             ),
                           ),
                         ),
@@ -147,22 +147,18 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Expanded(
+        Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 'Audit Logs',
-                style: TextStyle(
-                  color: textPrimary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: AppTextStyles.screenHeading.copyWith(color: textPrimary),
               ),
-              SizedBox(height: 4),
+              const SizedBox(height: 4),
               Text(
                 'Track creation, updates, and alerts across the system',
-                style: TextStyle(color: textSecondary, fontSize: 14),
+                style: AppTextStyles.body.copyWith(color: textSecondary),
               ),
             ],
           ),
@@ -176,13 +172,9 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
             ),
             borderRadius: BorderRadius.circular(18),
           ),
-          child: const Text(
+          child: Text(
             'Live trail',
-            style: TextStyle(
-              color: AppColors.primary,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.smallStrong.copyWith(color: AppColors.primary),
           ),
         ),
       ],
@@ -250,22 +242,14 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
               const Spacer(),
               Text(
                 value,
-                style: TextStyle(
-                  color: accent,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: AppTextStyles.importantNumber.copyWith(color: accent),
               ),
             ],
           ),
           const SizedBox(height: 10),
           Text(
             label,
-            style: const TextStyle(
-              color: textSecondary,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
+            style: AppTextStyles.bodyStrong.copyWith(color: textSecondary),
           ),
         ],
       ),
@@ -283,9 +267,8 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
           label: Text(label),
           selected: selected,
           onSelected: (_) => setState(() => _selectedFilter = label),
-          labelStyle: TextStyle(
+          labelStyle: AppTextStyles.bodyStrong.copyWith(
             color: selected ? AppColors.primary : textPrimary,
-            fontWeight: FontWeight.w700,
           ),
           selectedColor: AppColors.purple,
           backgroundColor: AppColors.surfaceSoft,
@@ -361,10 +344,8 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
                       ),
                       child: Text(
                         entry.type,
-                        style: TextStyle(
+                        style: AppTextStyles.smallStrong.copyWith(
                           color: entry.accent,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
@@ -372,10 +353,8 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
                     Expanded(
                       child: Text(
                         entry.module,
-                        style: const TextStyle(
+                        style: AppTextStyles.bodyStrong.copyWith(
                           color: textSecondary,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -383,30 +362,19 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
                     const SizedBox(width: 8),
                     Text(
                       entry.time,
-                      style: const TextStyle(
-                        color: textSecondary,
-                        fontSize: 14,
-                      ),
+                      style: AppTextStyles.body.copyWith(color: textSecondary),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
                 Text(
                   entry.title,
-                  style: const TextStyle(
-                    color: textPrimary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppTextStyles.cardTitle.copyWith(color: textPrimary),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   entry.detail,
-                  style: const TextStyle(
-                    color: textSecondary,
-                    fontSize: 14,
-                    height: 1.35,
-                  ),
+                  style: AppTextStyles.body.copyWith(color: textSecondary),
                 ),
                 const SizedBox(height: 10),
                 Row(
@@ -419,10 +387,8 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
                     const SizedBox(width: 6),
                     Text(
                       'By ${entry.actor}',
-                      style: TextStyle(
+                      style: AppTextStyles.bodyStrong.copyWith(
                         color: entry.accent,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ],

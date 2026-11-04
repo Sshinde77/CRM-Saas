@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../constants/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../../models/end_of_day_return_models.dart';
 import '../../../../routes/app_router.dart';
 import 'end_of_day_shared.dart';
@@ -33,11 +34,7 @@ class ReconciliationSummary extends StatelessWidget {
                 padding: EdgeInsets.fromLTRB(14, 14, 14, 12),
                 child: Text(
                   'Variance by Product',
-                  style: TextStyle(
-                    color: AppColors.deliveryInk,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppTextStyles.sectionHeading,
                 ),
               ),
               const Divider(height: 1, color: Color(0xFFE9EDF5)),
@@ -153,19 +150,13 @@ class _SummaryRow extends StatelessWidget {
                       : line.item.productName,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.deliveryInk,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppTextStyles.bodyStrong,
                 ),
                 const SizedBox(height: 2),
                 Text(
                   line.item.variantId.isEmpty ? '-' : line.item.variantId,
-                  style: const TextStyle(
+                  style: AppTextStyles.fieldLabel.copyWith(
                     color: AppColors.textMuted,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -204,30 +195,22 @@ class _SummaryMetric extends StatelessWidget {
           textAlign: TextAlign.center,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: AppColors.textMuted,
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-          ),
+          style: AppTextStyles.fieldLabel.copyWith(color: AppColors.textMuted),
         ),
         const SizedBox(height: 5),
         Text(
           value,
           textAlign: TextAlign.center,
-          style: const TextStyle(
+          style: AppTextStyles.importantNumber.copyWith(
             color: AppColors.deliveryInk,
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
           ),
         ),
         if (subValue != null)
           Text(
             subValue!,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Color(0xFF2563EB),
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
+            style: AppTextStyles.bodyStrong.copyWith(
+              color: const Color(0xFF2563EB),
             ),
           ),
       ],
@@ -246,11 +229,7 @@ class _HeaderText extends StatelessWidget {
       text,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      style: const TextStyle(
-        color: AppColors.deliveryInk,
-        fontSize: 14,
-        fontWeight: FontWeight.w700,
-      ),
+      style: AppTextStyles.fieldLabel.copyWith(color: AppColors.deliveryInk),
     );
   }
 }
@@ -267,11 +246,7 @@ class _NumberText extends StatelessWidget {
       textAlign: TextAlign.center,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      style: const TextStyle(
-        color: AppColors.deliveryInk,
-        fontSize: 14,
-        fontWeight: FontWeight.w700,
-      ),
+      style: AppTextStyles.bodyStrong.copyWith(color: AppColors.deliveryInk),
     );
   }
 }

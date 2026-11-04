@@ -317,12 +317,10 @@ class _FilterMenu extends StatelessWidget {
             value: option.value,
             child: Text(
               option.label,
-              style: TextStyle(
+              style: AppTextStyles.secondaryStrong.copyWith(
                 color: option.value == value
                     ? AppColors.deliveryGreen
                     : AppColors.deliveryInk,
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -342,10 +340,8 @@ class _FilterMenu extends StatelessWidget {
                 selected.label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: AppTextStyles.smallStrong.copyWith(
                   color: AppColors.deliveryInk,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
@@ -388,10 +384,8 @@ class _OrderCard extends StatelessWidget {
                       order.orderNumber,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: AppTextStyles.cardTitle.copyWith(
                         color: AppColors.deliveryInk,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 3),
@@ -399,11 +393,7 @@ class _OrderCard extends StatelessWidget {
                       order.customerName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.textMuted,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: AppTextStyles.smallStrong,
                     ),
                   ],
                 ),
@@ -443,11 +433,8 @@ class _OrderCard extends StatelessWidget {
               order.items.take(2).map((item) => item.summary).join('\n'),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
+              style: AppTextStyles.smallStrong.copyWith(
                 color: AppColors.deliveryInk,
-                fontSize: 12,
-                height: 1.35,
-                fontWeight: FontWeight.w600,
               ),
             ),
           ],
@@ -479,10 +466,8 @@ class _MetricChip extends StatelessWidget {
           const SizedBox(width: 5),
           Text(
             label,
-            style: const TextStyle(
+            style: AppTextStyles.smallStrong.copyWith(
               color: AppColors.deliveryInk,
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -508,11 +493,7 @@ class _StatusPill extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: TextStyle(
-          color: color,
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-        ),
+        style: AppTextStyles.smallStrong.copyWith(color: color),
       ),
     );
   }
@@ -609,21 +590,15 @@ class _StateCard extends StatelessWidget {
                     Text(
                       title,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
+                      style: AppTextStyles.cardTitle.copyWith(
                         color: AppColors.deliveryInk,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 5),
                     Text(
                       message,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: AppColors.textMuted,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                      ),
+                      style: AppTextStyles.secondaryStrong,
                     ),
                     if (onRetry != null) ...[
                       const SizedBox(height: 12),

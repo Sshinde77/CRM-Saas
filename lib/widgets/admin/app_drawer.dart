@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../constants/app_colors.dart';
+import '../../core/theme/app_text_styles.dart';
 import '../../models/auth_models.dart';
 import '../../models/plan_model.dart';
 import '../../screens/admin/audit_logs/audit_logs_screen.dart';
@@ -404,10 +405,8 @@ class _AppDrawerState extends State<AppDrawer> {
                 Expanded(
                   child: Text(
                     item.label,
-                    style: TextStyle(
+                    style: AppTextStyles.bodyStrong.copyWith(
                       color: isActive ? accent : AppDrawer.textSecondary,
-                      fontSize: 14,
-                      fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
                     ),
                   ),
                 ),
@@ -429,10 +428,8 @@ class _AppDrawerState extends State<AppDrawer> {
             padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
             child: Text(
               section.title.toUpperCase(),
-              style: const TextStyle(
-                color: Color(0xFF9AA0B1),
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
+              style: AppTextStyles.bodyStrong.copyWith(
+                color: const Color(0xFF9AA0B1),
                 letterSpacing: 1.1,
               ),
             ),
@@ -481,27 +478,18 @@ class _AppDrawerState extends State<AppDrawer> {
                 ),
               ),
               const SizedBox(width: 10),
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Upgrade Pro',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppTextStyles.cardTitle.copyWith(color: Colors.white),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 10),
-          const Text(
+          Text(
             'Higher productivity with better organization',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-              height: 1.35,
-              fontWeight: FontWeight.w500,
-            ),
+            style: AppTextStyles.body.copyWith(color: Colors.white),
           ),
           const SizedBox(height: 12),
           SizedBox(
@@ -523,10 +511,7 @@ class _AppDrawerState extends State<AppDrawer> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(999),
                 ),
-                textStyle: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
+                textStyle: AppTextStyles.bodyStrong,
               ),
             ),
           ),
@@ -587,24 +572,20 @@ class _AppDrawerState extends State<AppDrawer> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'SAAS CRM',
-                          style: TextStyle(
+                          style: AppTextStyles.cardTitle.copyWith(
                             color: AppDrawer.textPrimary,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
                           ),
                         ),
                         Text(
                           'Admin',
-                          style: TextStyle(
+                          style: AppTextStyles.bodyStrong.copyWith(
                             color: accent,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],

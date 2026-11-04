@@ -3,6 +3,7 @@ import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';
+import '../../../core/theme/app_text_styles.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
 
@@ -21,7 +22,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
   String _selectedPeriod = 'This Month';
   String _selectedFormat = 'PDF';
 
-  static const Color textPrimary = AppColors.textPrimary;
   static const Color textSecondary = AppColors.textSecondary;
 
   final List<_ReportCardData> _reports = const [
@@ -121,24 +121,19 @@ class _ReportsScreenState extends State<ReportsScreen> {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Expanded(
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
+                              const Text(
                                 'Reports',
-                                style: TextStyle(
-                                  color: textPrimary,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                ),
+                                style: AppTextStyles.screenHeading,
                               ),
-                              SizedBox(height: 4),
+                              const SizedBox(height: 4),
                               Text(
                                 'Generate and download business reports in one place',
-                                style: TextStyle(
+                                style: AppTextStyles.body.copyWith(
                                   color: textSecondary,
-                                  fontSize: 14,
                                 ),
                               ),
                             ],
@@ -261,10 +256,8 @@ class _FilterChipField extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(
+            style: AppTextStyles.fieldLabel.copyWith(
               color: AppColors.textSecondary,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(width: 10),
@@ -279,11 +272,7 @@ class _FilterChipField extends StatelessWidget {
                 ),
                 borderRadius: BorderRadius.circular(14),
                 dropdownColor: AppColors.primary,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: AppTextStyles.bodyStrong,
                 items: items
                     .map(
                       (item) => DropdownMenuItem<String>(
@@ -354,21 +343,12 @@ class _ReportCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      data.title,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                    Text(data.title, style: AppTextStyles.cardTitle),
                     const SizedBox(height: 4),
                     Text(
                       data.description,
-                      style: const TextStyle(
+                      style: AppTextStyles.body.copyWith(
                         color: AppColors.textSecondary,
-                        fontSize: 14,
-                        height: 1.3,
                       ),
                     ),
                   ],
@@ -380,43 +360,43 @@ class _ReportCard extends StatelessWidget {
           Wrap(
             spacing: 10,
             runSpacing: 10,
-            children: data.highlights
-                .map(
-                  (item) => Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 10,
+            children: data.highlights.asMap().entries.map((entry) {
+              final isPrimary = entry.key == 0;
+              final item = entry.value;
+              return Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceSoft,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      item.label,
+                      style: AppTextStyles.fieldLabel.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
                     ),
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceSoft,
-                      borderRadius: BorderRadius.circular(14),
+                    const SizedBox(height: 4),
+                    Text(
+                      item.value,
+                      style: isPrimary
+                          ? AppTextStyles.importantNumber.copyWith(
+                              color: data.accent,
+                            )
+                          : AppTextStyles.bodyStrong.copyWith(
+                              color: data.accent,
+                            ),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          item.label,
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          item.value,
-                          style: TextStyle(
-                            color: data.accent,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-                .toList(),
+                  ],
+                ),
+              );
+            }).toList(),
           ),
           const SizedBox(height: 14),
           Row(
@@ -433,10 +413,8 @@ class _ReportCard extends StatelessWidget {
                   ),
                   child: Text(
                     '$selectedPeriod - $selectedFormat',
-                    style: TextStyle(
+                    style: AppTextStyles.bodyStrong.copyWith(
                       color: data.accent,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),

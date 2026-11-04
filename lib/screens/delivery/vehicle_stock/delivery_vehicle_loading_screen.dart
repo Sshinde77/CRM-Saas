@@ -805,23 +805,14 @@ class _Metric extends StatelessWidget {
                   value,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: color,
-                    fontSize: 14,
-                    height: 1,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppTextStyles.importantNumber.copyWith(color: color),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.textMuted,
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppTextStyles.smallStrong,
                 ),
               ],
             ),
@@ -966,10 +957,8 @@ class _ProductsCard extends StatelessWidget {
                   selected: selected,
                   onSelected: (_) => onCategoryChanged(category),
                   visualDensity: VisualDensity.compact,
-                  labelStyle: TextStyle(
+                  labelStyle: AppTextStyles.smallStrong.copyWith(
                     color: selected ? Colors.white : AppColors.textMuted,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
                   ),
                   selectedColor: AppColors.deliveryGreen,
                   backgroundColor: const Color(0xFFF4F7F5),
@@ -1042,10 +1031,8 @@ class _DraftProductRow extends StatelessWidget {
                         product.name,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: AppTextStyles.bodyStrong.copyWith(
                           color: AppColors.deliveryInk,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
@@ -1064,10 +1051,7 @@ class _DraftProductRow extends StatelessWidget {
                   product.meta,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.textMuted,
-                    fontSize: 10,
-                  ),
+                  style: AppTextStyles.small,
                 ),
                 const SizedBox(height: 8),
                 Row(
@@ -1085,10 +1069,7 @@ class _DraftProductRow extends StatelessWidget {
                         controller: controller,
                         readOnly: true,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: AppTextStyles.bodyStrong,
                         decoration: InputDecoration(
                           labelText: 'To Load',
                           isDense: true,
@@ -1151,12 +1132,10 @@ class _LoadedSessionBanner extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Vehicle Already Loaded',
-                  style: TextStyle(
+                  style: AppTextStyles.cardTitle.copyWith(
                     color: AppColors.deliveryInk,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -1164,22 +1143,15 @@ class _LoadedSessionBanner extends StatelessWidget {
                   session.vehicleNumber.isEmpty
                       ? 'An active stock session is open for today.'
                       : '${session.vehicleNumber} has an active stock session for today.',
-                  style: const TextStyle(
-                    color: AppColors.textMuted,
-                    fontSize: 12,
-                    height: 1.35,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: AppTextStyles.smallStrong,
                 ),
                 const SizedBox(height: 8),
                 Text(
                   '${_quantity(session.totalLoaded)} loaded  |  '
                   '${_quantity(session.totalDelivered)} delivered  |  '
                   '${_quantity(session.totalRemaining)} remaining',
-                  style: const TextStyle(
+                  style: AppTextStyles.smallStrong.copyWith(
                     color: AppColors.deliveryGreen,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
@@ -1241,7 +1213,7 @@ class _SessionProductsCardState extends State<_SessionProductsCard> {
           TextField(
             controller: _search,
             onChanged: (_) => setState(() {}),
-            style: const TextStyle(fontSize: 13),
+            style: AppTextStyles.secondary,
             decoration: _inputDecoration(
               hint: 'Search products by name or SKU',
               icon: Icons.search_rounded,
@@ -1265,10 +1237,8 @@ class _SessionProductsCardState extends State<_SessionProductsCard> {
                   selectedColor: AppColors.deliveryGreen,
                   backgroundColor: const Color(0xFFF4F7F5),
                   side: BorderSide.none,
-                  labelStyle: TextStyle(
+                  labelStyle: AppTextStyles.smallStrong.copyWith(
                     color: selected ? Colors.white : AppColors.textMuted,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
                   ),
                 );
               },
@@ -1322,10 +1292,8 @@ class _SessionProductRow extends StatelessWidget {
                         item.product.name,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: AppTextStyles.bodyStrong.copyWith(
                           color: AppColors.deliveryInk,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
@@ -1340,13 +1308,7 @@ class _SessionProductRow extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 3),
-                Text(
-                  item.product.meta,
-                  style: const TextStyle(
-                    color: AppColors.textMuted,
-                    fontSize: 10,
-                  ),
-                ),
+                Text(item.product.meta, style: AppTextStyles.small),
                 const SizedBox(height: 8),
                 Row(
                   children: [
@@ -1403,19 +1365,9 @@ class _TinyProductMetric extends StatelessWidget {
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text(
-        label,
-        style: const TextStyle(color: AppColors.textMuted, fontSize: 9),
-      ),
+      Text(label, style: AppTextStyles.small),
       const SizedBox(height: 2),
-      Text(
-        value,
-        style: TextStyle(
-          color: color,
-          fontSize: 12,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
+      Text(value, style: AppTextStyles.smallStrong.copyWith(color: color)),
     ],
   );
 }
@@ -1462,11 +1414,8 @@ class _LoadingItemRow extends StatelessWidget {
                   item.product.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: AppTextStyles.bodyStrong.copyWith(
                     color: AppColors.deliveryInk,
-                    fontSize: 14,
-                    height: 1.15,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -1474,11 +1423,7 @@ class _LoadingItemRow extends StatelessWidget {
                   item.product.meta,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.textMuted,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppTextStyles.smallStrong,
                 ),
               ],
             ),
@@ -1527,11 +1472,7 @@ class _LoadingItemRow extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: AppColors.textMuted,
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-              ),
+              style: AppTextStyles.smallStrong,
             ),
           ),
           const SizedBox(width: 6),
@@ -1672,9 +1613,7 @@ class _StockAdjustmentSheetState extends State<_StockAdjustmentSheet> {
             children: [
               Text(
                 widget.title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
+                style: AppTextStyles.sectionHeading.copyWith(
                   color: AppColors.deliveryInk,
                 ),
               ),
@@ -1682,7 +1621,7 @@ class _StockAdjustmentSheetState extends State<_StockAdjustmentSheet> {
               TextField(
                 controller: _search,
                 onChanged: (_) => setState(() {}),
-                style: const TextStyle(fontSize: 13),
+                style: AppTextStyles.secondary,
                 decoration: _inputDecoration(
                   hint: 'Search products by name or SKU',
                   icon: Icons.search_rounded,
@@ -1706,10 +1645,8 @@ class _StockAdjustmentSheetState extends State<_StockAdjustmentSheet> {
                       selectedColor: AppColors.deliveryGreen,
                       backgroundColor: const Color(0xFFF4F7F5),
                       side: BorderSide.none,
-                      labelStyle: TextStyle(
+                      labelStyle: AppTextStyles.smallStrong.copyWith(
                         color: selected ? Colors.white : AppColors.textMuted,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
                       ),
                     );
                   },
@@ -1750,10 +1687,7 @@ class _StockAdjustmentSheetState extends State<_StockAdjustmentSheet> {
                                   product.name,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                  ),
+                                  style: AppTextStyles.bodyStrong,
                                 ),
                                 const SizedBox(height: 4),
                                 if (stockItem != null)
@@ -1917,10 +1851,7 @@ class _BottomSummary extends StatelessWidget {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          textStyle: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                          ),
+                          textStyle: AppTextStyles.bodyStrong,
                         ),
                       ),
                     ),
@@ -1953,10 +1884,8 @@ class _SummaryStat extends StatelessWidget {
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: AppTextStyles.fieldLabel.copyWith(
               color: AppColors.textMuted,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 4),
@@ -1968,11 +1897,8 @@ class _SummaryStat extends StatelessWidget {
                   value,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(0xFF08733A),
-                    fontSize: 16,
-                    height: 0.95,
-                    fontWeight: FontWeight.w700,
+                  style: AppTextStyles.importantNumber.copyWith(
+                    color: const Color(0xFF08733A),
                   ),
                 ),
               ),
@@ -2066,10 +1992,8 @@ class _SelectField extends StatelessWidget {
                   text.trim().isEmpty ? '-' : text,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(0xFF4B5668),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
+                  style: AppTextStyles.bodyStrong.copyWith(
+                    color: const Color(0xFF4B5668),
                   ),
                 ),
               ),
@@ -2193,14 +2117,10 @@ class _EmptyItems extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFE8EDF2)),
       ),
-      child: const Text(
+      child: Text(
         'Selected products will appear here.',
         textAlign: TextAlign.center,
-        style: TextStyle(
-          color: AppColors.textMuted,
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
-        ),
+        style: AppTextStyles.body.copyWith(color: AppColors.textMuted),
       ),
     );
   }
@@ -2225,11 +2145,7 @@ class _NoPlannedDeliveries extends StatelessWidget {
             Text(
               'No picked deliveries are ready to load.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: AppColors.deliveryInk,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-              ),
+              style: AppTextStyles.body,
             ),
           ],
         ),
@@ -2293,19 +2209,17 @@ class _ErrorPanel extends StatelessWidget {
               size: 36,
             ),
             const SizedBox(height: 10),
-            const Text(
+            Text(
               'Vehicle loading could not load',
-              style: TextStyle(
+              style: AppTextStyles.bodyStrong.copyWith(
                 color: AppColors.deliveryInk,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 5),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.textMuted, fontSize: 14),
+              style: AppTextStyles.body.copyWith(color: AppColors.textMuted),
             ),
             const SizedBox(height: 14),
             OutlinedButton.icon(
@@ -2337,11 +2251,7 @@ class _InlineError extends StatelessWidget {
       ),
       child: Text(
         message,
-        style: const TextStyle(
-          color: AppColors.deliveryRed,
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
-        ),
+        style: AppTextStyles.bodyStrong.copyWith(color: AppColors.deliveryRed),
       ),
     );
   }
@@ -2416,11 +2326,7 @@ class _CompactStatusPill extends StatelessWidget {
       ),
       child: Text(
         closed ? 'Closed' : 'Active',
-        style: TextStyle(
-          color: color,
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-        ),
+        style: AppTextStyles.smallStrong.copyWith(color: color),
       ),
     );
   }

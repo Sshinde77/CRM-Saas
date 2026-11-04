@@ -289,13 +289,9 @@ class _AccountScreenState extends State<AccountScreen> {
               icon: const Icon(Icons.arrow_back_rounded, color: _titleColor),
             ),
             const SizedBox(width: 2),
-            const Text(
+            Text(
               'Account',
-              style: TextStyle(
-                color: _titleColor,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-              ),
+              style: AppTextStyles.cardTitle.copyWith(color: _titleColor),
             ),
             const Spacer(),
           ],
@@ -357,10 +353,8 @@ class _AccountScreenState extends State<AccountScreen> {
                         Expanded(
                           child: Text(
                             company,
-                            style: const TextStyle(
+                            style: AppTextStyles.cardTitle.copyWith(
                               color: _titleColor,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
@@ -368,13 +362,9 @@ class _AccountScreenState extends State<AccountScreen> {
                       ],
                     ),
                     const SizedBox(height: 8),
-                    const Text(
+                    Text(
                       'Company profile and organization information.',
-                      style: TextStyle(
-                        color: _mutedColor,
-                        fontSize: 14,
-                        height: 1.45,
-                      ),
+                      style: AppTextStyles.body.copyWith(color: _mutedColor),
                     ),
                   ],
                 ),
@@ -405,11 +395,7 @@ class _AccountScreenState extends State<AccountScreen> {
     if (logoUrl == null || logoUrl.isEmpty) {
       return Text(
         initial,
-        style: const TextStyle(
-          color: _accent,
-          fontSize: 16,
-          fontWeight: FontWeight.w700,
-        ),
+        style: AppTextStyles.cardTitle.copyWith(color: _accent),
       );
     }
 
@@ -423,11 +409,7 @@ class _AccountScreenState extends State<AccountScreen> {
           return Center(
             child: Text(
               initial,
-              style: const TextStyle(
-                color: _accent,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-              ),
+              style: AppTextStyles.cardTitle.copyWith(color: _accent),
             ),
           );
         },
@@ -444,7 +426,7 @@ class _AccountScreenState extends State<AccountScreen> {
     if (photoUrl == null || photoUrl.isEmpty) {
       return Text(
         initial,
-        style: const TextStyle(color: _accent, fontWeight: FontWeight.w700),
+        style: AppTextStyles.bodyStrong.copyWith(color: _accent),
       );
     }
 
@@ -457,7 +439,7 @@ class _AccountScreenState extends State<AccountScreen> {
         errorBuilder: (context, error, stackTrace) {
           return Text(
             initial,
-            style: const TextStyle(color: _accent, fontWeight: FontWeight.w700),
+            style: AppTextStyles.bodyStrong.copyWith(color: _accent),
           );
         },
       ),
@@ -553,25 +535,21 @@ class _AccountScreenState extends State<AccountScreen> {
                   children: [
                     Text(
                       metric.label,
-                      style: const TextStyle(
+                      style: AppTextStyles.bodyStrong.copyWith(
                         color: _mutedColor,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       metric.value,
-                      style: const TextStyle(
+                      style: AppTextStyles.cardTitle.copyWith(
                         color: _titleColor,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       metric.subtitle,
-                      style: const TextStyle(color: _mutedColor, fontSize: 14),
+                      style: AppTextStyles.body.copyWith(color: _mutedColor),
                     ),
                   ],
                 ),
@@ -603,16 +581,11 @@ class _AccountScreenState extends State<AccountScreen> {
                     Color(0xFF16A34A),
                   ),
                 ),
-                const Center(
+                Center(
                   child: Text(
                     '89%',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: _titleColor,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      height: 1,
-                    ),
+                    style: AppTextStyles.cardTitle.copyWith(color: _titleColor),
                   ),
                 ),
               ],
@@ -625,38 +598,26 @@ class _AccountScreenState extends State<AccountScreen> {
               children: [
                 Text(
                   'Profile Needs Attention',
-                  style: TextStyle(
-                    color: _titleColor,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppTextStyles.bodyStrong.copyWith(color: _titleColor),
                 ),
                 SizedBox(height: 6),
                 Text(
                   'Complete the missing items to improve company readiness.',
-                  style: TextStyle(
-                    color: _mutedColor,
-                    fontSize: 14,
-                    height: 1.35,
-                  ),
+                  style: AppTextStyles.body.copyWith(color: _mutedColor),
                 ),
                 SizedBox(height: 10),
                 Text(
                   'Missing Information',
-                  style: TextStyle(
-                    color: _titleColor,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppTextStyles.bodyStrong.copyWith(color: _titleColor),
                 ),
                 SizedBox(height: 4),
                 Text(
                   '- GST Certificate',
-                  style: TextStyle(color: _mutedColor, fontSize: 14),
+                  style: AppTextStyles.body.copyWith(color: _mutedColor),
                 ),
                 Text(
                   '- PAN Card',
-                  style: TextStyle(color: _mutedColor, fontSize: 14),
+                  style: AppTextStyles.body.copyWith(color: _mutedColor),
                 ),
                 SizedBox(height: 8),
                 _profileCompletionAction(),
@@ -684,10 +645,7 @@ class _AccountScreenState extends State<AccountScreen> {
                   _savedOwnerName.isNotEmpty
                       ? _savedOwnerName[0].toUpperCase()
                       : 'S',
-                  style: const TextStyle(
-                    color: _accent,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppTextStyles.bodyStrong.copyWith(color: _accent),
                 ),
               ),
               const SizedBox(width: 12),
@@ -697,26 +655,24 @@ class _AccountScreenState extends State<AccountScreen> {
                   children: [
                     Text(
                       _savedOwnerName,
-                      style: const TextStyle(
+                      style: AppTextStyles.cardTitle.copyWith(
                         color: _titleColor,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 3),
                     Text(
                       _savedDesignation,
-                      style: const TextStyle(color: _mutedColor, fontSize: 14),
+                      style: AppTextStyles.body.copyWith(color: _mutedColor),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       _savedEmail,
-                      style: const TextStyle(color: _mutedColor, fontSize: 14),
+                      style: AppTextStyles.body.copyWith(color: _mutedColor),
                     ),
                     const SizedBox(height: 3),
                     Text(
                       _savedMobileNumber,
-                      style: const TextStyle(color: _mutedColor, fontSize: 14),
+                      style: AppTextStyles.body.copyWith(color: _mutedColor),
                     ),
                   ],
                 ),
@@ -783,10 +739,8 @@ class _AccountScreenState extends State<AccountScreen> {
                   Expanded(
                     child: Text(
                       doc.$1,
-                      style: const TextStyle(
+                      style: AppTextStyles.bodyStrong.copyWith(
                         color: _titleColor,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -803,15 +757,11 @@ class _AccountScreenState extends State<AccountScreen> {
           InkWell(
             borderRadius: BorderRadius.circular(8),
             onTap: _openDocuments,
-            child: const Padding(
+            child: Padding(
               padding: EdgeInsets.symmetric(vertical: 2, horizontal: 4),
               child: Text(
                 'View All Documents',
-                style: TextStyle(
-                  color: _accent,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: AppTextStyles.bodyStrong.copyWith(color: _accent),
               ),
             ),
           ),
@@ -835,41 +785,29 @@ class _AccountScreenState extends State<AccountScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Registered Office',
-                  style: TextStyle(
-                    color: _titleColor,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppTextStyles.bodyStrong.copyWith(color: _titleColor),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   _savedLegalName,
-                  style: const TextStyle(
-                    color: _accent,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppTextStyles.bodyStrong.copyWith(color: _accent),
                 ),
                 const SizedBox(height: 4),
-                const Text(
+                Text(
                   'Mumbai, Maharashtra, India',
-                  style: TextStyle(color: _mutedColor, fontSize: 14),
+                  style: AppTextStyles.body.copyWith(color: _mutedColor),
                 ),
                 const SizedBox(height: 12),
-                const Text(
+                Text(
                   'Branch/Warehouse Address',
-                  style: TextStyle(
-                    color: _accent,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppTextStyles.bodyStrong.copyWith(color: _accent),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   _savedLegalName,
-                  style: const TextStyle(color: _mutedColor, fontSize: 14),
+                  style: AppTextStyles.body.copyWith(color: _mutedColor),
                 ),
               ],
             ),
@@ -909,15 +847,11 @@ class _AccountScreenState extends State<AccountScreen> {
       trailing: InkWell(
         borderRadius: BorderRadius.circular(8),
         onTap: _openAdditionalInformation,
-        child: const Padding(
+        child: Padding(
           padding: EdgeInsets.symmetric(vertical: 2, horizontal: 4),
           child: Text(
             'View All',
-            style: TextStyle(
-              color: _accent,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.bodyStrong.copyWith(color: _accent),
           ),
         ),
       ),
@@ -949,18 +883,15 @@ class _AccountScreenState extends State<AccountScreen> {
                       children: [
                         Text(
                           item.$1,
-                          style: const TextStyle(
+                          style: AppTextStyles.bodyStrong.copyWith(
                             color: _titleColor,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
                           ),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           item.$2,
-                          style: const TextStyle(
+                          style: AppTextStyles.body.copyWith(
                             color: _mutedColor,
-                            fontSize: 14,
                           ),
                         ),
                       ],
@@ -1053,11 +984,7 @@ class _AccountScreenState extends State<AccountScreen> {
               Text(
                 label,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: _titleColor,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: AppTextStyles.bodyStrong.copyWith(color: _titleColor),
               ),
             ],
           ),
@@ -1098,20 +1025,12 @@ class _AccountScreenState extends State<AccountScreen> {
         Expanded(
           child: Text(
             label,
-            style: const TextStyle(
-              color: _mutedColor,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
+            style: AppTextStyles.bodyStrong.copyWith(color: _mutedColor),
           ),
         ),
         Text(
           value,
-          style: const TextStyle(
-            color: _titleColor,
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-          ),
+          style: AppTextStyles.bodyStrong.copyWith(color: _titleColor),
         ),
       ],
     );
@@ -1133,11 +1052,7 @@ class _AccountScreenState extends State<AccountScreen> {
       ),
       child: Text(
         label,
-        style: TextStyle(
-          color: accent,
-          fontSize: compact ? 10.5 : 11.5,
-          fontWeight: FontWeight.w700,
-        ),
+        style: AppTextStyles.smallStrong.copyWith(color: accent),
       ),
     );
   }
@@ -1164,11 +1079,7 @@ class _AccountScreenState extends State<AccountScreen> {
           alignment: Alignment.center,
           child: Text(
             label,
-            style: TextStyle(
-              color: foreground,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.bodyStrong.copyWith(color: foreground),
           ),
         ),
       ),
@@ -1179,15 +1090,11 @@ class _AccountScreenState extends State<AccountScreen> {
     return InkWell(
       borderRadius: BorderRadius.circular(8),
       onTap: () => _openGeneralInformation(),
-      child: const Padding(
+      child: Padding(
         padding: EdgeInsets.symmetric(vertical: 2, horizontal: 4),
         child: Text(
           'Complete Now',
-          style: TextStyle(
-            color: _accent,
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-          ),
+          style: AppTextStyles.bodyStrong.copyWith(color: _accent),
         ),
       ),
     );
@@ -1221,11 +1128,7 @@ class _AccountScreenState extends State<AccountScreen> {
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(
-                    color: _titleColor,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppTextStyles.bodyStrong.copyWith(color: _titleColor),
                 ),
               ),
               ...(trailing == null ? const <Widget>[] : <Widget>[trailing]),
@@ -1246,11 +1149,7 @@ class _AccountScreenState extends State<AccountScreen> {
           padding: const EdgeInsets.only(bottom: 8),
           child: Text(
             label,
-            style: const TextStyle(
-              color: _titleColor,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.bodyStrong.copyWith(color: _titleColor),
           ),
         ),
         child,
@@ -1276,7 +1175,7 @@ class _AccountScreenState extends State<AccountScreen> {
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+        textStyle: AppTextStyles.bodyStrong,
       ),
     );
   }
@@ -1524,7 +1423,7 @@ class _AccountScreenState extends State<AccountScreen> {
       controller: controller,
       keyboardType: keyboardType,
       enabled: enabled,
-      style: const TextStyle(fontSize: 14, color: _titleColor),
+      style: AppTextStyles.body.copyWith(color: _titleColor),
       decoration: _fieldDecoration(),
     );
   }
@@ -1545,7 +1444,7 @@ class _AccountScreenState extends State<AccountScreen> {
       hint: hintText == null
           ? null
           : Text(hintText, style: AppTextStyles.inputHint),
-      style: const TextStyle(fontSize: 14, color: _titleColor),
+      style: AppTextStyles.body.copyWith(color: _titleColor),
       decoration: _fieldDecoration(),
       dropdownColor: Colors.white,
       borderRadius: BorderRadius.circular(16),
@@ -1555,11 +1454,7 @@ class _AccountScreenState extends State<AccountScreen> {
               value: item,
               child: Text(
                 '$item',
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: _titleColor,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: AppTextStyles.fieldLabel.copyWith(color: _titleColor),
               ),
             ),
           )
@@ -1642,10 +1537,8 @@ class _SectionCard extends StatelessWidget {
                     alignment: Alignment.center,
                     child: Text(
                       '$number',
-                      style: const TextStyle(
+                      style: AppTextStyles.bodyStrong.copyWith(
                         color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -1656,18 +1549,15 @@ class _SectionCard extends StatelessWidget {
                       children: [
                         Text(
                           title,
-                          style: const TextStyle(
+                          style: AppTextStyles.cardTitle.copyWith(
                             color: _AccountScreenState._titleColor,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
                           ),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           subtitle,
-                          style: const TextStyle(
+                          style: AppTextStyles.body.copyWith(
                             color: _AccountScreenState._mutedColor,
-                            fontSize: 14,
                           ),
                         ),
                       ],

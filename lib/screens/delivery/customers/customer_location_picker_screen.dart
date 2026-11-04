@@ -6,6 +6,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart' as google_maps;
 import 'package:latlong2/latlong.dart' as latlong;
 
 import '../../../constants/app_colors.dart';
+import '../../../core/theme/app_text_styles.dart';
 import '../../../services/location_search_service.dart';
 import '../../../widgets/app_skeleton.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
@@ -388,10 +389,7 @@ class _CustomerLocationPickerScreenState
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: AppTextStyles.bodyStrong,
                   ),
                   const SizedBox(height: 12),
                   FilledButton(
@@ -486,10 +484,8 @@ class _SearchPanel extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
               child: Text(
                 error!,
-                style: const TextStyle(
+                style: AppTextStyles.smallStrong.copyWith(
                   color: AppColors.deliveryRed,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
                 ),
               ),
             )
@@ -515,16 +511,13 @@ class _SearchPanel extends StatelessWidget {
                       result.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: AppTextStyles.bodyStrong,
                     ),
                     subtitle: Text(
                       result.displayName,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 12),
+                      style: AppTextStyles.small,
                     ),
                     onTap: () => onSelect(result),
                   );

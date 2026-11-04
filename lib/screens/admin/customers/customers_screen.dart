@@ -230,13 +230,10 @@ class _CustomersScreenState extends State<CustomersScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-          title: const Text(
-            'Delete Customer',
-            style: TextStyle(fontWeight: FontWeight.w700),
-          ),
+          title: const Text('Delete Customer', style: AppTextStyles.bodyStrong),
           content: Text(
             'Delete ${customer.name}? This action cannot be undone.',
-            style: const TextStyle(height: 1.4),
+            style: AppTextStyles.body,
           ),
           actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
           actions: [
@@ -307,13 +304,11 @@ class _CustomersScreenState extends State<CustomersScreen> {
                   children: [
                     Row(
                       children: [
-                        const Expanded(
+                        Expanded(
                           child: Text(
                             'Customer Filters',
-                            style: TextStyle(
+                            style: AppTextStyles.cardTitle.copyWith(
                               color: textPrimary,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
@@ -508,9 +503,8 @@ class _CustomersScreenState extends State<CustomersScreen> {
                           children: [
                             TextSpan(
                               text: '${_pagination.total}',
-                              style: const TextStyle(
+                              style: AppTextStyles.bodyStrong.copyWith(
                                 color: AppColors.primary,
-                                fontWeight: FontWeight.w900,
                               ),
                             ),
                           ],
@@ -535,14 +529,11 @@ class _CustomersScreenState extends State<CustomersScreen> {
   Widget _titleRow() {
     return Row(
       children: [
-        const Expanded(
+        Expanded(
           child: Text(
             'Customers',
-            style: TextStyle(
+            style: AppTextStyles.cardTitle.copyWith(
               color: textPrimary,
-              fontSize: 16,
-              height: 1,
-              fontWeight: FontWeight.w700,
               letterSpacing: 0,
             ),
           ),
@@ -561,11 +552,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
-            textStyle: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0,
-            ),
+            textStyle: AppTextStyles.bodyStrong.copyWith(letterSpacing: 0),
           ),
         ),
       ],
@@ -581,11 +568,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
             child: TextField(
               controller: _searchController,
               onChanged: _scheduleSearchReload,
-              style: const TextStyle(
-                color: textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
+              style: AppTextStyles.fieldLabel.copyWith(color: textPrimary),
               decoration: InputDecoration(
                 hintText: 'Search name, business, phone, email...',
                 hintStyle: AppTextStyles.inputHint,
@@ -691,11 +674,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
     return Chip(
       label: Text(
         label,
-        style: const TextStyle(
-          color: AppColors.textPrimary,
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-        ),
+        style: AppTextStyles.bodyStrong.copyWith(color: AppColors.textPrimary),
       ),
       backgroundColor: AppColors.surfaceSoft,
       side: BorderSide(color: AppColors.borderLight),
@@ -746,10 +725,8 @@ class _CustomersScreenState extends State<CustomersScreen> {
                             customer.name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: AppTextStyles.bodyStrong.copyWith(
                               color: textPrimary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
                               letterSpacing: 0,
                             ),
                           ),
@@ -882,10 +859,8 @@ class _CustomersScreenState extends State<CustomersScreen> {
             text,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: AppTextStyles.fieldLabel.copyWith(
               color: textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
               letterSpacing: 0,
             ),
           ),
@@ -1069,12 +1044,10 @@ class _CustomersScreenState extends State<CustomersScreen> {
         children: [
           Text(
             customer.statusLabel,
-            style: TextStyle(
+            style: AppTextStyles.bodyStrong.copyWith(
               color: active
                   ? AppColors.statusActiveText
                   : AppColors.statusInactiveText,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
               letterSpacing: 0,
             ),
           ),
@@ -1131,19 +1104,19 @@ class _CustomersScreenState extends State<CustomersScreen> {
               size: 42,
             ),
             const SizedBox(height: 12),
-            const Text(
+            Text(
               'Could not load customers',
-              style: TextStyle(
+              style: AppTextStyles.cardTitle.copyWith(
                 color: AppColors.textPrimary,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.textSecondary),
+              style: AppTextStyles.body.copyWith(
+                color: AppColors.textSecondary,
+              ),
             ),
             const SizedBox(height: 16),
             ElevatedButton(
@@ -1157,12 +1130,12 @@ class _CustomersScreenState extends State<CustomersScreen> {
   }
 
   Widget _emptyState() {
-    return const Padding(
+    return Padding(
       padding: EdgeInsets.symmetric(vertical: 30),
       child: Center(
         child: Text(
           'No customers match your search.',
-          style: TextStyle(color: textSecondary, fontSize: 14),
+          style: AppTextStyles.body.copyWith(color: textSecondary),
         ),
       ),
     );
@@ -1178,16 +1151,12 @@ class _CustomersScreenState extends State<CustomersScreen> {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: textPrimary,
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-          ),
+          style: AppTextStyles.bodyStrong.copyWith(color: textPrimary),
         ),
         const SizedBox(height: 8),
         TextField(
           controller: controller,
-          style: const TextStyle(color: textPrimary),
+          style: AppTextStyles.body.copyWith(color: textPrimary),
           decoration: _inputDecoration(label, hint),
         ),
       ],
@@ -1201,7 +1170,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
       fillColor: Colors.white,
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
       labelText: label,
-      labelStyle: const TextStyle(color: AppColors.textSecondary),
+      labelStyle: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: AppColors.borderStrong),

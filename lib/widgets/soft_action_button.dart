@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../constants/app_colors.dart';
+import '../core/theme/app_text_styles.dart';
 
 class SoftActionButton extends StatelessWidget {
   final String label;
@@ -28,11 +29,7 @@ class SoftActionButton extends StatelessWidget {
         icon: Icon(icon, size: 22, color: contentColor),
         label: Text(
           label,
-          style: TextStyle(
-            color: contentColor,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-          ),
+          style: AppTextStyles.appBarTitle.copyWith(color: contentColor),
         ),
         style: OutlinedButton.styleFrom(
           foregroundColor: contentColor,

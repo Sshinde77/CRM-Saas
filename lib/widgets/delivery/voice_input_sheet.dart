@@ -5,6 +5,7 @@ import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
 import '../../constants/app_colors.dart';
+import '../../core/theme/app_text_styles.dart';
 
 class VoiceInputSheet extends StatefulWidget {
   const VoiceInputSheet({
@@ -199,10 +200,7 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
               Expanded(
                 child: Text(
                   widget.title,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppTextStyles.screenHeading.copyWith(fontSize: 18),
                 ),
               ),
               IconButton(
@@ -225,10 +223,8 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
             child: Text(
               widget.instruction,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: AppTextStyles.secondaryStrong.copyWith(
                 color: AppColors.deliveryDashboardHeaderEnd,
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -320,9 +316,8 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
                 ? 'Listening... tap the mic to stop.'
                 : 'Tap the mic, speak in the selected language, then tap again.',
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: AppTextStyles.secondary.copyWith(
               color: AppColors.textSecondary,
-              fontSize: 13,
             ),
           ),
           if (_error != null) ...[
@@ -330,10 +325,8 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
             Text(
               _error!,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: AppTextStyles.secondaryStrong.copyWith(
                 color: AppColors.deliveryRed,
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
               ),
             ),
           ],

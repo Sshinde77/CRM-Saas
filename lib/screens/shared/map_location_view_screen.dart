@@ -3,6 +3,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart' as google_maps;
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../constants/app_colors.dart';
+import '../../core/theme/app_text_styles.dart';
 
 class MapLocationViewScreen extends StatelessWidget {
   const MapLocationViewScreen({
@@ -54,7 +55,11 @@ class MapLocationViewScreen extends StatelessWidget {
         appBar: AppBar(
           title: Text(
             title,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              fontFamily: AppTextStyles.fontFamily,
+            ),
           ),
           centerTitle: false,
           elevation: 0,
@@ -132,18 +137,14 @@ class MapLocationViewScreen extends StatelessWidget {
                                   subtitle!,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700,
-                                  ),
+                                  style: AppTextStyles.bodyStrong,
                                 ),
                               const SizedBox(height: 4),
                               Text(
                                 '${latitude.toStringAsFixed(6)}, ${longitude.toStringAsFixed(6)}',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 13,
+                                style: AppTextStyles.secondary.copyWith(
                                   color: AppColors.textSecondary,
                                 ),
                               ),

@@ -65,18 +65,16 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'My Profile',
-                      style: TextStyle(
+                      style: AppTextStyles.screenHeading.copyWith(
                         color: textPrimary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 4),
-                    const Text(
+                    Text(
                       'Your account details',
-                      style: TextStyle(color: textSecondary, fontSize: 14),
+                      style: AppTextStyles.body.copyWith(color: textSecondary),
                     ),
                     const SizedBox(height: 20),
                     _buildProfileCard(),
@@ -105,23 +103,15 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
               border: Border.all(color: AppColors.secondary),
             ),
             alignment: Alignment.center,
-            child: const Text(
+            child: Text(
               'AS',
-              style: TextStyle(
-                color: AppColors.purple,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-              ),
+              style: AppTextStyles.cardTitle.copyWith(color: AppColors.purple),
             ),
           ),
           const SizedBox(height: 14),
           Text(
             _nameController.text,
-            style: const TextStyle(
-              color: textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.cardTitle.copyWith(color: textPrimary),
           ),
           const SizedBox(height: 6),
           Container(
@@ -130,11 +120,10 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
               color: AppColors.purple.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(999),
             ),
-            child: const Text(
+            child: Text(
               'Admin',
-              style: TextStyle(
+              style: AppTextStyles.smallStrong.copyWith(
                 color: AppColors.purple,
-                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -148,13 +137,9 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Account Details',
-            style: TextStyle(
-              color: textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.sectionHeading.copyWith(color: textPrimary),
           ),
           const SizedBox(height: 18),
           _fieldLabel('Full Name'),
@@ -196,13 +181,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                         color: AppColors.primary,
                       ),
                     )
-                  : const Text(
-                      'Save Changes',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                  : Text('Save Changes', style: AppTextStyles.bodyStrong),
             ),
           ),
         ],

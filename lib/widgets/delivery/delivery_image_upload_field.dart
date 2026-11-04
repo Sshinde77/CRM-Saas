@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../constants/app_colors.dart';
+import '../../core/theme/app_text_styles.dart';
 
 Future<XFile?> showDeliveryImageSourcePicker({
   required BuildContext context,
@@ -38,10 +39,9 @@ Future<XFile?> showDeliveryImageSourcePicker({
           Text(
             title,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: AppTextStyles.screenHeading.copyWith(
               color: AppColors.deliveryInk,
               fontSize: 18,
-              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 16),
@@ -49,10 +49,7 @@ Future<XFile?> showDeliveryImageSourcePicker({
             minTileHeight: 52,
             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
             leading: const Icon(Icons.camera_alt_outlined, size: 24),
-            title: const Text(
-              'Take a photo',
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-            ),
+            title: const Text('Take a photo', style: AppTextStyles.bodyStrong),
             onTap: () => Navigator.pop(sheetContext, ImageSource.camera),
           ),
           ListTile(
@@ -61,7 +58,7 @@ Future<XFile?> showDeliveryImageSourcePicker({
             leading: const Icon(Icons.photo_library_outlined, size: 24),
             title: const Text(
               'Choose from files',
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+              style: AppTextStyles.bodyStrong,
             ),
             onTap: () => Navigator.pop(sheetContext, ImageSource.gallery),
           ),
@@ -132,11 +129,7 @@ class DeliveryImageUploadField extends StatelessWidget {
                     SizedBox(height: 10),
                     Text(
                       'Camera or file',
-                      style: TextStyle(
-                        color: AppColors.textMuted,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: AppTextStyles.secondaryStrong,
                     ),
                   ],
                 )

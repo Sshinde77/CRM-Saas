@@ -1276,56 +1276,32 @@ class ApiService {
     String? assignedDeliveryPartnerId,
     String? search,
   }) async {
-    final response = await _send(
-      method: 'GET',
-      endpoint: ApiEndpoints.ordersList,
-      requiresAuth: true,
-      queryParameters: _cleanQuery({
-        'page': '$page',
-        'page_size': '$limit',
-        'status': status,
-        'fulfilment_status': fulfilmentStatus,
-        'customer_id': customerId,
-        'assigned_delivery_partner_id': assignedDeliveryPartnerId,
-        'search': search,
-      }),
+    // The orders endpoint supports filters, but does not support the
+    // page/page_size parameters used by the other paginated endpoints.
+    // Fetch the documented list once and paginate it locally for the UI.
+    final allItems = await fetchOrders(
+      status: status,
+      fulfilmentStatus: fulfilmentStatus,
+      customerId: customerId,
+      assignedDeliveryPartnerId: assignedDeliveryPartnerId,
+      search: search,
     );
-    final decoded = _tryDecodeBody(response.body.trim());
-    final rawItems = _extractGenericList(decoded, const [
-      'orders',
-      'data',
-      'items',
-      'results',
-    ], fallbackMessage: 'Invalid orders response.');
-    final meta = decoded is Map<String, dynamic>
-        ? _extractPaginationMeta(decoded)
-        : const <String, dynamic>{};
+    final safeLimit = limit <= 0 ? 10 : limit;
+    final safePage = page <= 0 ? 1 : page;
+    final total = allItems.length;
+    final totalPages = total == 0 ? 1 : ((total + safeLimit - 1) ~/ safeLimit);
+    final start = (safePage - 1) * safeLimit;
+    final end = start + safeLimit > total ? total : start + safeLimit;
+    final items = start >= total
+        ? <Map<String, dynamic>>[]
+        : allItems.sublist(start, end);
 
     return PaginatedResult<Map<String, dynamic>>(
-      items: rawItems.whereType<Map<String, dynamic>>().toList(),
-      page: _readMetaInt(meta, const [
-        'page',
-        'current_page',
-        'currentPage',
-      ], page),
-      pageSize: _readMetaInt(meta, const [
-        'limit',
-        'per_page',
-        'perPage',
-        'page_size',
-        'pageSize',
-      ], limit),
-      total: _readMetaInt(meta, const [
-        'total',
-        'total_items',
-        'totalItems',
-        'count',
-      ], ((page - 1) * limit) + rawItems.length),
-      totalPages: _readMetaInt(meta, const [
-        'total_pages',
-        'totalPages',
-        'pages',
-      ], 0),
+      items: items,
+      page: safePage,
+      pageSize: safeLimit,
+      total: total,
+      totalPages: totalPages,
     );
   }
 

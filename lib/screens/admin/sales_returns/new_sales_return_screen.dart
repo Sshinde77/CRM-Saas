@@ -94,13 +94,9 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Raise a return request against an existing invoice.',
-                      style: TextStyle(
-                        color: textSecondary,
-                        fontSize: 14,
-                        height: 1.35,
-                      ),
+                      style: AppTextStyles.body.copyWith(color: textSecondary),
                     ),
                     const SizedBox(height: 16),
                     _sectionCard(
@@ -109,12 +105,10 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'Invoice Number or ID',
-                            style: TextStyle(
+                            style: AppTextStyles.bodyStrong.copyWith(
                               color: textPrimary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -311,10 +305,7 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(18),
                             ),
-                            textStyle: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                            ),
+                            textStyle: AppTextStyles.bodyStrong,
                           ),
                         ),
                       ],
@@ -362,17 +353,13 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
         children: [
           Text(
             title,
-            style: const TextStyle(
-              color: textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.cardTitle.copyWith(color: textPrimary),
           ),
           if (subtitle != null) ...[
             const SizedBox(height: 4),
             Text(
               subtitle,
-              style: const TextStyle(color: textSecondary, fontSize: 14),
+              style: AppTextStyles.body.copyWith(color: textSecondary),
             ),
           ],
           const SizedBox(height: 18),
@@ -391,11 +378,7 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
           child: Text(
             label,
             textAlign: TextAlign.left,
-            style: const TextStyle(
-              color: textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.bodyStrong.copyWith(color: textPrimary),
           ),
         ),
         child,
@@ -417,11 +400,7 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
-                color: textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
+              style: AppTextStyles.bodyStrong.copyWith(color: textPrimary),
             ),
           ),
           const Icon(
@@ -473,11 +452,7 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
               value: item,
               child: Text(
                 item,
-                style: const TextStyle(
-                  color: textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: AppTextStyles.fieldLabel.copyWith(color: textPrimary),
               ),
             ),
           )
@@ -501,7 +476,7 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
         backgroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        textStyle: AppTextStyles.bodyStrong,
       ),
     );
   }

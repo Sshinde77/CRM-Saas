@@ -249,10 +249,7 @@ class _CollectionContent extends StatelessWidget {
             children: [
               const Padding(
                 padding: EdgeInsets.fromLTRB(4, 2, 4, 8),
-                child: Text(
-                  'Collection List',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-                ),
+                child: Text('Collection List', style: AppTextStyles.bodyStrong),
               ),
               Row(
                 children: [
@@ -370,10 +367,7 @@ class _CollectionsCard extends StatelessWidget {
                         data.formattedTotalToCollect,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          height: 1.1,
-                          fontWeight: FontWeight.w700,
+                        style: AppTextStyles.importantNumber.copyWith(
                           color: AppColors.deliveryInk,
                         ),
                       ),
@@ -382,11 +376,7 @@ class _CollectionsCard extends StatelessWidget {
                         'Total Amount to Collect',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w400,
-                          color: AppColors.textMuted,
-                        ),
+                        style: AppTextStyles.small,
                       ),
                     ],
                   ),
@@ -446,10 +436,7 @@ class _CollectionMetricTile extends StatelessWidget {
                   info.value,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    height: 1.1,
-                    fontWeight: FontWeight.w700,
+                  style: AppTextStyles.cardTitle.copyWith(
                     color: AppColors.deliveryInk,
                   ),
                 ),
@@ -458,11 +445,7 @@ class _CollectionMetricTile extends StatelessWidget {
                   info.label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w400,
-                    color: AppColors.textMuted,
-                  ),
+                  style: AppTextStyles.small,
                 ),
               ],
             ),
@@ -525,9 +508,8 @@ class _CollectionListTile extends StatelessWidget {
                         delivery.customerName,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
+                        style: AppTextStyles.secondaryStrong.copyWith(
+                          color: AppColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -535,19 +517,15 @@ class _CollectionListTile extends StatelessWidget {
                         delivery.orderNumber,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 10,
-                          color: AppColors.textMuted,
-                        ),
+                        style: AppTextStyles.small,
                       ),
                       const SizedBox(height: 8),
                       Text(
                         delivery.contactName,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
+                        style: AppTextStyles.smallStrong.copyWith(
+                          color: AppColors.textPrimary,
                         ),
                       ),
                     ],
@@ -561,11 +539,7 @@ class _CollectionListTile extends StatelessWidget {
                       hasDue
                           ? delivery.formattedDue
                           : delivery.formattedCollected,
-                      style: TextStyle(
-                        color: accent,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: AppTextStyles.bodyStrong.copyWith(color: accent),
                     ),
                     const SizedBox(height: 8),
                     Row(
@@ -608,10 +582,7 @@ class _CollectionListTile extends StatelessWidget {
                               ),
                               child: const Text(
                                 'Collect',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                ),
+                                style: AppTextStyles.smallStrong,
                               ),
                             ),
                           ),
@@ -659,10 +630,8 @@ class _CollectionTab extends StatelessWidget {
         ),
         child: Text(
           label,
-          style: TextStyle(
+          style: AppTextStyles.secondaryStrong.copyWith(
             color: selected ? color : AppColors.deliveryGreen,
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
           ),
         ),
       ),
@@ -713,20 +682,14 @@ class _CollectionCardDetail extends StatelessWidget {
           label,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w400,
-            color: AppColors.textMuted,
-          ),
+          style: AppTextStyles.small,
         ),
         const SizedBox(height: 2),
         Text(
           value,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
+          style: AppTextStyles.smallStrong.copyWith(
             color: AppColors.deliveryInk,
           ),
         ),
@@ -749,23 +712,12 @@ class _EmptyCollectionList extends StatelessWidget {
             color: AppColors.deliveryBlue,
           ),
           SizedBox(height: 12),
-          Text(
-            'No collections found',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: AppColors.deliveryInk,
-            ),
-          ),
+          Text('No collections found', style: AppTextStyles.cardTitle),
           SizedBox(height: 6),
           Text(
             'Collected and pending customer payments will appear here.',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textMuted,
-            ),
+            style: AppTextStyles.fieldLabel,
           ),
         ],
       ),
@@ -874,20 +826,14 @@ class _ErrorPanel extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm),
           const Text(
             'Collections could not load',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: AppColors.deliveryInk,
-            ),
+            style: AppTextStyles.cardTitle,
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
             message,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 14,
+            style: AppTextStyles.fieldLabel.copyWith(
               color: AppColors.textMuted,
-              fontWeight: FontWeight.w500,
             ),
           ),
           const SizedBox(height: AppSpacing.md),
@@ -1082,7 +1028,10 @@ class _CollectionDelivery {
             'map_longitude',
           ]),
       photoUrl:
-          _readString(json, const ['customer_photo_url', 'profile_photo_url']) ??
+          _readString(json, const [
+            'customer_photo_url',
+            'profile_photo_url',
+          ]) ??
           _readNestedString(json, 'customer', const [
             'profile_photo_url',
             'photo_url',

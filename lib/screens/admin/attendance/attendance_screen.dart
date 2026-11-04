@@ -231,7 +231,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                           const SizedBox(height: 12),
                                           Align(
                                             alignment: Alignment.centerRight,
-                                            child: _buildDownloadButton(),
+                                            child: _buildAttendanceActions(
+                                              compact: true,
+                                            ),
                                           ),
                                         ],
                                       )
@@ -245,7 +247,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                             ),
                                           ),
                                           const SizedBox(width: 12),
-                                          _buildDownloadButton(),
+                                          _buildAttendanceActions(),
                                         ],
                                       ),
                               ),
@@ -279,11 +281,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                   children: [
                                     Text(
                                       'Showing 1 to ${records.isEmpty ? 0 : records.length} of ${records.length} entries',
-                                      style: const TextStyle(
-                                        color: Color(0xFF94A3B8),
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                      style: AppTextStyles.secondaryStrong
+                                          .copyWith(
+                                            color: const Color(0xFF94A3B8),
+                                          ),
                                     ),
                                     const Spacer(),
                                   ],
@@ -572,17 +573,65 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     );
   }
 
+  Widget _buildAttendanceActions({bool compact = false}) {
+    return Wrap(
+      alignment: WrapAlignment.end,
+      spacing: 10,
+      runSpacing: 10,
+      children: [
+        SizedBox(
+          height: 42,
+          child: FilledButton.icon(
+            onPressed: () => _showAttendanceAction('Check In'),
+            icon: const Icon(Icons.login_rounded, size: 18),
+            label: const Text('Check In'),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFF0D1F42),
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(horizontal: compact ? 12 : 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+          ),
+        ),
+        SizedBox(
+          height: 42,
+          child: OutlinedButton.icon(
+            onPressed: () => _showAttendanceAction('Check Out'),
+            icon: const Icon(Icons.logout_rounded, size: 18),
+            label: const Text('Check Out'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: const Color(0xFF0D1F42),
+              backgroundColor: const Color(0xFFF8FAFC),
+              side: const BorderSide(color: Color(0xFFE2E8F0)),
+              padding: EdgeInsets.symmetric(horizontal: compact ? 12 : 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+          ),
+        ),
+        _buildDownloadButton(),
+      ],
+    );
+  }
+
+  void _showAttendanceAction(String action) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text('$action action is coming soon.')));
+  }
+
   Widget _buildTable(List<_AttendanceRecord> records) {
     if (records.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 32),
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 32),
         child: Center(
           child: Text(
             'No attendance records found.',
-            style: TextStyle(
-              color: Color(0xFF94A3B8),
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
+            style: AppTextStyles.bodyStrong.copyWith(
+              color: const Color(0xFF94A3B8),
             ),
           ),
         ),
@@ -639,10 +688,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   backgroundColor: const Color(0xFFF3F4F6),
                   child: Text(
                     record.initials,
-                    style: const TextStyle(
-                      color: Color(0xFF0D1F42),
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
+                    style: AppTextStyles.bodyStrong.copyWith(
+                      color: const Color(0xFF0D1F42),
                     ),
                   ),
                 ),
@@ -653,18 +700,15 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     children: [
                       Text(
                         record.name,
-                        style: const TextStyle(
-                          color: Color(0xFF111827),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
+                        style: AppTextStyles.bodyStrong.copyWith(
+                          color: const Color(0xFF111827),
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         record.userId,
-                        style: const TextStyle(
-                          color: Color(0xFF94A3B8),
-                          fontSize: 14,
+                        style: AppTextStyles.body.copyWith(
+                          color: const Color(0xFF94A3B8),
                         ),
                       ),
                     ],
@@ -677,10 +721,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             width: 180,
             child: Text(
               record.role,
-              style: const TextStyle(
-                color: Color(0xFF334155),
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
+              style: AppTextStyles.bodyStrong.copyWith(
+                color: const Color(0xFF334155),
               ),
             ),
           ),
@@ -691,18 +733,15 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               children: [
                 Text(
                   record.dateLabel,
-                  style: const TextStyle(
-                    color: Color(0xFF111827),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                  style: AppTextStyles.bodyStrong.copyWith(
+                    color: const Color(0xFF111827),
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   record.dayLabel,
-                  style: const TextStyle(
-                    color: Color(0xFF94A3B8),
-                    fontSize: 14,
+                  style: AppTextStyles.body.copyWith(
+                    color: const Color(0xFF94A3B8),
                   ),
                 ),
               ],
@@ -715,10 +754,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               children: [
                 Text(
                   record.checkIn,
-                  style: const TextStyle(
-                    color: Color(0xFF334155),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                  style: AppTextStyles.bodyStrong.copyWith(
+                    color: const Color(0xFF334155),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -733,10 +770,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             width: 140,
             child: Text(
               record.checkOut,
-              style: const TextStyle(
-                color: Color(0xFF334155),
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
+              style: AppTextStyles.bodyStrong.copyWith(
+                color: const Color(0xFF334155),
               ),
             ),
           ),
@@ -744,10 +779,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             width: 120,
             child: Text(
               record.workHours,
-              style: const TextStyle(
-                color: Color(0xFF0D1F42),
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
+              style: AppTextStyles.bodyStrong.copyWith(
+                color: const Color(0xFF0D1F42),
               ),
             ),
           ),
@@ -769,15 +802,13 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
   Widget _buildCompactList(List<_AttendanceRecord> records) {
     if (records.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 28),
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 28),
         child: Center(
           child: Text(
             'No attendance records found.',
-            style: TextStyle(
-              color: Color(0xFF94A3B8),
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
+            style: AppTextStyles.bodyStrong.copyWith(
+              color: const Color(0xFF94A3B8),
             ),
           ),
         ),
@@ -805,10 +836,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                       backgroundColor: const Color(0xFFF3F4F6),
                       child: Text(
                         record.initials,
-                        style: const TextStyle(
-                          color: Color(0xFF0D1F42),
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14,
+                        style: AppTextStyles.bodyStrong.copyWith(
+                          color: const Color(0xFF0D1F42),
                         ),
                       ),
                     ),
@@ -819,17 +848,14 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                         children: [
                           Text(
                             record.name,
-                            style: const TextStyle(
-                              color: Color(0xFF111827),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
+                            style: AppTextStyles.bodyStrong.copyWith(
+                              color: const Color(0xFF111827),
                             ),
                           ),
                           Text(
                             record.userId,
-                            style: const TextStyle(
-                              color: Color(0xFF94A3B8),
-                              fontSize: 14,
+                            style: AppTextStyles.body.copyWith(
+                              color: const Color(0xFF94A3B8),
                             ),
                           ),
                         ],
@@ -957,29 +983,22 @@ class _StatCard extends StatelessWidget {
               children: [
                 Text(
                   card.title,
-                  style: const TextStyle(
-                    color: Color(0xFF64748B),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                  style: AppTextStyles.bodyStrong.copyWith(
+                    color: const Color(0xFF64748B),
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   card.value,
-                  style: const TextStyle(
-                    color: Color(0xFF111827),
-                    fontSize: 16,
-                    height: 1.05,
-                    fontWeight: FontWeight.w700,
+                  style: AppTextStyles.importantNumber.copyWith(
+                    color: const Color(0xFF111827),
                   ),
                 ),
                 const SizedBox(height: 3),
                 Text(
                   card.subtitle,
-                  style: const TextStyle(
-                    color: Color(0xFF94A3B8),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
+                  style: AppTextStyles.fieldLabel.copyWith(
+                    color: const Color(0xFF94A3B8),
                   ),
                 ),
               ],
@@ -1000,10 +1019,8 @@ class _AttendanceHeaderLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       label,
-      style: const TextStyle(
-        color: Color(0xFF94A3B8),
-        fontSize: 14,
-        fontWeight: FontWeight.w700,
+      style: AppTextStyles.smallStrong.copyWith(
+        color: const Color(0xFF94A3B8),
         letterSpacing: 0.9,
       ),
     );
@@ -1034,14 +1051,7 @@ class _StatusPill extends StatelessWidget {
         children: [
           Icon(Icons.circle, size: 7, color: dot),
           const SizedBox(width: 6),
-          Text(
-            label,
-            style: TextStyle(
-              color: fg,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
+          Text(label, style: AppTextStyles.smallStrong.copyWith(color: fg)),
         ],
       ),
     );
@@ -1064,10 +1074,8 @@ class _MiniTag extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: TextStyle(
+        style: AppTextStyles.smallStrong.copyWith(
           color: isGood ? const Color(0xFF0D1F42) : const Color(0xFFB45309),
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
         ),
       ),
     );
@@ -1095,20 +1103,14 @@ class _MiniInfo extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(
-              color: Color(0xFF94A3B8),
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
+            style: AppTextStyles.secondaryStrong.copyWith(
+              color: const Color(0xFF94A3B8),
             ),
           ),
           const SizedBox(height: 4),
           Text(
             value,
-            style: const TextStyle(
-              color: Color(0xFF111827),
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.body.copyWith(color: const Color(0xFF111827)),
           ),
         ],
       ),

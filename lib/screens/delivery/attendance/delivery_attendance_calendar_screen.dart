@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:crm_saas/core/theme/app_text_styles.dart';
+
 import '../../../constants/app_colors.dart';
 import '../../../core/theme/app_sizes.dart';
 import '../../../models/delivery_attendance_record.dart';
@@ -176,20 +178,14 @@ class _CalendarCard extends StatelessWidget {
                   children: [
                     Text(
                       _monthTitle(visibleMonth),
-                      style: const TextStyle(
+                      style: AppTextStyles.sectionHeading.copyWith(
                         color: AppColors.deliveryInk,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 2),
                     const Text(
                       'Tap a date to view attendance details',
-                      style: TextStyle(
-                        color: AppColors.textMuted,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
+                      style: AppTextStyles.smallStrong,
                     ),
                   ],
                 ),
@@ -299,10 +295,8 @@ class _CalendarDayCell extends StatelessWidget {
           ),
           child: Text(
             '${date.day}',
-            style: TextStyle(
+            style: AppTextStyles.secondaryStrong.copyWith(
               color: inMonth ? color : AppColors.textLightMuted,
-              fontSize: 13,
-              fontWeight: selected ? FontWeight.w700 : FontWeight.w700,
             ),
           ),
         ),
@@ -347,10 +341,8 @@ class _MonthlyAttendanceSummary extends StatelessWidget {
             '${_monthTitle(visibleMonth)} Attendance',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: AppTextStyles.bodyStrong.copyWith(
               color: AppColors.deliveryInk,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 8),
@@ -436,24 +428,14 @@ class _MonthlyMetricCard extends StatelessWidget {
                 children: [
                   Text(
                     '$value',
-                    style: TextStyle(
-                      color: color,
-                      fontSize: 14,
-                      height: 1.1,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: AppTextStyles.bodyStrong.copyWith(color: color),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     label,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: color,
-                      fontSize: 11,
-                      height: 1.1,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: AppTextStyles.smallStrong.copyWith(color: color),
                   ),
                 ],
               ),
@@ -503,20 +485,14 @@ class _DayDetailsCard extends StatelessWidget {
                   children: [
                     Text(
                       formatAttendanceDate(selectedDate),
-                      style: const TextStyle(
+                      style: AppTextStyles.cardTitle.copyWith(
                         color: AppColors.deliveryInk,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       attendanceWeekday(selectedDate),
-                      style: const TextStyle(
-                        color: AppColors.textMuted,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
+                      style: AppTextStyles.smallStrong,
                     ),
                   ],
                 ),
@@ -594,24 +570,13 @@ class _DetailRow extends StatelessWidget {
             child: Icon(icon, color: color, size: 18),
           ),
           const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(
-                color: AppColors.textMuted,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
+          Expanded(child: Text(label, style: AppTextStyles.secondaryStrong)),
           Text(
             value,
-            style: TextStyle(
+            style: AppTextStyles.secondaryStrong.copyWith(
               color: value == '--:-- --'
                   ? AppColors.textMuted
                   : AppColors.deliveryInk,
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -637,11 +602,7 @@ class _StatusPill extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: TextStyle(
-          color: color,
-          fontSize: 12,
-          fontWeight: FontWeight.w700,
-        ),
+        style: AppTextStyles.smallStrong.copyWith(color: color),
       ),
     );
   }
@@ -682,11 +643,7 @@ class _WeekdayCell extends StatelessWidget {
       child: Text(
         label,
         textAlign: TextAlign.center,
-        style: const TextStyle(
-          color: AppColors.textMuted,
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-        ),
+        style: AppTextStyles.smallStrong,
       ),
     );
   }
@@ -710,11 +667,7 @@ class _LegendDot extends StatelessWidget {
             child: Text(
               label,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: AppColors.textMuted,
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-              ),
+              style: AppTextStyles.smallStrong,
             ),
           ),
         ],

@@ -199,16 +199,12 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                   children: [
                     const Text(
                       'Deliveries',
-                      style: TextStyle(
-                        color: textPrimary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: AppTextStyles.screenHeading,
                     ),
                     const SizedBox(height: 4),
-                    const Text(
+                    Text(
                       'Track order delivery status and outstanding balances',
-                      style: TextStyle(color: textSecondary, fontSize: 14),
+                      style: AppTextStyles.body.copyWith(color: textSecondary),
                     ),
                     const SizedBox(height: 16),
                     LayoutBuilder(
@@ -281,18 +277,13 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                         children: [
                           const Text(
                             'All Deliveries',
-                            style: TextStyle(
-                              color: textPrimary,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                            ),
+                            style: AppTextStyles.sectionHeading,
                           ),
                           const SizedBox(height: 4),
-                          const Text(
+                          Text(
                             'Search by order, customer, delivery partner, status, scheduled date, or amount due.',
-                            style: TextStyle(
+                            style: AppTextStyles.body.copyWith(
                               color: textSecondary,
-                              fontSize: 14,
                             ),
                           ),
                           const SizedBox(height: 12),
@@ -338,14 +329,13 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                           ),
                           const SizedBox(height: 12),
                           if (deliveries.isEmpty)
-                            const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 40),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 40),
                               child: Center(
                                 child: Text(
                                   'No deliveries match your search.',
-                                  style: TextStyle(
+                                  style: AppTextStyles.body.copyWith(
                                     color: textSecondary,
-                                    fontSize: 14,
                                   ),
                                 ),
                               ),
@@ -412,21 +402,12 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  value,
-                  style: const TextStyle(
-                    color: textPrimary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                Text(value, style: AppTextStyles.importantNumber),
                 const SizedBox(height: 2),
                 Text(
                   label,
-                  style: const TextStyle(
+                  style: AppTextStyles.fieldLabel.copyWith(
                     color: textSecondary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -477,21 +458,11 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      delivery.orderNo,
-                      style: const TextStyle(
-                        color: textPrimary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                    Text(delivery.orderNo, style: AppTextStyles.bodyStrong),
                     const SizedBox(height: 2),
                     Text(
                       delivery.scheduledDate.toIso8601String().split('T').first,
-                      style: const TextStyle(
-                        color: textSecondary,
-                        fontSize: 14,
-                      ),
+                      style: AppTextStyles.body.copyWith(color: textSecondary),
                     ),
                   ],
                 ),
@@ -507,11 +478,7 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                 ),
                 child: Text(
                   delivery.status,
-                  style: TextStyle(
-                    color: statusColor,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: AppTextStyles.bodyStrong.copyWith(color: statusColor),
                 ),
               ),
             ],
@@ -546,21 +513,10 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: textSecondary,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTextStyles.fieldLabel.copyWith(color: textSecondary),
         ),
         const SizedBox(height: 3),
-        Text(
-          value,
-          style: const TextStyle(
-            color: textPrimary,
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
+        Text(value, style: AppTextStyles.body),
       ],
     );
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../constants/app_colors.dart';
+import '../core/theme/app_text_styles.dart';
 import '../providers/api_provider.dart';
 import '../screens/auth/login_screen.dart';
 
@@ -91,10 +92,8 @@ class _SidebarLogoutButtonState extends State<SidebarLogoutButton> {
                 const SizedBox(width: 12),
                 Text(
                   _isSigningOut ? 'Signing out...' : 'Logout',
-                  style: const TextStyle(
+                  style: AppTextStyles.bodyStrong.copyWith(
                     color: AppColors.statusInactiveText,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],

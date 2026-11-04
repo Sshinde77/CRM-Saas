@@ -374,10 +374,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
           vertical: compact ? 8 : 14,
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-        textStyle: TextStyle(
-          fontSize: compact ? 12.5 : 13.5,
-          fontWeight: FontWeight.w700,
-        ),
+        textStyle: AppTextStyles.secondaryStrong,
       ),
     );
   }
@@ -454,15 +451,13 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
           ),
         ),
         if (suppliers.isEmpty)
-          const Padding(
+          Padding(
             padding: EdgeInsets.symmetric(vertical: 56),
             child: Center(
               child: Text(
                 'No suppliers found.',
-                style: TextStyle(
+                style: AppTextStyles.fieldLabel.copyWith(
                   color: Color(0xFF64748B),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
@@ -475,16 +470,12 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
 
   Widget _buildCompactList(List<_SupplierRecord> suppliers) {
     if (suppliers.isEmpty) {
-      return const Padding(
+      return Padding(
         padding: EdgeInsets.symmetric(vertical: 56),
         child: Center(
           child: Text(
             'No suppliers found.',
-            style: TextStyle(
-              color: Color(0xFF64748B),
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
+            style: AppTextStyles.fieldLabel.copyWith(color: Color(0xFF64748B)),
           ),
         ),
       );
@@ -528,10 +519,8 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                     supplier.name.isNotEmpty
                         ? supplier.name[0].toUpperCase()
                         : 'S',
-                    style: const TextStyle(
+                    style: AppTextStyles.cardTitle.copyWith(
                       color: Color(0xFF111827),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
@@ -544,19 +533,15 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                         supplier.name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: AppTextStyles.bodyStrong.copyWith(
                           color: Color(0xFF111827),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
                         ),
                       ),
                       const SizedBox(height: 3),
                       Text(
                         supplier.category,
-                        style: const TextStyle(
+                        style: AppTextStyles.fieldLabel.copyWith(
                           color: Color(0xFF94A3B8),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
@@ -569,10 +554,8 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
             flex: 2,
             child: Text(
               supplier.contact,
-              style: const TextStyle(
+              style: AppTextStyles.fieldLabel.copyWith(
                 color: Color(0xFF111827),
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
               ),
             ),
           ),
@@ -580,10 +563,8 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
             flex: 2,
             child: Text(
               supplier.city,
-              style: const TextStyle(
+              style: AppTextStyles.fieldLabel.copyWith(
                 color: Color(0xFF111827),
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
               ),
             ),
           ),
@@ -591,10 +572,8 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
             flex: 2,
             child: Text(
               supplier.totalPurchases,
-              style: const TextStyle(
+              style: AppTextStyles.bodyStrong.copyWith(
                 color: Color(0xFF111827),
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -602,10 +581,8 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
             flex: 2,
             child: Text(
               supplier.outstandingPayable,
-              style: const TextStyle(
+              style: AppTextStyles.bodyStrong.copyWith(
                 color: Color(0xFF111827),
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -624,10 +601,8 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                 ),
                 child: Text(
                   supplier.status,
-                  style: TextStyle(
+                  style: AppTextStyles.bodyStrong.copyWith(
                     color: supplier.statusColor,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -677,10 +652,8 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                   supplier.name.isNotEmpty
                       ? supplier.name[0].toUpperCase()
                       : 'S',
-                  style: const TextStyle(
+                  style: AppTextStyles.cardTitle.copyWith(
                     color: AppColors.primary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -693,19 +666,15 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                       supplier.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: AppTextStyles.bodyStrong.copyWith(
                         color: Color(0xFF111827),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       supplier.category,
-                      style: const TextStyle(
+                      style: AppTextStyles.fieldLabel.copyWith(
                         color: Color(0xFF94A3B8),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -757,10 +726,8 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
               ),
               child: Text(
                 supplier.status,
-                style: TextStyle(
+                style: AppTextStyles.bodyStrong.copyWith(
                   color: supplier.statusColor,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
@@ -776,10 +743,8 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
       children: [
         Text(
           label.toUpperCase(),
-          style: const TextStyle(
+          style: AppTextStyles.bodyStrong.copyWith(
             color: Color(0xFF94A3B8),
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
             letterSpacing: 0.8,
           ),
         ),
@@ -788,11 +753,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
           value,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: Color(0xFF111827),
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-          ),
+          style: AppTextStyles.bodyStrong.copyWith(color: Color(0xFF111827)),
         ),
       ],
     );
@@ -822,12 +783,10 @@ class _TabChip extends StatelessWidget {
           children: [
             Text(
               label,
-              style: TextStyle(
+              style: AppTextStyles.bodyStrong.copyWith(
                 color: selected
                     ? const Color(0xFF0D1F42)
                     : const Color(0xFF64748B),
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 7),
@@ -856,10 +815,8 @@ class _TableHead extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       label,
-      style: const TextStyle(
+      style: AppTextStyles.bodyStrong.copyWith(
         color: Color(0xFF94A3B8),
-        fontSize: 14,
-        fontWeight: FontWeight.w700,
         letterSpacing: 1.2,
       ),
     );
