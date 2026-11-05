@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../../../widgets/admin/app_drawer.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
@@ -16,10 +16,10 @@ import 'admin_orders_screen.dart';
 
 /// The shared order form used by Admin and Sales Manager.
 /// It uses the same preview, stock checks, and create request as Delivery.
-class NewAdminOrderScreen extends StatelessWidget {
+class CreateOrderScreen extends StatelessWidget {
   final bool useSalesManagerShell;
 
-  const NewAdminOrderScreen({super.key, this.useSalesManagerShell = false});
+  const CreateOrderScreen({super.key, this.useSalesManagerShell = false});
 
   void _handleSalesManagerSelection(BuildContext context, String action) {
     Navigator.of(context).pop(); // Close the sidebar.
@@ -57,3 +57,4 @@ class NewAdminOrderScreen extends StatelessWidget {
         : const AppDrawer(activeItem: 'Orders'),
   );
 }
+

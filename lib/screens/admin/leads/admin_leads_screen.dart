@@ -1,4 +1,4 @@
-import '../../../models/list_pagination.dart';
+﻿import '../../../models/list_pagination.dart';
 import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
 import '../../../widgets/app_skeleton.dart';
@@ -28,7 +28,7 @@ import '../../sales_manager/stock/sales_manager_stock_screen.dart';
 import '../../sales_manager/visits/sales_manager_visits_screen.dart';
 import '../../delivery/customers/delivery_customers_screen.dart';
 import '../orders/admin_orders_screen.dart';
-import '../orders/new_admin_order_screen.dart';
+import '../orders/create_order_screen.dart';
 import '../quotations/admin_quotations_screen.dart';
 
 class AdminLeadsScreen extends StatefulWidget {
@@ -300,7 +300,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
     if (action == 'Create Order') {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => const NewAdminOrderScreen(useSalesManagerShell: true),
+          builder: (_) => const CreateOrderScreen(useSalesManagerShell: true),
         ),
       );
       return;
@@ -652,6 +652,7 @@ class _AdminLeadsScreenState extends State<AdminLeadsScreen> {
             ? const SalesManagerBottomNavigation(currentIndex: 1)
             : null,
         body: SafeArea(
+          bottom: false,
           child: Column(
             children: [
               widget.useSalesManagerShell

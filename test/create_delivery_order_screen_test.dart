@@ -1,11 +1,11 @@
-import 'package:crm_saas/models/list_pagination.dart';
+﻿import 'package:crm_saas/models/list_pagination.dart';
 import 'dart:convert';
 
 import 'package:crm_saas/models/auth_models.dart';
 import 'package:crm_saas/models/customer_model.dart';
 import 'package:crm_saas/models/app_user.dart';
 import 'package:crm_saas/providers/api_provider.dart';
-import 'package:crm_saas/screens/admin/orders/new_admin_order_screen.dart';
+import 'package:crm_saas/screens/admin/orders/create_order_screen.dart';
 import 'package:crm_saas/screens/delivery/orders/create_delivery_order_screen.dart';
 import 'package:crm_saas/services/api_service.dart';
 import 'package:crm_saas/theme/app_theme.dart';
@@ -367,7 +367,7 @@ void main() {
           ApiProviderScope(
             notifier: provider,
             child: MaterialApp(
-              home: NewAdminOrderScreen(useSalesManagerShell: salesManager),
+              home: CreateOrderScreen(useSalesManagerShell: salesManager),
             ),
           ),
         );
@@ -433,7 +433,7 @@ void main() {
       await tester.pumpWidget(
         ApiProviderScope(
           notifier: provider,
-          child: const MaterialApp(home: NewAdminOrderScreen()),
+          child: const MaterialApp(home: CreateOrderScreen()),
         ),
       );
       await tester.pumpAndSettle();
@@ -489,7 +489,7 @@ void main() {
           ApiProviderScope(
             notifier: provider,
             child: MaterialApp(
-              home: NewAdminOrderScreen(useSalesManagerShell: salesManager),
+              home: CreateOrderScreen(useSalesManagerShell: salesManager),
             ),
           ),
         );

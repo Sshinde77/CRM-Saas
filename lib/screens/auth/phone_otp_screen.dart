@@ -1,11 +1,11 @@
-import 'dart:async';
+﻿import 'dart:async';
 
 import 'package:flutter/material.dart';
 
 import '../../constants/app_colors.dart';
 import '../../providers/api_provider.dart';
 import '../../services/api_service.dart';
-import '../role_home_screen.dart';
+import '../shared/role_home_screen.dart';
 
 class PhoneOtpScreen extends StatefulWidget {
   final String phone;

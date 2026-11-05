@@ -365,12 +365,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
         TimeoutException() => 'The request timed out.',
         _ => 'Could not load. Please retry.',
       };
-      final reason =
-          name == 'Warehouses' &&
-              error is ApiException &&
-              error.statusCode != null
-          ? 'HTTP ${error.statusCode}: $detail'
-          : detail;
+      final reason = detail;
       if (mounted) {
         setState(() => _loadErrors[name] = reason);
       }

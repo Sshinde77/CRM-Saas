@@ -1,4 +1,4 @@
-import '../../../models/list_pagination.dart';
+﻿import '../../../models/list_pagination.dart';
 import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
 import '../../../widgets/app_skeleton.dart';
@@ -17,7 +17,7 @@ import '../../../routes/app_router.dart';
 import '../../../widgets/customer_avatar.dart';
 import '../../../widgets/delivery/delivery_partner_sidebar.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
-import '../../payment_collection_screen.dart';
+import '../../shared/payment_collection_screen.dart';
 
 class DeliveryCollectionListScreen extends StatefulWidget {
   const DeliveryCollectionListScreen({super.key});

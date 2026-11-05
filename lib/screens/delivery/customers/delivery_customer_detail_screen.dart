@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../../widgets/app_skeleton.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -11,7 +11,7 @@ import '../../../widgets/customer_avatar.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
 import '../../shared/map_location_view_screen.dart';
 import '../../admin/customers/add_customer_screen.dart';
-import '../../payment_collection_screen.dart';
+import '../../shared/payment_collection_screen.dart';
 import '../orders/create_delivery_order_screen.dart';
 import '../orders/delivery_customer_order_detail_screen.dart';
 import '../../sales_manager/visits/sales_manager_visits_screen.dart';

@@ -1,21 +1,23 @@
-import 'package:crm_saas/core/theme/app_text_styles.dart';
+﻿import 'package:crm_saas/core/theme/app_text_styles.dart';
 import 'package:crm_saas/theme/app_colors_ext.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:provider/provider.dart';
-import '../theme/theme_controller.dart';
+import '../../theme/theme_controller.dart';
 
-class ThemeSettingsPage extends StatelessWidget {
-  const ThemeSettingsPage({super.key});
+class ThemeSettingsScreen extends StatelessWidget {
+  const ThemeSettingsScreen({super.key});
   @override
   Widget build(BuildContext context) {
     final controller = context.watch<ThemeController>();
     final c = context.colors;
     return Scaffold(
       appBar: AppBar(title: const Text('Appearance')),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
+      body: SafeArea(
+        top: false,
+        child: ListView(
+          padding: const EdgeInsets.all(20),
         children: [
           SwitchListTile(
             title: const Text('Dark mode'),
@@ -134,18 +136,19 @@ class ThemeSettingsPage extends StatelessWidget {
           if (kDebugMode)
             TextButton(
               onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const ThemeDebugPage()),
+                MaterialPageRoute<void>(builder: (_) => const ThemeDebugScreen()),
               ),
               child: const Text('Theme Debug'),
             ),
         ],
+        ),
       ),
     );
   }
 }
 
-class ThemeDebugPage extends StatelessWidget {
-  const ThemeDebugPage({super.key});
+class ThemeDebugScreen extends StatelessWidget {
+  const ThemeDebugScreen({super.key});
   static double contrast(Color a, Color b) {
     final x = a.computeLuminance(), y = b.computeLuminance();
     return ((x > y ? x : y) + .05) / ((x > y ? y : x) + .05);
@@ -157,25 +160,28 @@ class ThemeDebugPage extends StatelessWidget {
     final c = context.colors;
     return Scaffold(
       appBar: AppBar(title: const Text('Theme Debug')),
-      body: ListView(
-        children: c.roles.entries
-            .map(
-              (entry) => ListTile(
-                leading: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: entry.value,
-                    border: Border.all(color: c.outline),
+      body: SafeArea(
+        top: false,
+        child: ListView(
+          children: c.roles.entries
+              .map(
+                (entry) => ListTile(
+                  leading: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: entry.value,
+                      border: Border.all(color: c.outline),
+                    ),
+                  ),
+                  title: Text(entry.key),
+                  subtitle: Text(
+                    '#${entry.value.toARGB32().toRadixString(16).toUpperCase()} · text contrast ${contrast(c.text, Color.alphaBlend(entry.value, c.surface)).toStringAsFixed(2)}:1',
                   ),
                 ),
-                title: Text(entry.key),
-                subtitle: Text(
-                  '#${entry.value.toARGB32().toRadixString(16).toUpperCase()} � text contrast ${contrast(c.text, Color.alphaBlend(entry.value, c.surface)).toStringAsFixed(2)}:1',
-                ),
-              ),
-            )
-            .toList(),
+              )
+              .toList(),
+        ),
       ),
     );
   }

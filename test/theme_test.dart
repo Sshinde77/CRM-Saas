@@ -1,12 +1,12 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:crm_saas/theme/app_colors_ext.dart';
 import 'package:crm_saas/theme/app_theme.dart';
 import 'package:crm_saas/theme/theme_controller.dart';
-import 'package:crm_saas/widgets/soft_action_button.dart';
-import 'package:crm_saas/screens/theme_settings_page.dart';
+import 'package:crm_saas/widgets/admin/soft_action_button.dart';
+import 'package:crm_saas/screens/shared/theme_settings_screen.dart';
 
 double contrast(Color a, Color b) {
   final x = a.computeLuminance(), y = b.computeLuminance();
@@ -139,7 +139,7 @@ void main() {
           child: Consumer<ThemeController>(
             builder: (_, controller, _) => MaterialApp(
               theme: controller.theme,
-              home: const ThemeSettingsPage(),
+              home: const ThemeSettingsScreen(),
             ),
           ),
         ),

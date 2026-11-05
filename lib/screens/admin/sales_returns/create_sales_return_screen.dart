@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
 
@@ -7,14 +7,14 @@ import '../../../widgets/admin/app_drawer.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/app_calendar_date_picker.dart';
 
-class NewSalesReturnScreen extends StatefulWidget {
-  const NewSalesReturnScreen({super.key});
+class CreateSalesReturnScreen extends StatefulWidget {
+  const CreateSalesReturnScreen({super.key});
 
   @override
-  State<NewSalesReturnScreen> createState() => _NewSalesReturnScreenState();
+  State<CreateSalesReturnScreen> createState() => _CreateSalesReturnScreenState();
 }
 
-class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
+class _CreateSalesReturnScreenState extends State<CreateSalesReturnScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _invoiceController = TextEditingController();
   final TextEditingController _reasonController = TextEditingController();
@@ -503,3 +503,4 @@ class _NewSalesReturnScreenState extends State<NewSalesReturnScreen> {
     );
   }
 }
+

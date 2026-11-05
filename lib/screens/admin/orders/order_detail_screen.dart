@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../../widgets/app_skeleton.dart';
 
 import '../../../constants/app_colors.dart';
@@ -20,7 +20,7 @@ import '../../delivery/customers/delivery_customers_screen.dart';
 import '../leads/admin_leads_screen.dart';
 import '../quotations/admin_quotations_screen.dart';
 import 'admin_orders_screen.dart';
-import 'new_admin_order_screen.dart';
+import 'create_order_screen.dart';
 import 'package:crm_saas/core/theme/app_text_styles.dart';
 
 class OrderDetailScreen extends StatefulWidget {
@@ -177,7 +177,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     if (action == 'Create Order') {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => const NewAdminOrderScreen(useSalesManagerShell: true),
+          builder: (_) => const CreateOrderScreen(useSalesManagerShell: true),
         ),
       );
       return;

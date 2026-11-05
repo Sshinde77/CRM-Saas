@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../../widgets/app_skeleton.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
@@ -24,7 +24,7 @@ import '../../sales_manager/visits/sales_manager_visits_screen.dart';
 import '../../delivery/customers/delivery_customers_screen.dart';
 import '../leads/admin_leads_screen.dart';
 import '../orders/admin_orders_screen.dart';
-import '../orders/new_admin_order_screen.dart';
+import '../orders/create_order_screen.dart';
 import 'admin_quotations_screen.dart';
 
 class NewQuotationScreen extends StatefulWidget {
@@ -351,7 +351,7 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
     if (action == 'Create Order') {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => const NewAdminOrderScreen(useSalesManagerShell: true),
+          builder: (_) => const CreateOrderScreen(useSalesManagerShell: true),
         ),
       );
       return;
@@ -613,7 +613,10 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
               onTap: _showCustomerPicker,
               trailing: IconButton(
                 onPressed: _quickAddCustomer,
-                icon: const Icon(Icons.add_rounded, color: AppColors.deliveryGreen),
+                icon: const Icon(
+                  Icons.add_rounded,
+                  color: AppColors.deliveryGreen,
+                ),
               ),
             )
           else
@@ -740,8 +743,9 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
   }
 
   Widget _buildProductCard(_ProductOption product) {
-    final existingIndex =
-        _items.indexWhere((item) => item.product.id == product.id);
+    final existingIndex = _items.indexWhere(
+      (item) => item.product.id == product.id,
+    );
     final quantity = existingIndex >= 0 ? _items[existingIndex].quantity : 0.0;
     final hasQty = quantity > 0;
 
@@ -799,9 +803,7 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
             children: [
               _QtyButton(
                 icon: Icons.remove_rounded,
-                onTap: hasQty
-                    ? () => _changeQuantity(existingIndex, -1)
-                    : null,
+                onTap: hasQty ? () => _changeQuantity(existingIndex, -1) : null,
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 10),

@@ -330,14 +330,43 @@ class VoiceFieldExtractor {
 
     // Remove common filler / discourse words (Hinglish + Indian English).
     const fillers = [
-      'um', 'uh', 'umm', 'hmm', 'arre', 'arey', 'yaar', 'like',
-      'basically', 'actually', 'please', 'pls',
-      'ji', 'haan', 'ha', 'theek', 'theek hai', 'achha', 'accha',
-      'okay', 'ok', 'right', 'so', 'then', 'matlab', 'matalab',
-      'samjhe', 'bas', 'sunno', 'bolo', 'batao',
+      'um',
+      'uh',
+      'umm',
+      'hmm',
+      'arre',
+      'arey',
+      'yaar',
+      'like',
+      'basically',
+      'actually',
+      'please',
+      'pls',
+      'ji',
+      'haan',
+      'ha',
+      'theek',
+      'theek hai',
+      'achha',
+      'accha',
+      'okay',
+      'ok',
+      'right',
+      'so',
+      'then',
+      'matlab',
+      'matalab',
+      'samjhe',
+      'bas',
+      'sunno',
+      'bolo',
+      'batao',
     ];
     for (final filler in fillers) {
-      text = text.replaceAll(RegExp(r'\b' + RegExp.escape(filler) + r'\b'), ' ');
+      text = text.replaceAll(
+        RegExp(r'\b' + RegExp.escape(filler) + r'\b'),
+        ' ',
+      );
     }
 
     text = text.replaceAll(RegExp(r'\s+'), ' ').trim();
@@ -390,9 +419,7 @@ class VoiceFieldExtractor {
   /// Remove trailing content that starts with a field-separator word when no
   /// field keyword was detected there (keeps values clean).
   String _trimAfterFieldSeparator(String value) {
-    return value
-        .replaceFirst(RegExp(r'\s+(aur|and)\s+\S+.*$'), '')
-        .trim();
+    return value.replaceFirst(RegExp(r'\s+(aur|and)\s+\S+.*$'), '').trim();
   }
 
   // ── Field-value cleaning ─────────────────────────────────────────────────
@@ -434,8 +461,8 @@ class VoiceFieldExtractor {
   String? _cleanGstin(String value) {
     final gstin = value.toUpperCase().replaceAll(RegExp(r'[^A-Z0-9]'), '');
     return RegExp(
-              r'^\d{2}[A-Z]{5}\d{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$',
-            ).hasMatch(gstin)
+          r'^\d{2}[A-Z]{5}\d{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$',
+        ).hasMatch(gstin)
         ? gstin
         : null;
   }

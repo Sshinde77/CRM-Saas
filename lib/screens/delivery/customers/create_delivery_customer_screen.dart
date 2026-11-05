@@ -112,7 +112,6 @@ class _CreateDeliveryCustomerScreenState
         _contact.text.trim().isNotEmpty &&
         phoneDigits.length >= 10 &&
         phoneDigits.length <= 15 &&
-        _validGstin(_gst.text) &&
         _type != null &&
         _address.text.trim().isNotEmpty &&
         _city.text.trim().isNotEmpty &&

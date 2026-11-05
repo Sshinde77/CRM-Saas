@@ -1,4 +1,4 @@
-import '../../../models/list_pagination.dart';
+﻿import '../../../models/list_pagination.dart';
 import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
 
@@ -11,7 +11,7 @@ import '../../../widgets/customer_avatar.dart';
 import '../../delivery/customers/delivery_customers_screen.dart';
 import '../../admin/leads/admin_leads_screen.dart';
 import '../../admin/orders/admin_orders_screen.dart';
-import '../../admin/orders/new_admin_order_screen.dart';
+import '../../admin/orders/create_order_screen.dart';
 import '../../admin/quotations/admin_quotations_screen.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_bottom_navigation.dart';
@@ -144,7 +144,7 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
     if (action == 'Create Order') {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => const NewAdminOrderScreen(useSalesManagerShell: true),
+          builder: (_) => const CreateOrderScreen(useSalesManagerShell: true),
         ),
       );
       return;
@@ -250,6 +250,7 @@ class _SalesManagerVisitsScreenState extends State<SalesManagerVisitsScreen> {
       ),
       bottomNavigationBar: const SalesManagerBottomNavigation(currentIndex: 4),
       body: SafeArea(
+        bottom: false,
         child: Column(
           children: [
             const SalesManagerTopBar(title: 'Visits'),

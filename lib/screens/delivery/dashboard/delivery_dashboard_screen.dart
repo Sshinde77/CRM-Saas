@@ -136,7 +136,8 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
       await ApiProviderScope.of(context).checkInAttendance('office_check_in');
     } catch (e) {
       final msg = e.toString().toLowerCase();
-      final alreadyCheckedIn = msg.contains('already') ||
+      final alreadyCheckedIn =
+          msg.contains('already') ||
           msg.contains('409') ||
           msg.contains('exists') ||
           msg.contains('duplicate');
@@ -160,9 +161,7 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
     setState(() => _isCheckingIn = false);
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(
-        const SnackBar(content: Text('Checked in successfully.')),
-      );
+      ..showSnackBar(const SnackBar(content: Text('Checked in successfully.')));
   }
 
   @override

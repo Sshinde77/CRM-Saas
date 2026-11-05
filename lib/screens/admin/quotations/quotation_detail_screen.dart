@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../../widgets/app_skeleton.dart';
 
 import '../../../constants/app_colors.dart';
@@ -19,7 +19,7 @@ import '../../sales_manager/visits/sales_manager_visits_screen.dart';
 import '../../delivery/customers/delivery_customers_screen.dart';
 import '../leads/admin_leads_screen.dart';
 import '../orders/admin_orders_screen.dart';
-import '../orders/new_admin_order_screen.dart';
+import '../orders/create_order_screen.dart';
 import '../orders/order_detail_screen.dart';
 import 'admin_quotations_screen.dart';
 import 'package:crm_saas/core/theme/app_text_styles.dart';
@@ -236,7 +236,7 @@ class _QuotationDetailScreenState extends State<QuotationDetailScreen> {
     if (action == 'Create Order') {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => const NewAdminOrderScreen(useSalesManagerShell: true),
+          builder: (_) => const CreateOrderScreen(useSalesManagerShell: true),
         ),
       );
       return;

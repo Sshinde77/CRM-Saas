@@ -1,19 +1,19 @@
-import 'package:flutter/material.dart';
-import '../widgets/app_skeleton.dart';
+﻿import 'package:flutter/material.dart';
+import '../../widgets/app_skeleton.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import '../constants/app_colors.dart';
-import '../models/customer_model.dart';
-import '../providers/api_provider.dart';
-import '../widgets/customer_avatar.dart';
-import '../widgets/delivery/delivery_top_bar.dart';
-import '../widgets/delivery/customer_search_dialog.dart';
-import 'delivery/customers/create_delivery_customer_screen.dart';
-import 'shared/map_location_view_screen.dart';
+import '../../constants/app_colors.dart';
+import '../../models/customer_model.dart';
+import '../../providers/api_provider.dart';
+import '../../widgets/customer_avatar.dart';
+import '../../widgets/delivery/delivery_top_bar.dart';
+import '../../widgets/delivery/customer_search_dialog.dart';
+import '../delivery/customers/create_delivery_customer_screen.dart';
+import 'map_location_view_screen.dart';
 
 class PaymentCollectionScreen extends StatefulWidget {
   const PaymentCollectionScreen({super.key, this.initialCustomerId});

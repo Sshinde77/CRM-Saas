@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../widgets/app_skeleton.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/services.dart';
@@ -20,7 +20,7 @@ import '../delivery/customers/delivery_customers_screen.dart';
 import '../admin/customers/customer_details_screen.dart';
 import '../admin/leads/admin_leads_screen.dart';
 import '../admin/orders/admin_orders_screen.dart';
-import '../admin/orders/new_admin_order_screen.dart';
+import '../admin/orders/create_order_screen.dart';
 import '../admin/quotations/admin_quotations_screen.dart';
 import '../sales_manager/leads/add_lead_screen.dart';
 import '../delivery/attendance/delivery_attendance_screen.dart';
@@ -138,7 +138,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
     if (action == 'Create Order') {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => const NewAdminOrderScreen(useSalesManagerShell: true),
+          builder: (_) => const CreateOrderScreen(useSalesManagerShell: true),
         ),
       );
       return;
@@ -836,6 +836,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
               ? null
               : _buildBottomActionBar(lead),
           body: SafeArea(
+            bottom: false,
             child: Column(
               children: [
                 widget.useSalesManagerShell

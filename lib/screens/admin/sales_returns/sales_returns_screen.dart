@@ -1,4 +1,4 @@
-import '../../../models/list_pagination.dart';
+﻿import '../../../models/list_pagination.dart';
 import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
 
@@ -8,7 +8,7 @@ import '../../../constants/app_colors.dart';
 import '../../../widgets/admin/app_drawer.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
-import 'new_sales_return_screen.dart';
+import 'create_sales_return_screen.dart';
 
 class SalesReturnsScreen extends StatefulWidget {
   const SalesReturnsScreen({super.key});
@@ -143,7 +143,7 @@ class _SalesReturnsScreenState extends State<SalesReturnsScreen> {
   Future<void> _handleNewReturn() async {
     await Navigator.of(
       context,
-    ).push(MaterialPageRoute(builder: (_) => const NewSalesReturnScreen()));
+    ).push(MaterialPageRoute(builder: (_) => const CreateSalesReturnScreen()));
   }
 
   @override

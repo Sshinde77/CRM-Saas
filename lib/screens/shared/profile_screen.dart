@@ -143,8 +143,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         'name': meUser.rawData['name'] ?? meUser.name,
         'email': meUser.rawData['email'] ?? meUser.email,
         'role': meUser.rawData['role'] ?? meUser.role,
-        'profile_photo':
-            meUser.rawData['profile_photo'] ?? meUser.profilePhoto,
+        'profile_photo': meUser.rawData['profile_photo'] ?? meUser.profilePhoto,
       };
       final user = AppUser.fromJson(meUserData);
       Map<String, dynamic>? organization;
@@ -1153,9 +1152,7 @@ class _DropdownField extends StatelessWidget {
         DropdownButtonFormField<String>(
           initialValue: value,
           isExpanded: true,
-          style: AppTextStyles.body.copyWith(
-            color: AppColors.deliveryInk,
-          ),
+          style: AppTextStyles.body.copyWith(color: AppColors.deliveryInk),
           decoration: InputDecoration(
             filled: true,
             fillColor: AppColors.deliveryCardSoft,
@@ -1303,8 +1300,7 @@ class _DetailGrid extends StatelessWidget {
     return Column(
       children: [
         for (var i = 0; i < rows.length; i++) ...[
-          if (i != 0)
-            const Divider(height: 1, color: AppColors.border),
+          if (i != 0) const Divider(height: 1, color: AppColors.border),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 11),
             child: Row(

@@ -464,9 +464,7 @@ class _PartnerFilter extends StatelessWidget {
           value: value,
           isExpanded: true,
           icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
-          style: AppTextStyles.body.copyWith(
-            color: AppColors.deliveryInk,
-          ),
+          style: AppTextStyles.body.copyWith(color: AppColors.deliveryInk),
           items: partners
               .map(
                 (partner) => DropdownMenuItem(

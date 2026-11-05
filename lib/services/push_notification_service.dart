@@ -14,7 +14,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Notification payloads are displayed by Android/iOS automatically while
   // the app is backgrounded. Keep this handler for data-only messages and
   // future background processing.
-  debugPrint('[FCM] background message: ${message.messageId}');
+  if (kDebugMode) debugPrint('[FCM] background message: ${message.messageId}');
 }
 
 class PushNotificationService {
@@ -55,7 +55,7 @@ class PushNotificationService {
         iOS: DarwinInitializationSettings(),
       ),
       onDidReceiveNotificationResponse: (response) {
-        debugPrint('[FCM] notification tapped: ${response.payload}');
+        if (kDebugMode) debugPrint('[FCM] notification tapped: ${response.payload}');
       },
     );
 
@@ -93,15 +93,17 @@ class PushNotificationService {
             defaultTargetPlatform != TargetPlatform.iOS)) {
       return;
     }
-    debugPrint('[FCM] signed-in registration started');
+    if (kDebugMode) debugPrint('[FCM] signed-in registration started');
     await initialize();
     final authorizationStatus = await requestPermissionBeforeLogin();
     if (authorizationStatus == AuthorizationStatus.denied) {
       // Login must still succeed. Android can often issue an FCM token even
       // when alerts are denied, so continue and attempt device registration.
-      debugPrint(
-        '[FCM] notification permission denied; continuing token registration',
-      );
+      if (kDebugMode) {
+        debugPrint(
+          '[FCM] notification permission denied; continuing token registration',
+        );
+      }
     }
 
     // iOS may need a short delay before APNs returns its token.
@@ -113,11 +115,11 @@ class PushNotificationService {
     }
 
     final token = await _messaging.getToken();
-    debugPrint('[FCM] getToken result: ${token ?? '<null>'}');
+    if (kDebugMode) debugPrint('[FCM] getToken result: ${token != null ? '<token received>' : '<null>'}');
     if (token != null && token.trim().isNotEmpty) {
       await _registerToken(token);
     } else {
-      debugPrint('[FCM] no FCM token returned; registration API not called');
+      if (kDebugMode) debugPrint('[FCM] no FCM token returned; registration API not called');
     }
   }
 

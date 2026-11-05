@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:csc_picker/csc_picker.dart';
@@ -13,6 +12,7 @@ import '../../../constants/app_colors.dart';
 import '../../../models/app_user.dart';
 import '../../../models/customer_model.dart';
 import '../../../providers/api_provider.dart';
+import '../../../services/api_service.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/app_calendar_date_picker.dart';
 import '../../delivery/customers/customer_location_picker_screen.dart';
@@ -572,7 +572,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     try {
       return await _apiProvider.service.fetchAssignableUsers();
     } catch (error) {
-      if (error.toString().contains('403')) {
+      if (error is ApiException && error.statusCode == 403) {
         return _currentUserAsAssignableUser();
       }
       rethrow;
@@ -809,13 +809,9 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           purchaseAgreementId: _firstDocumentFileId('purchase_agreement'),
           otherDocumentIds: _otherDocumentFileIds(),
         );
-        debugPrint('[CUSTOMER UPDATE REQUEST] ${jsonEncode(request.toJson())}');
         final updated = await _apiProvider.updateCustomer(
           customerId: customerId,
           request: request,
-        );
-        debugPrint(
-          '[CUSTOMER UPDATE RESPONSE] ${jsonEncode(updated.toJson())}',
         );
 
         if (!mounted) return;
@@ -849,21 +845,12 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           purchaseAgreementId: _firstDocumentFileId('purchase_agreement'),
           otherDocumentIds: _otherDocumentFileIds(),
         );
-        debugPrint('[CUSTOMER CREATE REQUEST] ${jsonEncode(request.toJson())}');
         final created = await _apiProvider.createCustomer(request: request);
-        debugPrint(
-          '[CUSTOMER CREATE RESPONSE] ${jsonEncode(created.toJson())}',
-        );
 
         if (!mounted) return;
         Navigator.of(context).pop(created);
       }
     } catch (error) {
-      debugPrint(
-        widget.isEditMode
-            ? '[CUSTOMER UPDATE ERROR] $error'
-            : '[CUSTOMER CREATE ERROR] $error',
-      );
       _showMessage(error.toString());
     } finally {
       if (mounted) {
@@ -1142,9 +1129,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: AppColors.border.withValues(alpha: 0.8),
-        ),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.8)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.06),
@@ -1207,9 +1192,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                               boxShadow: isActive
                                   ? [
                                       BoxShadow(
-                                        color: AppColors.deliveryGreen.withValues(
-                                          alpha: 0.18,
-                                        ),
+                                        color: AppColors.deliveryGreen
+                                            .withValues(alpha: 0.18),
                                         blurRadius: 10,
                                         offset: const Offset(0, 4),
                                       ),
@@ -1276,9 +1260,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: AppColors.border.withValues(alpha: 0.8),
-        ),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.8)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.06),
@@ -1504,9 +1486,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: AppColors.border.withValues(alpha: 0.8),
-        ),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.8)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.06),

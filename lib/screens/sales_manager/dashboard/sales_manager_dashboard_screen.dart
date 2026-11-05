@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+﻿import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
@@ -15,7 +15,7 @@ import '../../../routes/app_router.dart';
 import '../../delivery/customers/delivery_customers_screen.dart';
 import '../../admin/leads/admin_leads_screen.dart';
 import '../../admin/orders/admin_orders_screen.dart';
-import '../../admin/orders/new_admin_order_screen.dart';
+import '../../admin/orders/create_order_screen.dart';
 import '../../admin/quotations/admin_quotations_screen.dart';
 import '../../admin/quotations/create_quotation_screen.dart';
 import '../../delivery/attendance/delivery_attendance_screen.dart';
@@ -138,7 +138,8 @@ class _SalesManagerDashboardScreenState
       await ApiProviderScope.of(context).checkInAttendance('office_check_in');
     } catch (e) {
       final msg = e.toString().toLowerCase();
-      final alreadyCheckedIn = msg.contains('already') ||
+      final alreadyCheckedIn =
+          msg.contains('already') ||
           msg.contains('409') ||
           msg.contains('exists') ||
           msg.contains('duplicate');
@@ -161,9 +162,7 @@ class _SalesManagerDashboardScreenState
     setState(() => _isCheckingIn = false);
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(
-        const SnackBar(content: Text('Checked in successfully.')),
-      );
+      ..showSnackBar(const SnackBar(content: Text('Checked in successfully.')));
   }
 
   Future<void> _refresh() async {
@@ -246,7 +245,9 @@ class _SalesManagerDashboardScreenState
           future: _future,
           builder: (context, snapshot) {
             final data = snapshot.data;
-            if (data == null || data.isCheckedIn) return const SizedBox.shrink();
+            if (data == null || data.isCheckedIn) {
+              return const SizedBox.shrink();
+            }
             return FloatingActionButton.extended(
               heroTag: 'sales-dashboard-check-in',
               onPressed: _isCheckingIn ? null : _checkInNow,
@@ -265,8 +266,9 @@ class _SalesManagerDashboardScreenState
                   : const Icon(Icons.login_rounded, size: 20),
               label: Text(
                 _isCheckingIn ? 'Checking in' : 'Check In',
-                style: AppTextStyles.bodyStrong
-                    .copyWith(color: AppColors.surface),
+                style: AppTextStyles.bodyStrong.copyWith(
+                  color: AppColors.surface,
+                ),
               ),
             );
           },
@@ -387,7 +389,7 @@ class _SalesManagerDashboardScreenState
   Future<void> _openCreateOrder() async {
     final created = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
-        builder: (_) => const NewAdminOrderScreen(useSalesManagerShell: true),
+        builder: (_) => const CreateOrderScreen(useSalesManagerShell: true),
       ),
     );
     if (created == true && mounted) {
@@ -1027,9 +1029,7 @@ class _PrioritiesCard extends StatelessWidget {
     return _Panel(
       child: Column(
         children: [
-          _SectionTitle(
-            title: "Today's Priorities",
-          ),
+          _SectionTitle(title: "Today's Priorities"),
           const SizedBox(height: 6),
           for (final row in rows) _PriorityRow(row: row),
         ],
@@ -1437,11 +1437,7 @@ class _SectionTitle extends StatelessWidget {
   final String? action;
   final VoidCallback? onAction;
 
-  const _SectionTitle({
-    required this.title,
-    this.action,
-    this.onAction,
-  });
+  const _SectionTitle({required this.title, this.action, this.onAction});
 
   @override
   Widget build(BuildContext context) {

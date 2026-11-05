@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
 
@@ -6,26 +6,26 @@ import '../../../constants/app_colors.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
 
-class NewRoleResult {
+class CreateRoleResult {
   final String name;
   final int modulesCount;
   final String accessLevel;
 
-  const NewRoleResult({
+  const CreateRoleResult({
     required this.name,
     required this.modulesCount,
     required this.accessLevel,
   });
 }
 
-class NewRoleScreen extends StatefulWidget {
-  const NewRoleScreen({super.key});
+class CreateRoleScreen extends StatefulWidget {
+  const CreateRoleScreen({super.key});
 
   @override
-  State<NewRoleScreen> createState() => _NewRoleScreenState();
+  State<CreateRoleScreen> createState() => _CreateRoleScreenState();
 }
 
-class _NewRoleScreenState extends State<NewRoleScreen> {
+class _CreateRoleScreenState extends State<CreateRoleScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _roleNameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
@@ -142,7 +142,7 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
     }
 
     Navigator.of(context).pop(
-      NewRoleResult(
+      CreateRoleResult(
         name: roleName,
         modulesCount: _selectedModuleCount(),
         accessLevel: _accessLevelLabel(),
@@ -694,3 +694,4 @@ class _NewRoleScreenState extends State<NewRoleScreen> {
     );
   }
 }
+

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
 
@@ -12,7 +12,7 @@ import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
 import '../../../widgets/sales_manager/sales_manager_top_bar.dart';
 import '../../delivery/customers/delivery_customers_screen.dart';
 import '../../admin/orders/admin_orders_screen.dart';
-import '../../admin/orders/new_admin_order_screen.dart';
+import '../../admin/orders/create_order_screen.dart';
 import '../../admin/quotations/admin_quotations_screen.dart';
 import '../dashboard/sales_manager_dashboard_screen.dart';
 import '../visits/sales_manager_visits_screen.dart';
@@ -370,7 +370,7 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
     if (action == 'Create Order') {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => const NewAdminOrderScreen(useSalesManagerShell: true),
+          builder: (_) => const CreateOrderScreen(useSalesManagerShell: true),
         ),
       );
       return;
@@ -917,8 +917,11 @@ class _ProductPickerState extends State<_ProductPicker> {
           product.sku.toLowerCase().contains(normalized);
     }).toList();
     final showLimit = normalized.isEmpty && allVisible.length > 8;
-    final visibleProducts = showLimit ? allVisible.take(8).toList() : allVisible;
-    final canAddCustom = normalized.isNotEmpty &&
+    final visibleProducts = showLimit
+        ? allVisible.take(8).toList()
+        : allVisible;
+    final canAddCustom =
+        normalized.isNotEmpty &&
         !widget.selected.contains(_query.trim()) &&
         !widget.products.any(
           (product) => product.name.toLowerCase() == normalized,

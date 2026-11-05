@@ -3463,9 +3463,11 @@ class ApiService {
             final refreshed = await _refreshAccessToken();
             if (refreshed) {
               headers = _buildHeaders(requiresAuth: requiresAuth);
-              debugPrint(
-                '[API RETRY] $method ${_safeUriForLog(uri)} -> retrying after token refresh',
-              );
+              if (kDebugMode) {
+                debugPrint(
+                  '[API RETRY] $method ${_safeUriForLog(uri)} -> retrying after token refresh',
+                );
+              }
               continue;
             }
           }
@@ -3473,7 +3475,10 @@ class ApiService {
           throw ApiException(
             statusCode: response.statusCode,
             code: _extractErrorCode(response.body),
-            message: _extractErrorMessage(response.body.trim()),
+            message: _resolveMessage(
+              response.statusCode,
+              _extractErrorMessage(response.body.trim()),
+            ),
           );
         }
 
@@ -3487,9 +3492,11 @@ class ApiService {
         );
 
         if (attempt < attempts) {
-          debugPrint(
-            '[API RETRY] $method ${_safeUriForLog(uri)} -> retrying after timeout',
-          );
+          if (kDebugMode) {
+            debugPrint(
+              '[API RETRY] $method ${_safeUriForLog(uri)} -> retrying after timeout',
+            );
+          }
           attempt++;
           continue;
         }
@@ -3551,10 +3558,7 @@ class ApiService {
   // Removes only cache entries relevant to the mutated endpoint, leaving
   // unrelated data intact so other screens don't pay a re-fetch cost.
   static void _invalidateCacheForEndpoint(String endpoint) {
-    final segment = endpoint
-        .split('/')
-        .where((p) => p.isNotEmpty)
-        .firstOrNull;
+    final segment = endpoint.split('/').where((p) => p.isNotEmpty).firstOrNull;
     if (segment == null) {
       _invalidateResponseCache();
       return;
@@ -3608,7 +3612,9 @@ class ApiService {
             }
           },
           onError: (Object error, StackTrace stackTrace) {
-            debugPrint('[API CACHE] Background refresh failed: $error');
+            if (kDebugMode) {
+              debugPrint('[API CACHE] Background refresh failed: $error');
+            }
           },
         )
         .whenComplete(() => _inFlightGets.remove(cacheKey));
@@ -3676,16 +3682,21 @@ class ApiService {
             final refreshed = await _refreshAccessToken();
             if (refreshed) {
               headers = _buildMultipartHeaders(requiresAuth: requiresAuth);
-              debugPrint(
-                '[API RETRY] $method ${_safeUriForLog(uri)} -> retrying after token refresh',
-              );
+              if (kDebugMode) {
+                debugPrint(
+                  '[API RETRY] $method ${_safeUriForLog(uri)} -> retrying after token refresh',
+                );
+              }
               continue;
             }
           }
 
           throw ApiException(
             statusCode: response.statusCode,
-            message: _extractErrorMessage(response.body.trim()),
+            message: _resolveMessage(
+              response.statusCode,
+              _extractErrorMessage(response.body.trim()),
+            ),
           );
         }
 
@@ -3700,9 +3711,11 @@ class ApiService {
         );
 
         if (attempt < attempts) {
-          debugPrint(
-            '[API RETRY] $method ${_safeUriForLog(uri)} -> retrying after timeout',
-          );
+          if (kDebugMode) {
+            debugPrint(
+              '[API RETRY] $method ${_safeUriForLog(uri)} -> retrying after timeout',
+            );
+          }
           attempt++;
           continue;
         }
@@ -4014,7 +4027,7 @@ class ApiService {
   }
 
   String _extractErrorMessage(String body) {
-    if (body.isEmpty) return 'API request failed.';
+    if (body.isEmpty) return '';
 
     try {
       final decoded = jsonDecode(body);
@@ -4026,7 +4039,7 @@ class ApiService {
         ];
         for (final candidate in candidates) {
           if (candidate is String && candidate.trim().isNotEmpty) {
-            return candidate;
+            return candidate.trim();
           }
           if (candidate is List) {
             final messages = candidate
@@ -4038,11 +4051,44 @@ class ApiService {
           }
         }
       }
-    } catch (_) {
-      // If the backend doesn't return JSON, surface the raw body when useful.
-    }
+    } catch (_) {}
 
-    return body;
+    // Don't surface raw HTML (nginx/CDN error pages), very long bodies, or
+    // plain HTTP status-line text — all of those are technical noise for users.
+    final trimmed = body.trim();
+    if (trimmed.startsWith('<') || trimmed.length > 300) return '';
+    return trimmed;
+  }
+
+  /// Maps an HTTP status code to a user-friendly sentence shown in the UI
+  /// when the response body carries no readable error message.
+  static String _codeToMessage(int statusCode) {
+    return switch (statusCode) {
+      400 => 'Invalid request. Please check your input and try again.',
+      401 => 'Your session has expired. Please sign in again.',
+      403 => 'You don\'t have permission to perform this action.',
+      404 => 'The requested item was not found.',
+      408 || 504 =>
+        'The request timed out. Please check your connection and try again.',
+      409 => 'This action conflicts with an existing record.',
+      422 => 'Invalid data submitted. Please check your input.',
+      429 => 'Too many requests. Please wait a moment and try again.',
+      500 => 'Something went wrong on our end. Please try again.',
+      502 || 503 =>
+        'Service temporarily unavailable. Please try again shortly.',
+      _ when statusCode >= 500 =>
+        'Something went wrong on our end. Please try again.',
+      _ when statusCode >= 400 =>
+        'The request could not be completed. Please try again.',
+      _ => 'Something went wrong. Please try again.',
+    };
+  }
+
+  /// Returns the best human-readable message for a failed response.
+  /// Prefers the backend's own message; falls back to a status-code sentence.
+  String _resolveMessage(int statusCode, String extracted) {
+    if (extracted.isNotEmpty) return extracted;
+    return _codeToMessage(statusCode);
   }
 }
 

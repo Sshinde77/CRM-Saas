@@ -1,4 +1,4 @@
-import '../../../models/list_pagination.dart';
+﻿import '../../../models/list_pagination.dart';
 import '../../../widgets/list_pagination_bar.dart';
 import 'dart:async';
 
@@ -27,7 +27,7 @@ import '../../sales_manager/stock/sales_manager_stock_screen.dart';
 import '../../sales_manager/visits/sales_manager_visits_screen.dart';
 import '../leads/admin_leads_screen.dart';
 import '../orders/admin_orders_screen.dart';
-import '../orders/new_admin_order_screen.dart';
+import '../orders/create_order_screen.dart';
 import '../quotations/admin_quotations_screen.dart';
 
 class CustomersScreen extends StatefulWidget {
@@ -166,7 +166,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
     if (action == 'Create Order') {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => const NewAdminOrderScreen(useSalesManagerShell: true),
+          builder: (_) => const CreateOrderScreen(useSalesManagerShell: true),
         ),
       );
       return;

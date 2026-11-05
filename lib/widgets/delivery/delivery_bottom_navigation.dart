@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../../constants/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
@@ -6,7 +6,8 @@ import '../../models/customer_model.dart';
 import '../../routes/app_router.dart';
 import '../../screens/delivery/customers/create_delivery_customer_screen.dart';
 import '../../screens/delivery/orders/create_delivery_order_screen.dart';
-import '../../screens/payment_collection_screen.dart';
+import '../../screens/shared/payment_collection_screen.dart';
+import '../sales_manager/sales_manager_shared_shell.dart';
 
 class DeliveryBottomNavigation extends StatelessWidget {
   final int currentIndex;
@@ -156,9 +157,11 @@ class DeliveryBottomNavigation extends StatelessWidget {
         ),
       );
       if (result == true && context.mounted) {
-        Navigator.of(
-          context,
-        ).pushReplacementNamed(AppRoutes.deliveryDeliveries);
+        if (!isSalesManagerSession(context)) {
+          Navigator.of(
+            context,
+          ).pushReplacementNamed(AppRoutes.deliveryDeliveries);
+        }
       }
     }
   }

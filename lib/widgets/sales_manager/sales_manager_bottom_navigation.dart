@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../../constants/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../screens/admin/customers/add_customer_screen.dart';
 import '../../screens/admin/leads/admin_leads_screen.dart';
 import '../../screens/admin/orders/admin_orders_screen.dart';
-import '../../screens/admin/orders/new_admin_order_screen.dart';
+import '../../screens/admin/orders/create_order_screen.dart';
 import '../../screens/sales_manager/dashboard/sales_manager_dashboard_screen.dart';
 import '../../screens/sales_manager/leads/add_lead_screen.dart';
 import '../../screens/sales_manager/visits/sales_manager_visits_screen.dart';
@@ -126,7 +126,7 @@ class SalesManagerBottomNavigation extends StatelessWidget {
 
     final destination = switch (action) {
       'customer' => const AddCustomerScreen(),
-      'order' => const NewAdminOrderScreen(useSalesManagerShell: true),
+      'order' => const CreateOrderScreen(useSalesManagerShell: true),
       'lead' => const AddLeadScreen(),
       _ => null,
     };

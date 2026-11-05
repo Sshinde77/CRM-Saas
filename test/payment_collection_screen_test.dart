@@ -1,9 +1,9 @@
-import 'package:crm_saas/models/list_pagination.dart';
+﻿import 'package:crm_saas/models/list_pagination.dart';
 import 'dart:async';
 
 import 'package:crm_saas/models/customer_model.dart';
 import 'package:crm_saas/providers/api_provider.dart';
-import 'package:crm_saas/screens/payment_collection_screen.dart';
+import 'package:crm_saas/screens/shared/payment_collection_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

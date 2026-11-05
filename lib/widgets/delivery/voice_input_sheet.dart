@@ -37,7 +37,8 @@ class VoiceInputSheet extends StatefulWidget {
     this.useCase = VoiceInputUseCase.formFill,
     this.title,
     this.instruction,
-    this.hintText = 'Your transcript will appear here. You can edit it before submitting.',
+    this.hintText =
+        'Your transcript will appear here. You can edit it before submitting.',
     this.actionLabel,
     this.minimumLength,
     this.initialText,
@@ -61,29 +62,37 @@ class VoiceInputSheet extends StatefulWidget {
 
   final String? initialText;
 
-  String get _resolvedTitle => title ?? switch (useCase) {
-    VoiceInputUseCase.search => 'Voice search',
-    VoiceInputUseCase.formFill => 'Voice entry',
-  };
+  String get _resolvedTitle =>
+      title ??
+      switch (useCase) {
+        VoiceInputUseCase.search => 'Voice search',
+        VoiceInputUseCase.formFill => 'Voice entry',
+      };
 
-  String get _resolvedInstruction => instruction ?? switch (useCase) {
-    VoiceInputUseCase.search =>
-      'Say the name or phone number clearly.\n'
-      'English or Hindi (Hinglish) both work.',
-    VoiceInputUseCase.formFill =>
-      'Say field name then value, e.g.:\n'
-      '"Shop name Sharma Traders, mobile 9876543210, city Bangalore, pincode 560034".',
-  };
+  String get _resolvedInstruction =>
+      instruction ??
+      switch (useCase) {
+        VoiceInputUseCase.search =>
+          'Say the name or phone number clearly.\n'
+              'English or Hindi (Hinglish) both work.',
+        VoiceInputUseCase.formFill =>
+          'Say field name then value, e.g.:\n'
+              '"Shop name Sharma Traders, mobile 9876543210, city Bangalore, pincode 560034".',
+      };
 
-  String get _resolvedActionLabel => actionLabel ?? switch (useCase) {
-    VoiceInputUseCase.search => 'Search',
-    VoiceInputUseCase.formFill => 'Extract',
-  };
+  String get _resolvedActionLabel =>
+      actionLabel ??
+      switch (useCase) {
+        VoiceInputUseCase.search => 'Search',
+        VoiceInputUseCase.formFill => 'Extract',
+      };
 
-  int get _resolvedMinimumLength => minimumLength ?? switch (useCase) {
-    VoiceInputUseCase.search => 2,
-    VoiceInputUseCase.formFill => 8,
-  };
+  int get _resolvedMinimumLength =>
+      minimumLength ??
+      switch (useCase) {
+        VoiceInputUseCase.search => 2,
+        VoiceInputUseCase.formFill => 8,
+      };
 
   Duration get _pauseFor => switch (useCase) {
     VoiceInputUseCase.search => const Duration(seconds: 3),
@@ -184,7 +193,9 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
       _locales = sortedLocales;
       _selectedLocaleId = bestLocaleId;
       _initializing = false;
-      _error = available ? null : 'Speech recognition is unavailable on this device.';
+      _error = available
+          ? null
+          : 'Speech recognition is unavailable on this device.';
     });
   }
 
@@ -279,9 +290,7 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
   void _onSpeechResult(SpeechRecognitionResult result) {
     // Append new words to whatever was in the box before this session.
     final newWords = result.recognizedWords;
-    final combined = _priorText.isEmpty
-        ? newWords
-        : '$_priorText $newWords';
+    final combined = _priorText.isEmpty ? newWords : '$_priorText $newWords';
     _transcriptController.text = combined.trim();
     _transcriptController.selection = TextSelection.collapsed(
       offset: _transcriptController.text.length,
@@ -300,7 +309,9 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
     final transcript = _transcriptController.text.trim();
     if (!mounted) return;
     if (transcript.length < widget._resolvedMinimumLength) {
-      setState(() => _error = "Didn't catch that. Please tap the mic and try again.");
+      setState(
+        () => _error = "Didn't catch that. Please tap the mic and try again.",
+      );
       return;
     }
     Navigator.of(context).pop(transcript);
@@ -310,14 +321,17 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
     if (_initializing) return 'Preparing speech recognition…';
     if (_listening) return 'Listening… tap the mic to stop.';
     final hasText = _transcriptController.text.trim().isNotEmpty;
-    if (hasText) return 'Tap the mic to continue speaking — it will append to what you said.';
+    if (hasText) {
+      return 'Tap the mic to continue speaking — it will append to what you said.';
+    }
     return 'Tap the mic and speak clearly in the selected language.';
   }
 
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
-    final canUse = _transcriptController.text.trim().length >=
+    final canUse =
+        _transcriptController.text.trim().length >=
         widget._resolvedMinimumLength;
     final micDisabled = _initializing || !_speechReady;
     final hasText = _transcriptController.text.trim().isNotEmpty;
@@ -439,10 +453,11 @@ class _VoiceInputSheetState extends State<VoiceInputSheet>
                       borderRadius: BorderRadius.circular(18),
                       boxShadow: [
                         BoxShadow(
-                          color: (_listening
-                                  ? AppColors.deliveryRed
-                                  : AppColors.deliveryGreen)
-                              .withValues(alpha: micDisabled ? 0 : 0.22),
+                          color:
+                              (_listening
+                                      ? AppColors.deliveryRed
+                                      : AppColors.deliveryGreen)
+                                  .withValues(alpha: micDisabled ? 0 : 0.22),
                           blurRadius: _listening ? 18 : 12,
                           offset: const Offset(0, 8),
                         ),

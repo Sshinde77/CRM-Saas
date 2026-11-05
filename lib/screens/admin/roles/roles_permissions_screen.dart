@@ -1,4 +1,4 @@
-import '../../../models/list_pagination.dart';
+﻿import '../../../models/list_pagination.dart';
 import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
 
@@ -7,7 +7,7 @@ import 'package:crm_saas/core/theme/app_text_styles.dart';
 import '../../../constants/app_colors.dart';
 import '../../../widgets/admin/admin_top_bar.dart';
 import '../../../widgets/admin/app_drawer.dart';
-import 'new_role_screen.dart';
+import 'create_role_screen.dart';
 
 class RolesPermissionsScreen extends StatefulWidget {
   const RolesPermissionsScreen({super.key});
@@ -74,9 +74,9 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
     }).toList();
   }
 
-  Future<void> _openNewRoleScreen() async {
-    final result = await Navigator.of(context).push<NewRoleResult>(
-      MaterialPageRoute(builder: (_) => const NewRoleScreen()),
+  Future<void> _openCreateRoleScreen() async {
+    final result = await Navigator.of(context).push<CreateRoleResult>(
+      MaterialPageRoute(builder: (_) => const CreateRoleScreen()),
     );
 
     if (result != null && mounted) {
@@ -280,7 +280,7 @@ class _RolesPermissionsScreenState extends State<RolesPermissionsScreen> {
     return SizedBox(
       height: compact ? 34 : 36,
       child: ElevatedButton.icon(
-        onPressed: _openNewRoleScreen,
+        onPressed: _openCreateRoleScreen,
         icon: Icon(Icons.add, size: compact ? 16 : 17),
         label: const Text('New Role'),
         style: ElevatedButton.styleFrom(

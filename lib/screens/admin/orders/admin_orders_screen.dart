@@ -1,4 +1,4 @@
-import '../../../models/list_pagination.dart';
+﻿import '../../../models/list_pagination.dart';
 import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
 import '../../../widgets/app_skeleton.dart';
@@ -20,12 +20,12 @@ import '../../sales_manager/follow_ups/sales_manager_follow_ups_screen.dart';
 import '../../sales_manager/performance/sales_manager_performance_screen.dart';
 import '../../sales_manager/stock/sales_manager_stock_screen.dart';
 import '../../sales_manager/visits/sales_manager_visits_screen.dart';
-import '../../delivery/orders/delivery_customer_order_detail_screen.dart';
 import '../../delivery/customers/delivery_customers_screen.dart';
+import '../../delivery/orders/delivery_customer_order_detail_screen.dart';
 import '../leads/admin_leads_screen.dart';
 import '../quotations/admin_quotations_screen.dart';
 import '../quotations/quotation_detail_screen.dart';
-import 'new_admin_order_screen.dart';
+import 'create_order_screen.dart';
 import 'order_detail_screen.dart';
 
 class AdminOrdersScreen extends StatefulWidget {
@@ -341,7 +341,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
   Future<void> _openNewOrder() async {
     await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => NewAdminOrderScreen(
+        builder: (_) => CreateOrderScreen(
           useSalesManagerShell: widget.useSalesManagerShell,
         ),
       ),
@@ -377,7 +377,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
       case _OrderActionType.duplicate:
         await Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (_) => NewAdminOrderScreen(
+            builder: (_) => CreateOrderScreen(
               useSalesManagerShell: widget.useSalesManagerShell,
             ),
           ),
@@ -403,7 +403,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     if (action == 'Create Order') {
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (_) => const NewAdminOrderScreen(useSalesManagerShell: true),
+          builder: (_) => const CreateOrderScreen(useSalesManagerShell: true),
         ),
       );
       return;
