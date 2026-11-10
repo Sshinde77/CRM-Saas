@@ -7,6 +7,7 @@ import '../../../widgets/app_skeleton.dart';
 import '../../../constants/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../models/customer_model.dart';
+import '../../../models/delivery_detail_model.dart';
 import '../../../models/app_user.dart';
 import '../../../models/auth_models.dart';
 import '../../../providers/api_provider.dart';
@@ -565,6 +566,7 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
           paymentType: _payment,
           homeDelivery: _homeDelivery,
           deliveryPartner: _homeDelivery ? selectedPartner : null,
+          isDeliveryPartnerCreating: !widget.assignDeliveryPartner,
           onOrderCreated: () {
             if (!mounted) return;
             setState(() {
@@ -1746,6 +1748,7 @@ class _SalesOrderPreviewPage extends StatefulWidget {
   final String paymentType;
   final bool homeDelivery;
   final AppUser? deliveryPartner;
+  final bool isDeliveryPartnerCreating;
   final VoidCallback onOrderCreated;
   final void Function(String id, int quantity) onQuantityChanged;
 
@@ -1759,6 +1762,7 @@ class _SalesOrderPreviewPage extends StatefulWidget {
     required this.paymentType,
     required this.homeDelivery,
     required this.deliveryPartner,
+    required this.isDeliveryPartnerCreating,
     required this.onOrderCreated,
     required this.onQuantityChanged,
   });
@@ -1777,6 +1781,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
   final _quantityControllers = <String, TextEditingController>{};
   bool _submitting = false;
   bool _cancelRequested = false;
+  bool _autoDelivering = false;
   String? _error;
   String? _createdOrderId;
   List<String> _stockShortages = [];
@@ -1808,12 +1813,27 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
 
   String get _submitLabel {
     if (_submitting) {
+      if (_autoDelivering) return 'Completing Delivery...';
       return _createdOrderId == null
           ? 'Creating Order...'
           : 'Assigning Partner...';
     }
     if (_createdOrderId == null) return 'Create Order';
     return _createdOrderId!.isEmpty ? 'Order Created' : 'Retry Assignment';
+  }
+
+  bool get _showCreateAndDeliverButton {
+    if (!widget.isDeliveryPartnerCreating ||
+        !widget.homeDelivery ||
+        widget.deliveryPartner == null) return false;
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final delivery = DateTime(
+      widget.deliveryDate.year,
+      widget.deliveryDate.month,
+      widget.deliveryDate.day,
+    );
+    return !delivery.isAfter(today);
   }
 
   String _money(double value) => _formatOrderMoney(value);
@@ -2060,6 +2080,210 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
     }
   }
 
+  Future<void> _createOrderAndDeliver() async {
+    if (_items.isEmpty || _submitting) return;
+    final paid = _paid;
+    if (paid == null || !paid.isFinite || paid < 0 || paid > _grandTotal) {
+      setState(
+        () => _error =
+            'Enter a payment between ₹ 0.00 and ${_money(_grandTotal)}.',
+      );
+      return;
+    }
+    setState(() {
+      _submitting = true;
+      _autoDelivering = false;
+      _cancelRequested = false;
+      _error = null;
+      _stockShortages = [];
+    });
+    try {
+      final api = ApiProviderScope.of(context);
+      // Step 1: Create order
+      final paymentType = _apiPaymentType;
+      final deliveryAddress = _deliveryAddress;
+      final orderResponse = await api.createOrder(
+        request: {
+          'customer_id': widget.customer.id,
+          'warehouse_id': _text(widget.warehouse, ['id', 'warehouse_id']),
+          'order_date': _apiDate(widget.orderDate),
+          'delivery_date': _apiDate(widget.deliveryDate),
+          'fulfilment_method': 'delivery',
+          'delivery_method': 'home_delivery',
+          if (deliveryAddress.isNotEmpty) 'delivery_address': deliveryAddress,
+          'delivery_partner_id': widget.deliveryPartner!.id,
+          'payment_type': paymentType,
+          if (const {
+            'cash',
+            'credit',
+            'upi',
+            'card',
+            'bank_transfer',
+          }.contains(paymentType))
+            'payment_method': paymentType,
+          'payment_status': _paymentStatus(paid),
+          'payment_terms_days': paymentType == 'credit' ? 30 : 0,
+          'source': 'office',
+          'items': [
+            for (final item in _items)
+              {
+                'product_id': item.product.id,
+                'quantity': item.quantity,
+                'unit_price': item.unitPrice,
+                'uom': item.product.unit,
+                'tax_rate': widget.customer.taxExempt == true
+                    ? 0
+                    : item.product.taxRate,
+                'discount_percent': 0,
+              },
+          ],
+          'discount': _discount,
+          'tax': _tax,
+          'paid_amount': paid,
+        },
+      );
+      _createdOrderId = _orderId(orderResponse);
+      if (_createdOrderId!.isEmpty) {
+        throw const ApiException(
+          message: 'The server did not return an order ID.',
+        );
+      }
+      widget.onOrderCreated();
+      // Step 2: Assign partner and get delivery ID
+      final assignResponse = await api.assignOrderDeliveryPartner(
+        orderId: _createdOrderId!,
+        deliveryPartnerId: widget.deliveryPartner!.id,
+      );
+      String deliveryId = _deliveryIdFromResponse(assignResponse);
+      if (deliveryId.isEmpty) {
+        deliveryId = await _findDeliveryId(api) ?? '';
+      }
+      if (deliveryId.isEmpty) {
+        throw const ApiException(
+          message:
+              'Order created but could not find the delivery record to auto-complete.',
+        );
+      }
+      // Step 3: Auto-complete delivery
+      setState(() => _autoDelivering = true);
+      await _autoCompleteDelivery(api, deliveryId, paid);
+      if (mounted) Navigator.of(context).pop(true);
+    } catch (error) {
+      if (mounted) {
+        final shortages = _createdOrderId == null && error is ApiException
+            ? _parseStockShortages(error.message)
+            : <String>[];
+        setState(() {
+          _stockShortages = shortages;
+          _error = shortages.isNotEmpty
+              ? 'Not enough stock in ${_text(widget.warehouse, ['name', 'warehouse_name'])} to create this order.'
+              : error is ApiException
+              ? _readOrderError(error.message)
+              : 'Could not complete the order. Please try again.';
+        });
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && _previewScrollController.hasClients) {
+            _previewScrollController.animateTo(
+              0,
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeOut,
+            );
+          }
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _submitting = false;
+          _autoDelivering = false;
+        });
+      }
+    }
+  }
+
+  String _deliveryIdFromResponse(Map<String, dynamic> response) {
+    for (final source in [
+      response,
+      response['order'],
+      response['sales_order'],
+      response['data'],
+    ]) {
+      if (source is Map<String, dynamic>) {
+        for (final key in const ['delivery_id', 'deliveryId']) {
+          final v = source[key];
+          if (v is String && v.trim().isNotEmpty) return v.trim();
+        }
+        for (final dKey in const ['delivery', 'delivery_info']) {
+          final d = source[dKey];
+          if (d is Map<String, dynamic>) {
+            final id = _text(d, ['id', '_id', 'delivery_id']);
+            if (id.isNotEmpty) return id;
+          }
+        }
+      }
+    }
+    return '';
+  }
+
+  Future<String?> _findDeliveryId(ApiProvider api) async {
+    if (_createdOrderId == null || _createdOrderId!.isEmpty) return null;
+    try {
+      final deliveries = await api.fetchDeliveryPartnerDeliveries(
+        deliveryPartnerId: widget.deliveryPartner!.id,
+      );
+      for (final d in deliveries) {
+        final orderId = _text(d, ['order_id', 'orderId']);
+        if (orderId == _createdOrderId) {
+          return _text(d, ['id', '_id', 'delivery_id']);
+        }
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  Future<void> _autoCompleteDelivery(
+    ApiProvider api,
+    String deliveryId,
+    double paidAmount,
+  ) async {
+    await api.acceptDelivery(deliveryId);
+    final DeliveryDetail detail = await api.fetchDeliveryById(deliveryId);
+    if (detail.items.isNotEmpty) {
+      final toPick = detail.items
+          .where((item) => item.id.isNotEmpty && item.planned > item.picked)
+          .toList();
+      if (toPick.isNotEmpty) {
+        await api.pickDelivery(
+          deliveryId: deliveryId,
+          items: [
+            for (final item in toPick)
+              {
+                'delivery_item_id': item.id,
+                'picked_quantity': item.planned - item.picked,
+              },
+          ],
+        );
+      }
+    }
+    await api.markDeliveryReady(deliveryId);
+    await api.loadDelivery(deliveryId);
+    await api.dispatchDelivery(deliveryId);
+    await api.confirmDelivery(
+      deliveryId: deliveryId,
+      payload: {
+        'payment_amount': paidAmount,
+        'payment_method': _apiPaymentType,
+        'items': [
+          for (final item in detail.items)
+            {
+              'delivery_item_id': item.id,
+              'delivered_quantity': item.planned,
+            },
+        ],
+      },
+    );
+  }
+
   String _orderId(Map<String, dynamic> response) {
     for (final source in [
       response,
@@ -2192,35 +2416,83 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
               color: AppColors.surface,
               border: Border(top: BorderSide(color: AppColors.border)),
             ),
-            child: SizedBox(
-              height: 52,
-              child: FilledButton.icon(
-                onPressed:
-                    _items.isEmpty ||
-                        _submitting ||
-                        _stockShortages.isNotEmpty ||
-                        _createdOrderId == ''
-                    ? null
-                    : _createOrder,
-                icon: _submitting
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
+            child: Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: 52,
+                    child: FilledButton.icon(
+                      onPressed:
+                          _items.isEmpty ||
+                              _submitting ||
+                              _stockShortages.isNotEmpty ||
+                              _createdOrderId == ''
+                          ? null
+                          : _createOrder,
+                      icon: _submitting && !_autoDelivering
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Icon(Icons.shopping_bag_outlined, size: 19),
+                      label: Text(_submitLabel),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: _green,
+                        foregroundColor: AppColors.surface,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                      )
-                    : const Icon(Icons.shopping_bag_outlined, size: 19),
-                label: Text(_submitLabel),
-                style: FilledButton.styleFrom(
-                  backgroundColor: _green,
-                  foregroundColor: AppColors.surface,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
                   ),
                 ),
-              ),
+                if (_showCreateAndDeliverButton) ...[
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: SizedBox(
+                      height: 52,
+                      child: FilledButton.icon(
+                        onPressed:
+                            _items.isEmpty ||
+                                _submitting ||
+                                _stockShortages.isNotEmpty ||
+                                _createdOrderId != null
+                            ? null
+                            : _createOrderAndDeliver,
+                        icon: _autoDelivering
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Icon(
+                                Icons.local_shipping_outlined,
+                                size: 19,
+                              ),
+                        label: Text(
+                          _autoDelivering
+                              ? 'Completing...'
+                              : 'Create Order & Delivery',
+                        ),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: const Color(0xFF1565C0),
+                          foregroundColor: AppColors.surface,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
         ),

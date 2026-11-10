@@ -515,11 +515,8 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
   Widget build(BuildContext context) {
     _pagination.filters = {
       'search': _searchController.text,
-      if (_statusFilter != 'all') 'status': _statusFilter,
     };
-    if (_pagination.observe(
-      [_searchController.text, _statusFilter].join('|'),
-    )) {
+    if (_pagination.observe(_searchController.text)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _loadDeliveries();
       });

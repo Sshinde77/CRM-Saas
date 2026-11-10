@@ -2,7 +2,7 @@
 
 import '../../constants/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
-import '../../screens/admin/customers/add_customer_screen.dart';
+import '../../screens/delivery/customers/create_delivery_customer_screen.dart';
 import '../../screens/admin/leads/admin_leads_screen.dart';
 import '../../screens/admin/orders/admin_orders_screen.dart';
 import '../../screens/admin/orders/create_order_screen.dart';
@@ -125,7 +125,7 @@ class SalesManagerBottomNavigation extends StatelessWidget {
     if (!context.mounted || action == null) return;
 
     final destination = switch (action) {
-      'customer' => const AddCustomerScreen(),
+      'customer' => const CreateDeliveryCustomerScreen(),
       'order' => const CreateOrderScreen(useSalesManagerShell: true),
       'lead' => const AddLeadScreen(),
       _ => null,

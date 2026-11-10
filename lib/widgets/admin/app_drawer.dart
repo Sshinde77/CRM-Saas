@@ -554,30 +554,14 @@ class _AppDrawerState extends State<AppDrawer> {
               padding: const EdgeInsets.fromLTRB(20, 18, 12, 12),
               child: Row(
                 children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      gradient: const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [AppDrawer.accent, AppDrawer.blue],
-                      ),
-                    ),
-                    child: const Icon(
-                      Icons.water_drop_rounded,
-                      color: Colors.white,
-                      size: 22,
-                    ),
-                  ),
+                  Image.asset('assets/logo/2.png', width: 40, height: 40),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'SAAS CRM',
+                          'BEAS Suite',
                           style: AppTextStyles.cardTitle.copyWith(
                             color: AppDrawer.textPrimary,
                           ),

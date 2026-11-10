@@ -374,7 +374,9 @@ class _CreateDeliveryCustomerScreenState
     setState(() {
       _pickedLocation = selected;
       _location.text = selected.placeName;
-      if (addressLine != null && addressLine.isNotEmpty) {
+      final isJustPostcode =
+          addressLine != null && RegExp(r'^\d{4,8}$').hasMatch(addressLine);
+      if (addressLine != null && addressLine.isNotEmpty && !isJustPostcode) {
         _address.text = addressLine;
       }
       if (city != null && city.isNotEmpty) _city.text = city;

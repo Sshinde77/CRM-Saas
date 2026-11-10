@@ -281,24 +281,17 @@ class _NewQuotationScreenState extends State<NewQuotationScreen> {
     }
 
     final request = <String, dynamic>{
-      'quotation_number': 'QT-${DateTime.now().millisecondsSinceEpoch}',
       'quotation_date': _apiDate(_quotationDate),
-      'valid_until': _apiDate(_validUntil),
       'currency': _currency,
       'status': 'draft',
       'salesperson_id': _selectedSalesperson!.id,
       'billing_address': _billingAddressController.text.trim(),
       'shipping_address': _shippingAddressController.text.trim(),
-      'payment_terms': _paymentTerms,
-      'delivery_terms': _deliveryTerms,
-      'notes': _notesController.text.trim(),
-      'terms_conditions': _termsController.text.trim(),
       'items': _items.map((item) => item.toApi()).toList(),
     };
     if (_forCustomer) {
       request['customer_id'] = _selectedCustomer!.id;
     } else {
-      request['customer_id'] = '';
       request['lead_id'] = _selectedLead!.id;
       request['lead_name'] = _selectedLead!.name;
     }
@@ -1936,15 +1929,19 @@ class _QuoteItem {
   double get lineTotal => taxable + taxAmount;
 
   Map<String, dynamic> toApi() {
-    return {
+    final map = <String, dynamic>{
       'product_id': product.id,
-      'variant_id': product.variantId,
       'quantity': quantity,
       'unit_price': product.unitPrice,
       'discount': discountPercent,
       'tax_rate': product.taxRate,
       'uom': product.uom,
     };
+    final variantId = product.variantId;
+    if (variantId.isNotEmpty) {
+      map['variant_id'] = variantId;
+    }
+    return map;
   }
 
   _QuoteItem copyWith({double? quantity, double? discountPercent}) {

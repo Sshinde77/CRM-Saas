@@ -56,6 +56,16 @@ class _DeliveryAttendanceScreenState extends State<DeliveryAttendanceScreen> {
   }
 
   Future<void> _markNow(_CheckpointType type) async {
+    if (type == _CheckpointType.finalCheckOut &&
+        !isSalesManagerSession(context)) {
+      final blocked = await _isVehicleStockOpen();
+      if (!mounted) return;
+      if (blocked) {
+        _showVehicleStockBlockedDialog();
+        return;
+      }
+    }
+
     setState(() {
       _markError = null;
       _busyTypes.add(type.apiValue);
@@ -74,6 +84,38 @@ class _DeliveryAttendanceScreenState extends State<DeliveryAttendanceScreen> {
         setState(() => _busyTypes.remove(type.apiValue));
       }
     }
+  }
+
+  Future<bool> _isVehicleStockOpen() async {
+    try {
+      final provider = ApiProviderScope.of(context);
+      final userId = provider.currentUser?.id ?? '';
+      if (userId.isEmpty) return false;
+      final session = await provider.fetchCurrentVehicleStock(userId);
+      if (session == null) return false;
+      final status = (session['status'] as String? ?? '').trim().toLowerCase();
+      return const {'active', 'open', 'in_progress', 'loaded'}.contains(status);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  void _showVehicleStockBlockedDialog() {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Vehicle Stock Not Closed'),
+        content: const Text(
+          'Please complete today\'s vehicle stock closing before checking out.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override

@@ -160,15 +160,11 @@ class _SidebarBrandMark extends StatelessWidget {
       width: AppSizes.buttonHeight,
       height: AppSizes.buttonHeight,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.16),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(AppSizes.cardRadius),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
       ),
-      child: const Icon(
-        Icons.delivery_dining_rounded,
-        color: AppColors.activeMenuBg,
-        size: AppSizes.iconLarge,
-      ),
+      padding: const EdgeInsets.all(4),
+      child: Image.asset('assets/logo/2.png', fit: BoxFit.contain),
     );
   }
 }

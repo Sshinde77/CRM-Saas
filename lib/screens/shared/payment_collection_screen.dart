@@ -578,18 +578,11 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
               ),
               if (_paymentMode != 'cash') ...[
                 const SizedBox(height: 16),
-                const _Label('Reference (optional)'),
+                const _Label('Reference'),
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _referenceController,
                   decoration: _decoration(hintText: 'Transaction reference'),
-                  validator: (value) {
-                    if (_paymentMode != 'cash' &&
-                        (value == null || value.trim().isEmpty)) {
-                      return 'Transaction reference is required';
-                    }
-                    return null;
-                  },
                 ),
               ],
             ],

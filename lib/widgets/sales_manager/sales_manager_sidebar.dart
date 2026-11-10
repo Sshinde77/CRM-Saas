@@ -74,13 +74,31 @@ class SalesManagerSidebar extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(18, 18, 18, 12),
-              child: Text(
-                'MAIN MENU',
-                style: AppTextStyles.bodyStrong.copyWith(
-                  color: AppColors.textSecondary.withValues(alpha: 0.72),
-                  letterSpacing: 1.2,
-                ),
+              padding: const EdgeInsets.fromLTRB(18, 18, 18, 14),
+              child: Row(
+                children: [
+                  Image.asset('assets/logo/2.png', width: 36, height: 36),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'BEAS Suite',
+                          style: AppTextStyles.cardTitle.copyWith(
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        Text(
+                          'Sales Manager',
+                          style: AppTextStyles.small.copyWith(
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
             Divider(height: 1, color: AppColors.border.withValues(alpha: 0.5)),
