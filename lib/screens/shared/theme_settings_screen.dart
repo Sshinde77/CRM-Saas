@@ -1,4 +1,4 @@
-﻿import 'package:crm_saas/core/theme/app_text_styles.dart';
+import 'package:crm_saas/core/theme/app_text_styles.dart';
 import 'package:crm_saas/theme/app_colors_ext.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -18,129 +18,134 @@ class ThemeSettingsScreen extends StatelessWidget {
         top: false,
         child: ListView(
           padding: const EdgeInsets.all(20),
-        children: [
-          SwitchListTile(
-            title: const Text('Dark mode'),
-            value: controller.isDark,
-            onChanged: controller.setDark,
-          ),
-          const SizedBox(height: 16),
-          Text('Primary colour', style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: AppColorsExt.presets
-                .map(
-                  (color) => Semantics(
-                    label:
-                        'Colour #${color.toARGB32().toRadixString(16).substring(2).toUpperCase()}',
-                    selected: controller.primary == color,
-                    child: InkWell(
-                      onTap: () => controller.setPrimary(color),
-                      borderRadius: BorderRadius.circular(24),
-                      child: Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: color,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: c.outline),
+          children: [
+            SwitchListTile(
+              title: const Text('Dark mode'),
+              value: controller.isDark,
+              onChanged: controller.setDark,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Primary colour',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: AppColorsExt.presets
+                  .map(
+                    (color) => Semantics(
+                      label:
+                          'Colour #${color.toARGB32().toRadixString(16).substring(2).toUpperCase()}',
+                      selected: controller.primary == color,
+                      child: InkWell(
+                        onTap: () => controller.setPrimary(color),
+                        borderRadius: BorderRadius.circular(24),
+                        child: Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: color,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: c.outline),
+                          ),
+                          child: controller.primary == color
+                              ? Icon(
+                                  Icons.check,
+                                  color: AppColorsExt.foreground(color),
+                                )
+                              : null,
                         ),
-                        child: controller.primary == color
-                            ? Icon(
-                                Icons.check,
-                                color: AppColorsExt.foreground(color),
-                              )
-                            : null,
                       ),
                     ),
-                  ),
-                )
-                .toList(),
-          ),
-          const SizedBox(height: 24),
-          Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 480),
-              child: ColorPicker(
-                pickerColor: controller.primary,
-                onColorChanged: controller.setPrimary,
-                enableAlpha: false,
-                hexInputBar: true,
-                displayThumbColor: true,
-                labelTypes: const [ColorLabelType.rgb, ColorLabelType.hsl],
+                  )
+                  .toList(),
+            ),
+            const SizedBox(height: 24),
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 480),
+                child: ColorPicker(
+                  pickerColor: controller.primary,
+                  onColorChanged: controller.setPrimary,
+                  enableAlpha: false,
+                  hexInputBar: true,
+                  displayThumbColor: true,
+                  labelTypes: const [ColorLabelType.rgb, ColorLabelType.hsl],
+                ),
               ),
             ),
-          ),
-          if (controller.persistenceError != null)
-            Text(
-              'Unable to save appearance: ${controller.persistenceError}',
-              style: TextStyle(color: c.error),
+            if (controller.persistenceError != null)
+              Text(
+                'Unable to save appearance: ${controller.persistenceError}',
+                style: TextStyle(color: c.error),
+              ),
+            OutlinedButton.icon(
+              onPressed: controller.reset,
+              icon: const Icon(Icons.restore),
+              label: const Text('Reset to default'),
             ),
-          OutlinedButton.icon(
-            onPressed: controller.reset,
-            icon: const Icon(Icons.restore),
-            label: const Text('Reset to default'),
-          ),
-          const SizedBox(height: 24),
-          Text('Live preview', style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: c.primaryGradient,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              'Your workspace, your colour',
-              style: AppTextStyles.bodyStrong.copyWith(
-                color: AppColorsExt.foreground(c.gradientStart),
+            const SizedBox(height: 24),
+            Text('Live preview', style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: c.primaryGradient,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                'Your workspace, your colour',
+                style: AppTextStyles.bodyStrong.copyWith(
+                  color: AppColorsExt.foreground(c.gradientStart),
+                ),
               ),
             ),
-          ),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Preview card',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  Text(
-                    'Text, surfaces and controls update instantly.',
-                    style: TextStyle(color: c.textSecondary),
-                  ),
-                  const SizedBox(height: 12),
-                  const TextField(
-                    decoration: InputDecoration(labelText: 'Example input'),
-                  ),
-                  const SizedBox(height: 12),
-                  const Chip(label: Text('Example chip')),
-                  FilledButton(
-                    onPressed: () {},
-                    child: const Text('Example button'),
-                  ),
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Example switch'),
-                    value: controller.isDark,
-                    onChanged: controller.setDark,
-                  ),
-                ],
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Preview card',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    Text(
+                      'Text, surfaces and controls update instantly.',
+                      style: TextStyle(color: c.textSecondary),
+                    ),
+                    const SizedBox(height: 12),
+                    const TextField(
+                      decoration: InputDecoration(labelText: 'Example input'),
+                    ),
+                    const SizedBox(height: 12),
+                    const Chip(label: Text('Example chip')),
+                    FilledButton(
+                      onPressed: () {},
+                      child: const Text('Example button'),
+                    ),
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Example switch'),
+                      value: controller.isDark,
+                      onChanged: controller.setDark,
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          if (kDebugMode)
-            TextButton(
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const ThemeDebugScreen()),
+            if (kDebugMode)
+              TextButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const ThemeDebugScreen(),
+                  ),
+                ),
+                child: const Text('Theme Debug'),
               ),
-              child: const Text('Theme Debug'),
-            ),
-        ],
+          ],
         ),
       ),
     );

@@ -513,9 +513,7 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    _pagination.filters = {
-      'search': _searchController.text,
-    };
+    _pagination.filters = {'search': _searchController.text};
     if (_pagination.observe(_searchController.text)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _loadDeliveries();

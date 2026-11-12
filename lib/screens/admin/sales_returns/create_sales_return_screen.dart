@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
 
@@ -11,7 +11,8 @@ class CreateSalesReturnScreen extends StatefulWidget {
   const CreateSalesReturnScreen({super.key});
 
   @override
-  State<CreateSalesReturnScreen> createState() => _CreateSalesReturnScreenState();
+  State<CreateSalesReturnScreen> createState() =>
+      _CreateSalesReturnScreenState();
 }
 
 class _CreateSalesReturnScreenState extends State<CreateSalesReturnScreen> {
@@ -503,4 +504,3 @@ class _CreateSalesReturnScreenState extends State<CreateSalesReturnScreen> {
     );
   }
 }
-

@@ -1825,7 +1825,8 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
   bool get _showCreateAndDeliverButton {
     if (!widget.isDeliveryPartnerCreating ||
         !widget.homeDelivery ||
-        widget.deliveryPartner == null) return false;
+        widget.deliveryPartner == null)
+      return false;
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final delivery = DateTime(
@@ -2275,10 +2276,7 @@ class _SalesOrderPreviewPageState extends State<_SalesOrderPreviewPage> {
         'payment_method': _apiPaymentType,
         'items': [
           for (final item in detail.items)
-            {
-              'delivery_item_id': item.id,
-              'delivered_quantity': item.planned,
-            },
+            {'delivery_item_id': item.id, 'delivered_quantity': item.planned},
         ],
       },
     );

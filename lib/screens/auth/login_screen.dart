@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
@@ -269,10 +269,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Center(
-                          child: Image.asset(
-                            'assets/logo/1.png',
-                            height: 90,
-                          ),
+                          child: Image.asset('assets/logo/1.png', height: 90),
                         ),
                         const SizedBox(height: 16),
                         const Text(

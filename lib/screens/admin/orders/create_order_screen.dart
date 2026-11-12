@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 import '../../../widgets/admin/app_drawer.dart';
 import '../../../widgets/sales_manager/sales_manager_sidebar.dart';
@@ -57,4 +57,3 @@ class CreateOrderScreen extends StatelessWidget {
         : const AppDrawer(activeItem: 'Orders'),
   );
 }
-
