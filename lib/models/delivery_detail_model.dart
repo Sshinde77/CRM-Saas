@@ -32,6 +32,8 @@ class DeliveryDetail {
   final String deliveryProofUrl;
   final String paymentProofUrl;
   final String signatureUrl;
+  final double paidAmount;
+  final String paymentMethod;
 
   const DeliveryDetail({
     required this.id,
@@ -64,6 +66,8 @@ class DeliveryDetail {
     required this.deliveryProofUrl,
     required this.paymentProofUrl,
     required this.signatureUrl,
+    this.paidAmount = 0,
+    this.paymentMethod = '',
   });
 
   factory DeliveryDetail.fromJson(Map<String, dynamic> json) {
@@ -347,6 +351,18 @@ class DeliveryDetail {
         'signature_url',
         'signatureUrl',
         'signature',
+      ]),
+      paidAmount: _number(
+        data['payment_amount'] ??
+            data['paymentAmount'] ??
+            data['paid_amount'] ??
+            data['paidAmount'],
+      ),
+      paymentMethod: _text(data, const [
+        'payment_method',
+        'paymentMethod',
+        'payment_type',
+        'paymentType',
       ]),
     );
   }
