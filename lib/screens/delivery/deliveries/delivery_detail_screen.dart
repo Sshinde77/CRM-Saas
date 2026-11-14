@@ -1522,10 +1522,9 @@ class _AmountStrip extends StatelessWidget {
             child: Text(
               label,
               style: AppTextStyles.smallStrong.copyWith(
-                color: color ??
-                    (strong
-                        ? AppColors.deliveryRed
-                        : const Color(0xFF31536B)),
+                color:
+                    color ??
+                    (strong ? AppColors.deliveryRed : const Color(0xFF31536B)),
               ),
             ),
           ),
@@ -1547,7 +1546,8 @@ class _AmountStrip extends StatelessWidget {
                           ? AppTextStyles.bodyStrong
                           : AppTextStyles.smallStrong)
                       .copyWith(
-                        color: color ??
+                        color:
+                            color ??
                             (strong
                                 ? AppColors.deliveryRed
                                 : const Color(0xFF213B50)),

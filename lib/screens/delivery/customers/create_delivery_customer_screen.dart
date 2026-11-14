@@ -373,9 +373,7 @@ class _CreateDeliveryCustomerScreenState
     // Prefer structured postcode; fall back to extracting from the place name.
     var pincode = selected.postcode?.replaceAll(RegExp(r'\D'), '');
     if (pincode == null || !_validPincode(pincode)) {
-      final m = RegExp(
-        r'\b([1-9]\d{5})\b',
-      ).firstMatch(selected.placeName);
+      final m = RegExp(r'\b([1-9]\d{5})\b').firstMatch(selected.placeName);
       if (m != null) pincode = m.group(1);
     }
     setState(() {

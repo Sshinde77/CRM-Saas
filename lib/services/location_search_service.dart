@@ -184,9 +184,7 @@ class LocationSearchService {
     // name/street for a usable place name, excluding numbers (pincodes) and
     // known state/country values that are too broad to serve as a city.
     var city =
-        _text(data['city']) ??
-        _text(data['district']) ??
-        _text(data['county']);
+        _text(data['city']) ?? _text(data['district']) ?? _text(data['county']);
     if (city == null) {
       final stateText = _text(data['state']);
       final countryText = _text(data['country']);
