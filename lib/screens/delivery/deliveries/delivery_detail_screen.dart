@@ -165,7 +165,9 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
 
   Future<void> _refresh() async {
     final request = _load();
-    setState(() { _future = request; });
+    setState(() {
+      _future = request;
+    });
     await request;
   }
 
@@ -1139,10 +1141,12 @@ class _Body extends StatelessWidget {
                               ),
                             )
                           : const Icon(Icons.local_shipping_outlined, size: 19),
-                      label: Text(_primaryActionLabel(
-                        delivery.status,
-                        internalStatus: delivery.internalStatus,
-                      )),
+                      label: Text(
+                        _primaryActionLabel(
+                          delivery.status,
+                          internalStatus: delivery.internalStatus,
+                        ),
+                      ),
                       style: FilledButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
@@ -1519,7 +1523,11 @@ class _ProofOfDeliveryCard extends StatelessWidget {
               const CircleAvatar(
                 radius: 16,
                 backgroundColor: AppColors.deliveryGreen,
-                child: Icon(Icons.photo_camera_rounded, color: Colors.white, size: 17),
+                child: Icon(
+                  Icons.photo_camera_rounded,
+                  color: Colors.white,
+                  size: 17,
+                ),
               ),
               const SizedBox(width: 9),
               Text(
@@ -1532,7 +1540,12 @@ class _ProofOfDeliveryCard extends StatelessWidget {
           ),
           if (delivery.podPhotos.isNotEmpty) ...[
             const SizedBox(height: 12),
-            Text('Photos', style: AppTextStyles.fieldLabel.copyWith(color: AppColors.textMuted)),
+            Text(
+              'Photos',
+              style: AppTextStyles.fieldLabel.copyWith(
+                color: AppColors.textMuted,
+              ),
+            ),
             const SizedBox(height: 8),
             Wrap(
               spacing: 10,
@@ -1545,19 +1558,34 @@ class _ProofOfDeliveryCard extends StatelessWidget {
           ],
           if (delivery.deliveryProofUrl.isNotEmpty) ...[
             const SizedBox(height: 12),
-            Text('Delivery Confirmation', style: AppTextStyles.fieldLabel.copyWith(color: AppColors.textMuted)),
+            Text(
+              'Delivery Confirmation',
+              style: AppTextStyles.fieldLabel.copyWith(
+                color: AppColors.textMuted,
+              ),
+            ),
             const SizedBox(height: 8),
             _DeliveryImage(url: delivery.deliveryProofUrl, size: 120),
           ],
           if (delivery.paymentProofUrl.isNotEmpty) ...[
             const SizedBox(height: 12),
-            Text('Payment Confirmation', style: AppTextStyles.fieldLabel.copyWith(color: AppColors.textMuted)),
+            Text(
+              'Payment Confirmation',
+              style: AppTextStyles.fieldLabel.copyWith(
+                color: AppColors.textMuted,
+              ),
+            ),
             const SizedBox(height: 8),
             _DeliveryImage(url: delivery.paymentProofUrl, size: 120),
           ],
           if (delivery.signatureUrl.isNotEmpty) ...[
             const SizedBox(height: 12),
-            Text('Signature', style: AppTextStyles.fieldLabel.copyWith(color: AppColors.textMuted)),
+            Text(
+              'Signature',
+              style: AppTextStyles.fieldLabel.copyWith(
+                color: AppColors.textMuted,
+              ),
+            ),
             const SizedBox(height: 8),
             _DeliveryImage(url: delivery.signatureUrl, size: 120),
           ],
@@ -1570,15 +1598,21 @@ class _ProofOfDeliveryCard extends StatelessWidget {
 class _DeliveredBillingCard extends StatelessWidget {
   final DeliveryDetail delivery;
   final Map<String, double> productPrices;
-  const _DeliveredBillingCard({required this.delivery, required this.productPrices});
+  const _DeliveredBillingCard({
+    required this.delivery,
+    required this.productPrices,
+  });
 
   @override
   Widget build(BuildContext context) {
     final subtotal = delivery.items.fold<double>(0, (total, item) {
-      return total + (_itemUnitPrice(item, productPrices[item.id]) * item.delivered);
+      return total +
+          (_itemUnitPrice(item, productPrices[item.id]) * item.delivered);
     });
     final grandTotal = subtotal + delivery.previousPendingBalance;
-    final paidAmount = delivery.paidAmount > 0 ? delivery.paidAmount : grandTotal;
+    final paidAmount = delivery.paidAmount > 0
+        ? delivery.paidAmount
+        : grandTotal;
     final balance = (grandTotal - paidAmount).clamp(0, double.infinity);
 
     return Container(
@@ -1596,17 +1630,25 @@ class _DeliveredBillingCard extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Icon(Icons.receipt_long_outlined, size: 17, color: Color(0xFF246936)),
+                const Icon(
+                  Icons.receipt_long_outlined,
+                  size: 17,
+                  color: Color(0xFF246936),
+                ),
                 const SizedBox(width: 7),
                 Expanded(
                   child: Text(
                     'Billing Summary',
-                    style: AppTextStyles.secondaryStrong.copyWith(color: const Color(0xFF174F28)),
+                    style: AppTextStyles.secondaryStrong.copyWith(
+                      color: const Color(0xFF174F28),
+                    ),
                   ),
                 ),
                 Text(
                   '${delivery.items.length} ${delivery.items.length == 1 ? 'item' : 'items'}',
-                  style: AppTextStyles.smallStrong.copyWith(color: const Color(0xFF24713A)),
+                  style: AppTextStyles.smallStrong.copyWith(
+                    color: const Color(0xFF24713A),
+                  ),
                 ),
               ],
             ),
@@ -1617,8 +1659,17 @@ class _DeliveredBillingCard extends StatelessWidget {
             label: 'Subtotal',
             value: _formatMoney(subtotal),
           ),
-          const _BillingRow(icon: Icons.account_balance_wallet_outlined, label: 'Tax', value: '+ ₹ 0.00'),
-          const _BillingRow(icon: Icons.percent_rounded, label: 'Discount', value: '− ₹ 0.00', valueColor: Color(0xFF21854A)),
+          const _BillingRow(
+            icon: Icons.account_balance_wallet_outlined,
+            label: 'Tax',
+            value: '+ ₹ 0.00',
+          ),
+          const _BillingRow(
+            icon: Icons.percent_rounded,
+            label: 'Discount',
+            value: '− ₹ 0.00',
+            valueColor: Color(0xFF21854A),
+          ),
           const Divider(height: 8, color: AppColors.border),
           _BillingRow(
             icon: Icons.payments_outlined,
@@ -1654,20 +1705,38 @@ class _DeliveredBillingCard extends StatelessWidget {
             icon: Icons.account_balance_wallet_outlined,
             label: 'Balance',
             value: _formatMoney(balance.toDouble()),
-            labelColor: balance > 0 ? AppColors.deliveryRed : AppColors.deliveryGreen,
-            valueColor: balance > 0 ? AppColors.deliveryRed : AppColors.deliveryGreen,
+            labelColor: balance > 0
+                ? AppColors.deliveryRed
+                : AppColors.deliveryGreen,
+            valueColor: balance > 0
+                ? AppColors.deliveryRed
+                : AppColors.deliveryGreen,
             strong: true,
           ),
           if (delivery.paymentMethod.isNotEmpty) ...[
             const Divider(height: 16, color: AppColors.border),
             Row(
               children: [
-                const Icon(Icons.credit_card_rounded, size: 16, color: AppColors.deliveryGreen),
+                const Icon(
+                  Icons.credit_card_rounded,
+                  size: 16,
+                  color: AppColors.deliveryGreen,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text('Payment Method', style: AppTextStyles.smallStrong.copyWith(color: AppColors.textPrimary)),
+                  child: Text(
+                    'Payment Method',
+                    style: AppTextStyles.smallStrong.copyWith(
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
                 ),
-                Text(delivery.paymentMethod, style: AppTextStyles.smallStrong.copyWith(color: AppColors.deliveryInk)),
+                Text(
+                  delivery.paymentMethod,
+                  style: AppTextStyles.smallStrong.copyWith(
+                    color: AppColors.deliveryInk,
+                  ),
+                ),
               ],
             ),
           ],

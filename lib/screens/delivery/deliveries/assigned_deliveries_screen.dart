@@ -104,7 +104,8 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
         );
         allRows.addAll(rows);
         fetchPagination.page += 1;
-      } while (allRows.length < fetchPagination.total && fetchPagination.total > 0);
+      } while (allRows.length < fetchPagination.total &&
+          fetchPagination.total > 0);
       fetchPagination.dispose();
 
       final rows = allRows;

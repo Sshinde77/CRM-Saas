@@ -263,9 +263,14 @@ class DeliveryDetail {
         _text(data, const ['status', 'delivery_status'], fallback: 'planned'),
       ),
       internalStatus: _normalize(
-        _text(data, const ['internal_status', 'internalStatus'],
-            fallback: _text(data, const ['status', 'delivery_status'],
-                fallback: 'planned')),
+        _text(
+          data,
+          const ['internal_status', 'internalStatus'],
+          fallback: _text(data, const [
+            'status',
+            'delivery_status',
+          ], fallback: 'planned'),
+        ),
       ),
       partialDelivery:
           _bool(data['partial_delivery'] ?? data['partialDelivery']) ||
