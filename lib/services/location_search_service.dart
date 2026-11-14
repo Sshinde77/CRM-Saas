@@ -150,20 +150,66 @@ class LocationSearchService {
 
     final data = Map<String, dynamic>.from(properties);
     final name = _text(data['name']) ?? _text(data['street']) ?? 'Location';
-    final city =
-        _text(data['city']) ??
-        _text(data['district']) ??
-        _text(data['county']) ??
-        _text(data['state']);
     final streetLine = _joinHouseAndStreet(data);
-    final addressLine = streetLine == null || streetLine == name
+    var addressLine = streetLine == null || streetLine == name
         ? name
         : '$name, $streetLine';
+
+    // Use structured postcode first; fall back to extracting a 6-digit Indian
+    // pincode from name/street fields (Photon sometimes omits the postcode
+    // property and embeds it in the name instead).
+    var postcode = _text(data['postcode']);
+    if (postcode == null) {
+      final candidateText = [
+        _text(data['name']),
+        _text(data['street']),
+        _text(data['housenumber']),
+      ].whereType<String>().join(' ');
+      final m = RegExp(r'\b([1-9]\d{5})\b').firstMatch(candidateText);
+      if (m != null) {
+        postcode = m.group(1)!;
+        // Strip the extracted pincode from the address line so it doesn't
+        // duplicate into the Address field.
+        addressLine = addressLine
+            .replaceAll(RegExp(r'\b' + postcode + r'\b'), '')
+            .replaceAll(RegExp(r',\s*,'), ',')
+            .replaceAll(RegExp(r'(^[,\s]+|[,\s]+$)'), '')
+            .trim();
+        if (addressLine.isEmpty) addressLine = name;
+      }
+    }
+
+    // Use structured city fields first. When all specific sub-state fields are
+    // absent (common for Indian mandals / villages), fall back to scanning
+    // name/street for a usable place name, excluding numbers (pincodes) and
+    // known state/country values that are too broad to serve as a city.
+    var city =
+        _text(data['city']) ?? _text(data['district']) ?? _text(data['county']);
+    if (city == null) {
+      final stateText = _text(data['state']);
+      final countryText = _text(data['country']);
+      final excludeSet = <String>{
+        if (postcode != null) postcode.toLowerCase(),
+        if (stateText != null) stateText.toLowerCase(),
+        if (countryText != null) countryText.toLowerCase(),
+      };
+      for (final key in const ['name', 'street']) {
+        final v = _text(data[key]);
+        if (v != null &&
+            !RegExp(r'^\d+$').hasMatch(v) &&
+            !excludeSet.contains(v.toLowerCase())) {
+          city = v;
+          break;
+        }
+      }
+      city ??= stateText; // last resort: at least show the state
+    }
+
     final parts = <String?>[
       addressLine,
       city,
       _text(data['state']),
-      _text(data['postcode']),
+      postcode,
       _text(data['country']),
     ];
     final seen = <String>{};
@@ -178,7 +224,7 @@ class LocationSearchService {
       location: LatLng(latitude, longitude),
       addressLine: addressLine,
       city: city,
-      postcode: _text(data['postcode']),
+      postcode: postcode,
     );
   }
 

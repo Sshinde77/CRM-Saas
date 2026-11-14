@@ -55,7 +55,8 @@ class PushNotificationService {
         iOS: DarwinInitializationSettings(),
       ),
       onDidReceiveNotificationResponse: (response) {
-        if (kDebugMode) debugPrint('[FCM] notification tapped: ${response.payload}');
+        if (kDebugMode)
+          debugPrint('[FCM] notification tapped: ${response.payload}');
       },
     );
 
@@ -115,11 +116,15 @@ class PushNotificationService {
     }
 
     final token = await _messaging.getToken();
-    if (kDebugMode) debugPrint('[FCM] getToken result: ${token != null ? '<token received>' : '<null>'}');
+    if (kDebugMode)
+      debugPrint(
+        '[FCM] getToken result: ${token != null ? '<token received>' : '<null>'}',
+      );
     if (token != null && token.trim().isNotEmpty) {
       await _registerToken(token);
     } else {
-      if (kDebugMode) debugPrint('[FCM] no FCM token returned; registration API not called');
+      if (kDebugMode)
+        debugPrint('[FCM] no FCM token returned; registration API not called');
     }
   }
 

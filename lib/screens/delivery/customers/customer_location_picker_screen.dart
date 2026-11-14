@@ -256,6 +256,7 @@ class _CustomerLocationPickerScreenState
   Widget build(BuildContext context) {
     final selected = _selected;
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: Column(
         children: [
           SafeArea(

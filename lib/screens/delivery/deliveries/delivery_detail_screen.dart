@@ -69,10 +69,13 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
         _capacity = capacity;
         _customerProfileImageUrl = customerProfileImageUrl;
         _productPrices = productPrices;
+        final isCompleted =
+            detail.status == 'delivered' || detail.status == 'completed';
         for (final item in detail.items) {
-          _deliveryQuantities[item.id] =
-              capacity?.itemsById[item.id]?.ownRemaining ??
-              mathMax(0, item.loaded - item.delivered);
+          _deliveryQuantities[item.id] = isCompleted
+              ? item.delivered
+              : capacity?.itemsById[item.id]?.ownRemaining ??
+                    mathMax(0, item.loaded - item.delivered);
         }
       });
     }
@@ -907,6 +910,7 @@ class _Body extends StatelessWidget {
                               quantity:
                                   deliveryQuantities[item.id] ?? item.delivered,
                               capacity: capacity?.itemsById[item.id],
+                              isEditable: delivery.canConfirm,
                               onQuantityChanged: (quantity) =>
                                   onDeliveryQuantityChanged(item.id, quantity),
                             ),
@@ -924,6 +928,19 @@ class _Body extends StatelessWidget {
                             value: _formatMoney(orderAmount),
                             strong: true,
                           ),
+                          if ((delivery.status == 'delivered' ||
+                                  delivery.status == 'completed') &&
+                              delivery.paidAmount > 0) ...[
+                            const SizedBox(height: 4),
+                            _AmountStrip(
+                              label: delivery.paymentMethod.isNotEmpty
+                                  ? 'Paid (${delivery.paymentMethod})'
+                                  : 'Paid Amount',
+                              value: _formatMoney(delivery.paidAmount),
+                              strong: false,
+                              color: AppColors.deliveryGreen,
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -1664,11 +1681,13 @@ class _AmountStrip extends StatelessWidget {
   final String label;
   final String value;
   final bool strong;
+  final Color? color;
 
   const _AmountStrip({
     required this.label,
     required this.value,
     required this.strong,
+    this.color,
   });
 
   @override
@@ -1701,7 +1720,9 @@ class _AmountStrip extends StatelessWidget {
             child: Text(
               label,
               style: AppTextStyles.smallStrong.copyWith(
-                color: strong ? AppColors.deliveryRed : const Color(0xFF31536B),
+                color:
+                    color ??
+                    (strong ? AppColors.deliveryRed : const Color(0xFF31536B)),
               ),
             ),
           ),
@@ -1723,9 +1744,11 @@ class _AmountStrip extends StatelessWidget {
                           ? AppTextStyles.bodyStrong
                           : AppTextStyles.smallStrong)
                       .copyWith(
-                        color: strong
-                            ? AppColors.deliveryRed
-                            : const Color(0xFF213B50),
+                        color:
+                            color ??
+                            (strong
+                                ? AppColors.deliveryRed
+                                : const Color(0xFF213B50)),
                       ),
             ),
           ),
@@ -2104,6 +2127,7 @@ class _ItemRow extends StatelessWidget {
   final int quantity;
   final DeliveryItemCapacity? capacity;
   final ValueChanged<int> onQuantityChanged;
+  final bool isEditable;
 
   const _ItemRow({
     required this.item,
@@ -2111,6 +2135,7 @@ class _ItemRow extends StatelessWidget {
     required this.quantity,
     required this.capacity,
     required this.onQuantityChanged,
+    this.isEditable = true,
   });
 
   @override
@@ -2164,11 +2189,27 @@ class _ItemRow extends StatelessWidget {
               ),
               child: Text('${item.planned}'),
             ),
-            delivered: _QuantityStepper(
-              value: quantity,
-              maxValue: capacity?.maxAllowedDelivery,
-              onChanged: onQuantityChanged,
-            ),
+            delivered: isEditable
+                ? _QuantityStepper(
+                    value: quantity,
+                    maxValue: capacity?.maxAllowedDelivery,
+                    onChanged: onQuantityChanged,
+                  )
+                : Container(
+                    width: 64,
+                    height: 40,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: AppColors.border),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '$quantity',
+                      style: AppTextStyles.secondaryStrong.copyWith(
+                        color: AppColors.deliveryInk,
+                      ),
+                    ),
+                  ),
             pending: Text(
               _formatMoney(unitPrice),
               style: const TextStyle(color: AppColors.deliveryRed),

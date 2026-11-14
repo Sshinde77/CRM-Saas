@@ -1,4 +1,4 @@
-﻿import '../../../models/list_pagination.dart';
+import '../../../models/list_pagination.dart';
 import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
 import '../../../widgets/app_skeleton.dart';
@@ -185,8 +185,7 @@ class _SalesManagerStockScreenState extends State<SalesManagerStockScreen> {
       case 'Create Order':
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (_) =>
-                const CreateOrderScreen(useSalesManagerShell: true),
+            builder: (_) => const CreateOrderScreen(useSalesManagerShell: true),
           ),
         );
         return;

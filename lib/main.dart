@@ -4,6 +4,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
+import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 
 import 'app.dart';
 import 'services/api_service.dart';
@@ -11,6 +13,13 @@ import 'services/push_notification_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize the Google Maps TLHC renderer. Without this, maps render blank
+  // or glitchy on many Android devices with google_maps_flutter ^2.4.0+.
+  final mapsImpl = GoogleMapsFlutterPlatform.instance;
+  if (mapsImpl is GoogleMapsFlutterAndroid) {
+    unawaited(mapsImpl.initializeWithRenderer(AndroidMapRenderer.latest));
+  }
 
   // In release builds suppress stack-trace noise from the Flutter framework and
   // native platform errors — log a terse message only.

@@ -121,7 +121,8 @@ class ApiProvider extends ChangeNotifier {
     _currentUser = authMe.user ?? session.user;
     notifyListeners();
     // Registration is best-effort and must not block the login flow.
-    if (kDebugMode) debugPrint('[AUTH] login successful; starting FCM token registration');
+    if (kDebugMode)
+      debugPrint('[AUTH] login successful; starting FCM token registration');
     unawaited(PushNotificationService.instance.registerForSignedInUser());
     return session;
   }

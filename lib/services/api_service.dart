@@ -4074,8 +4074,8 @@ class ApiService {
       422 => 'Invalid data submitted. Please check your input.',
       429 => 'Too many requests. Please wait a moment and try again.',
       500 => 'Something went wrong on our end. Please try again.',
-      502 || 503 =>
-        'Service temporarily unavailable. Please try again shortly.',
+      502 ||
+      503 => 'Service temporarily unavailable. Please try again shortly.',
       _ when statusCode >= 500 =>
         'Something went wrong on our end. Please try again.',
       _ when statusCode >= 400 =>

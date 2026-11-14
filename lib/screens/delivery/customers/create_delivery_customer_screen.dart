@@ -370,10 +370,16 @@ class _CreateDeliveryCustomerScreenState
     if (!mounted || selected == null) return;
     final addressLine = selected.addressLine?.trim();
     final city = selected.city?.trim();
-    final pincode = selected.postcode?.replaceAll(RegExp(r'\D'), '');
+    // Prefer structured postcode; fall back to extracting from the place name.
+    var pincode = selected.postcode?.replaceAll(RegExp(r'\D'), '');
+    if (pincode == null || !_validPincode(pincode)) {
+      final m = RegExp(r'\b([1-9]\d{5})\b').firstMatch(selected.placeName);
+      if (m != null) pincode = m.group(1);
+    }
     setState(() {
       _pickedLocation = selected;
       _location.text = selected.placeName;
+      // Don't copy an address that is just a postcode into the address field.
       final isJustPostcode =
           addressLine != null && RegExp(r'^\d{4,8}$').hasMatch(addressLine);
       if (addressLine != null && addressLine.isNotEmpty && !isJustPostcode) {
