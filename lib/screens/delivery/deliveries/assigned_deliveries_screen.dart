@@ -30,16 +30,15 @@ class AssignedDeliveriesScreen extends StatefulWidget {
 
 class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
   final _pagination = ListPagination();
+  final _tabPaginations = <String, ListPagination>{};
   int _listRequest = 0;
-  Future<void> _changeListPage() async {
-    if (_pagination.isLoading) return;
-    setState(() => _pagination.isLoading = true);
-    try {
-      await _loadDeliveries();
-    } finally {
-      if (mounted) setState(() => _pagination.isLoading = false);
-    }
-  }
+
+  ListPagination _paginationFor(String tab) =>
+      _tabPaginations.putIfAbsent(tab, ListPagination.new);
+
+  ListPagination get _activePagination => _paginationFor(_statusFilter);
+
+  void _changeListPage() => setState(() {});
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _searchController = TextEditingController();
@@ -71,6 +70,9 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
   @override
   void dispose() {
     _pagination.dispose();
+    for (final p in _tabPaginations.values) {
+      p.dispose();
+    }
     _searchController.dispose();
     super.dispose();
   }
@@ -92,10 +94,20 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
         throw const _DeliveryListException('Delivery partner id is missing.');
       }
 
-      final rows = await provider.fetchDeliveryPartnerDeliveries(
-        pagination: _pagination,
-        deliveryPartnerId: deliveryPartnerId,
-      );
+      // Backend caps page_size at 100; fetch all pages to get every delivery.
+      final fetchPagination = ListPagination()..pageSize = 100;
+      final allRows = <Map<String, dynamic>>[];
+      do {
+        final rows = await provider.fetchDeliveryPartnerDeliveries(
+          pagination: fetchPagination,
+          deliveryPartnerId: deliveryPartnerId,
+        );
+        allRows.addAll(rows);
+        fetchPagination.page += 1;
+      } while (allRows.length < fetchPagination.total && fetchPagination.total > 0);
+      fetchPagination.dispose();
+
+      final rows = allRows;
       var deliveries = rows.map(_AssignedDelivery.fromJson).toList();
       deliveries = await _hydrateDeliveryCustomerPhotos(
         provider: provider,
@@ -513,9 +525,6 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    _pagination.filters = {
-      'search': _searchController.text,
-    };
     if (_pagination.observe(_searchController.text)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _loadDeliveries();
@@ -523,7 +532,8 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
     }
 
     final useSalesManagerShell = isSalesManagerSession(context);
-    final visibleDeliveries = _visibleDeliveries;
+    final allFilteredDeliveries = _visibleDeliveries;
+    final visibleDeliveries = _activePagination.local(allFilteredDeliveries);
 
     return Scaffold(
       key: _scaffoldKey,
@@ -569,7 +579,10 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
                             controller: _searchController,
                             statusFilter: _statusFilter,
                             onStatusChanged: (value) {
-                              setState(() => _statusFilter = value);
+                              setState(() {
+                                _statusFilter = value;
+                                _paginationFor(value).reset();
+                              });
                             },
                           ),
                           const SizedBox(height: 10),
@@ -660,7 +673,7 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
                 ),
               SliverToBoxAdapter(
                 child: ListPaginationBar(
-                  pagination: _pagination,
+                  pagination: _activePagination,
                   loading: _isLoading,
                   onChanged: _changeListPage,
                 ),
@@ -2357,8 +2370,8 @@ class _StatusFilterInfo {
 
 const List<_StatusFilterInfo> _statusFilterTabs = [
   _StatusFilterInfo('all', 'All'),
-  _StatusFilterInfo('accepted', 'Accepted'),
   _StatusFilterInfo('pending', 'Pending'),
+  _StatusFilterInfo('accepted', 'Accepted'),
   _StatusFilterInfo('in_transit', 'Intransit'),
   _StatusFilterInfo('delivered', 'Delivered'),
 ];

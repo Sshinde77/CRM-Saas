@@ -161,8 +161,9 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
   }
 
   Future<void> _refresh() async {
-    setState(() => _future = _load());
-    await _future;
+    final request = _load();
+    setState(() { _future = request; });
+    await request;
   }
 
   Future<void> _downloadChallan() async {
@@ -197,30 +198,50 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
         );
         return;
       case 'accepted':
-        await _runStatusAction(
-          title: 'Ready for Delivery',
-          message: 'Confirm that the items are picked and ready for delivery?',
-          action: (provider) async {
-            final remaining = delivery.items
-                .where((item) => item.planned > item.picked)
-                .toList();
-            if (remaining.isNotEmpty) {
-              await provider.pickDelivery(
-                deliveryId: delivery.id,
-                items: [
-                  for (final item in remaining)
-                    {
-                      'delivery_item_id': item.id,
-                      'picked_quantity': item.planned - item.picked,
-                    },
-                ],
-              );
-            }
-            return provider.markDeliveryReady(delivery.id);
-          },
-          successMessage: 'Delivery is ready.',
-        );
-        return;
+        switch (delivery.internalStatus) {
+          case 'loaded':
+            await _runStatusAction(
+              title: 'Start Delivery',
+              message: 'Start this delivery and mark it in transit?',
+              action: (provider) => provider.dispatchDelivery(delivery.id),
+              successMessage: 'Delivery is now in transit.',
+            );
+            return;
+          case 'ready':
+            await _runStatusAction(
+              title: 'Load Delivery',
+              message: 'Confirm that all items are loaded in the vehicle?',
+              action: (provider) => provider.loadDelivery(delivery.id),
+              successMessage: 'Delivery loaded.',
+            );
+            return;
+          default:
+            await _runStatusAction(
+              title: 'Ready for Delivery',
+              message:
+                  'Confirm that the items are picked and ready for delivery?',
+              action: (provider) async {
+                final remaining = delivery.items
+                    .where((item) => item.planned > item.picked)
+                    .toList();
+                if (remaining.isNotEmpty) {
+                  await provider.pickDelivery(
+                    deliveryId: delivery.id,
+                    items: [
+                      for (final item in remaining)
+                        {
+                          'delivery_item_id': item.id,
+                          'picked_quantity': item.planned - item.picked,
+                        },
+                    ],
+                  );
+                }
+                return provider.markDeliveryReady(delivery.id);
+              },
+              successMessage: 'Delivery is ready.',
+            );
+            return;
+        }
       case 'ready':
         await _runStatusAction(
           title: 'Load Delivery',
@@ -240,6 +261,18 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
     }
     if (delivery.status != 'in_transit' &&
         delivery.status != 'partially_delivered') {
+      return;
+    }
+    // Guard: backend transitions on internal_status, not status.
+    // If the vehicle was loaded but never dispatched, dispatch first.
+    if (delivery.internalStatus == 'loaded') {
+      await _runStatusAction(
+        title: 'Start Delivery',
+        message:
+            'The vehicle has been loaded but not yet dispatched. Start the delivery first?',
+        action: (provider) => provider.dispatchDelivery(delivery.id),
+        successMessage: 'Delivery is now in transit.',
+      );
       return;
     }
     if (delivery.items.isEmpty ||
@@ -1045,35 +1078,22 @@ class _Body extends StatelessWidget {
                       ),
                     ),
                     if (delivery.podPhotos.isNotEmpty ||
-                        delivery.signatureUrl.isNotEmpty) ...[
-                      const Divider(height: 24, color: AppColors.border),
-                      Text(
-                        'Proof of Delivery',
-                        style: AppTextStyles.bodyStrong.copyWith(
-                          color: AppColors.deliveryInk,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Wrap(
-                        spacing: 10,
-                        runSpacing: 10,
-                        children: [
-                          for (final url in delivery.podPhotos)
-                            _DeliveryImage(url: url, size: 76),
-                        ],
-                      ),
-                      if (delivery.signatureUrl.isNotEmpty) ...[
-                        const SizedBox(height: 10),
-                        Text(
-                          'Signature',
-                          style: AppTextStyles.body.copyWith(
-                            color: AppColors.textMuted,
-                          ),
-                        ),
-                        _DeliveryImage(url: delivery.signatureUrl, size: 120),
-                      ],
+                        delivery.signatureUrl.isNotEmpty ||
+                        delivery.deliveryProofUrl.isNotEmpty ||
+                        delivery.paymentProofUrl.isNotEmpty) ...[
+                      const SizedBox(height: 14),
+                      _ProofOfDeliveryCard(delivery: delivery),
                     ],
-                    if (delivery.status == 'in_transit') ...[
+                    if (delivery.status == 'delivered' ||
+                        delivery.status == 'completed') ...[
+                      const SizedBox(height: 14),
+                      _DeliveredBillingCard(
+                        delivery: delivery,
+                        productPrices: productPrices,
+                      ),
+                    ],
+                    if (delivery.status == 'in_transit' &&
+                        delivery.internalStatus != 'loaded') ...[
                       const SizedBox(height: 14),
                       _PaymentConfirmationCard(
                         subtotal: orderAmount,
@@ -1102,7 +1122,10 @@ class _Body extends StatelessWidget {
                               ),
                             )
                           : const Icon(Icons.local_shipping_outlined, size: 19),
-                      label: Text(_primaryActionLabel(delivery.status)),
+                      label: Text(_primaryActionLabel(
+                        delivery.status,
+                        internalStatus: delivery.internalStatus,
+                      )),
                       style: FilledButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
@@ -1456,6 +1479,181 @@ class _BillingRow extends StatelessWidget {
                     color: valueColor ?? AppColors.deliveryInk,
                   ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProofOfDeliveryCard extends StatelessWidget {
+  final DeliveryDetail delivery;
+  const _ProofOfDeliveryCard({required this.delivery});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: _cardDecoration(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const CircleAvatar(
+                radius: 16,
+                backgroundColor: AppColors.deliveryGreen,
+                child: Icon(Icons.photo_camera_rounded, color: Colors.white, size: 17),
+              ),
+              const SizedBox(width: 9),
+              Text(
+                'Delivery Proof',
+                style: AppTextStyles.sectionHeading.copyWith(
+                  color: AppColors.deliveryInk,
+                ),
+              ),
+            ],
+          ),
+          if (delivery.podPhotos.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text('Photos', style: AppTextStyles.fieldLabel.copyWith(color: AppColors.textMuted)),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                for (final url in delivery.podPhotos)
+                  _DeliveryImage(url: url, size: 80),
+              ],
+            ),
+          ],
+          if (delivery.deliveryProofUrl.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text('Delivery Confirmation', style: AppTextStyles.fieldLabel.copyWith(color: AppColors.textMuted)),
+            const SizedBox(height: 8),
+            _DeliveryImage(url: delivery.deliveryProofUrl, size: 120),
+          ],
+          if (delivery.paymentProofUrl.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text('Payment Confirmation', style: AppTextStyles.fieldLabel.copyWith(color: AppColors.textMuted)),
+            const SizedBox(height: 8),
+            _DeliveryImage(url: delivery.paymentProofUrl, size: 120),
+          ],
+          if (delivery.signatureUrl.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text('Signature', style: AppTextStyles.fieldLabel.copyWith(color: AppColors.textMuted)),
+            const SizedBox(height: 8),
+            _DeliveryImage(url: delivery.signatureUrl, size: 120),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _DeliveredBillingCard extends StatelessWidget {
+  final DeliveryDetail delivery;
+  final Map<String, double> productPrices;
+  const _DeliveredBillingCard({required this.delivery, required this.productPrices});
+
+  @override
+  Widget build(BuildContext context) {
+    final subtotal = delivery.items.fold<double>(0, (total, item) {
+      return total + (_itemUnitPrice(item, productPrices[item.id]) * item.delivered);
+    });
+    final grandTotal = subtotal + delivery.previousPendingBalance;
+    final paidAmount = delivery.paidAmount > 0 ? delivery.paidAmount : grandTotal;
+    final balance = (grandTotal - paidAmount).clamp(0, double.infinity);
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: _cardDecoration(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            height: 40,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEAF5E9),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.receipt_long_outlined, size: 17, color: Color(0xFF246936)),
+                const SizedBox(width: 7),
+                Expanded(
+                  child: Text(
+                    'Billing Summary',
+                    style: AppTextStyles.secondaryStrong.copyWith(color: const Color(0xFF174F28)),
+                  ),
+                ),
+                Text(
+                  '${delivery.items.length} ${delivery.items.length == 1 ? 'item' : 'items'}',
+                  style: AppTextStyles.smallStrong.copyWith(color: const Color(0xFF24713A)),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          _BillingRow(
+            icon: Icons.sell_outlined,
+            label: 'Subtotal',
+            value: _formatMoney(subtotal),
+          ),
+          const _BillingRow(icon: Icons.account_balance_wallet_outlined, label: 'Tax', value: '+ ₹ 0.00'),
+          const _BillingRow(icon: Icons.percent_rounded, label: 'Discount', value: '− ₹ 0.00', valueColor: Color(0xFF21854A)),
+          const Divider(height: 8, color: AppColors.border),
+          _BillingRow(
+            icon: Icons.payments_outlined,
+            label: 'Total',
+            value: _formatMoney(subtotal),
+            strong: true,
+          ),
+          _BillingRow(
+            icon: Icons.receipt_outlined,
+            label: 'Previous Balance',
+            value: '+ ${_formatMoney(delivery.previousPendingBalance)}',
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFFEAF5E9),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: _BillingRow(
+              icon: Icons.shopping_bag_outlined,
+              label: 'Grand Total',
+              value: _formatMoney(grandTotal),
+              valueColor: const Color(0xFF19652D),
+              strong: true,
+            ),
+          ),
+          const SizedBox(height: 4),
+          _BillingRow(
+            icon: Icons.money_outlined,
+            label: 'Paid Amount',
+            value: _formatMoney(paidAmount),
+          ),
+          _BillingRow(
+            icon: Icons.account_balance_wallet_outlined,
+            label: 'Balance',
+            value: _formatMoney(balance.toDouble()),
+            labelColor: balance > 0 ? AppColors.deliveryRed : AppColors.deliveryGreen,
+            valueColor: balance > 0 ? AppColors.deliveryRed : AppColors.deliveryGreen,
+            strong: true,
+          ),
+          if (delivery.paymentMethod.isNotEmpty) ...[
+            const Divider(height: 16, color: AppColors.border),
+            Row(
+              children: [
+                const Icon(Icons.credit_card_rounded, size: 16, color: AppColors.deliveryGreen),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text('Payment Method', style: AppTextStyles.smallStrong.copyWith(color: AppColors.textPrimary)),
+                ),
+                Text(delivery.paymentMethod, style: AppTextStyles.smallStrong.copyWith(color: AppColors.deliveryInk)),
+              ],
+            ),
+          ],
         ],
       ),
     );
@@ -2267,15 +2465,27 @@ bool _hasPrimaryAction(String status) => const {
   'partially_delivered',
 }.contains(status);
 
-String _primaryActionLabel(String status) => switch (status) {
-  'pending' || 'planned' || 'assigned' => 'Accept Delivery',
-  'accepted' => 'Ready for Delivery',
-  'ready' => 'Load Delivery',
-  'loaded' => 'Start Delivery',
-  'in_transit' || 'partially_delivered' => 'Complete Order',
-  'delivered' || 'completed' => 'Order Completed',
-  _ => 'No Action Available',
-};
+String _primaryActionLabel(String status, {String internalStatus = ''}) {
+  if (status == 'accepted') {
+    return switch (internalStatus) {
+      'loaded' => 'Start Delivery',
+      'ready' => 'Load Delivery',
+      _ => 'Ready for Delivery',
+    };
+  }
+  if ((status == 'in_transit' || status == 'partially_delivered') &&
+      internalStatus == 'loaded') {
+    return 'Start Delivery';
+  }
+  return switch (status) {
+    'pending' || 'planned' || 'assigned' => 'Accept Delivery',
+    'ready' => 'Load Delivery',
+    'loaded' => 'Start Delivery',
+    'in_transit' || 'partially_delivered' => 'Complete Order',
+    'delivered' || 'completed' => 'Order Completed',
+    _ => 'No Action Available',
+  };
+}
 
 String _formatDate(DateTime? value, {bool includeTime = false}) {
   if (value == null) return '\u2014';

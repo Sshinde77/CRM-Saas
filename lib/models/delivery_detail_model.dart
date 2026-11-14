@@ -14,6 +14,7 @@ class DeliveryDetail {
   final String partnerPhone;
   final String partnerEmail;
   final String status;
+  final String internalStatus;
   final bool partialDelivery;
   final String vehicleNumber;
   final String vehicleType;
@@ -32,6 +33,8 @@ class DeliveryDetail {
   final String deliveryProofUrl;
   final String paymentProofUrl;
   final String signatureUrl;
+  final String paymentMethod;
+  final double paidAmount;
 
   const DeliveryDetail({
     required this.id,
@@ -46,6 +49,7 @@ class DeliveryDetail {
     required this.partnerPhone,
     required this.partnerEmail,
     required this.status,
+    this.internalStatus = '',
     required this.partialDelivery,
     required this.vehicleNumber,
     required this.vehicleType,
@@ -64,6 +68,8 @@ class DeliveryDetail {
     required this.deliveryProofUrl,
     required this.paymentProofUrl,
     required this.signatureUrl,
+    this.paymentMethod = '',
+    this.paidAmount = 0,
   });
 
   factory DeliveryDetail.fromJson(Map<String, dynamic> json) {
@@ -256,6 +262,11 @@ class DeliveryDetail {
       status: _normalize(
         _text(data, const ['status', 'delivery_status'], fallback: 'planned'),
       ),
+      internalStatus: _normalize(
+        _text(data, const ['internal_status', 'internalStatus'],
+            fallback: _text(data, const ['status', 'delivery_status'],
+                fallback: 'planned')),
+      ),
       partialDelivery:
           _bool(data['partial_delivery'] ?? data['partialDelivery']) ||
           _normalize(_text(data, const ['status'])) == 'partially_delivered',
@@ -348,6 +359,18 @@ class DeliveryDetail {
         'signatureUrl',
         'signature',
       ]),
+      paymentMethod: _text(data, const [
+        'payment_method',
+        'paymentMethod',
+        'payment_type',
+        'paymentType',
+      ]),
+      paidAmount: _number(
+        data['paid_amount'] ??
+            data['paidAmount'] ??
+            data['payment_amount'] ??
+            data['paymentAmount'],
+      ),
     );
   }
 

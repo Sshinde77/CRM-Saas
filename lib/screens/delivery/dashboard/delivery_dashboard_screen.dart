@@ -124,7 +124,7 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
 
   Future<void> _refresh() async {
     final nextFuture = _getDashboardFuture(force: true);
-    setState(() => _dashboardFuture = nextFuture);
+    setState(() { _dashboardFuture = nextFuture; });
     await nextFuture;
   }
 
