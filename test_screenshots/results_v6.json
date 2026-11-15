@@ -1,0 +1,74 @@
+{
+  "findings": [
+    {
+      "sev": "LOW",
+      "id": "CONSOLE",
+      "desc": "Access to image at 'https://fe91aefd4fc01969dc0df33dd88906df.r2.cloudflarestorage.com/crm-saas-stora"
+    },
+    {
+      "sev": "LOW",
+      "id": "CONSOLE",
+      "desc": "Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "sev": "LOW",
+      "id": "CONSOLE",
+      "desc": "Access to image at 'https://fe91aefd4fc01969dc0df33dd88906df.r2.cloudflarestorage.com/crm-saas-stora"
+    },
+    {
+      "sev": "LOW",
+      "id": "CONSOLE",
+      "desc": "Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "sev": "LOW",
+      "id": "CONSOLE",
+      "desc": "Access to image at 'https://fe91aefd4fc01969dc0df33dd88906df.r2.cloudflarestorage.com/crm-saas-stora"
+    },
+    {
+      "sev": "LOW",
+      "id": "CONSOLE",
+      "desc": "Failed to load resource: net::ERR_FAILED"
+    }
+  ],
+  "consoleErrors": [
+    {
+      "url": "http://localhost:8080/",
+      "text": "Access to image at 'https://fe91aefd4fc01969dc0df33dd88906df.r2.cloudflarestorage.com/crm-saas-storage/org/20ddc7f5-225f-46dc-af7d-5cd25228dd74/266c95c6-3a32-410b-a6f5-b596757d3887?response-content-type=image%2Fpng&response-content-disposition=inline%3B%20filename%3D%22ChatGPT%20Image%20Aug%2030_%202026_%2002_13_38%20AM.png%22%3B%20filename%2A%3DUTF-8%27%27ChatGPT%2520Image%2520Aug%252030%252C%25202026%252C%252002_13_38%2520AM.png&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=10e02c2f477f19cf886bb2a32e435f2d%2F20261115%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20261115T150157Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=224520e1bdf24ee699a1da4945e965d66d628872b915f9a6046d0eb67d4d29ae' (redirected from 'https://crm-saas-backend.bsmart.workers.dev/files/266c95c6-3a32-410b-a6f5-b596757d3887') from origin 'http://localhost:8080' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource."
+    },
+    {
+      "url": "http://localhost:8080/",
+      "text": "Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "url": "http://localhost:8080/#/delivery/collections",
+      "text": "Access to image at 'https://fe91aefd4fc01969dc0df33dd88906df.r2.cloudflarestorage.com/crm-saas-storage/org/20ddc7f5-225f-46dc-af7d-5cd25228dd74/24f1f1cd-b0f5-4636-8d7e-88d2e75b7c8e?response-content-type=image%2Fjpeg&response-content-disposition=inline%3B%20filename%3D%22creative-logo-design-for-real-estate-company-vector.jpg%22&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=10e02c2f477f19cf886bb2a32e435f2d%2F20261115%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20261115T150327Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=027aa4320a29917a797594dc55ffa4e9e4db24cd789756cbde86d8d3f58d63a9' (redirected from 'https://crm-saas-backend.bsmart.workers.dev/files/24f1f1cd-b0f5-4636-8d7e-88d2e75b7c8e') from origin 'http://localhost:8080' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource."
+    },
+    {
+      "url": "http://localhost:8080/#/delivery/collections",
+      "text": "Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "url": "http://localhost:8080/#/delivery/collections",
+      "text": "Access to image at 'https://fe91aefd4fc01969dc0df33dd88906df.r2.cloudflarestorage.com/crm-saas-storage/org/20ddc7f5-225f-46dc-af7d-5cd25228dd74/6a10c34d-d6db-4ff2-b5ce-726f99bd31c4?response-content-type=image%2Fjpeg&response-content-disposition=inline%3B%20filename%3D%22scaled_945f1927-2442-489f-9b6c-add4d28188034096692517053778754.jpg%22&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=10e02c2f477f19cf886bb2a32e435f2d%2F20261115%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20261115T150327Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=9270285a449a690679044eaee5cc71fa746794e7745aeddf392f1a7b7b3350b5' (redirected from 'https://crm-saas-backend.bsmart.workers.dev/files/6a10c34d-d6db-4ff2-b5ce-726f99bd31c4') from origin 'http://localhost:8080' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource."
+    },
+    {
+      "url": "http://localhost:8080/#/delivery/collections",
+      "text": "Failed to load resource: net::ERR_FAILED"
+    }
+  ],
+  "networkErrors": [
+    {
+      "url": "https://fe91aefd4fc01969dc0df33dd88906df.r2.cloudflarestorage.com/crm-saas-storage/org/20ddc7f5-225f-46dc-af7d-5cd25228dd74/266c95c6-3a32-410b-a6f5-b596757d3887?response-content-type=image%2Fpng&response-content-disposition=inline%3B%20filename%3D%22ChatGPT%20Image%20Aug%2030_%202026_%2002_13_38%20AM.png%22%3B%20filename%2A%3DUTF-8%27%27ChatGPT%2520Image%2520Aug%252030%252C%25202026%252C%252002_13_38%2520AM.png&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=10e02c2f477f19cf886bb2a32e435f2d%2F20261115%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20261115T150157Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=224520e1bdf24ee699a1da4945e965d66d628872b915f9a6046d0eb67d4d29ae",
+      "err": "net::ERR_FAILED"
+    },
+    {
+      "url": "https://fe91aefd4fc01969dc0df33dd88906df.r2.cloudflarestorage.com/crm-saas-storage/org/20ddc7f5-225f-46dc-af7d-5cd25228dd74/24f1f1cd-b0f5-4636-8d7e-88d2e75b7c8e?response-content-type=image%2Fjpeg&response-content-disposition=inline%3B%20filename%3D%22creative-logo-design-for-real-estate-company-vector.jpg%22&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=10e02c2f477f19cf886bb2a32e435f2d%2F20261115%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20261115T150327Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=027aa4320a29917a797594dc55ffa4e9e4db24cd789756cbde86d8d3f58d63a9",
+      "err": "net::ERR_FAILED"
+    },
+    {
+      "url": "https://fe91aefd4fc01969dc0df33dd88906df.r2.cloudflarestorage.com/crm-saas-storage/org/20ddc7f5-225f-46dc-af7d-5cd25228dd74/6a10c34d-d6db-4ff2-b5ce-726f99bd31c4?response-content-type=image%2Fjpeg&response-content-disposition=inline%3B%20filename%3D%22scaled_945f1927-2442-489f-9b6c-add4d28188034096692517053778754.jpg%22&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=10e02c2f477f19cf886bb2a32e435f2d%2F20261115%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20261115T150327Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=9270285a449a690679044eaee5cc71fa746794e7745aeddf392f1a7b7b3350b5",
+      "err": "net::ERR_FAILED"
+    }
+  ]
+}

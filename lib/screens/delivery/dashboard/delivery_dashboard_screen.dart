@@ -946,7 +946,7 @@ class _StatsGrid extends StatelessWidget {
 
   const _StatsGrid({required this.data});
 
-  static const double _tileHeight = 78;
+  static const double _tileHeight = 82;
   static const double _spacing = 8;
   static const double _crossSpacing = 6;
   static const double gridHeight = _tileHeight * 3 + _spacing * 2;
@@ -1085,10 +1085,7 @@ class _StatCard extends StatelessWidget {
       ),
     );
     final value = Text(
-      info.value.toString().padLeft(
-        info.label == 'Canceled Orders' ? 2 : 1,
-        '0',
-      ),
+      info.value.toString(),
       style: AppTextStyles.importantNumber.copyWith(
         fontSize: 18,
         color: AppColors.deliveryDashboardText,

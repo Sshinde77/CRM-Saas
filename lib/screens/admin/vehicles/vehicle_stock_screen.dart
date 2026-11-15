@@ -379,10 +379,11 @@ class _VehicleStockScreenState extends State<VehicleStockScreen> {
                                     ),
                                   ),
                                 ),
-                              ListPaginationBar(
-                                pagination: _pagination,
-                                onChanged: _changeListPage,
-                              ),
+                              if (!isLoading)
+                                ListPaginationBar(
+                                  pagination: _pagination,
+                                  onChanged: _changeListPage,
+                                ),
                             ],
                           ),
                         ),

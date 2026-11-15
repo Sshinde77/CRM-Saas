@@ -1,0 +1,149 @@
+{
+  "findings": [
+    {
+      "sev": "LOW",
+      "id": "CONSOLE-ERROR",
+      "desc": "Access to image at 'https://fe91aefd4fc01969dc0df33dd88906df.r2.cloudflarestorage.com/crm-saas-storage/org/20ddc7f5-225f"
+    },
+    {
+      "sev": "LOW",
+      "id": "CONSOLE-ERROR",
+      "desc": "Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "sev": "LOW",
+      "id": "CONSOLE-ERROR",
+      "desc": "Access to XMLHttpRequest at 'https://fe91aefd4fc01969dc0df33dd88906df.r2.cloudflarestorage.com/crm-saas-storage/org/20dd"
+    },
+    {
+      "sev": "LOW",
+      "id": "CONSOLE-ERROR",
+      "desc": "Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "sev": "LOW",
+      "id": "CONSOLE-ERROR",
+      "desc": "Access to XMLHttpRequest at 'https://fe91aefd4fc01969dc0df33dd88906df.r2.cloudflarestorage.com/crm-saas-storage/org/20dd"
+    },
+    {
+      "sev": "LOW",
+      "id": "CONSOLE-ERROR",
+      "desc": "Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "sev": "LOW",
+      "id": "CONSOLE-ERROR",
+      "desc": "Access to image at 'https://fe91aefd4fc01969dc0df33dd88906df.r2.cloudflarestorage.com/crm-saas-storage/org/20ddc7f5-225f"
+    },
+    {
+      "sev": "LOW",
+      "id": "CONSOLE-ERROR",
+      "desc": "Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "sev": "LOW",
+      "id": "CONSOLE-ERROR",
+      "desc": "Access to image at 'https://fe91aefd4fc01969dc0df33dd88906df.r2.cloudflarestorage.com/crm-saas-storage/org/20ddc7f5-225f"
+    },
+    {
+      "sev": "LOW",
+      "id": "CONSOLE-ERROR",
+      "desc": "Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "sev": "LOW",
+      "id": "CONSOLE-ERROR",
+      "desc": "Access to image at 'https://fe91aefd4fc01969dc0df33dd88906df.r2.cloudflarestorage.com/crm-saas-storage/org/20ddc7f5-225f"
+    },
+    {
+      "sev": "LOW",
+      "id": "CONSOLE-ERROR",
+      "desc": "Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "sev": "LOW",
+      "id": "CONSOLE-ERROR",
+      "desc": "Failed to load resource: the server responded with a status of 403 ()"
+    }
+  ],
+  "consoleErrors": [
+    {
+      "url": "http://localhost:8080/#/delivery/dashboard",
+      "text": "Access to image at 'https://fe91aefd4fc01969dc0df33dd88906df.r2.cloudflarestorage.com/crm-saas-storage/org/20ddc7f5-225f-46dc-af7d-5cd25228dd74/266c95c6-3a32-410b-a6f5-b596757d3887?response-content-type=image%2Fpng&response-content-disposition=inline%3B%20filename%3D%22ChatGPT%20Image%20Aug%2030_%202026_%2002_13_38%20AM.png%22%3B%20filename%2A%3DUTF-8%27%27ChatGPT%2520Image%2520Aug%252030%252C%25202026%252C%252002_13_38%2520AM.png&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=10e02c2f477f19cf886bb2a32e435f2d%2F20261115%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20261115T150902Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=91b14570ccfe9482ac0eeb98809ecfe86cf7da7b94b6e77c13b4bec5e2f68161' (redirected from 'https://crm-saas-backend.bsmart.workers.dev/files/266c95c6-3a32-410b-a6f5-b596757d3887') from origin 'http://localhost:8080' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource."
+    },
+    {
+      "url": "http://localhost:8080/#/delivery/dashboard",
+      "text": "Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "url": "http://localhost:8080/#/delivery/deliveries",
+      "text": "Access to XMLHttpRequest at 'https://fe91aefd4fc01969dc0df33dd88906df.r2.cloudflarestorage.com/crm-saas-storage/org/20ddc7f5-225f-46dc-af7d-5cd25228dd74/0a69ec02-a472-4d50-b6d6-374fa6891adc?response-content-type=image%2Fjpeg&response-content-disposition=inline%3B%20filename%3D%22man-5007843_640.jpg%22&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=10e02c2f477f19cf886bb2a32e435f2d%2F20261115%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20261115T150928Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=f77f7230ed92500371dcf70148eb04b5aeae49a015d6d76a3ea97f8cda04c24b' (redirected from 'https://crm-saas-backend.bsmart.workers.dev/files/0a69ec02-a472-4d50-b6d6-374fa6891adc') from origin 'http://localhost:8080' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource."
+    },
+    {
+      "url": "http://localhost:8080/#/delivery/deliveries",
+      "text": "Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "url": "http://localhost:8080/#/delivery/deliveries",
+      "text": "Access to XMLHttpRequest at 'https://fe91aefd4fc01969dc0df33dd88906df.r2.cloudflarestorage.com/crm-saas-storage/org/20ddc7f5-225f-46dc-af7d-5cd25228dd74/0a09dc1f-1c1f-4b87-847b-132263cdaa90?response-content-type=image%2Fjpeg&response-content-disposition=inline%3B%20filename%3D%2226.08.26%20.jpg%22%3B%20filename%2A%3DUTF-8%27%2726.08.26%2520%25F0%259F%259B%2592.jpg&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=10e02c2f477f19cf886bb2a32e435f2d%2F20261115%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20261115T150928Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=63817bc129617f9f63d85c23d70645c12c06097df8fa0d106247ebc9df1fb0df' (redirected from 'https://crm-saas-backend.bsmart.workers.dev/files/0a09dc1f-1c1f-4b87-847b-132263cdaa90') from origin 'http://localhost:8080' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource."
+    },
+    {
+      "url": "http://localhost:8080/#/delivery/deliveries",
+      "text": "Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "url": "http://localhost:8080/#/delivery/collections",
+      "text": "Access to image at 'https://fe91aefd4fc01969dc0df33dd88906df.r2.cloudflarestorage.com/crm-saas-storage/org/20ddc7f5-225f-46dc-af7d-5cd25228dd74/6a10c34d-d6db-4ff2-b5ce-726f99bd31c4?response-content-type=image%2Fjpeg&response-content-disposition=inline%3B%20filename%3D%22scaled_945f1927-2442-489f-9b6c-add4d28188034096692517053778754.jpg%22&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=10e02c2f477f19cf886bb2a32e435f2d%2F20261115%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20261115T150939Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=5edb15975946d6fe7ecb003d7b715b7be13e0a2ce5c3501b04370cac5781ff61' (redirected from 'https://crm-saas-backend.bsmart.workers.dev/files/6a10c34d-d6db-4ff2-b5ce-726f99bd31c4') from origin 'http://localhost:8080' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource."
+    },
+    {
+      "url": "http://localhost:8080/#/delivery/collections",
+      "text": "Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "url": "http://localhost:8080/#/delivery/customers",
+      "text": "Access to image at 'https://fe91aefd4fc01969dc0df33dd88906df.r2.cloudflarestorage.com/crm-saas-storage/org/20ddc7f5-225f-46dc-af7d-5cd25228dd74/24f1f1cd-b0f5-4636-8d7e-88d2e75b7c8e?response-content-type=image%2Fjpeg&response-content-disposition=inline%3B%20filename%3D%22creative-logo-design-for-real-estate-company-vector.jpg%22&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=10e02c2f477f19cf886bb2a32e435f2d%2F20261115%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20261115T150939Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=2bdb9f5180a80390c53d760bed5a4e28802920c9566165f55aee97b3ee7af923' (redirected from 'https://crm-saas-backend.bsmart.workers.dev/files/24f1f1cd-b0f5-4636-8d7e-88d2e75b7c8e') from origin 'http://localhost:8080' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource."
+    },
+    {
+      "url": "http://localhost:8080/#/delivery/customers",
+      "text": "Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "url": "http://localhost:8080/#/delivery/customers",
+      "text": "Access to image at 'https://fe91aefd4fc01969dc0df33dd88906df.r2.cloudflarestorage.com/crm-saas-storage/org/20ddc7f5-225f-46dc-af7d-5cd25228dd74/58bfd463-0192-420d-86fa-45d094fc6103?response-content-type=image%2Fjpeg&response-content-disposition=inline%3B%20filename%3D%22scaled_4e677ea2-7a2d-42f9-a044-f49a11000ba85038365727416756660.jpg%22&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=10e02c2f477f19cf886bb2a32e435f2d%2F20261115%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20261115T150946Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=82142c75f42d5d902329dd6c4f72ad2cd173745dc477d1a01456a1915b8dbd86' (redirected from 'https://crm-saas-backend.bsmart.workers.dev/files/58bfd463-0192-420d-86fa-45d094fc6103') from origin 'http://localhost:8080' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource."
+    },
+    {
+      "url": "http://localhost:8080/#/delivery/customers",
+      "text": "Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "url": "http://localhost:8080/#/delivery/profile",
+      "text": "Failed to load resource: the server responded with a status of 403 ()"
+    }
+  ],
+  "networkErrors": [
+    {
+      "url": "https://fe91aefd4fc01969dc0df33dd88906df.r2.cloudflarestorage.com/crm-saas-storage/org/20ddc7f5-225f-46dc-af7d-5cd25228dd74/266c95c6-3a32-410b-a6f5-b596757d3887?response-content-type=image%2Fpng&response-content-disposition=inline%3B%20filename%3D%22ChatGPT%20Image%20Aug%2030_%202026_%2002_13_38%20AM.png%22%3B%20filename%2A%3DUTF-8%27%27ChatGPT%2520Image%2520Aug%252030%252C%25202026%252C%252002_13_38%2520AM.png&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=10e02c2f477f19cf886bb2a32e435f2d%2F20261115%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20261115T150902Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=91b14570ccfe9482ac0eeb98809ecfe86cf7da7b94b6e77c13b4bec5e2f68161",
+      "err": "net::ERR_FAILED"
+    },
+    {
+      "url": "https://fe91aefd4fc01969dc0df33dd88906df.r2.cloudflarestorage.com/crm-saas-storage/org/20ddc7f5-225f-46dc-af7d-5cd25228dd74/0a69ec02-a472-4d50-b6d6-374fa6891adc?response-content-type=image%2Fjpeg&response-content-disposition=inline%3B%20filename%3D%22man-5007843_640.jpg%22&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=10e02c2f477f19cf886bb2a32e435f2d%2F20261115%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20261115T150928Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=f77f7230ed92500371dcf70148eb04b5aeae49a015d6d76a3ea97f8cda04c24b",
+      "err": "net::ERR_FAILED"
+    },
+    {
+      "url": "https://fe91aefd4fc01969dc0df33dd88906df.r2.cloudflarestorage.com/crm-saas-storage/org/20ddc7f5-225f-46dc-af7d-5cd25228dd74/0a09dc1f-1c1f-4b87-847b-132263cdaa90?response-content-type=image%2Fjpeg&response-content-disposition=inline%3B%20filename%3D%2226.08.26%20.jpg%22%3B%20filename%2A%3DUTF-8%27%2726.08.26%2520%25F0%259F%259B%2592.jpg&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=10e02c2f477f19cf886bb2a32e435f2d%2F20261115%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20261115T150928Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=63817bc129617f9f63d85c23d70645c12c06097df8fa0d106247ebc9df1fb0df",
+      "err": "net::ERR_FAILED"
+    },
+    {
+      "url": "https://fe91aefd4fc01969dc0df33dd88906df.r2.cloudflarestorage.com/crm-saas-storage/org/20ddc7f5-225f-46dc-af7d-5cd25228dd74/6a10c34d-d6db-4ff2-b5ce-726f99bd31c4?response-content-type=image%2Fjpeg&response-content-disposition=inline%3B%20filename%3D%22scaled_945f1927-2442-489f-9b6c-add4d28188034096692517053778754.jpg%22&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=10e02c2f477f19cf886bb2a32e435f2d%2F20261115%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20261115T150939Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=5edb15975946d6fe7ecb003d7b715b7be13e0a2ce5c3501b04370cac5781ff61",
+      "err": "net::ERR_FAILED"
+    },
+    {
+      "url": "https://fe91aefd4fc01969dc0df33dd88906df.r2.cloudflarestorage.com/crm-saas-storage/org/20ddc7f5-225f-46dc-af7d-5cd25228dd74/24f1f1cd-b0f5-4636-8d7e-88d2e75b7c8e?response-content-type=image%2Fjpeg&response-content-disposition=inline%3B%20filename%3D%22creative-logo-design-for-real-estate-company-vector.jpg%22&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=10e02c2f477f19cf886bb2a32e435f2d%2F20261115%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20261115T150939Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=2bdb9f5180a80390c53d760bed5a4e28802920c9566165f55aee97b3ee7af923",
+      "err": "net::ERR_FAILED"
+    },
+    {
+      "url": "https://fe91aefd4fc01969dc0df33dd88906df.r2.cloudflarestorage.com/crm-saas-storage/org/20ddc7f5-225f-46dc-af7d-5cd25228dd74/58bfd463-0192-420d-86fa-45d094fc6103?response-content-type=image%2Fjpeg&response-content-disposition=inline%3B%20filename%3D%22scaled_4e677ea2-7a2d-42f9-a044-f49a11000ba85038365727416756660.jpg%22&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=10e02c2f477f19cf886bb2a32e435f2d%2F20261115%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20261115T150946Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=82142c75f42d5d902329dd6c4f72ad2cd173745dc477d1a01456a1915b8dbd86",
+      "err": "net::ERR_FAILED"
+    }
+  ]
+}

@@ -676,21 +676,20 @@ class CSCPickerState extends State<CSCPicker> {
     _states.clear();
     //print(_selectedCountry);
     var response = await getResponse();
-    var takeState =
-        widget.flagState == CountryFlag.ENABLE ||
+    var takeState = widget.flagState == CountryFlag.ENABLE ||
             widget.flagState == CountryFlag.SHOW_IN_DROP_DOWN_ONLY
         ? response
-              .map((map) => Country.fromJson(map))
-              .where(
-                (item) => item.emoji + "    " + item.name == _selectedCountry,
-              )
-              .map((item) => item.state)
-              .toList()
+            .map((map) => Country.fromJson(map))
+            .where(
+              (item) => item.emoji + "    " + item.name == _selectedCountry,
+            )
+            .map((item) => item.state)
+            .toList()
         : response
-              .map((map) => Country.fromJson(map))
-              .where((item) => item.name == _selectedCountry)
-              .map((item) => item.state)
-              .toList();
+            .map((map) => Country.fromJson(map))
+            .where((item) => item.name == _selectedCountry)
+            .map((item) => item.state)
+            .toList();
     var states = takeState as List;
     states.forEach((f) {
       if (!mounted) return;
@@ -710,21 +709,20 @@ class CSCPickerState extends State<CSCPicker> {
   Future<List<String?>> getCities() async {
     _cities.clear();
     var response = await getResponse();
-    var takeCity =
-        widget.flagState == CountryFlag.ENABLE ||
+    var takeCity = widget.flagState == CountryFlag.ENABLE ||
             widget.flagState == CountryFlag.SHOW_IN_DROP_DOWN_ONLY
         ? response
-              .map((map) => Country.fromJson(map))
-              .where(
-                (item) => item.emoji + "    " + item.name == _selectedCountry,
-              )
-              .map((item) => item.state)
-              .toList()
+            .map((map) => Country.fromJson(map))
+            .where(
+              (item) => item.emoji + "    " + item.name == _selectedCountry,
+            )
+            .map((item) => item.state)
+            .toList()
         : response
-              .map((map) => Country.fromJson(map))
-              .where((item) => item.name == _selectedCountry)
-              .map((item) => item.state)
-              .toList();
+            .map((map) => Country.fromJson(map))
+            .where((item) => item.name == _selectedCountry)
+            .map((item) => item.state)
+            .toList();
     var cities = takeCity as List;
     cities.forEach((f) {
       var name = f.where((item) => item.name == _selectedState);

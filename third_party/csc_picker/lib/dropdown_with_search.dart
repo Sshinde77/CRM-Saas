@@ -70,22 +70,22 @@ class DropdownWithSearch<T> extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           decoration: !disabled
               ? decoration != null
-                    ? decoration
-                    : BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(5)),
-                        color: Colors.white,
-                        border: Border.all(
-                          color: Colors.grey.shade300,
-                          width: 1,
-                        ),
-                      )
+                  ? decoration
+                  : BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(5)),
+                      color: Colors.white,
+                      border: Border.all(
+                        color: Colors.grey.shade300,
+                        width: 1,
+                      ),
+                    )
               : disabledDecoration != null
-              ? disabledDecoration
-              : BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(5)),
-                  color: Colors.grey.shade300,
-                  border: Border.all(color: Colors.grey.shade300, width: 1),
-                ),
+                  ? disabledDecoration
+                  : BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(5)),
+                      color: Colors.grey.shade300,
+                      border: Border.all(color: Colors.grey.shade300, width: 1),
+                    ),
           child: Row(
             children: [
               Expanded(
@@ -146,8 +146,8 @@ class _SearchDialogState<T> extends State<SearchDialog> {
           filteredList = widget.items
               .where(
                 (element) => element.toString().toLowerCase().contains(
-                  textController.text.toLowerCase(),
-                ),
+                      textController.text.toLowerCase(),
+                    ),
               )
               .toList();
         }
@@ -339,15 +339,14 @@ class CustomDialog extends StatelessWidget {
   // TODO(johnsonmh): Update default dialog border radius to 4.0 to match material spec.
   static const RoundedRectangleBorder _defaultDialogShape =
       RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(2.0)),
-      );
+    borderRadius: BorderRadius.all(Radius.circular(2.0)),
+  );
 
   @override
   Widget build(BuildContext context) {
     final DialogThemeData dialogTheme = DialogTheme.of(context);
     return AnimatedPadding(
-      padding:
-          MediaQuery.of(context).viewInsets +
+      padding: MediaQuery.of(context).viewInsets +
           const EdgeInsets.symmetric(horizontal: 22.0, vertical: 24.0),
       duration: insetAnimationDuration,
       curve: insetAnimationCurve,
