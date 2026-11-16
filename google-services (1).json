@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "135113948977",
+    "project_id": "crm-saas-platform-671a7",
+    "storage_bucket": "crm-saas-platform-671a7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:135113948977:android:8ecb54018dcb9d19c7fa10",
+        "android_client_info": {
+          "package_name": "com.beassuite.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGpyB5T9YkVo_f9BukTZIVVyqkFHYR0A4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

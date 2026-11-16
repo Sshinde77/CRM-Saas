@@ -86,9 +86,10 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
 
     try {
       final provider = ApiProviderScope.of(context);
-      final authMe = await provider.fetchAuthMe();
-      final currentUser = provider.currentUser ?? authMe?.user;
-      final deliveryPartnerId = currentUser?.id?.trim();
+      final cachedId = provider.currentUser?.id?.trim();
+      final deliveryPartnerId = (cachedId != null && cachedId.isNotEmpty)
+          ? cachedId
+          : (await provider.fetchAuthMe())?.user?.id?.trim();
 
       if (deliveryPartnerId == null || deliveryPartnerId.isEmpty) {
         throw const _DeliveryListException('Delivery partner id is missing.');

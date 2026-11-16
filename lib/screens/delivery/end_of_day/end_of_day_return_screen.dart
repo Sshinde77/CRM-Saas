@@ -28,7 +28,7 @@ class _EndOfDayReturnScreenState extends State<EndOfDayReturnScreen> {
   Future<EndOfDaySession?>? _future;
   EndOfDaySession? _session;
   _EndOfDayStep _step = _EndOfDayStep.returnStock;
-  final bool _isSavingReturn = false;
+  bool _isSavingReturn = false;
   bool _isSavingReconciliation = false;
   String? _returnError;
   String? _reconciliationError;
