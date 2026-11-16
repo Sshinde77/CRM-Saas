@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:crm_saas/core/theme/app_text_styles.dart';
 
 import '../../constants/app_colors.dart';
+import '../../core/roles/app_role.dart';
 import '../../models/auth_models.dart';
 import '../../providers/api_provider.dart';
 import '../../services/api_service.dart';
@@ -218,15 +219,22 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _finishSignIn(ApiProvider apiProvider, AuthSession session) {
     if (!mounted) return;
+    final role = apiProvider.currentUser?.role ?? session.user?.role;
+    if (AppRole.fromRaw(role) == AppRole.admin) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Admin login is not allowed on this app.'),
+        ),
+      );
+      return;
+    }
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(session.message)));
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (_) => RoleHomeScreen.forRole(
-          apiProvider.currentUser?.role ?? session.user?.role,
-        ),
+        builder: (_) => RoleHomeScreen.forRole(role),
       ),
     );
   }

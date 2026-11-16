@@ -66,7 +66,9 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
   final _loadErrors = <String, String>{};
   final _loaded = <String>{};
   DateTime _orderDate = DateUtils.dateOnly(DateTime.now());
-  DateTime _deliveryDate = DateUtils.dateOnly(DateTime.now());
+  DateTime _deliveryDate = DateUtils.dateOnly(
+    DateTime.now().add(const Duration(days: 1)),
+  );
 
   TextEditingController _quantityControllerFor(_OrderProduct product) {
     return _quantityInputs.putIfAbsent(

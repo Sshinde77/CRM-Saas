@@ -1943,13 +1943,16 @@ class _DashboardData {
 
   int get deliveredOrders => summary.completed;
 
-  int get acceptedOrders => summary.pending;
+  int get acceptedOrders =>
+      deliveries.where((d) => d.status == 'accepted').length;
 
   int get pendingToday => summary.pending;
 
   int get pendingOrders => summary.pending;
 
-  int get canceledOrders => summary.failed;
+  int get canceledOrders => deliveries
+      .where((d) => d.status == 'cancelled' || d.status == 'canceled')
+      .length;
 
   int get paymentPending => summary.amountReceivable > 0 ? 1 : 0;
 
@@ -2158,7 +2161,7 @@ class _DeliveryItem {
     );
   }
 
-  double get amountToCollect => amountDue + amountCollected;
+  double get amountToCollect => amountDue;
 
   String get statusLabel {
     return status
@@ -2397,7 +2400,9 @@ String _formatMoney(double value) {
   for (var i = 0; i < source.length; i++) {
     final remaining = source.length - i;
     buffer.write(source[i]);
-    if (remaining > 1 && remaining % 3 == 1) {
+    // Indian grouping: first separator after 3 digits, then every 2 digits
+    if (remaining > 1 &&
+        (remaining == 4 ? true : remaining > 4 && (remaining - 4) % 2 == 0)) {
       buffer.write(',');
     }
   }
