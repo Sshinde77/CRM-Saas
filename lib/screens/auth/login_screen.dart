@@ -233,9 +233,7 @@ class _LoginScreenState extends State<LoginScreen> {
     ).showSnackBar(SnackBar(content: Text(session.message)));
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(
-        builder: (_) => RoleHomeScreen.forRole(role),
-      ),
+      MaterialPageRoute(builder: (_) => RoleHomeScreen.forRole(role)),
     );
   }
 
