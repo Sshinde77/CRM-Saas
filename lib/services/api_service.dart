@@ -2451,6 +2451,80 @@ class ApiService {
         .toList();
   }
 
+  Future<Map<String, dynamic>> fetchCustomerPendingPayments(
+    String customerId, {
+    String? fromDate,
+    String? toDate,
+    String? dueFrom,
+    String? dueTo,
+    bool? overdue,
+    String? paymentStatus,
+    String? search,
+    int page = 1,
+    int pageSize = 20,
+    String? sortBy,
+    String? sortOrder,
+  }) async {
+    final id = customerId.trim();
+    if (id.isEmpty) throw const ApiException(message: 'Missing customer id.');
+    final response = await _send(
+      method: 'GET',
+      endpoint: ApiEndpoints.customersPendingPayments(id),
+      requiresAuth: true,
+      queryParameters: _cleanQuery({
+        'from_date': fromDate,
+        'to_date': toDate,
+        'due_from': dueFrom,
+        'due_to': dueTo,
+        'overdue': overdue?.toString(),
+        'payment_status': paymentStatus,
+        'search': search,
+        'page': '$page',
+        'page_size': '$pageSize',
+        'sort_by': sortBy,
+        'sort_order': sortOrder,
+      }),
+    );
+    return _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid pending payments response.',
+    );
+  }
+
+  Future<Map<String, dynamic>> fetchCustomerCollectedPayments(
+    String customerId, {
+    String? fromDate,
+    String? toDate,
+    String? paymentMode,
+    String? search,
+    int page = 1,
+    int pageSize = 20,
+    String? sortBy,
+    String? sortOrder,
+  }) async {
+    final id = customerId.trim();
+    if (id.isEmpty) throw const ApiException(message: 'Missing customer id.');
+    final response = await _send(
+      method: 'GET',
+      endpoint: ApiEndpoints.customersCollectedPayments(id),
+      requiresAuth: true,
+      queryParameters: _cleanQuery({
+        'from_date': fromDate,
+        'to_date': toDate,
+        'payment_mode': paymentMode,
+        'search': search,
+        'page': '$page',
+        'page_size': '$pageSize',
+        'sort_by': sortBy,
+        'sort_order': sortOrder,
+      }),
+    );
+    return _requireDecodedMap(
+      response.body.trim(),
+      fallbackMessage: 'Invalid collected payments response.',
+    );
+  }
+
   Future<List<CustomerVisitRecord>> fetchCustomerVisits(
     String customerId,
   ) async {

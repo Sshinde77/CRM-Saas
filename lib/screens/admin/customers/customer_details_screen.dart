@@ -143,6 +143,14 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
   bool _hasLoadedDocuments = false;
   String? _documentsErrorMessage;
   List<CustomerDocument> _documents = const [];
+  bool _isPendingPaymentsLoading = false;
+  String? _pendingPaymentsError;
+  List<Map<String, dynamic>> _pendingPaymentItems = const [];
+  Map<String, dynamic>? _pendingPaymentsSummary;
+  bool _isCollectedPaymentsLoading = false;
+  String? _collectedPaymentsError;
+  List<Map<String, dynamic>> _collectedPaymentItems = const [];
+  Map<String, dynamic>? _collectedPaymentsSummary;
   final Set<String> _expandedSections = {
     'contact',
     'business',
@@ -183,6 +191,12 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
       _documents = const [];
       _hasLoadedDocuments = false;
       _documentsErrorMessage = null;
+      _pendingPaymentItems = const [];
+      _pendingPaymentsSummary = null;
+      _pendingPaymentsError = null;
+      _collectedPaymentItems = const [];
+      _collectedPaymentsSummary = null;
+      _collectedPaymentsError = null;
     });
 
     try {
@@ -197,6 +211,8 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
         _loadPayments(customer.id),
         _loadOrders(customer.id),
         _loadDocuments(customer.id),
+        _loadPendingPayments(customer.id),
+        _loadCollectedPayments(customer.id),
       ]);
     } catch (error) {
       if (!mounted) return;
@@ -300,6 +316,68 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
       setState(() {
         _ledgerErrorMessage = error.toString();
         _isLedgerLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadPendingPayments(String customerId) async {
+    setState(() {
+      _isPendingPaymentsLoading = true;
+      _pendingPaymentsError = null;
+    });
+    try {
+      final result = await _apiProvider.fetchCustomerPendingPayments(
+        customerId,
+        pageSize: 50,
+      );
+      if (!mounted) return;
+      setState(() {
+        final items = result['items'];
+        _pendingPaymentItems = items is List
+            ? items.whereType<Map<String, dynamic>>().toList()
+            : const [];
+        final summary = result['summary'];
+        _pendingPaymentsSummary = summary is Map<String, dynamic>
+            ? summary
+            : null;
+        _isPendingPaymentsLoading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _pendingPaymentsError = error.toString();
+        _isPendingPaymentsLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadCollectedPayments(String customerId) async {
+    setState(() {
+      _isCollectedPaymentsLoading = true;
+      _collectedPaymentsError = null;
+    });
+    try {
+      final result = await _apiProvider.fetchCustomerCollectedPayments(
+        customerId,
+        pageSize: 50,
+      );
+      if (!mounted) return;
+      setState(() {
+        final items = result['items'];
+        _collectedPaymentItems = items is List
+            ? items.whereType<Map<String, dynamic>>().toList()
+            : const [];
+        final summary = result['summary'];
+        _collectedPaymentsSummary = summary is Map<String, dynamic>
+            ? summary
+            : null;
+        _isCollectedPaymentsLoading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _collectedPaymentsError = error.toString();
+        _isCollectedPaymentsLoading = false;
       });
     }
   }
@@ -738,8 +816,32 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
         ),
       ),
       _SectionConfig(
+        id: 'pending_payments',
+        title: '7. Pending Payments',
+        icon: Icons.pending_actions_outlined,
+        child: _PendingPaymentsSection(
+          items: _pendingPaymentItems,
+          summary: _pendingPaymentsSummary,
+          isLoading: _isPendingPaymentsLoading,
+          errorMessage: _pendingPaymentsError,
+          onRetry: () => _loadPendingPayments(customer.id),
+        ),
+      ),
+      _SectionConfig(
+        id: 'collected_payments',
+        title: '8. Collected Payments',
+        icon: Icons.payments_outlined,
+        child: _CollectedPaymentsSection(
+          items: _collectedPaymentItems,
+          summary: _collectedPaymentsSummary,
+          isLoading: _isCollectedPaymentsLoading,
+          errorMessage: _collectedPaymentsError,
+          onRetry: () => _loadCollectedPayments(customer.id),
+        ),
+      ),
+      _SectionConfig(
         id: 'orders',
-        title: '7. Order & Transaction History',
+        title: '9. Order & Transaction History',
         icon: Icons.inventory_2_outlined,
         child: _CustomerOrdersSection(
           orders: _orders,
@@ -750,7 +852,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
       ),
       _SectionConfig(
         id: 'documents',
-        title: '8. Documents',
+        title: '10. Documents',
         icon: Icons.folder_copy_outlined,
         child: _CustomerDocumentsDropdown(
           documents: _hasLoadedDocuments ? _documents : customer.documents,
@@ -762,7 +864,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
       ),
       _SectionConfig(
         id: 'notes',
-        title: '9. Notes & Preferences',
+        title: '11. Notes & Preferences',
         icon: Icons.note_alt_outlined,
         child: _DetailsSection(
           columns: [
@@ -2778,6 +2880,464 @@ class _ActionSheetTile extends StatelessWidget {
       ),
     );
   }
+}
+
+class _PendingPaymentsSection extends StatelessWidget {
+  final List<Map<String, dynamic>> items;
+  final Map<String, dynamic>? summary;
+  final bool isLoading;
+  final String? errorMessage;
+  final Future<void> Function() onRetry;
+
+  const _PendingPaymentsSection({
+    required this.items,
+    required this.summary,
+    required this.isLoading,
+    required this.errorMessage,
+    required this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading && items.isEmpty) return const _SectionLoader();
+    if (errorMessage != null && items.isEmpty) {
+      return _SectionError(message: errorMessage!, onRetry: onRetry);
+    }
+
+    final s = summary;
+    final currency = s?['currency']?.toString() ?? 'INR';
+    final totalOutstanding = s?['total_outstanding'];
+    final totalOverdue = s?['total_overdue'];
+    final pendingCount = s?['pending_invoices'];
+    final overdueCount = s?['overdue_invoices'];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (s != null) ...[
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFF8F5),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xFFFFD5B8)),
+            ),
+            child: Wrap(
+              spacing: 24,
+              runSpacing: 10,
+              children: [
+                _SummaryChip(
+                  label: 'Outstanding',
+                  value: _formatMoneyValue(totalOutstanding),
+                  color: const Color(0xFFD44A4A),
+                ),
+                _SummaryChip(
+                  label: 'Overdue',
+                  value: _formatMoneyValue(totalOverdue),
+                  color: const Color(0xFFD44A4A),
+                ),
+                _SummaryChip(
+                  label: 'Invoices',
+                  value: '${pendingCount ?? 0}',
+                  color: AppColors.textPrimary,
+                ),
+                _SummaryChip(
+                  label: 'Overdue Inv.',
+                  value: '${overdueCount ?? 0}',
+                  color: AppColors.textPrimary,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+        ],
+        if (items.isEmpty)
+          const _EmptySectionState(
+            title: 'No pending payments',
+            subtitle: 'All invoices for this customer are fully settled.',
+          )
+        else
+          for (var i = 0; i < items.length; i++) ...[
+            _PendingPaymentCard(item: items[i], currency: currency),
+            if (i != items.length - 1) const SizedBox(height: 10),
+          ],
+      ],
+    );
+  }
+}
+
+class _PendingPaymentCard extends StatelessWidget {
+  final Map<String, dynamic> item;
+  final String currency;
+
+  const _PendingPaymentCard({required this.item, required this.currency});
+
+  @override
+  Widget build(BuildContext context) {
+    final invoiceNumber = item['invoice_number']?.toString() ?? '-';
+    final invoiceDate = _parseDateField(item['invoice_date']);
+    final dueDate = _parseDateField(item['due_date']);
+    final outstanding = item['outstanding'];
+    final total = item['total'];
+    final amountPaid = item['amount_paid'];
+    final isOverdue = item['is_overdue'] == true;
+    final daysOverdue = item['days_overdue'];
+    final paymentStatus = item['payment_status']?.toString() ?? '';
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isOverdue
+              ? const Color(0xFFFFCDD2)
+              : AppColors.border.withValues(alpha: 0.9),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  invoiceNumber,
+                  style: AppTextStyles.cardTitle.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+              if (isOverdue)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFEDED),
+                    borderRadius: BorderRadius.circular(99),
+                  ),
+                  child: Text(
+                    daysOverdue != null && daysOverdue is num && daysOverdue > 0
+                        ? '${daysOverdue.toInt()}d overdue'
+                        : 'Overdue',
+                    style: AppTextStyles.fieldLabel.copyWith(
+                      color: const Color(0xFFD44A4A),
+                    ),
+                  ),
+                )
+              else if (paymentStatus == 'partial')
+                _InfoPill(
+                  label: 'Partial',
+                  foreground: AppColors.primary,
+                  background: const Color(0xFFEFF7EA),
+                ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Invoice: ${_formatIsoDate(invoiceDate)}  •  Due: ${_formatIsoDate(dueDate)}',
+                  style: AppTextStyles.fieldLabel.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              _SummaryChip(
+                label: 'Outstanding',
+                value: _formatMoneyValue(outstanding),
+                color: const Color(0xFFD44A4A),
+              ),
+              const SizedBox(width: 16),
+              _SummaryChip(
+                label: 'Total',
+                value: _formatMoneyValue(total),
+                color: AppColors.textPrimary,
+              ),
+              const SizedBox(width: 16),
+              _SummaryChip(
+                label: 'Paid',
+                value: _formatMoneyValue(amountPaid),
+                color: AppColors.primary,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CollectedPaymentsSection extends StatelessWidget {
+  final List<Map<String, dynamic>> items;
+  final Map<String, dynamic>? summary;
+  final bool isLoading;
+  final String? errorMessage;
+  final Future<void> Function() onRetry;
+
+  const _CollectedPaymentsSection({
+    required this.items,
+    required this.summary,
+    required this.isLoading,
+    required this.errorMessage,
+    required this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading && items.isEmpty) return const _SectionLoader();
+    if (errorMessage != null && items.isEmpty) {
+      return _SectionError(message: errorMessage!, onRetry: onRetry);
+    }
+
+    final s = summary;
+    final currency = s?['currency']?.toString() ?? 'INR';
+    final totalCollected = s?['total_collected'];
+    final paymentCount = s?['payment_count'];
+    final totalAllocated = s?['total_allocated'];
+    final totalUnallocated = s?['total_unallocated'];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (s != null) ...[
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF3FBF5),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xFFB8DFC3)),
+            ),
+            child: Wrap(
+              spacing: 24,
+              runSpacing: 10,
+              children: [
+                _SummaryChip(
+                  label: 'Collected',
+                  value: _formatMoneyValue(totalCollected),
+                  color: AppColors.primary,
+                ),
+                _SummaryChip(
+                  label: 'Payments',
+                  value: '${paymentCount ?? 0}',
+                  color: AppColors.textPrimary,
+                ),
+                _SummaryChip(
+                  label: 'Allocated',
+                  value: _formatMoneyValue(totalAllocated),
+                  color: AppColors.textPrimary,
+                ),
+                _SummaryChip(
+                  label: 'Advance',
+                  value: _formatMoneyValue(totalUnallocated),
+                  color: AppColors.textSecondary,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+        ],
+        if (items.isEmpty)
+          const _EmptySectionState(
+            title: 'No collected payments',
+            subtitle: 'No finalized payments recorded for this customer yet.',
+          )
+        else
+          for (var i = 0; i < items.length; i++) ...[
+            _CollectedPaymentCard(item: items[i], currency: currency),
+            if (i != items.length - 1) const SizedBox(height: 10),
+          ],
+      ],
+    );
+  }
+}
+
+class _CollectedPaymentCard extends StatelessWidget {
+  final Map<String, dynamic> item;
+  final String currency;
+
+  const _CollectedPaymentCard({required this.item, required this.currency});
+
+  @override
+  Widget build(BuildContext context) {
+    final receiptNumber = item['receipt_number']?.toString() ?? '-';
+    final paymentDate = _parseDateField(item['payment_date']);
+    final amount = item['amount'];
+    final paymentMode = item['payment_mode']?.toString() ?? '';
+    final reference = item['reference']?.toString() ?? '';
+    final unallocatedAmount = item['unallocated_amount'];
+    final allocations = item['allocations'];
+    final allocationList = allocations is List
+        ? allocations.whereType<Map<String, dynamic>>().toList()
+        : <Map<String, dynamic>>[];
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.9)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      receiptNumber,
+                      style: AppTextStyles.cardTitle.copyWith(
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _formatIsoDate(paymentDate),
+                      style: AppTextStyles.fieldLabel.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    _formatMoneyValue(amount),
+                    style: AppTextStyles.cardTitle.copyWith(
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  if (paymentMode.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    _InfoPill(
+                      label: _titleCaseText(paymentMode),
+                      foreground: AppColors.textPrimary,
+                      background: const Color(0xFFF7F9FC),
+                    ),
+                  ],
+                ],
+              ),
+            ],
+          ),
+          if (reference.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(
+              'Ref: $reference',
+              style: AppTextStyles.fieldLabel.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ],
+          if (allocationList.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              children: allocationList
+                  .map(
+                    (a) => Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF0F7EC),
+                        borderRadius: BorderRadius.circular(99),
+                      ),
+                      child: Text(
+                        a['invoice_number']?.toString() ?? '-',
+                        style: AppTextStyles.fieldLabel.copyWith(
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ],
+          if ((unallocatedAmount is num) && unallocatedAmount > 0) ...[
+            const SizedBox(height: 8),
+            Text(
+              'Advance held: ${_formatMoneyValue(unallocatedAmount)}',
+              style: AppTextStyles.fieldLabel.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _SummaryChip extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+
+  const _SummaryChip({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          label,
+          style: AppTextStyles.fieldLabel.copyWith(
+            color: AppColors.textSecondary,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(value, style: AppTextStyles.bodyStrong.copyWith(color: color)),
+      ],
+    );
+  }
+}
+
+DateTime? _parseDateField(Object? value) {
+  if (value == null) return null;
+  return DateTime.tryParse(value.toString());
 }
 
 class _ErrorState extends StatelessWidget {

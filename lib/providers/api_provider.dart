@@ -908,6 +908,48 @@ class ApiProvider extends ChangeNotifier {
     }
   }
 
+  Future<Map<String, dynamic>> fetchCustomerPendingPayments(
+    String customerId, {
+    int page = 1,
+    int pageSize = 20,
+    bool? overdue,
+    String? paymentStatus,
+    String? search,
+    String? sortBy,
+    String? sortOrder,
+  }) {
+    return _apiService.fetchCustomerPendingPayments(
+      customerId,
+      page: page,
+      pageSize: pageSize,
+      overdue: overdue,
+      paymentStatus: paymentStatus,
+      search: search,
+      sortBy: sortBy,
+      sortOrder: sortOrder,
+    );
+  }
+
+  Future<Map<String, dynamic>> fetchCustomerCollectedPayments(
+    String customerId, {
+    int page = 1,
+    int pageSize = 20,
+    String? paymentMode,
+    String? search,
+    String? sortBy,
+    String? sortOrder,
+  }) {
+    return _apiService.fetchCustomerCollectedPayments(
+      customerId,
+      page: page,
+      pageSize: pageSize,
+      paymentMode: paymentMode,
+      search: search,
+      sortBy: sortBy,
+      sortOrder: sortOrder,
+    );
+  }
+
   Future<List<CustomerVisitRecord>> fetchCustomerVisits(String customerId) {
     return _apiService.fetchCustomerVisits(customerId);
   }

@@ -1,4 +1,4 @@
-﻿import '../../../models/list_pagination.dart';
+import '../../../models/list_pagination.dart';
 import '../../../widgets/list_pagination_bar.dart';
 import 'package:flutter/material.dart';
 import '../../../widgets/app_skeleton.dart';
@@ -105,6 +105,18 @@ class _DeliveryCollectionListScreenState
     }
   }
 
+  void _openCustomerPaymentDetails(_CollectionDelivery customer) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _CustomerPaymentDetailsSheet(
+        customerId: customer.id,
+        customerName: customer.customerName,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final textScaler = MediaQuery.textScalerOf(
@@ -192,6 +204,8 @@ class _DeliveryCollectionListScreenState
                                         _collectionFuture = _loadCollections();
                                       }),
                                       onCollect: _openPaymentCollection,
+                                      onViewDetails:
+                                          _openCustomerPaymentDetails,
                                     ),
                             ),
                           ),
@@ -226,12 +240,14 @@ class _CollectionContent extends StatelessWidget {
     required this.showPending,
     required this.onTabChanged,
     required this.onCollect,
+    required this.onViewDetails,
   });
 
   final _CollectionDashboardData data;
   final bool showPending;
   final ValueChanged<bool> onTabChanged;
   final ValueChanged<_CollectionDelivery> onCollect;
+  final ValueChanged<_CollectionDelivery> onViewDetails;
 
   @override
   Widget build(BuildContext context) {
@@ -285,6 +301,7 @@ class _CollectionContent extends StatelessWidget {
               child: _CollectionListTile(
                 delivery: delivery,
                 onCollect: () => onCollect(delivery),
+                onViewDetails: () => onViewDetails(delivery),
               ),
             ),
           ),
@@ -457,144 +474,152 @@ class _CollectionMetricTile extends StatelessWidget {
 }
 
 class _CollectionListTile extends StatelessWidget {
-  const _CollectionListTile({required this.delivery, required this.onCollect});
+  const _CollectionListTile({
+    required this.delivery,
+    required this.onCollect,
+    this.onViewDetails,
+  });
 
   final _CollectionDelivery delivery;
   final VoidCallback onCollect;
+  final VoidCallback? onViewDetails;
 
   @override
   Widget build(BuildContext context) {
     final hasDue = delivery.amountDue > 0;
     final accent = hasDue ? AppColors.deliveryRed : AppColors.deliveryGreen;
 
-    return Container(
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppSizes.cardRadius),
-        border: Border.all(color: AppColors.deliverySurfaceBorder),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.secondary.withValues(alpha: 0.035),
-            blurRadius: 14,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            left: 0,
-            top: 0,
-            bottom: 0,
-            child: ColoredBox(color: accent, child: const SizedBox(width: 3)),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 12, 10, 12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                CustomerAvatar(
-                  name: delivery.customerName,
-                  photoUrl: delivery.photoUrl,
-                  size: 56,
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+    return GestureDetector(
+      onTap: onViewDetails,
+      child: Container(
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppSizes.cardRadius),
+          border: Border.all(color: AppColors.deliverySurfaceBorder),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.secondary.withValues(alpha: 0.035),
+              blurRadius: 14,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            Positioned(
+              left: 0,
+              top: 0,
+              bottom: 0,
+              child: ColoredBox(color: accent, child: const SizedBox(width: 3)),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 12, 10, 12),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  CustomerAvatar(
+                    name: delivery.customerName,
+                    photoUrl: delivery.photoUrl,
+                    size: 56,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          delivery.customerName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.secondaryStrong.copyWith(
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          delivery.orderNumber,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.small,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          delivery.contactName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.smallStrong.copyWith(
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        delivery.customerName,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.secondaryStrong.copyWith(
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        delivery.orderNumber,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.small,
+                        hasDue
+                            ? delivery.formattedDue
+                            : delivery.formattedCollected,
+                        style: AppTextStyles.bodyStrong.copyWith(color: accent),
                       ),
                       const SizedBox(height: 8),
-                      Text(
-                        delivery.contactName,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.smallStrong.copyWith(
-                          color: AppColors.textPrimary,
-                        ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _SmallAction(
+                            icon: Icons.phone_rounded,
+                            tooltip: 'Call customer',
+                            onTap: delivery.phone == null
+                                ? null
+                                : () => launchUrl(
+                                    Uri(scheme: 'tel', path: delivery.phone),
+                                  ),
+                          ),
+                          _SmallAction(
+                            icon: Icons.location_on_outlined,
+                            tooltip: 'Open location',
+                            onTap: delivery.mapUrl == null
+                                ? null
+                                : () => launchUrl(
+                                    Uri.parse(delivery.mapUrl!),
+                                    mode: LaunchMode.externalApplication,
+                                  ),
+                          ),
+                          if (hasDue) ...[
+                            const SizedBox(width: 4),
+                            SizedBox(
+                              height: 32,
+                              child: FilledButton(
+                                onPressed: onCollect,
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: AppColors.deliveryRed,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Collect',
+                                  style: AppTextStyles.smallStrong,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(width: 8),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      hasDue
-                          ? delivery.formattedDue
-                          : delivery.formattedCollected,
-                      style: AppTextStyles.bodyStrong.copyWith(color: accent),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _SmallAction(
-                          icon: Icons.phone_rounded,
-                          tooltip: 'Call customer',
-                          onTap: delivery.phone == null
-                              ? null
-                              : () => launchUrl(
-                                  Uri(scheme: 'tel', path: delivery.phone),
-                                ),
-                        ),
-                        _SmallAction(
-                          icon: Icons.location_on_outlined,
-                          tooltip: 'Open location',
-                          onTap: delivery.mapUrl == null
-                              ? null
-                              : () => launchUrl(
-                                  Uri.parse(delivery.mapUrl!),
-                                  mode: LaunchMode.externalApplication,
-                                ),
-                        ),
-                        if (hasDue) ...[
-                          const SizedBox(width: 4),
-                          SizedBox(
-                            height: 32,
-                            child: FilledButton(
-                              onPressed: onCollect,
-                              style: FilledButton.styleFrom(
-                                backgroundColor: AppColors.deliveryRed,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                              child: const Text(
-                                'Collect',
-                                style: AppTextStyles.smallStrong,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1213,6 +1238,614 @@ String _normalizePaymentMode(String value) {
     'cash' || 'cod' => 'cash',
     _ => normalized,
   };
+}
+
+class _CustomerPaymentDetailsSheet extends StatefulWidget {
+  const _CustomerPaymentDetailsSheet({
+    required this.customerId,
+    required this.customerName,
+  });
+
+  final String customerId;
+  final String customerName;
+
+  @override
+  State<_CustomerPaymentDetailsSheet> createState() =>
+      _CustomerPaymentDetailsSheetState();
+}
+
+class _CustomerPaymentDetailsSheetState
+    extends State<_CustomerPaymentDetailsSheet>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  bool _loadingPending = true;
+  bool _loadingCollected = true;
+  String? _pendingError;
+  String? _collectedError;
+  List<Map<String, dynamic>> _pendingItems = const [];
+  Map<String, dynamic>? _pendingSummary;
+  List<Map<String, dynamic>> _collectedItems = const [];
+  Map<String, dynamic>? _collectedSummary;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadPending();
+      _loadCollected();
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadPending() async {
+    setState(() {
+      _loadingPending = true;
+      _pendingError = null;
+    });
+    try {
+      final result = await ApiProviderScope.of(
+        context,
+      ).fetchCustomerPendingPayments(widget.customerId, pageSize: 50);
+      if (!mounted) return;
+      setState(() {
+        final items = result['items'];
+        _pendingItems = items is List
+            ? items.whereType<Map<String, dynamic>>().toList()
+            : const [];
+        final summary = result['summary'];
+        _pendingSummary = summary is Map<String, dynamic> ? summary : null;
+        _loadingPending = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _pendingError = e.toString();
+        _loadingPending = false;
+      });
+    }
+  }
+
+  Future<void> _loadCollected() async {
+    setState(() {
+      _loadingCollected = true;
+      _collectedError = null;
+    });
+    try {
+      final result = await ApiProviderScope.of(
+        context,
+      ).fetchCustomerCollectedPayments(widget.customerId, pageSize: 50);
+      if (!mounted) return;
+      setState(() {
+        final items = result['items'];
+        _collectedItems = items is List
+            ? items.whereType<Map<String, dynamic>>().toList()
+            : const [];
+        final summary = result['summary'];
+        _collectedSummary = summary is Map<String, dynamic> ? summary : null;
+        _loadingCollected = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _collectedError = e.toString();
+        _loadingCollected = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.85,
+      maxChildSize: 0.95,
+      minChildSize: 0.4,
+      builder: (context, scrollController) => Container(
+        decoration: const BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppColors.deliverySurfaceBorder,
+                        borderRadius: BorderRadius.circular(99),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    widget.customerName,
+                    style: AppTextStyles.sectionHeading,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 10),
+                  TabBar(
+                    controller: _tabController,
+                    labelColor: AppColors.deliveryGreen,
+                    unselectedLabelColor: AppColors.textMuted,
+                    indicatorColor: AppColors.deliveryGreen,
+                    tabs: const [
+                      Tab(text: 'Pending'),
+                      Tab(text: 'Collected'),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildPendingTab(scrollController),
+                  _buildCollectedTab(scrollController),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPendingTab(ScrollController scrollController) {
+    if (_loadingPending) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_pendingError != null && _pendingItems.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(_pendingError!, textAlign: TextAlign.center),
+            const SizedBox(height: 12),
+            TextButton.icon(
+              onPressed: _loadPending,
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final s = _pendingSummary;
+    return ListView(
+      controller: scrollController,
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+      children: [
+        if (s != null) ...[
+          _SheetSummaryCard(
+            color: const Color(0xFFD44A4A),
+            background: const Color(0xFFFFF8F5),
+            border: const Color(0xFFFFD5B8),
+            chips: [
+              _ChipData(
+                'Outstanding',
+                _formatMoney((s['total_outstanding'] as num?)?.toDouble() ?? 0),
+              ),
+              _ChipData(
+                'Overdue',
+                _formatMoney((s['total_overdue'] as num?)?.toDouble() ?? 0),
+              ),
+              _ChipData('Invoices', '${s['pending_invoices'] ?? 0}'),
+            ],
+          ),
+          const SizedBox(height: 14),
+        ],
+        if (_pendingItems.isEmpty)
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Text(
+                'No pending invoices',
+                style: AppTextStyles.fieldLabel,
+              ),
+            ),
+          )
+        else
+          for (final item in _pendingItems) ...[
+            _SheetPendingCard(item: item),
+            const SizedBox(height: 10),
+          ],
+      ],
+    );
+  }
+
+  Widget _buildCollectedTab(ScrollController scrollController) {
+    if (_loadingCollected) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_collectedError != null && _collectedItems.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(_collectedError!, textAlign: TextAlign.center),
+            const SizedBox(height: 12),
+            TextButton.icon(
+              onPressed: _loadCollected,
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final s = _collectedSummary;
+    return ListView(
+      controller: scrollController,
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+      children: [
+        if (s != null) ...[
+          _SheetSummaryCard(
+            color: AppColors.deliveryGreen,
+            background: const Color(0xFFF3FBF5),
+            border: const Color(0xFFB8DFC3),
+            chips: [
+              _ChipData(
+                'Collected',
+                _formatMoney((s['total_collected'] as num?)?.toDouble() ?? 0),
+              ),
+              _ChipData('Payments', '${s['payment_count'] ?? 0}'),
+              _ChipData(
+                'Advance',
+                _formatMoney((s['total_unallocated'] as num?)?.toDouble() ?? 0),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+        ],
+        if (_collectedItems.isEmpty)
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Text(
+                'No collected payments',
+                style: AppTextStyles.fieldLabel,
+              ),
+            ),
+          )
+        else
+          for (final item in _collectedItems) ...[
+            _SheetCollectedCard(item: item),
+            const SizedBox(height: 10),
+          ],
+      ],
+    );
+  }
+}
+
+class _ChipData {
+  const _ChipData(this.label, this.value);
+  final String label;
+  final String value;
+}
+
+class _SheetSummaryCard extends StatelessWidget {
+  const _SheetSummaryCard({
+    required this.chips,
+    required this.color,
+    required this.background,
+    required this.border,
+  });
+
+  final List<_ChipData> chips;
+  final Color color;
+  final Color background;
+  final Color border;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: border),
+      ),
+      child: Wrap(
+        spacing: 20,
+        runSpacing: 10,
+        children: chips
+            .map(
+              (c) => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    c.label,
+                    style: AppTextStyles.fieldLabel.copyWith(
+                      color: AppColors.textMuted,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    c.value,
+                    style: AppTextStyles.bodyStrong.copyWith(color: color),
+                  ),
+                ],
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+}
+
+class _SheetPendingCard extends StatelessWidget {
+  const _SheetPendingCard({required this.item});
+
+  final Map<String, dynamic> item;
+
+  @override
+  Widget build(BuildContext context) {
+    final invoiceNumber = item['invoice_number']?.toString() ?? '-';
+    final dueDate = _parseDateTimeString(item['due_date']?.toString());
+    final invoiceDate = _parseDateTimeString(item['invoice_date']?.toString());
+    final outstanding = (item['outstanding'] as num?)?.toDouble() ?? 0;
+    final total = (item['total'] as num?)?.toDouble() ?? 0;
+    final isOverdue = item['is_overdue'] == true;
+    final daysOverdue = (item['days_overdue'] as num?)?.toInt() ?? 0;
+    final paymentStatus = item['payment_status']?.toString() ?? '';
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isOverdue
+              ? const Color(0xFFFFCDD2)
+              : AppColors.deliverySurfaceBorder,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  invoiceNumber,
+                  style: AppTextStyles.bodyStrong,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (isOverdue)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFEDED),
+                    borderRadius: BorderRadius.circular(99),
+                  ),
+                  child: Text(
+                    daysOverdue > 0 ? '${daysOverdue}d overdue' : 'Overdue',
+                    style: AppTextStyles.fieldLabel.copyWith(
+                      color: const Color(0xFFD44A4A),
+                    ),
+                  ),
+                )
+              else if (paymentStatus == 'partial')
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEFF7EA),
+                    borderRadius: BorderRadius.circular(99),
+                  ),
+                  child: Text(
+                    'Partial',
+                    style: AppTextStyles.fieldLabel.copyWith(
+                      color: AppColors.deliveryGreen,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Due: ${_dateLabel(dueDate)}  •  Invoice: ${_dateLabel(invoiceDate)}',
+            style: AppTextStyles.small.copyWith(color: AppColors.textMuted),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              _MiniChip(
+                label: 'Outstanding',
+                value: _formatMoney(outstanding),
+                valueColor: const Color(0xFFD44A4A),
+              ),
+              const SizedBox(width: 16),
+              _MiniChip(
+                label: 'Total',
+                value: _formatMoney(total),
+                valueColor: AppColors.deliveryInk,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SheetCollectedCard extends StatelessWidget {
+  const _SheetCollectedCard({required this.item});
+
+  final Map<String, dynamic> item;
+
+  @override
+  Widget build(BuildContext context) {
+    final receiptNumber = item['receipt_number']?.toString() ?? '-';
+    final paymentDate = _parseDateTimeString(item['payment_date']?.toString());
+    final amount = (item['amount'] as num?)?.toDouble() ?? 0;
+    final paymentMode = item['payment_mode']?.toString() ?? '';
+    final reference = item['reference']?.toString() ?? '';
+    final allocations = item['allocations'];
+    final allocationList = allocations is List
+        ? allocations.whereType<Map<String, dynamic>>().toList()
+        : <Map<String, dynamic>>[];
+    final unallocated = (item['unallocated_amount'] as num?)?.toDouble() ?? 0;
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.deliverySurfaceBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(receiptNumber, style: AppTextStyles.bodyStrong),
+              ),
+              Text(
+                _formatMoney(amount),
+                style: AppTextStyles.bodyStrong.copyWith(
+                  color: AppColors.deliveryGreen,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '${_dateLabel(paymentDate)}${paymentMode.isNotEmpty ? '  •  ${_modeLabel(paymentMode)}' : ''}',
+            style: AppTextStyles.small.copyWith(color: AppColors.textMuted),
+          ),
+          if (reference.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              'Ref: $reference',
+              style: AppTextStyles.small.copyWith(color: AppColors.textMuted),
+            ),
+          ],
+          if (allocationList.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 6,
+              runSpacing: 4,
+              children: allocationList
+                  .map(
+                    (a) => Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEFF7EA),
+                        borderRadius: BorderRadius.circular(99),
+                      ),
+                      child: Text(
+                        a['invoice_number']?.toString() ?? '-',
+                        style: AppTextStyles.small.copyWith(
+                          color: AppColors.deliveryGreen,
+                        ),
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ],
+          if (unallocated > 0) ...[
+            const SizedBox(height: 6),
+            Text(
+              'Advance: ${_formatMoney(unallocated)}',
+              style: AppTextStyles.small.copyWith(color: AppColors.textMuted),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _MiniChip extends StatelessWidget {
+  const _MiniChip({
+    required this.label,
+    required this.value,
+    required this.valueColor,
+  });
+  final String label;
+  final String value;
+  final Color valueColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          label,
+          style: AppTextStyles.small.copyWith(color: AppColors.textMuted),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: AppTextStyles.smallStrong.copyWith(color: valueColor),
+        ),
+      ],
+    );
+  }
+}
+
+DateTime? _parseDateTimeString(String? value) {
+  if (value == null || value.isEmpty) return null;
+  return DateTime.tryParse(value);
+}
+
+String _dateLabel(DateTime? date) {
+  if (date == null) return '-';
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+  return '${date.day.toString().padLeft(2, '0')} ${months[date.month - 1]} ${date.year}';
+}
+
+String _modeLabel(String mode) {
+  return mode
+      .split('_')
+      .where((p) => p.isNotEmpty)
+      .map((p) => '${p[0].toUpperCase()}${p.substring(1)}')
+      .join(' ');
 }
 
 String _formatMoney(double value) {
