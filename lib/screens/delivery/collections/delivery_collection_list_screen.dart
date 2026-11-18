@@ -105,18 +105,6 @@ class _DeliveryCollectionListScreenState
     }
   }
 
-  void _openCustomerPaymentDetails(_CollectionDelivery customer) {
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => _CustomerPaymentDetailsSheet(
-        customerId: customer.id,
-        customerName: customer.customerName,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final textScaler = MediaQuery.textScalerOf(
@@ -204,8 +192,6 @@ class _DeliveryCollectionListScreenState
                                         _collectionFuture = _loadCollections();
                                       }),
                                       onCollect: _openPaymentCollection,
-                                      onViewDetails:
-                                          _openCustomerPaymentDetails,
                                     ),
                             ),
                           ),
@@ -240,14 +226,12 @@ class _CollectionContent extends StatelessWidget {
     required this.showPending,
     required this.onTabChanged,
     required this.onCollect,
-    required this.onViewDetails,
   });
 
   final _CollectionDashboardData data;
   final bool showPending;
   final ValueChanged<bool> onTabChanged;
   final ValueChanged<_CollectionDelivery> onCollect;
-  final ValueChanged<_CollectionDelivery> onViewDetails;
 
   @override
   Widget build(BuildContext context) {
@@ -300,8 +284,8 @@ class _CollectionContent extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 10),
               child: _CollectionListTile(
                 delivery: delivery,
+                isPendingTab: showPending,
                 onCollect: () => onCollect(delivery),
-                onViewDetails: () => onViewDetails(delivery),
               ),
             ),
           ),
@@ -476,22 +460,26 @@ class _CollectionMetricTile extends StatelessWidget {
 class _CollectionListTile extends StatelessWidget {
   const _CollectionListTile({
     required this.delivery,
+    required this.isPendingTab,
     required this.onCollect,
-    this.onViewDetails,
   });
 
   final _CollectionDelivery delivery;
+  final bool isPendingTab;
   final VoidCallback onCollect;
-  final VoidCallback? onViewDetails;
 
   @override
   Widget build(BuildContext context) {
+    final hasPendingApproval =
+        isPendingTab && delivery.collectionStatus == 'pending_approval';
+    final canCollect = isPendingTab && delivery.collectableAmount > 0;
     final hasDue = delivery.amountDue > 0;
-    final accent = hasDue ? AppColors.deliveryRed : AppColors.deliveryGreen;
+    final isAwaiting = !isPendingTab && delivery.status == 'recorded';
+    final accent = (hasDue || hasPendingApproval)
+        ? AppColors.deliveryRed
+        : AppColors.deliveryGreen;
 
-    return GestureDetector(
-      onTap: onViewDetails,
-      child: Container(
+    return Container(
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: AppColors.surface,
@@ -560,12 +548,87 @@ class _CollectionListTile extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        hasDue
+                        isPendingTab
                             ? delivery.formattedDue
                             : delivery.formattedCollected,
                         style: AppTextStyles.bodyStrong.copyWith(color: accent),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 4),
+                      if (hasPendingApproval)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFF3E0),
+                            borderRadius: BorderRadius.circular(99),
+                            border: Border.all(
+                              color: const Color(0xFFFFB74D),
+                            ),
+                          ),
+                          child: const Text(
+                            'Awaiting Approval',
+                            style: TextStyle(
+                              fontFamily: AppTextStyles.fontFamily,
+                              fontSize: 10,
+                              height: 1.3,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFFE65100),
+                            ),
+                          ),
+                        )
+                      else if (isAwaiting)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFF3E0),
+                            borderRadius: BorderRadius.circular(99),
+                            border: Border.all(
+                              color: const Color(0xFFFFB74D),
+                            ),
+                          ),
+                          child: const Text(
+                            'Awaiting Approval',
+                            style: TextStyle(
+                              fontFamily: AppTextStyles.fontFamily,
+                              fontSize: 10,
+                              height: 1.3,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFFE65100),
+                            ),
+                          ),
+                        )
+                      else if (!isPendingTab)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.deliveryGreenSoft,
+                            borderRadius: BorderRadius.circular(99),
+                            border: Border.all(
+                              color: AppColors.deliveryGreen.withValues(
+                                alpha: 0.4,
+                              ),
+                            ),
+                          ),
+                          child: const Text(
+                            'Collected',
+                            style: TextStyle(
+                              fontFamily: AppTextStyles.fontFamily,
+                              fontSize: 10,
+                              height: 1.3,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.deliveryGreen,
+                            ),
+                          ),
+                        ),
+                      const SizedBox(height: 4),
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -588,7 +651,7 @@ class _CollectionListTile extends StatelessWidget {
                                     mode: LaunchMode.externalApplication,
                                   ),
                           ),
-                          if (hasDue) ...[
+                          if (canCollect) ...[
                             const SizedBox(width: 4),
                             SizedBox(
                               height: 32,
@@ -606,7 +669,13 @@ class _CollectionListTile extends StatelessWidget {
                                 ),
                                 child: const Text(
                                   'Collect',
-                                  style: AppTextStyles.smallStrong,
+                                  style: TextStyle(
+                                    fontFamily: AppTextStyles.fontFamily,
+                                    fontSize: 12,
+                                    height: 1.3,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
                             ),
@@ -620,8 +689,7 @@ class _CollectionListTile extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
+      );
   }
 }
 
@@ -952,7 +1020,9 @@ class _CollectionDelivery {
     required this.phone,
     required this.latitude,
     required this.longitude,
+    required this.collectableAmount,
     this.photoUrl,
+    this.collectionStatus,
   });
 
   final String id;
@@ -968,6 +1038,8 @@ class _CollectionDelivery {
   final double? latitude;
   final double? longitude;
   final String? photoUrl;
+  final String? collectionStatus;
+  final double collectableAmount;
 
   factory _CollectionDelivery.fromJson(Map<String, dynamic> json) {
     final id = _readString(json, const ['id', 'delivery_id']) ?? '';
@@ -1061,6 +1133,13 @@ class _CollectionDelivery {
             'profile_photo_url',
             'photo_url',
           ]),
+      collectionStatus: null,
+      collectableAmount: _readDouble(json, const [
+        'collectable_amount',
+        'collectableAmount',
+        'outstanding_amount',
+        'amount_due',
+      ]),
     );
   }
 
@@ -1088,6 +1167,10 @@ class _CollectionDelivery {
       latitude: customer.mapLatitude,
       longitude: customer.mapLongitude,
       photoUrl: customer.profilePhotoUrl,
+      collectionStatus: customer.collectionStatus,
+      collectableAmount:
+          customer.collectableAmount ??
+          (customer.outstanding ?? 0).toDouble(),
     );
   }
 

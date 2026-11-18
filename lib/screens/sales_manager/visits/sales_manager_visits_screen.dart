@@ -838,7 +838,7 @@ class _VisitLeadPickerCard extends StatelessWidget {
         child: hasSelection
             ? Row(
                 children: [
-                  CustomerAvatar(name: selected!.name, size: 40),
+                  CustomerAvatar(name: selected!.name, size: 48),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -1138,7 +1138,7 @@ class _VisitPartyPickerCard extends StatelessWidget {
                   CustomerAvatar(
                     name: selected!.name,
                     photoUrl: selected!.photoUrl,
-                    size: 40,
+                    size: 48,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -1292,7 +1292,7 @@ class _VisitPartySearchDialogState extends State<_VisitPartySearchDialog> {
                           leading: CustomerAvatar(
                             name: party.name,
                             photoUrl: party.photoUrl,
-                            size: 40,
+                            size: 48,
                           ),
                           title: Text(party.name),
                           subtitle: party.code.isEmpty

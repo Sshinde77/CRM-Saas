@@ -373,7 +373,7 @@ class _OrderCard extends StatelessWidget {
             children: [
               _CustomerAvatar(
                 imageUrl: order.customerProfileImageUrl,
-                size: 38,
+                size: 48,
               ),
               const SizedBox(width: 10),
               Expanded(

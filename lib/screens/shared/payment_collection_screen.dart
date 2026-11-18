@@ -9,6 +9,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../constants/app_colors.dart';
 import '../../models/customer_model.dart';
 import '../../providers/api_provider.dart';
+import '../../services/api_service.dart';
 import '../../widgets/customer_avatar.dart';
 import '../../widgets/delivery/delivery_top_bar.dart';
 import '../../widgets/delivery/customer_search_dialog.dart';
@@ -46,7 +47,7 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
 
   double get _amountCollected =>
       double.tryParse(_amountController.text.trim()) ?? 0;
-  double get _amountDue => _selectedCustomer?.pendingAmount ?? 0;
+  double get _amountDue => _selectedCustomer?.collectableAmount ?? 0;
   double get _remainingAmount =>
       (_amountDue - _amountCollected).clamp(0, double.infinity).toDouble();
 
@@ -121,8 +122,8 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
       if (!mounted) return;
       setState(() {
         _selectedCustomer = next;
-        _amountController.text = next.pendingAmount > 0
-            ? _plainAmount(next.pendingAmount)
+        _amountController.text = next.collectableAmount > 0
+            ? _plainAmount(next.collectableAmount)
             : '';
         _loadingDetail = false;
       });
@@ -199,11 +200,17 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
         ),
       );
       Navigator.of(context).pop(true);
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
+      final message = e is ApiException && e.message.trim().isNotEmpty
+          ? e.message.trim()
+          : 'Collection failed. Please try again.';
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Collection failed. Please try again.')),
+        SnackBar(content: Text(message)),
       );
+      if (e is ApiException && e.statusCode == 409) {
+        await _loadCustomers();
+      }
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -571,7 +578,7 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
                     return 'Enter amount';
                   }
                   if (amount > _amountDue) {
-                    return 'Amount cannot be more than pending amount';
+                    return 'Amount exceeds the collectable amount (${_formatMoney(_amountDue)})';
                   }
                   return null;
                 },
@@ -760,7 +767,16 @@ class _Footer extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text('Cancel', style: AppTextStyles.secondaryStrong),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
+                fontSize: 13,
+                height: 1.35,
+                fontWeight: FontWeight.w600,
+                color: AppColors.deliveryInk,
+              ),
+            ),
           ),
           const SizedBox(width: 12),
           FilledButton(
@@ -786,7 +802,13 @@ class _Footer extends StatelessWidget {
                   )
                 : const Text(
                     'Record Collection',
-                    style: AppTextStyles.secondaryStrong,
+                    style: TextStyle(
+                      fontFamily: AppTextStyles.fontFamily,
+                      fontSize: 13,
+                      height: 1.35,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
                   ),
           ),
         ],
@@ -1016,6 +1038,7 @@ class _PaymentCustomer {
     required this.id,
     required this.name,
     required this.pendingAmount,
+    required this.collectableAmount,
     required this.address,
     required this.latitude,
     required this.longitude,
@@ -1025,6 +1048,7 @@ class _PaymentCustomer {
   final dynamic id;
   final String name;
   final double pendingAmount;
+  final double collectableAmount;
   final String? address;
   final double? latitude;
   final double? longitude;
@@ -1045,12 +1069,14 @@ class _PaymentCustomer {
     CustomerModel customer, {
     _PaymentCustomer? fallback,
   }) {
+    final outstanding = (customer.outstanding ?? 0).toDouble();
     return _PaymentCustomer(
       id: customer.id,
       name: customer.name.trim().isNotEmpty
           ? customer.name
           : 'Unnamed Customer',
-      pendingAmount: (customer.outstanding ?? 0).toDouble(),
+      pendingAmount: outstanding,
+      collectableAmount: customer.collectableAmount ?? outstanding,
       address: _customerAddress(customer),
       latitude: customer.mapLatitude ?? fallback?.latitude,
       longitude: customer.mapLongitude ?? fallback?.longitude,

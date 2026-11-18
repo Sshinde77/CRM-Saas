@@ -1435,17 +1435,17 @@ class _CustomerAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final url = imageUrl.trim();
     return Container(
-      width: 36,
-      height: 36,
+      width: 48,
+      height: 48,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(color: background, shape: BoxShape.circle),
       child: url.isEmpty
-          ? Icon(fallbackIcon, color: foreground, size: 20)
+          ? Icon(fallbackIcon, color: foreground, size: 24)
           : Image.network(
               url,
               fit: BoxFit.cover,
               errorBuilder: (_, error, stackTrace) {
-                return Icon(fallbackIcon, color: foreground, size: 20);
+                return Icon(fallbackIcon, color: foreground, size: 24);
               },
             ),
     );

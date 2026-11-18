@@ -710,7 +710,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
               CustomerAvatar(
                 name: customer.businessName ?? customer.name,
                 photoUrl: customer.profilePhotoUrl,
-                size: compact ? 42 : 48,
+                size: compact ? 48 : 56,
               ),
               const SizedBox(width: 8),
               Expanded(

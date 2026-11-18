@@ -1731,19 +1731,19 @@ class _SalesCustomerAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final url = imageUrl.trim();
     return Container(
-      width: 36,
-      height: 36,
+      width: 48,
+      height: 48,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(color: background, shape: BoxShape.circle),
       child: url.isEmpty
-          ? Icon(Icons.person_outline_rounded, color: foreground, size: 20)
+          ? Icon(Icons.person_outline_rounded, color: foreground, size: 24)
           : Image.network(
               url,
               fit: BoxFit.cover,
               errorBuilder: (_, error, stackTrace) => Icon(
                 Icons.person_outline_rounded,
                 color: foreground,
-                size: 20,
+                size: 24,
               ),
             ),
     );
@@ -2042,8 +2042,8 @@ class _CustomerAvatar extends StatelessWidget {
     );
 
     return Container(
-      width: 38,
-      height: 38,
+      width: 48,
+      height: 48,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: AppColors.primary.withValues(alpha: 0.10),

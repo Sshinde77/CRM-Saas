@@ -148,6 +148,8 @@ class CustomerModel {
   final int? totalBilled;
   final int? totalReceived;
   final int? outstanding;
+  final String? collectionStatus;
+  final double? collectableAmount;
   final DateTime? lastOrderDate;
   final DateTime? lastVisitDate;
   final String? paymentMethod;
@@ -198,6 +200,8 @@ class CustomerModel {
     required this.totalBilled,
     required this.totalReceived,
     required this.outstanding,
+    required this.collectionStatus,
+    required this.collectableAmount,
     required this.lastOrderDate,
     required this.lastVisitDate,
     required this.paymentMethod,
@@ -413,6 +417,13 @@ class CustomerModel {
         'outstanding',
         'due_amount',
       ]),
+      collectionStatus: _nullableStringValueFromSources(stringSources, const [
+        'collection_status',
+        'collectionStatus',
+      ]),
+      collectableAmount:
+          _doubleFromMap(json, 'collectable_amount') ??
+          _doubleFromMap(json, 'collectableAmount'),
       lastOrderDate: _dateTimeFromSources(stringSources, const [
         'last_order_date',
         'lastOrderDate',
@@ -517,6 +528,8 @@ class CustomerModel {
       'total_billed': totalBilled,
       'total_received': totalReceived,
       'outstanding': outstanding,
+      'collection_status': collectionStatus,
+      'collectable_amount': collectableAmount,
       'last_order_date': lastOrderDate?.toIso8601String(),
       'last_visit_date': lastVisitDate?.toIso8601String(),
       'payment_method': paymentMethod,
