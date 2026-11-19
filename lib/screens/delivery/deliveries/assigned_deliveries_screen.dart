@@ -357,18 +357,6 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
     );
   }
 
-  Future<void> _startDelivery(_AssignedDelivery delivery) {
-    return _runDeliveryAction(
-      delivery: delivery,
-      perform: (provider) async {
-        await provider.dispatchDelivery(delivery.id);
-        return true;
-      },
-      successTitle: 'Delivery started',
-      successMessage: '${delivery.orderNumber} is now in transit.',
-    );
-  }
-
   void _markDelivered(_AssignedDelivery delivery) => _viewDetails(delivery);
 
   Future<void> _callCustomer(_AssignedDelivery delivery) async {
@@ -662,9 +650,6 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
                             onLoadDelivery: delivery.canLoadDelivery
                                 ? () => _loadVehicle(delivery)
                                 : null,
-                            onStartDelivery: delivery.canStartDelivery
-                                ? () => _startDelivery(delivery)
-                                : null,
                             onMarkDelivered: delivery.canMarkDelivered
                                 ? () => _markDelivered(delivery)
                                 : null,
@@ -953,7 +938,6 @@ class _DeliveryCard extends StatelessWidget {
   final VoidCallback? onReject;
   final VoidCallback? onPrepareDelivery;
   final VoidCallback? onLoadDelivery;
-  final VoidCallback? onStartDelivery;
   final VoidCallback? onMarkDelivered;
   final VoidCallback? onCallCustomer;
   final VoidCallback? onNavigateCustomer;
@@ -967,7 +951,6 @@ class _DeliveryCard extends StatelessWidget {
     required this.onReject,
     required this.onPrepareDelivery,
     required this.onLoadDelivery,
-    required this.onStartDelivery,
     required this.onMarkDelivered,
     required this.onCallCustomer,
     required this.onNavigateCustomer,
@@ -986,7 +969,6 @@ class _DeliveryCard extends StatelessWidget {
             onAccept: onAccept,
             onPrepareDelivery: onPrepareDelivery,
             onLoadDelivery: onLoadDelivery,
-            onStartDelivery: onStartDelivery,
             onMarkDelivered: onMarkDelivered,
           )
         : null;
@@ -1357,7 +1339,6 @@ class _DeliveryCardAction {
     required VoidCallback? onAccept,
     required VoidCallback? onPrepareDelivery,
     required VoidCallback? onLoadDelivery,
-    required VoidCallback? onStartDelivery,
     required VoidCallback? onMarkDelivered,
   }) {
     if (delivery.canRespond && onAccept != null) {
@@ -1365,14 +1346,6 @@ class _DeliveryCardAction {
         label: 'Accept',
         onPressed: onAccept,
         background: AppColors.deliveryGreen,
-        foreground: AppColors.surface,
-      );
-    }
-    if (delivery.canStartDelivery && onStartDelivery != null) {
-      return _DeliveryCardAction(
-        label: 'Start Delivery',
-        onPressed: onStartDelivery,
-        background: AppColors.deliveryBlue,
         foreground: AppColors.surface,
       );
     }
@@ -1628,7 +1601,6 @@ class _DeliveryDetailsPreviewScreen extends StatelessWidget {
                   onReject: null,
                   onPrepareDelivery: null,
                   onLoadDelivery: null,
-                  onStartDelivery: null,
                   onMarkDelivered: null,
                   onCallCustomer: null,
                   onNavigateCustomer: null,
