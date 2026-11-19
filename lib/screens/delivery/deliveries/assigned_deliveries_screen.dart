@@ -339,14 +339,21 @@ class _AssignedDeliveriesScreenState extends State<AssignedDeliveriesScreen> {
       perform: (provider) async {
         final confirmed = await _confirmAction(
           'Load Vehicle',
-          'Confirm that the planned goods are on the vehicle. Loading moves their stock out of the warehouse.',
+          'Confirm that the planned goods are on the vehicle. This will load stock out of the warehouse and start the delivery.',
         );
         if (!confirmed) return false;
         await provider.loadDelivery(delivery.id);
+        try {
+          await provider.dispatchDelivery(delivery.id);
+        } catch (_) {
+          // loadDelivery succeeded; dispatch will be retried by admin or
+          // the delivery card will refresh to show the loaded state.
+          rethrow;
+        }
         return true;
       },
-      successTitle: 'Vehicle loaded',
-      successMessage: '${delivery.orderNumber} is ready to start.',
+      successTitle: 'Delivery started',
+      successMessage: '${delivery.orderNumber} is now in transit.',
     );
   }
 
