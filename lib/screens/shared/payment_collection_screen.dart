@@ -202,13 +202,21 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
       Navigator.of(context).pop(true);
     } catch (e) {
       if (!mounted) return;
-      final message = e is ApiException && e.message.trim().isNotEmpty
-          ? e.message.trim()
-          : 'Collection failed. Please try again.';
+      final String message;
+      if (e is ApiException && e.code == 'DAY_END_CLOSED') {
+        message =
+            'The day has been closed. Contact your manager to reopen it before recording more collections.';
+      } else if (e is ApiException && e.message.trim().isNotEmpty) {
+        message = e.message.trim();
+      } else {
+        message = 'Collection failed. Please try again.';
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(message)),
       );
-      if (e is ApiException && e.statusCode == 409) {
+      if (e is ApiException &&
+          e.statusCode == 409 &&
+          e.code != 'DAY_END_CLOSED') {
         // Parse "at most N can still be collected" from the 409 message and
         // cap the amount field so the user can re-submit without editing.
         final remaining = _parseRemainingAmount(message);

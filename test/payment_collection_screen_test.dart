@@ -376,6 +376,87 @@ void submissionTests() {
       // Button should be re-enabled after failure.
       final submitBtn = tester.widget<FilledButton>(submitFinder);
       expect(submitBtn.onPressed, isNotNull);
+      // Snackbar message is non-empty even on 500.
+      expect(find.textContaining('Server error'), findsWidgets);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('DAY_END_CLOSED handling', () {
+    testWidgets('shows friendly message, does not cap amount field',
+        (tester) async {
+      tester.view.physicalSize = const Size(430, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final provider = _SubmitProvider()
+        ..throwOnSubmit = ApiException(
+          statusCode: 409,
+          code: 'DAY_END_CLOSED',
+          message: 'Day-end has been closed.',
+        );
+      addTearDown(provider.dispose);
+
+      await tester.pumpWidget(ApiProviderScope(
+        notifier: provider,
+        child: MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: const PaymentCollectionScreen(),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      await _selectCustomerAndFillAmount(tester, amount: '2000');
+
+      final submitFinder =
+          find.widgetWithText(FilledButton, 'Record Collection');
+      await tester.ensureVisible(submitFinder);
+      await tester.tap(submitFinder);
+      await tester.pumpAndSettle();
+
+      // Friendly message shown — not raw backend text or raw JSON.
+      expect(find.textContaining('day has been closed'), findsWidgets);
+      expect(find.textContaining('{'), findsNothing);
+      // Amount field is NOT capped (DAY_END_CLOSED is not a remaining-amount 409).
+      expect(find.widgetWithText(TextField, '2000'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('does not cap amount when 409 has no "at most" phrase',
+        (tester) async {
+      tester.view.physicalSize = const Size(430, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final provider = _SubmitProvider()
+        ..throwOnSubmit = ApiException(
+          statusCode: 409,
+          message: 'Conflict — cannot collect at this time.',
+        );
+      addTearDown(provider.dispose);
+
+      await tester.pumpWidget(ApiProviderScope(
+        notifier: provider,
+        child: MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: const PaymentCollectionScreen(),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      await _selectCustomerAndFillAmount(tester, amount: '3000');
+
+      final submitFinder =
+          find.widgetWithText(FilledButton, 'Record Collection');
+      await tester.ensureVisible(submitFinder);
+      await tester.tap(submitFinder);
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Conflict'), findsWidgets);
+      // Amount field unchanged (no "at most" in message).
+      expect(find.widgetWithText(TextField, '3000'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });
