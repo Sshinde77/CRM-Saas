@@ -209,11 +209,30 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
         SnackBar(content: Text(message)),
       );
       if (e is ApiException && e.statusCode == 409) {
+        // Parse "at most N can still be collected" from the 409 message and
+        // cap the amount field so the user can re-submit without editing.
+        final remaining = _parseRemainingAmount(message);
         await _loadCustomers();
+        if (!mounted) return;
+        if (remaining != null && remaining >= 0) {
+          _amountController.text = _plainAmount(remaining);
+        }
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
+  }
+
+  /// Parses the max-collectable amount from a 409 "at most N can still be
+  /// collected" message. Returns null if the pattern is not found.
+  double? _parseRemainingAmount(String message) {
+    final match = RegExp(
+      r'at most ([\d,]+(?:\.\d+)?)',
+      caseSensitive: false,
+    ).firstMatch(message);
+    if (match == null) return null;
+    final raw = match.group(1)?.replaceAll(',', '') ?? '';
+    return double.tryParse(raw);
   }
 
   Future<void> _choosePaymentProof() async {

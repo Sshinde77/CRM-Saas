@@ -70,20 +70,20 @@ class _DeliveryCollectionListScreenState
       provider.fetchDeliveryCollections(
         pagination: _showPending ? null : _collectedPagination,
       ),
-      provider.fetchCustomers(
-        isActive: true,
-        pagination: _showPending ? _pendingPagination : null,
-      ),
+      provider.fetchCustomers(isActive: true, hasCollectable: true),
     ]);
     final collections = results[0] as List<Map<String, dynamic>>;
     final customers = results[1] as List<CustomerModel>;
 
+    // Server filters to customers with something still collectable.
+    final pendingAll = customers
+        .map(_CollectionDelivery.fromCustomer)
+        .toList();
+
     return _CollectionDashboardData(
       deliveries: collections.map(_CollectionDelivery.fromJson).toList(),
-      pendingCustomers: customers
-          .where((customer) => (customer.outstanding ?? 0) > 0)
-          .map(_CollectionDelivery.fromCustomer)
-          .toList(),
+      pendingCustomers: _pendingPagination.local(pendingAll),
+      pendingTotal: pendingAll,
     );
   }
 
@@ -331,6 +331,7 @@ class _CollectionsCard extends StatelessWidget {
         background: AppColors.deliveryRedSoft,
       ),
     ];
+    final hasAwaiting = data.awaitingApprovalAmount > 0;
 
     return _SurfaceCard(
       padding: const EdgeInsets.all(12),
@@ -400,6 +401,52 @@ class _CollectionsCard extends StatelessWidget {
               return _CollectionMetricTile(info: rows[index]);
             },
           ),
+          if (hasAwaiting) ...[
+            const SizedBox(height: 8),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF8F0),
+                borderRadius: BorderRadius.circular(9),
+                border: Border.all(color: const Color(0xFFFFB74D)),
+              ),
+              child: Row(
+                children: [
+                  const _MiniIcon(
+                    icon: Icons.hourglass_top_rounded,
+                    color: Color(0xFFE65100),
+                    background: AppColors.surface,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          data.formattedAwaitingApproval,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.cardTitle.copyWith(
+                            color: const Color(0xFFE65100),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Awaiting Admin Approval'
+                          ' (${data.awaitingApprovalCount}'
+                          ' ${data.awaitingApprovalCount == 1 ? 'entry' : 'entries'})',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.small,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -953,10 +1000,12 @@ class _CollectionDashboardData {
   const _CollectionDashboardData({
     required this.deliveries,
     required this.pendingCustomers,
+    this.pendingTotal,
   });
 
   final List<_CollectionDelivery> deliveries;
   final List<_CollectionDelivery> pendingCustomers;
+  final List<_CollectionDelivery>? pendingTotal;
 
   List<_CollectionDelivery> get collectionRows {
     return deliveries.where((delivery) {
@@ -993,17 +1042,26 @@ class _CollectionDashboardData {
   }
 
   double get pendingAmount {
-    return pendingRows.fold<double>(
-      0,
-      (sum, delivery) => sum + delivery.amountDue,
-    );
+    final source = pendingTotal ?? pendingCustomers;
+    return source.fold<double>(0, (sum, delivery) => sum + delivery.amountDue);
   }
+
+  // Collections submitted by delivery partners awaiting admin reconciliation.
+  double get awaitingApprovalAmount {
+    return collectionRows
+        .where((d) => d.status == 'recorded')
+        .fold<double>(0, (sum, d) => sum + d.amountCollected);
+  }
+
+  int get awaitingApprovalCount =>
+      collectionRows.where((d) => d.status == 'recorded').length;
 
   String get formattedTotalToCollect => _formatMoney(totalAmountToCollect);
   String get formattedTotalCollected => _formatMoney(totalAmountCollected);
   String get formattedCashInHand => _formatMoney(cashInHand);
   String get formattedBankTransfer => _formatMoney(bankTransfer);
   String get formattedPendingAmount => _formatMoney(pendingAmount);
+  String get formattedAwaitingApproval => _formatMoney(awaitingApprovalAmount);
 }
 
 class _CollectionDelivery {
@@ -1349,6 +1407,7 @@ class _CustomerPaymentDetailsSheetState
   Map<String, dynamic>? _pendingSummary;
   List<Map<String, dynamic>> _collectedItems = const [];
   Map<String, dynamic>? _collectedSummary;
+  List<Map<String, dynamic>> _awaitingApprovalItems = const [];
 
   @override
   void initState() {
@@ -1372,9 +1431,12 @@ class _CustomerPaymentDetailsSheetState
       _pendingError = null;
     });
     try {
-      final result = await ApiProviderScope.of(
-        context,
-      ).fetchCustomerPendingPayments(widget.customerId, pageSize: 50);
+      final result = await ApiProviderScope.of(context)
+          .fetchCustomerPendingPayments(
+        widget.customerId,
+        pageSize: 50,
+        excludeAwaitingApproval: true,
+      );
       if (!mounted) return;
       setState(() {
         final items = result['items'];
@@ -1400,17 +1462,34 @@ class _CustomerPaymentDetailsSheetState
       _collectedError = null;
     });
     try {
-      final result = await ApiProviderScope.of(
-        context,
-      ).fetchCustomerCollectedPayments(widget.customerId, pageSize: 50);
+      final provider = ApiProviderScope.of(context);
+      // Load finalized payments and awaiting-approval collections in parallel.
+      // The awaiting-approval endpoint requires Payments › View permission;
+      // delivery partners get 403 and we silently skip that list.
+      final results = await Future.wait([
+        provider.fetchCustomerCollectedPayments(widget.customerId, pageSize: 50),
+        provider
+            .fetchCustomerCollectedPayments(
+              widget.customerId,
+              paymentStatus: 'awaiting_approval',
+              pageSize: 50,
+            )
+            .catchError((_) => <String, dynamic>{}),
+      ]);
       if (!mounted) return;
+      final collected = results[0];
+      final awaiting = results[1];
       setState(() {
-        final items = result['items'];
+        final items = collected['items'];
         _collectedItems = items is List
             ? items.whereType<Map<String, dynamic>>().toList()
             : const [];
-        final summary = result['summary'];
+        final summary = collected['summary'];
         _collectedSummary = summary is Map<String, dynamic> ? summary : null;
+        final awaitingItems = awaiting['items'];
+        _awaitingApprovalItems = awaitingItems is List
+            ? awaitingItems.whereType<Map<String, dynamic>>().toList()
+            : const [];
         _loadingCollected = false;
       });
     } catch (e) {
@@ -1527,6 +1606,12 @@ class _CustomerPaymentDetailsSheetState
                 _formatMoney((s['total_overdue'] as num?)?.toDouble() ?? 0),
               ),
               _ChipData('Invoices', '${s['pending_invoices'] ?? 0}'),
+              if ((s['collectable_amount'] as num?) != null)
+                _ChipData(
+                  'Collectable',
+                  _formatMoney(
+                      (s['collectable_amount'] as num).toDouble()),
+                ),
             ],
           ),
           const SizedBox(height: 14),
@@ -1572,6 +1657,7 @@ class _CustomerPaymentDetailsSheetState
     }
 
     final s = _collectedSummary;
+    final hasAwaiting = _awaitingApprovalItems.isNotEmpty;
     return ListView(
       controller: scrollController,
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
@@ -1591,11 +1677,53 @@ class _CustomerPaymentDetailsSheetState
                 'Advance',
                 _formatMoney((s['total_unallocated'] as num?)?.toDouble() ?? 0),
               ),
+              if ((s['awaiting_approval_amount'] as num?) != null &&
+                  (s['awaiting_approval_amount'] as num).toDouble() > 0)
+                _ChipData(
+                  'Awaiting Approval',
+                  _formatMoney(
+                      (s['awaiting_approval_amount'] as num).toDouble()),
+                ),
             ],
           ),
           const SizedBox(height: 14),
         ],
-        if (_collectedItems.isEmpty)
+        if (hasAwaiting) ...[
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFF8F0),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFFFB74D)),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.hourglass_top_rounded,
+                  size: 16,
+                  color: Color(0xFFE65100),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Awaiting Admin Approval'
+                  ' (${_awaitingApprovalItems.length}'
+                  ' ${_awaitingApprovalItems.length == 1 ? 'entry' : 'entries'})',
+                  style: AppTextStyles.small.copyWith(
+                    color: const Color(0xFFE65100),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          for (final item in _awaitingApprovalItems) ...[
+            _SheetAwaitingCard(item: item),
+            const SizedBox(height: 10),
+          ],
+          const SizedBox(height: 6),
+        ],
+        if (_collectedItems.isEmpty && !hasAwaiting)
           const Center(
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 24),
@@ -1683,7 +1811,12 @@ class _SheetPendingCard extends StatelessWidget {
     final invoiceNumber = item['invoice_number']?.toString() ?? '-';
     final dueDate = _parseDateTimeString(item['due_date']?.toString());
     final invoiceDate = _parseDateTimeString(item['invoice_date']?.toString());
-    final outstanding = (item['outstanding'] as num?)?.toDouble() ?? 0;
+    // Prefer collectable_outstanding (excludes awaiting-approval portion)
+    // when the server provides it; fall back to raw outstanding.
+    final outstanding = ((item['collectable_outstanding'] ?? item['outstanding'])
+                as num?)
+            ?.toDouble() ??
+        0;
     final total = (item['total'] as num?)?.toDouble() ?? 0;
     final isOverdue = item['is_overdue'] == true;
     final daysOverdue = (item['days_overdue'] as num?)?.toInt() ?? 0;
@@ -1860,6 +1993,80 @@ class _SheetCollectedCard extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               'Advance: ${_formatMoney(unallocated)}',
+              style: AppTextStyles.small.copyWith(color: AppColors.textMuted),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _SheetAwaitingCard extends StatelessWidget {
+  const _SheetAwaitingCard({required this.item});
+
+  final Map<String, dynamic> item;
+
+  @override
+  Widget build(BuildContext context) {
+    final amount = (item['amount'] as num?)?.toDouble() ?? 0;
+    final collectedBy = item['collected_by']?.toString() ?? '';
+    final paymentMode = item['payment_mode']?.toString() ?? '';
+    final reference = item['reference']?.toString() ?? '';
+    final collectedAt =
+        _parseDateTimeString(item['collected_at']?.toString() ?? '');
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF8F0),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFFFB74D)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.hourglass_top_rounded,
+                size: 14,
+                color: Color(0xFFE65100),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'Awaiting Approval',
+                  style: AppTextStyles.small.copyWith(
+                    color: const Color(0xFFE65100),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Text(
+                _formatMoney(amount),
+                style: AppTextStyles.bodyStrong.copyWith(
+                  color: const Color(0xFFE65100),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '${_dateLabel(collectedAt)}${paymentMode.isNotEmpty ? '  •  ${_modeLabel(paymentMode)}' : ''}',
+            style: AppTextStyles.small.copyWith(color: AppColors.textMuted),
+          ),
+          if (collectedBy.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              'By: $collectedBy',
+              style: AppTextStyles.small.copyWith(color: AppColors.textMuted),
+            ),
+          ],
+          if (reference.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              'Ref: $reference',
               style: AppTextStyles.small.copyWith(color: AppColors.textMuted),
             ),
           ],

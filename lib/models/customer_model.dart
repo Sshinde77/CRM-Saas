@@ -1131,12 +1131,14 @@ class CustomerListQuery {
   final String? category;
   final bool? isActive;
   final String? assignedSalesOfficerId;
+  final bool? hasCollectable;
 
   const CustomerListQuery({
     this.search,
     this.category,
     this.isActive,
     this.assignedSalesOfficerId,
+    this.hasCollectable,
   });
 
   Map<String, String> toQueryParameters() {
@@ -1155,6 +1157,9 @@ class CustomerListQuery {
       query['is_active'] = isActive.toString();
     }
     put('assigned_sales_officer_id', assignedSalesOfficerId);
+    if (hasCollectable != null) {
+      query['has_collectable'] = hasCollectable.toString();
+    }
 
     return query;
   }

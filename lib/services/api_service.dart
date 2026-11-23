@@ -742,6 +742,7 @@ class ApiService {
     String? category,
     bool? isActive,
     String? assignedSalesOfficerId,
+    bool? hasCollectable,
   }) async {
     final paginationKey = pagination?.requestKey;
     final query = CustomerListQuery(
@@ -749,6 +750,7 @@ class ApiService {
       category: category,
       isActive: isActive,
       assignedSalesOfficerId: assignedSalesOfficerId,
+      hasCollectable: hasCollectable,
     ).toQueryParameters();
     query['page'] = '1';
     query['page_size'] = '100';
@@ -2459,6 +2461,7 @@ class ApiService {
     String? dueTo,
     bool? overdue,
     String? paymentStatus,
+    bool? excludeAwaitingApproval,
     String? search,
     int page = 1,
     int pageSize = 20,
@@ -2478,6 +2481,8 @@ class ApiService {
         'due_to': dueTo,
         'overdue': overdue?.toString(),
         'payment_status': paymentStatus,
+        'exclude_awaiting_approval':
+            excludeAwaitingApproval?.toString(),
         'search': search,
         'page': '$page',
         'page_size': '$pageSize',
@@ -2496,6 +2501,7 @@ class ApiService {
     String? fromDate,
     String? toDate,
     String? paymentMode,
+    String? paymentStatus,
     String? search,
     int page = 1,
     int pageSize = 20,
@@ -2512,6 +2518,7 @@ class ApiService {
         'from_date': fromDate,
         'to_date': toDate,
         'payment_mode': paymentMode,
+        'payment_status': paymentStatus,
         'search': search,
         'page': '$page',
         'page_size': '$pageSize',
@@ -2746,10 +2753,16 @@ class ApiService {
       requiresAuth: true,
       body: const {'status': 'in_transit'},
     );
-    return _extractDeliveryPayload(
-      response.body.trim(),
-      fallbackMessage: 'Invalid dispatch delivery response.',
-    );
+    // 200 is always a success — the backend is idempotent for in_transit.
+    // Don't fail on unexpected response bodies.
+    try {
+      return _extractDeliveryPayload(
+        response.body.trim(),
+        fallbackMessage: 'Invalid dispatch delivery response.',
+      );
+    } catch (_) {
+      return const {};
+    }
   }
 
   Future<AppUser> fetchUserById(String userId) async {
@@ -4127,10 +4140,15 @@ class ApiService {
       }
     } catch (_) {}
 
-    // Don't surface raw HTML (nginx/CDN error pages), very long bodies, or
-    // plain HTTP status-line text — all of those are technical noise for users.
+    // Don't surface raw HTML, raw JSON, very long bodies, or plain HTTP
+    // status-line text — all of those are technical noise for users.
     final trimmed = body.trim();
-    if (trimmed.startsWith('<') || trimmed.length > 300) return '';
+    if (trimmed.startsWith('<') ||
+        trimmed.startsWith('{') ||
+        trimmed.startsWith('[') ||
+        trimmed.length > 300) {
+      return '';
+    }
     return trimmed;
   }
 

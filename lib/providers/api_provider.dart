@@ -241,6 +241,7 @@ class ApiProvider extends ChangeNotifier {
     String? category,
     bool? isActive,
     String? assignedSalesOfficerId,
+    bool? hasCollectable,
   }) async {
     _setLoading(true);
     _errorMessage = null;
@@ -252,6 +253,7 @@ class ApiProvider extends ChangeNotifier {
         category: category,
         isActive: isActive,
         assignedSalesOfficerId: assignedSalesOfficerId,
+        hasCollectable: hasCollectable,
       );
       notifyListeners();
       return customers;
@@ -914,6 +916,7 @@ class ApiProvider extends ChangeNotifier {
     int pageSize = 20,
     bool? overdue,
     String? paymentStatus,
+    bool? excludeAwaitingApproval,
     String? search,
     String? sortBy,
     String? sortOrder,
@@ -924,6 +927,7 @@ class ApiProvider extends ChangeNotifier {
       pageSize: pageSize,
       overdue: overdue,
       paymentStatus: paymentStatus,
+      excludeAwaitingApproval: excludeAwaitingApproval,
       search: search,
       sortBy: sortBy,
       sortOrder: sortOrder,
@@ -935,6 +939,7 @@ class ApiProvider extends ChangeNotifier {
     int page = 1,
     int pageSize = 20,
     String? paymentMode,
+    String? paymentStatus,
     String? search,
     String? sortBy,
     String? sortOrder,
@@ -944,6 +949,7 @@ class ApiProvider extends ChangeNotifier {
       page: page,
       pageSize: pageSize,
       paymentMode: paymentMode,
+      paymentStatus: paymentStatus,
       search: search,
       sortBy: sortBy,
       sortOrder: sortOrder,
