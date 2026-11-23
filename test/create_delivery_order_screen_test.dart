@@ -87,6 +87,7 @@ class _OrderProvider extends ApiProvider {
     String? category,
     bool? isActive,
     String? assignedSalesOfficerId,
+    bool? hasCollectable,
   }) async => includeCustomer
       ? [
           CustomerModel.fromJson({
@@ -148,6 +149,10 @@ void main() {
   testWidgets('payment options are left aligned within their columns', (
     tester,
   ) async {
+    tester.view.physicalSize = const Size(430, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     final provider = _OrderProvider()..warehouseFails = false;
     addTearDown(provider.dispose);
     await tester.pumpWidget(
@@ -192,6 +197,10 @@ void main() {
   testWidgets('customer popup filters results and closes without selection', (
     tester,
   ) async {
+    tester.view.physicalSize = const Size(430, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     final provider = _OrderProvider()
       ..warehouseFails = false
       ..includeCustomer = true;
@@ -199,7 +208,7 @@ void main() {
     await tester.pumpWidget(
       ApiProviderScope(
         notifier: provider,
-        child: const MaterialApp(home: CreateDeliveryOrderScreen()),
+        child: MaterialApp(theme: AppTheme.lightTheme, home: const CreateDeliveryOrderScreen()),
       ),
     );
     await tester.pumpAndSettle();
@@ -243,6 +252,10 @@ void main() {
   testWidgets('Delivery home order pre-selects its associated partner', (
     tester,
   ) async {
+    tester.view.physicalSize = const Size(430, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     var completed = false;
     final provider = _OrderProvider()
       ..warehouseFails = false
@@ -259,6 +272,7 @@ void main() {
       ApiProviderScope(
         notifier: provider,
         child: MaterialApp(
+          theme: AppTheme.lightTheme,
           home: CreateDeliveryOrderScreen(onCreated: () => completed = true),
         ),
       ),
@@ -320,6 +334,10 @@ void main() {
   testWidgets(
     'Delivery defaults to the signed-in user when no separate partner is linked',
     (tester) async {
+      tester.view.physicalSize = const Size(430, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
       final provider = _OrderProvider()
         ..warehouseFails = false
         ..deliveryProfile = const CurrentUserProfile(
@@ -331,7 +349,7 @@ void main() {
       await tester.pumpWidget(
         ApiProviderScope(
           notifier: provider,
-          child: const MaterialApp(home: CreateDeliveryOrderScreen()),
+          child: MaterialApp(theme: AppTheme.lightTheme, home: const CreateDeliveryOrderScreen()),
         ),
       );
       await tester.pumpAndSettle();
@@ -359,6 +377,10 @@ void main() {
     testWidgets(
       '${salesManager ? 'Sales Manager' : 'Admin'} home delivery loads and assigns a partner',
       (tester) async {
+        tester.view.physicalSize = const Size(430, 900);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
         final provider = _OrderProvider()
           ..warehouseFails = false
           ..includeCustomer = true;
@@ -367,6 +389,7 @@ void main() {
           ApiProviderScope(
             notifier: provider,
             child: MaterialApp(
+              theme: AppTheme.lightTheme,
               home: CreateOrderScreen(useSalesManagerShell: salesManager),
             ),
           ),
@@ -425,6 +448,10 @@ void main() {
   testWidgets(
     'failed partner assignment retries without creating a duplicate order',
     (tester) async {
+      tester.view.physicalSize = const Size(430, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
       final provider = _OrderProvider()
         ..warehouseFails = false
         ..includeCustomer = true
@@ -433,7 +460,7 @@ void main() {
       await tester.pumpWidget(
         ApiProviderScope(
           notifier: provider,
-          child: const MaterialApp(home: CreateOrderScreen()),
+          child: MaterialApp(theme: AppTheme.lightTheme, home: const CreateOrderScreen()),
         ),
       );
       await tester.pumpAndSettle();
@@ -481,6 +508,10 @@ void main() {
     testWidgets(
       '${salesManager ? 'Sales Manager' : 'Admin'} Create Order opens the shared live form',
       (tester) async {
+        tester.view.physicalSize = const Size(430, 900);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
         final provider = _OrderProvider()
           ..warehouseFails = false
           ..includeCustomer = true;
@@ -489,6 +520,7 @@ void main() {
           ApiProviderScope(
             notifier: provider,
             child: MaterialApp(
+              theme: AppTheme.lightTheme,
               home: CreateOrderScreen(useSalesManagerShell: salesManager),
             ),
           ),
@@ -529,6 +561,10 @@ void main() {
   testWidgets('products scroll independently of the order form', (
     tester,
   ) async {
+    tester.view.physicalSize = const Size(430, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     final provider = _OrderProvider()
       ..warehouseFails = false
       ..extraProducts = 11;
@@ -536,7 +572,7 @@ void main() {
     await tester.pumpWidget(
       ApiProviderScope(
         notifier: provider,
-        child: const MaterialApp(home: CreateDeliveryOrderScreen()),
+        child: MaterialApp(theme: AppTheme.lightTheme, home: const CreateDeliveryOrderScreen()),
       ),
     );
     await tester.pumpAndSettle();
@@ -736,12 +772,16 @@ void main() {
   testWidgets('warehouse failure preserves form and products; retry recovers', (
     tester,
   ) async {
+    tester.view.physicalSize = const Size(430, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     final provider = _OrderProvider()..inventoryDenied = true;
     addTearDown(provider.dispose);
     await tester.pumpWidget(
       ApiProviderScope(
         notifier: provider,
-        child: const MaterialApp(home: CreateDeliveryOrderScreen()),
+        child: MaterialApp(theme: AppTheme.lightTheme, home: const CreateDeliveryOrderScreen()),
       ),
     );
     await tester.pumpAndSettle();
@@ -814,6 +854,10 @@ void main() {
   testWidgets('empty active warehouse list leaves the order unavailable', (
     tester,
   ) async {
+    tester.view.physicalSize = const Size(430, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     final provider = _OrderProvider()
       ..warehouseFails = false
       ..warehouseRows = [];
@@ -821,7 +865,7 @@ void main() {
     await tester.pumpWidget(
       ApiProviderScope(
         notifier: provider,
-        child: const MaterialApp(home: CreateDeliveryOrderScreen()),
+        child: MaterialApp(theme: AppTheme.lightTheme, home: const CreateDeliveryOrderScreen()),
       ),
     );
     await tester.pumpAndSettle();
@@ -843,6 +887,10 @@ void main() {
     testWidgets(
       'preview shows tax and creates the selected order ($taxRate%)',
       (tester) async {
+        tester.view.physicalSize = const Size(430, 900);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
         final provider = _OrderProvider()
           ..warehouseFails = false
           ..includeCustomer = true
@@ -940,6 +988,10 @@ void main() {
   testWidgets('stock shortage shows a clear error and lets the user edit', (
     tester,
   ) async {
+    tester.view.physicalSize = const Size(430, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     final provider = _OrderProvider()
       ..warehouseFails = false
       ..includeCustomer = true
@@ -963,7 +1015,7 @@ void main() {
     await tester.pumpWidget(
       ApiProviderScope(
         notifier: provider,
-        child: const MaterialApp(home: CreateDeliveryOrderScreen()),
+        child: MaterialApp(theme: AppTheme.lightTheme, home: const CreateDeliveryOrderScreen()),
       ),
     );
     await tester.pumpAndSettle();

@@ -3,6 +3,7 @@ import 'package:crm_saas/routes/app_router.dart';
 import 'package:crm_saas/models/customer_model.dart';
 import 'package:crm_saas/providers/api_provider.dart';
 import 'package:crm_saas/screens/delivery/orders/create_delivery_order_screen.dart';
+import 'package:crm_saas/theme/app_theme.dart';
 import 'package:crm_saas/widgets/delivery/delivery_bottom_navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -15,6 +16,7 @@ class _ActionProvider extends ApiProvider {
     String? category,
     bool? isActive,
     String? assignedSalesOfficerId,
+    bool? hasCollectable,
   }) async => [];
 
   @override
@@ -48,6 +50,7 @@ void main() {
             ApiProviderScope(
               notifier: provider,
               child: MaterialApp(
+                theme: AppTheme.lightTheme,
                 navigatorKey: navigator,
                 routes: {
                   AppRoutes.deliveryDeliveries: (_) =>

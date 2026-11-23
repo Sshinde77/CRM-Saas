@@ -7,6 +7,7 @@ import 'package:crm_saas/providers/api_provider.dart';
 import 'package:crm_saas/screens/delivery/deliveries/assigned_deliveries_screen.dart';
 import 'package:crm_saas/screens/delivery/deliveries/delivery_detail_screen.dart';
 import 'package:crm_saas/services/api_service.dart';
+import 'package:crm_saas/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -154,7 +155,7 @@ void main() {
     await tester.pumpWidget(
       ApiProviderScope(
         notifier: provider,
-        child: const MaterialApp(home: AssignedDeliveriesScreen()),
+        child: MaterialApp(theme: AppTheme.lightTheme, home: const AssignedDeliveriesScreen()),
       ),
     );
     await tester.pumpAndSettle();
@@ -195,8 +196,9 @@ void main() {
     await tester.pumpWidget(
       ApiProviderScope(
         notifier: provider,
-        child: const MaterialApp(
-          home: DeliveryDetailScreen(deliveryId: 'delivery-1'),
+        child: MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: const DeliveryDetailScreen(deliveryId: 'delivery-1'),
         ),
       ),
     );
