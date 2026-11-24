@@ -305,6 +305,16 @@ class ApiProvider extends ChangeNotifier {
     return _apiService.fetchDeliveryCollections(pagination: pagination);
   }
 
+  Future<Map<String, dynamic>> fetchDeliveryCollectionsView({
+    required String view,
+    ListPagination? pagination,
+  }) {
+    return _apiService.fetchDeliveryCollectionsView(
+      view: view,
+      pagination: pagination,
+    );
+  }
+
   Future<Map<String, dynamic>> recordCustomerCollection({
     required String customerId,
     required double amount,

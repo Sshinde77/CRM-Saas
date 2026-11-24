@@ -11,7 +11,6 @@ import '../../../widgets/delivery/delivery_bottom_navigation.dart';
 import '../../../constants/app_colors.dart';
 import '../../../core/theme/app_sizes.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../../models/customer_model.dart';
 import '../../../providers/api_provider.dart';
 import '../../../routes/app_router.dart';
 import '../../../widgets/customer_avatar.dart';
@@ -66,24 +65,31 @@ class _DeliveryCollectionListScreenState
 
   Future<_CollectionDashboardData> _loadCollections() async {
     final provider = ApiProviderScope.of(context);
-    final results = await Future.wait<Object>([
-      provider.fetchDeliveryCollections(
-        pagination: _showPending ? null : _collectedPagination,
+    final results = await Future.wait<Map<String, dynamic>>([
+      provider.fetchDeliveryCollectionsView(
+        view: 'pending',
+        pagination: _pendingPagination,
       ),
-      provider.fetchCustomers(isActive: true, hasCollectable: true),
+      provider.fetchDeliveryCollectionsView(
+        view: 'collected',
+        pagination: _collectedPagination,
+      ),
     ]);
-    final collections = results[0] as List<Map<String, dynamic>>;
-    final customers = results[1] as List<CustomerModel>;
-
-    // Server filters to customers with something still collectable.
-    final pendingAll = customers
-        .map(_CollectionDelivery.fromCustomer)
-        .toList();
-
+    final pendingResult = results[0];
+    final collectedResult = results[1];
     return _CollectionDashboardData(
-      deliveries: collections.map(_CollectionDelivery.fromJson).toList(),
-      pendingCustomers: _pendingPagination.local(pendingAll),
-      pendingTotal: pendingAll,
+      pendingItems: (pendingResult['items'] as List<dynamic>)
+          .whereType<Map<String, dynamic>>()
+          .map(_CollectionDelivery.fromJson)
+          .toList(),
+      collectedItems: (collectedResult['items'] as List<dynamic>)
+          .whereType<Map<String, dynamic>>()
+          .map(_CollectionDelivery.fromJson)
+          .toList(),
+      pendingSummary:
+          (pendingResult['summary'] as Map<String, dynamic>?) ?? {},
+      collectedSummary:
+          (collectedResult['summary'] as Map<String, dynamic>?) ?? {},
     );
   }
 
@@ -182,8 +188,8 @@ class _DeliveryCollectionListScreenState
                                       data:
                                           data ??
                                           const _CollectionDashboardData(
-                                            deliveries: [],
-                                            pendingCustomers: [],
+                                            pendingItems: [],
+                                            collectedItems: [],
                                           ),
                                       showPending: _showPending,
                                       onTabChanged: (value) => setState(() {
@@ -518,10 +524,14 @@ class _CollectionListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasPendingApproval =
-        isPendingTab && delivery.collectionStatus == 'pending_approval';
-    final canCollect = isPendingTab && delivery.collectableAmount > 0;
+        isPendingTab && _isAwaitingApproval(delivery.collectionStatus);
+    final canCollect =
+        isPendingTab &&
+        delivery.collectableAmount > 0 &&
+        !_isAwaitingApproval(delivery.collectionStatus);
     final hasDue = delivery.amountDue > 0;
-    final isAwaiting = !isPendingTab && delivery.status == 'recorded';
+    final isAwaiting =
+        !isPendingTab && _isAwaitingApproval(delivery.collectionStatus);
     final accent = (hasDue || hasPendingApproval)
         ? AppColors.deliveryRed
         : AppColors.deliveryGreen;
@@ -998,63 +1008,43 @@ class _ErrorPanel extends StatelessWidget {
 
 class _CollectionDashboardData {
   const _CollectionDashboardData({
-    required this.deliveries,
-    required this.pendingCustomers,
-    this.pendingTotal,
+    required this.pendingItems,
+    required this.collectedItems,
+    this.pendingSummary = const {},
+    this.collectedSummary = const {},
   });
 
-  final List<_CollectionDelivery> deliveries;
-  final List<_CollectionDelivery> pendingCustomers;
-  final List<_CollectionDelivery>? pendingTotal;
+  final List<_CollectionDelivery> pendingItems;
+  final List<_CollectionDelivery> collectedItems;
+  final Map<String, dynamic> pendingSummary;
+  final Map<String, dynamic> collectedSummary;
 
-  List<_CollectionDelivery> get collectionRows {
-    return deliveries.where((delivery) {
-      return !delivery.isVoided && delivery.amountCollected > 0;
-    }).toList();
-  }
+  List<_CollectionDelivery> get pendingRows => pendingItems;
 
-  List<_CollectionDelivery> get pendingRows => pendingCustomers;
+  List<_CollectionDelivery> get collectedRows => collectedItems;
 
-  List<_CollectionDelivery> get collectedRows =>
-      collectionRows.where((delivery) => delivery.amountCollected > 0).toList();
+  double _summaryDouble(Map<String, dynamic> s, String key) =>
+      (s[key] as num?)?.toDouble() ?? 0;
 
-  double get totalAmountToCollect {
-    return pendingAmount + totalAmountCollected;
-  }
+  double get totalAmountCollected =>
+      _summaryDouble(collectedSummary, 'total_collected');
 
-  double get totalAmountCollected {
-    return collectionRows.fold<double>(
-      0,
-      (sum, delivery) => sum + delivery.amountCollected,
-    );
-  }
+  double get cashInHand => _summaryDouble(collectedSummary, 'cash_total');
 
-  double get cashInHand {
-    return collectionRows
-        .where((delivery) => delivery.paymentMode == 'cash')
-        .fold<double>(0, (sum, delivery) => sum + delivery.amountCollected);
-  }
+  double get bankTransfer =>
+      _summaryDouble(collectedSummary, 'bank_transfer_total');
 
-  double get bankTransfer {
-    return collectionRows
-        .where((delivery) => delivery.paymentMode == 'bank_transfer')
-        .fold<double>(0, (sum, delivery) => sum + delivery.amountCollected);
-  }
+  double get pendingAmount =>
+      _summaryDouble(pendingSummary, 'total_pending_amount');
 
-  double get pendingAmount {
-    final source = pendingTotal ?? pendingCustomers;
-    return source.fold<double>(0, (sum, delivery) => sum + delivery.amountDue);
-  }
+  double get awaitingApprovalAmount =>
+      _summaryDouble(collectedSummary, 'awaiting_approval_amount');
 
-  // Collections submitted by delivery partners awaiting admin reconciliation.
-  double get awaitingApprovalAmount {
-    return collectionRows
-        .where((d) => d.status == 'recorded')
-        .fold<double>(0, (sum, d) => sum + d.amountCollected);
-  }
+  double get totalAmountToCollect => pendingAmount + totalAmountCollected;
 
-  int get awaitingApprovalCount =>
-      collectionRows.where((d) => d.status == 'recorded').length;
+  int get awaitingApprovalCount => collectedItems
+      .where((d) => _isAwaitingApproval(d.collectionStatus))
+      .length;
 
   String get formattedTotalToCollect => _formatMoney(totalAmountToCollect);
   String get formattedTotalCollected => _formatMoney(totalAmountCollected);
@@ -1100,16 +1090,23 @@ class _CollectionDelivery {
   final double collectableAmount;
 
   factory _CollectionDelivery.fromJson(Map<String, dynamic> json) {
-    final id = _readString(json, const ['id', 'delivery_id']) ?? '';
+    final id =
+        _readString(json, const [
+          'id',
+          'delivery_id',
+          'customer_id',
+          'collection_id',
+        ]) ??
+        '';
     return _CollectionDelivery(
       id: id,
       orderNumber:
           _readString(json, const ['orderNumber', 'order_number', 'orderNo']) ??
-          'ORD-${id.isEmpty ? 'NEW' : id.toUpperCase()}',
+          'Outstanding balance',
       customerName:
           _readString(json, const ['customerName', 'customer_name']) ??
           _readNestedString(json, 'customer', const ['name']) ??
-          'Customer',
+          (_readString(json, const ['customer_id']) ?? 'Customer'),
       status: _normalizeStatus(
         _readString(json, const [
               'reconciliation_status',
@@ -1129,9 +1126,9 @@ class _CollectionDelivery {
         'due',
       ]),
       amountCollected: _readDouble(json, const [
+        'amount_collected',
         'amount',
         'amountCollected',
-        'amount_collected',
         'collectedAmount',
         'collected_amount',
         'paidAmount',
@@ -1153,7 +1150,11 @@ class _CollectionDelivery {
         'paymentProofUrl',
       ]),
       contactName:
-          _readString(json, const ['contact_person', 'contactPerson']) ??
+          _readString(json, const [
+            'contact_name',
+            'contact_person',
+            'contactPerson',
+          ]) ??
           _readNestedString(json, 'customer', const [
             'contact_person',
             'contactPerson',
@@ -1191,44 +1192,22 @@ class _CollectionDelivery {
             'profile_photo_url',
             'photo_url',
           ]),
-      collectionStatus: null,
+      // The current API payload uses reconciliation_status/status for
+      // collection records, while the documented view response uses
+      // collection_status. Accept all three until the backend response is
+      // fully standardized.
+      collectionStatus:
+          _readString(json, const [
+            'collection_status',
+            'reconciliation_status',
+            'status',
+          ]),
       collectableAmount: _readDouble(json, const [
         'collectable_amount',
         'collectableAmount',
         'outstanding_amount',
         'amount_due',
       ]),
-    );
-  }
-
-  factory _CollectionDelivery.fromCustomer(CustomerModel customer) {
-    final businessName = customer.businessName?.trim();
-    final contactName = customer.contactPerson?.trim();
-    final customerCode = customer.customerId?.trim();
-    return _CollectionDelivery(
-      id: customer.id,
-      orderNumber: customerCode?.isNotEmpty == true
-          ? customerCode!
-          : 'Outstanding balance',
-      customerName: businessName?.isNotEmpty == true
-          ? businessName!
-          : customer.name,
-      status: 'pending',
-      amountDue: (customer.outstanding ?? 0).toDouble(),
-      amountCollected: 0,
-      paymentMode: '',
-      paymentProofUrl: null,
-      contactName: contactName?.isNotEmpty == true
-          ? contactName!
-          : customer.name,
-      phone: customer.phone,
-      latitude: customer.mapLatitude,
-      longitude: customer.mapLongitude,
-      photoUrl: customer.profilePhotoUrl,
-      collectionStatus: customer.collectionStatus,
-      collectableAmount:
-          customer.collectableAmount ??
-          (customer.outstanding ?? 0).toDouble(),
     );
   }
 
@@ -2136,6 +2115,13 @@ String _modeLabel(String mode) {
       .where((p) => p.isNotEmpty)
       .map((p) => '${p[0].toUpperCase()}${p.substring(1)}')
       .join(' ');
+}
+
+bool _isAwaitingApproval(String? status) {
+  final normalized = status?.trim().toLowerCase().replaceAll('-', '_');
+  return normalized == 'pending_approval' ||
+      normalized == 'awaiting_approval' ||
+      normalized == 'recorded';
 }
 
 String _formatMoney(double value) {

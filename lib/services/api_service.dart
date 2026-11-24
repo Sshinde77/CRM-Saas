@@ -1044,6 +1044,40 @@ class ApiService {
     );
   }
 
+  Future<Map<String, dynamic>> fetchDeliveryCollectionsView({
+    required String view,
+    ListPagination? pagination,
+  }) async {
+    final paginationKey = pagination?.requestKey;
+    final queryParameters = {
+      'view': view,
+      ...?_cleanQuery({}),
+      ...?pagination?.query,
+    };
+    final response = await _send(
+      pagination: pagination,
+      method: 'GET',
+      endpoint: ApiEndpoints.deliveryCollections,
+      requiresAuth: true,
+      queryParameters: queryParameters,
+      timeout: const Duration(seconds: 60),
+      retryOnTimeout: true,
+    );
+    final decoded = await _tryDecodeBodyAsync(response.body.trim());
+    final rawItems = _extractGenericList(
+      decoded,
+      const ['items', 'collections', 'data', 'results'],
+      fallbackMessage: 'Invalid delivery collections response.',
+    );
+    final items = rawItems.whereType<Map<String, dynamic>>().toList();
+    final pageItems =
+        pagination?.read(decoded, items, requestKey: paginationKey) ?? items;
+    final summary =
+        (decoded is Map<String, dynamic> ? decoded['summary'] : null)
+            as Map<String, dynamic>?;
+    return {'items': pageItems, 'summary': summary ?? {}, 'view': view};
+  }
+
   Future<Map<String, dynamic>> recordCustomerCollection({
     required String customerId,
     required double amount,
