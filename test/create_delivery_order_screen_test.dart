@@ -1,4 +1,4 @@
-﻿import 'package:crm_saas/models/list_pagination.dart';
+import 'package:crm_saas/models/list_pagination.dart';
 import 'dart:convert';
 
 import 'package:crm_saas/models/auth_models.dart';
@@ -208,7 +208,10 @@ void main() {
     await tester.pumpWidget(
       ApiProviderScope(
         notifier: provider,
-        child: MaterialApp(theme: AppTheme.lightTheme, home: const CreateDeliveryOrderScreen()),
+        child: MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: const CreateDeliveryOrderScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -349,7 +352,10 @@ void main() {
       await tester.pumpWidget(
         ApiProviderScope(
           notifier: provider,
-          child: MaterialApp(theme: AppTheme.lightTheme, home: const CreateDeliveryOrderScreen()),
+          child: MaterialApp(
+            theme: AppTheme.lightTheme,
+            home: const CreateDeliveryOrderScreen(),
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -460,7 +466,10 @@ void main() {
       await tester.pumpWidget(
         ApiProviderScope(
           notifier: provider,
-          child: MaterialApp(theme: AppTheme.lightTheme, home: const CreateOrderScreen()),
+          child: MaterialApp(
+            theme: AppTheme.lightTheme,
+            home: const CreateOrderScreen(),
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -572,7 +581,10 @@ void main() {
     await tester.pumpWidget(
       ApiProviderScope(
         notifier: provider,
-        child: MaterialApp(theme: AppTheme.lightTheme, home: const CreateDeliveryOrderScreen()),
+        child: MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: const CreateDeliveryOrderScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -781,7 +793,10 @@ void main() {
     await tester.pumpWidget(
       ApiProviderScope(
         notifier: provider,
-        child: MaterialApp(theme: AppTheme.lightTheme, home: const CreateDeliveryOrderScreen()),
+        child: MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: const CreateDeliveryOrderScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -865,7 +880,10 @@ void main() {
     await tester.pumpWidget(
       ApiProviderScope(
         notifier: provider,
-        child: MaterialApp(theme: AppTheme.lightTheme, home: const CreateDeliveryOrderScreen()),
+        child: MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: const CreateDeliveryOrderScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -1015,7 +1033,10 @@ void main() {
     await tester.pumpWidget(
       ApiProviderScope(
         notifier: provider,
-        child: MaterialApp(theme: AppTheme.lightTheme, home: const CreateDeliveryOrderScreen()),
+        child: MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: const CreateDeliveryOrderScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();

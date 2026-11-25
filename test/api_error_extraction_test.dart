@@ -126,21 +126,23 @@ void main() {
       }
     });
 
-    test('JSON body without known keys falls back to code-based message',
-        () async {
-      final service = makeService(
-        http.Response(jsonEncode({'status': 'error', 'code': 42}), 400),
-      );
-      addTearDown(service.close);
-      try {
-        await triggerError(service);
-        fail('expected ApiException');
-      } on ApiException catch (e) {
-        // No detail/message/error key → code-based fallback, never raw JSON
-        expect(e.message, isNot(startsWith('{')));
-        expect(e.message, isNotEmpty);
-      }
-    });
+    test(
+      'JSON body without known keys falls back to code-based message',
+      () async {
+        final service = makeService(
+          http.Response(jsonEncode({'status': 'error', 'code': 42}), 400),
+        );
+        addTearDown(service.close);
+        try {
+          await triggerError(service);
+          fail('expected ApiException');
+        } on ApiException catch (e) {
+          // No detail/message/error key → code-based fallback, never raw JSON
+          expect(e.message, isNot(startsWith('{')));
+          expect(e.message, isNotEmpty);
+        }
+      },
+    );
 
     test('DAY_END_CLOSED code is extracted from 409 JSON body', () async {
       final service = makeService(
@@ -172,10 +174,16 @@ void main() {
           await triggerError(service);
           fail('expected ApiException for $code');
         } on ApiException catch (e) {
-          expect(e.message, isNotEmpty,
-              reason: 'message must not be blank for status $code');
-          expect(e.message, isNot(startsWith('{')),
-              reason: 'message must not be raw JSON for status $code');
+          expect(
+            e.message,
+            isNotEmpty,
+            reason: 'message must not be blank for status $code',
+          );
+          expect(
+            e.message,
+            isNot(startsWith('{')),
+            reason: 'message must not be raw JSON for status $code',
+          );
         }
       }
     });
@@ -197,21 +205,25 @@ void main() {
       expect(result['id'], 'delivery-1');
     });
 
-    test('200 idempotent re-send with minimal body returns map without throw',
-        () async {
-      final service = makeService(http.Response('{}', 200));
-      addTearDown(service.close);
-      final result = await service.dispatchDelivery('delivery-1');
-      expect(result, isA<Map<String, dynamic>>());
-    });
+    test(
+      '200 idempotent re-send with minimal body returns map without throw',
+      () async {
+        final service = makeService(http.Response('{}', 200));
+        addTearDown(service.close);
+        final result = await service.dispatchDelivery('delivery-1');
+        expect(result, isA<Map<String, dynamic>>());
+      },
+    );
 
-    test('200 with unparseable body returns empty map without throwing',
-        () async {
-      final service = makeService(http.Response('OK', 200));
-      addTearDown(service.close);
-      final result = await service.dispatchDelivery('delivery-1');
-      expect(result, isEmpty);
-    });
+    test(
+      '200 with unparseable body returns empty map without throwing',
+      () async {
+        final service = makeService(http.Response('OK', 200));
+        addTearDown(service.close);
+        final result = await service.dispatchDelivery('delivery-1');
+        expect(result, isEmpty);
+      },
+    );
 
     test('404 throws ApiException with detail from body', () async {
       final service = makeService(
@@ -227,15 +239,17 @@ void main() {
       }
     });
 
-    test('500 throws ApiException (never swallowed by body-parse catch)',
-        () async {
-      final service = makeService(http.Response('', 500));
-      addTearDown(service.close);
-      await expectLater(
-        () => service.dispatchDelivery('delivery-1'),
-        throwsA(isA<ApiException>()),
-      );
-    });
+    test(
+      '500 throws ApiException (never swallowed by body-parse catch)',
+      () async {
+        final service = makeService(http.Response('', 500));
+        addTearDown(service.close);
+        await expectLater(
+          () => service.dispatchDelivery('delivery-1'),
+          throwsA(isA<ApiException>()),
+        );
+      },
+    );
 
     test('403 throws ApiException (never swallowed)', () async {
       final service = makeService(

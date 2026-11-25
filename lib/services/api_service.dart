@@ -1046,11 +1046,13 @@ class ApiService {
 
   Future<Map<String, dynamic>> fetchDeliveryCollectionsView({
     required String view,
+    String? status,
     ListPagination? pagination,
   }) async {
     final paginationKey = pagination?.requestKey;
     final queryParameters = {
       'view': view,
+      if (status != null) 'status': status,
       ...?_cleanQuery({}),
       ...?pagination?.query,
     };
@@ -1064,11 +1066,12 @@ class ApiService {
       retryOnTimeout: true,
     );
     final decoded = await _tryDecodeBodyAsync(response.body.trim());
-    final rawItems = _extractGenericList(
-      decoded,
-      const ['items', 'collections', 'data', 'results'],
-      fallbackMessage: 'Invalid delivery collections response.',
-    );
+    final rawItems = _extractGenericList(decoded, const [
+      'items',
+      'collections',
+      'data',
+      'results',
+    ], fallbackMessage: 'Invalid delivery collections response.');
     final items = rawItems.whereType<Map<String, dynamic>>().toList();
     final pageItems =
         pagination?.read(decoded, items, requestKey: paginationKey) ?? items;
@@ -2515,8 +2518,7 @@ class ApiService {
         'due_to': dueTo,
         'overdue': overdue?.toString(),
         'payment_status': paymentStatus,
-        'exclude_awaiting_approval':
-            excludeAwaitingApproval?.toString(),
+        'exclude_awaiting_approval': excludeAwaitingApproval?.toString(),
         'search': search,
         'page': '$page',
         'page_size': '$pageSize',

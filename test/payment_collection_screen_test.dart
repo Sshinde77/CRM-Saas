@@ -1,4 +1,4 @@
-﻿import 'package:crm_saas/models/list_pagination.dart';
+import 'package:crm_saas/models/list_pagination.dart';
 import 'dart:async';
 
 import 'package:crm_saas/models/customer_model.dart';
@@ -143,8 +143,10 @@ void main() {
 
 class _SubmitProvider extends ApiProvider {
   int submitCalls = 0;
+
   /// Set to an exception to have recordCustomerCollection throw it.
   Object? throwOnSubmit;
+
   /// Completer that blocks the submission until manually completed.
   Completer<Map<String, dynamic>>? submitCompleter;
 
@@ -205,9 +207,7 @@ Future<void> _selectCustomerAndFillAmount(
   // the form (not in a dialog) to focus and type.
   // The amount field is the one whose current value looks numeric.
   final amountEditable = find.byWidgetPredicate(
-    (w) =>
-        w is EditableText &&
-        RegExp(r'^[\d.]*$').hasMatch(w.controller.text),
+    (w) => w is EditableText && RegExp(r'^[\d.]*$').hasMatch(w.controller.text),
     description: 'numeric editable text (amount)',
   );
   if (amountEditable.evaluate().isNotEmpty) {
@@ -234,72 +234,77 @@ void submissionTests() {
         );
       addTearDown(provider.dispose);
 
-      await tester.pumpWidget(ApiProviderScope(
-        notifier: provider,
-        child: MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: const PaymentCollectionScreen(),
+      await tester.pumpWidget(
+        ApiProviderScope(
+          notifier: provider,
+          child: MaterialApp(
+            theme: AppTheme.lightTheme,
+            home: const PaymentCollectionScreen(),
+          ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       await _selectCustomerAndFillAmount(tester, amount: '5000');
 
-      final submitFinder = find.widgetWithText(FilledButton, 'Record Collection');
+      final submitFinder = find.widgetWithText(
+        FilledButton,
+        'Record Collection',
+      );
       await tester.ensureVisible(submitFinder);
       await tester.tap(submitFinder);
       await tester.pumpAndSettle();
 
       // Snackbar should show the detail message, not raw JSON.
-      expect(
-        find.textContaining('awaiting admin approval'),
-        findsWidgets,
-      );
+      expect(find.textContaining('awaiting admin approval'), findsWidgets);
       expect(find.textContaining('{'), findsNothing);
 
       // Amount field should be capped to 1234.50 (the parsed+formatted value).
       // _plainAmount(1234.5) → "1234.50" via toStringAsFixed(2).
-      expect(
-        find.widgetWithText(TextField, '1234.50'),
-        findsOneWidget,
-      );
+      expect(find.widgetWithText(TextField, '1234.50'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 
     testWidgets(
-        'does not crash when 409 message contains no "at most" phrase',
-        (tester) async {
-      tester.view.physicalSize = const Size(430, 900);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
+      'does not crash when 409 message contains no "at most" phrase',
+      (tester) async {
+        tester.view.physicalSize = const Size(430, 900);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
 
-      final provider = _SubmitProvider()
-        ..throwOnSubmit = ApiException(
-          statusCode: 409,
-          message: 'Conflict — cannot collect at this time.',
+        final provider = _SubmitProvider()
+          ..throwOnSubmit = ApiException(
+            statusCode: 409,
+            message: 'Conflict — cannot collect at this time.',
+          );
+        addTearDown(provider.dispose);
+
+        await tester.pumpWidget(
+          ApiProviderScope(
+            notifier: provider,
+            child: MaterialApp(
+              theme: AppTheme.lightTheme,
+              home: const PaymentCollectionScreen(),
+            ),
+          ),
         );
-      addTearDown(provider.dispose);
+        await tester.pumpAndSettle();
+        await _selectCustomerAndFillAmount(tester, amount: '5000');
 
-      await tester.pumpWidget(ApiProviderScope(
-        notifier: provider,
-        child: MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: const PaymentCollectionScreen(),
-        ),
-      ));
-      await tester.pumpAndSettle();
-      await _selectCustomerAndFillAmount(tester, amount: '5000');
+        final submitFinder = find.widgetWithText(
+          FilledButton,
+          'Record Collection',
+        );
+        await tester.ensureVisible(submitFinder);
+        await tester.tap(submitFinder);
+        await tester.pumpAndSettle();
 
-      final submitFinder = find.widgetWithText(FilledButton, 'Record Collection');
-      await tester.ensureVisible(submitFinder);
-      await tester.tap(submitFinder);
-      await tester.pumpAndSettle();
-
-      // Should show the message, not crash, and leave amount untouched.
-      expect(find.textContaining('Conflict'), findsWidgets);
-      expect(tester.takeException(), isNull);
-    });
+        // Should show the message, not crash, and leave amount untouched.
+        expect(find.textContaining('Conflict'), findsWidgets);
+        expect(tester.takeException(), isNull);
+      },
+    );
   });
 
   group('submit button disabled during in-flight request', () {
@@ -313,13 +318,15 @@ void submissionTests() {
       final provider = _SubmitProvider()..submitCompleter = completer;
       addTearDown(provider.dispose);
 
-      await tester.pumpWidget(ApiProviderScope(
-        notifier: provider,
-        child: MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: const PaymentCollectionScreen(),
+      await tester.pumpWidget(
+        ApiProviderScope(
+          notifier: provider,
+          child: MaterialApp(
+            theme: AppTheme.lightTheme,
+            home: const PaymentCollectionScreen(),
+          ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
       await _selectCustomerAndFillAmount(tester);
 
@@ -358,17 +365,22 @@ void submissionTests() {
         );
       addTearDown(provider.dispose);
 
-      await tester.pumpWidget(ApiProviderScope(
-        notifier: provider,
-        child: MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: const PaymentCollectionScreen(),
+      await tester.pumpWidget(
+        ApiProviderScope(
+          notifier: provider,
+          child: MaterialApp(
+            theme: AppTheme.lightTheme,
+            home: const PaymentCollectionScreen(),
+          ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
       await _selectCustomerAndFillAmount(tester);
 
-      final submitFinder = find.widgetWithText(FilledButton, 'Record Collection');
+      final submitFinder = find.widgetWithText(
+        FilledButton,
+        'Record Collection',
+      );
       await tester.ensureVisible(submitFinder);
       await tester.tap(submitFinder);
       await tester.pumpAndSettle();
@@ -383,8 +395,9 @@ void submissionTests() {
   });
 
   group('DAY_END_CLOSED handling', () {
-    testWidgets('shows friendly message, does not cap amount field',
-        (tester) async {
+    testWidgets('shows friendly message, does not cap amount field', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(430, 900);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
@@ -398,19 +411,23 @@ void submissionTests() {
         );
       addTearDown(provider.dispose);
 
-      await tester.pumpWidget(ApiProviderScope(
-        notifier: provider,
-        child: MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: const PaymentCollectionScreen(),
+      await tester.pumpWidget(
+        ApiProviderScope(
+          notifier: provider,
+          child: MaterialApp(
+            theme: AppTheme.lightTheme,
+            home: const PaymentCollectionScreen(),
+          ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       await _selectCustomerAndFillAmount(tester, amount: '2000');
 
-      final submitFinder =
-          find.widgetWithText(FilledButton, 'Record Collection');
+      final submitFinder = find.widgetWithText(
+        FilledButton,
+        'Record Collection',
+      );
       await tester.ensureVisible(submitFinder);
       await tester.tap(submitFinder);
       await tester.pumpAndSettle();
@@ -423,8 +440,9 @@ void submissionTests() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('does not cap amount when 409 has no "at most" phrase',
-        (tester) async {
+    testWidgets('does not cap amount when 409 has no "at most" phrase', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(430, 900);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
@@ -437,19 +455,23 @@ void submissionTests() {
         );
       addTearDown(provider.dispose);
 
-      await tester.pumpWidget(ApiProviderScope(
-        notifier: provider,
-        child: MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: const PaymentCollectionScreen(),
+      await tester.pumpWidget(
+        ApiProviderScope(
+          notifier: provider,
+          child: MaterialApp(
+            theme: AppTheme.lightTheme,
+            home: const PaymentCollectionScreen(),
+          ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       await _selectCustomerAndFillAmount(tester, amount: '3000');
 
-      final submitFinder =
-          find.widgetWithText(FilledButton, 'Record Collection');
+      final submitFinder = find.widgetWithText(
+        FilledButton,
+        'Record Collection',
+      );
       await tester.ensureVisible(submitFinder);
       await tester.tap(submitFinder);
       await tester.pumpAndSettle();
@@ -461,4 +483,3 @@ void submissionTests() {
     });
   });
 }
-

@@ -107,7 +107,10 @@ void main() {
     await tester.pumpWidget(
       ApiProviderScope(
         notifier: provider,
-        child: MaterialApp(theme: AppTheme.lightTheme, home: const DeliveryCustomersScreen()),
+        child: MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: const DeliveryCustomersScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -119,10 +122,7 @@ void main() {
     provider.customers = [];
     await tester.tap(find.text('Retry'));
     await tester.pumpAndSettle();
-    expect(
-      find.text('No customers found'),
-      findsOneWidget,
-    );
+    expect(find.text('No customers found'), findsOneWidget);
     expect(provider.requests, 2);
     expect(tester.takeException(), isNull);
   });

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../widgets/app_skeleton.dart';
 
 import 'package:crm_saas/core/theme/app_text_styles.dart';
@@ -195,9 +195,7 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
       );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Collection recorded - awaiting reconciliation.'),
-        ),
+        const SnackBar(content: Text('Collection recorded successfully.')),
       );
       Navigator.of(context).pop(true);
     } catch (e) {
@@ -211,9 +209,9 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
       } else {
         message = 'Collection failed. Please try again.';
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
       if (e is ApiException &&
           e.statusCode == 409 &&
           e.code != 'DAY_END_CLOSED') {

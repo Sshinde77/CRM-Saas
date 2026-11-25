@@ -155,7 +155,10 @@ void main() {
     await tester.pumpWidget(
       ApiProviderScope(
         notifier: provider,
-        child: MaterialApp(theme: AppTheme.lightTheme, home: const AssignedDeliveriesScreen()),
+        child: MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: const AssignedDeliveriesScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();

@@ -18,6 +18,12 @@ import '../../../widgets/delivery/delivery_partner_sidebar.dart';
 import '../../../widgets/delivery/delivery_top_bar.dart';
 import '../../shared/payment_collection_screen.dart';
 
+// ---------------------------------------------------------------------------
+// Lifecycle tabs: To Collect → Collected → Completed
+// ---------------------------------------------------------------------------
+
+enum _TabKind { toCollect, collected, completed }
+
 class DeliveryCollectionListScreen extends StatefulWidget {
   const DeliveryCollectionListScreen({super.key});
 
@@ -28,88 +34,120 @@ class DeliveryCollectionListScreen extends StatefulWidget {
 
 class _DeliveryCollectionListScreenState
     extends State<DeliveryCollectionListScreen> {
-  final _pendingPagination = ListPagination();
-  final _collectedPagination = ListPagination();
-  ListPagination get _pagination =>
-      _showPending ? _pendingPagination : _collectedPagination;
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _didStartLoad = false;
+  _TabKind _activeTab = _TabKind.toCollect;
+
+  final _paginations = {
+    _TabKind.toCollect: ListPagination(),
+    _TabKind.collected: ListPagination(),
+    _TabKind.completed: ListPagination(),
+  };
+  final _futures = <_TabKind, Future<_TabData>>{};
+
+  ListPagination get _activePagination => _paginations[_activeTab]!;
+
   @override
   void dispose() {
-    _pendingPagination.dispose();
-    _collectedPagination.dispose();
+    for (final p in _paginations.values) {
+      p.dispose();
+    }
     super.dispose();
   }
-
-  Future<void> _changeListPage() async {
-    if (_pagination.isLoading) return;
-    setState(() => _pagination.isLoading = true);
-    try {
-      await _refresh();
-    } finally {
-      if (mounted) setState(() => _pagination.isLoading = false);
-    }
-  }
-
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  late Future<_CollectionDashboardData> _collectionFuture;
-  bool _didStartLoad = false;
-  bool _showPending = true;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_didStartLoad) {
-      _collectionFuture = _loadCollections();
       _didStartLoad = true;
+      _loadTab(_TabKind.toCollect);
     }
   }
 
-  Future<_CollectionDashboardData> _loadCollections() async {
+  // ---- data loading -------------------------------------------------------
+
+  void _loadTab(_TabKind tab) {
+    final future = _fetchTabData(tab);
+    setState(() => _futures[tab] = future);
+  }
+
+  Future<_TabData> _fetchTabData(_TabKind tab) async {
     final provider = ApiProviderScope.of(context);
-    final results = await Future.wait<Map<String, dynamic>>([
-      provider.fetchDeliveryCollectionsView(
-        view: 'pending',
-        pagination: _pendingPagination,
-      ),
-      provider.fetchDeliveryCollectionsView(
-        view: 'collected',
-        pagination: _collectedPagination,
-      ),
-    ]);
-    final pendingResult = results[0];
-    final collectedResult = results[1];
-    return _CollectionDashboardData(
-      pendingItems: (pendingResult['items'] as List<dynamic>)
-          .whereType<Map<String, dynamic>>()
-          .map(_CollectionDelivery.fromJson)
-          .toList(),
-      collectedItems: (collectedResult['items'] as List<dynamic>)
-          .whereType<Map<String, dynamic>>()
-          .map(_CollectionDelivery.fromJson)
-          .toList(),
-      pendingSummary:
-          (pendingResult['summary'] as Map<String, dynamic>?) ?? {},
-      collectedSummary:
-          (collectedResult['summary'] as Map<String, dynamic>?) ?? {},
+    final pagination = _paginations[tab]!;
+
+    Map<String, dynamic> result;
+    switch (tab) {
+      case _TabKind.toCollect:
+        result = await provider.fetchDeliveryCollectionsView(
+          view: 'pending',
+          pagination: pagination,
+        );
+      case _TabKind.collected:
+        result = await provider.fetchDeliveryCollectionsView(
+          view: 'collected',
+          status: 'collected',
+          pagination: pagination,
+        );
+      case _TabKind.completed:
+        result = await provider.fetchDeliveryCollectionsView(
+          view: 'collected',
+          status: 'completed',
+          pagination: pagination,
+        );
+    }
+
+    final items = (result['items'] as List<dynamic>)
+        .whereType<Map<String, dynamic>>()
+        .map(_CollectionRecord.fromJson)
+        .where(
+          (r) => _normalizeCollectionStatus(r.collectionStatus) != 'voided',
+        )
+        .toList();
+
+    return _TabData(
+      items: items,
+      summary: (result['summary'] as Map<String, dynamic>?) ?? {},
     );
   }
 
-  Future<void> _refresh() async {
-    final nextFuture = _loadCollections();
-    setState(() => _collectionFuture = nextFuture);
-    await nextFuture;
+  Future<void> _changeListPage() async {
+    if (_activePagination.isLoading) return;
+    setState(() => _activePagination.isLoading = true);
+    try {
+      _loadTab(_activeTab);
+      await _futures[_activeTab];
+    } finally {
+      if (mounted) setState(() => _activePagination.isLoading = false);
+    }
   }
 
-  Future<void> _openPaymentCollection(_CollectionDelivery customer) async {
+  Future<void> _refresh() async => _loadTab(_activeTab);
+
+  void _onTabSelected(_TabKind tab) {
+    if (_activeTab == tab) return;
+    _paginations[tab]!.reset();
+    setState(() => _activeTab = tab);
+    _loadTab(tab);
+  }
+
+  // ---- navigation ---------------------------------------------------------
+
+  Future<void> _openPaymentCollection(_CollectionRecord record) async {
     final result = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
-        builder: (_) => PaymentCollectionScreen(initialCustomerId: customer.id),
+        builder: (_) =>
+            PaymentCollectionScreen(initialCustomerId: record.customerId),
       ),
     );
-
     if (result == true && mounted) {
-      await _refresh();
+      _loadTab(_TabKind.toCollect);
+      if (_futures.containsKey(_TabKind.collected)) {
+        _loadTab(_TabKind.collected);
+      }
     }
   }
+
+  // ---- build --------------------------------------------------------------
 
   @override
   Widget build(BuildContext context) {
@@ -147,75 +185,39 @@ class _DeliveryCollectionListScreenState
                 ],
               ),
               Expanded(
-                child: FutureBuilder<_CollectionDashboardData>(
-                  future: _collectionFuture,
-                  builder: (context, snapshot) {
-                    final isLoading =
-                        snapshot.connectionState == ConnectionState.waiting &&
-                        !snapshot.hasData;
-                    final data = snapshot.data;
-
-                    return RefreshIndicator(
-                      color: AppColors.deliveryGreen,
-                      onRefresh: _refresh,
-                      child: ListView(
-                        physics: const AlwaysScrollableScrollPhysics(
-                          parent: BouncingScrollPhysics(),
+                child: RefreshIndicator(
+                  color: AppColors.deliveryGreen,
+                  onRefresh: _refresh,
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(
+                      parent: BouncingScrollPhysics(),
+                    ),
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.screenSmall,
+                      AppSpacing.md,
+                      AppSpacing.screenSmall,
+                      AppSpacing.xl,
+                    ),
+                    children: [
+                      Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 820),
+                          child: _buildContent(),
                         ),
-                        padding: const EdgeInsets.fromLTRB(
-                          AppSpacing.screenSmall,
-                          AppSpacing.md,
-                          AppSpacing.screenSmall,
-                          AppSpacing.xl,
-                        ),
-                        children: [
-                          Center(
-                            child: ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 820),
-                              child: isLoading
-                                  ? const _LoadingPanel()
-                                  : snapshot.hasError
-                                  ? _ErrorPanel(
-                                      message: snapshot.error.toString(),
-                                      onRetry: () {
-                                        setState(() {
-                                          _collectionFuture =
-                                              _loadCollections();
-                                        });
-                                      },
-                                    )
-                                  : _CollectionContent(
-                                      data:
-                                          data ??
-                                          const _CollectionDashboardData(
-                                            pendingItems: [],
-                                            collectedItems: [],
-                                          ),
-                                      showPending: _showPending,
-                                      onTabChanged: (value) => setState(() {
-                                        _showPending = value;
-                                        _pagination.reset();
-                                        _collectionFuture = _loadCollections();
-                                      }),
-                                      onCollect: _openPaymentCollection,
-                                    ),
-                            ),
-                          ),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: ListPaginationPageSize(
-                              pagination: _pagination,
-                              onChanged: _changeListPage,
-                            ),
-                          ),
-                          ListPaginationBar(
-                            pagination: _pagination,
-                            onChanged: _changeListPage,
-                          ),
-                        ],
                       ),
-                    );
-                  },
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: ListPaginationPageSize(
+                          pagination: _activePagination,
+                          onChanged: _changeListPage,
+                        ),
+                      ),
+                      ListPaginationBar(
+                        pagination: _activePagination,
+                        onChanged: _changeListPage,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -224,75 +226,127 @@ class _DeliveryCollectionListScreenState
       ),
     );
   }
-}
 
-class _CollectionContent extends StatelessWidget {
-  const _CollectionContent({
-    required this.data,
-    required this.showPending,
-    required this.onTabChanged,
-    required this.onCollect,
-  });
-
-  final _CollectionDashboardData data;
-  final bool showPending;
-  final ValueChanged<bool> onTabChanged;
-  final ValueChanged<_CollectionDelivery> onCollect;
-
-  @override
-  Widget build(BuildContext context) {
-    final collectionRows = showPending ? data.pendingRows : data.collectedRows;
-
+  Widget _buildContent() {
+    final future = _futures[_activeTab];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _CollectionsCard(data: data),
-        const SizedBox(height: AppSpacing.md),
-        _SurfaceCard(
-          padding: const EdgeInsets.all(8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Padding(
-                padding: EdgeInsets.fromLTRB(4, 2, 4, 8),
-                child: Text('Collection List', style: AppTextStyles.bodyStrong),
-              ),
-              Row(
-                children: [
-                  Expanded(
-                    child: _CollectionTab(
-                      label: 'Pending List',
-                      selected: showPending,
-                      color: AppColors.deliveryRed,
-                      onTap: () => onTabChanged(true),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _CollectionTab(
-                      label: 'Collected List',
-                      selected: !showPending,
-                      color: AppColors.deliveryGreen,
-                      onTap: () => onTabChanged(false),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
+        _TabSwitcher(activeTab: _activeTab, onTabSelected: _onTabSelected),
         const SizedBox(height: 8),
-        if (collectionRows.isEmpty)
+        if (future == null)
+          const _LoadingPanel()
+        else
+          FutureBuilder<_TabData>(
+            future: future,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting &&
+                  !snapshot.hasData) {
+                return const _LoadingPanel();
+              }
+              if (snapshot.hasError) {
+                return _ErrorPanel(
+                  message: snapshot.error.toString(),
+                  onRetry: () => _loadTab(_activeTab),
+                );
+              }
+              return _TabContent(
+                tab: _activeTab,
+                data: snapshot.data!,
+                onCollect: _openPaymentCollection,
+              );
+            },
+          ),
+      ],
+    );
+  }
+}
+
+// ===========================================================================
+// Tab switcher
+// ===========================================================================
+
+class _TabSwitcher extends StatelessWidget {
+  const _TabSwitcher({required this.activeTab, required this.onTabSelected});
+
+  final _TabKind activeTab;
+  final ValueChanged<_TabKind> onTabSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return _SurfaceCard(
+      padding: const EdgeInsets.all(8),
+      child: Row(
+        children: [
+          Expanded(
+            child: _CollectionTab(
+              label: 'To Collect',
+              selected: activeTab == _TabKind.toCollect,
+              color: AppColors.deliveryRed,
+              onTap: () => onTabSelected(_TabKind.toCollect),
+            ),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: _CollectionTab(
+              label: 'Collected',
+              selected: activeTab == _TabKind.collected,
+              color: AppColors.deliveryGreen,
+              onTap: () => onTabSelected(_TabKind.collected),
+            ),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: _CollectionTab(
+              label: 'Completed',
+              selected: activeTab == _TabKind.completed,
+              color: AppColors.deliveryBlue,
+              onTap: () => onTabSelected(_TabKind.completed),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ===========================================================================
+// Tab content (summary + list)
+// ===========================================================================
+
+class _TabContent extends StatelessWidget {
+  const _TabContent({
+    required this.tab,
+    required this.data,
+    required this.onCollect,
+  });
+
+  final _TabKind tab;
+  final _TabData data;
+  final ValueChanged<_CollectionRecord> onCollect;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SummaryCard(tab: tab, summary: data.summary),
+        const SizedBox(height: 8),
+        if (data.items.isEmpty)
           const _EmptyCollectionList()
         else
-          ...collectionRows.map(
-            (delivery) => Padding(
+          ...data.items.map(
+            (record) => Padding(
               padding: const EdgeInsets.only(bottom: 10),
-              child: _CollectionListTile(
-                delivery: delivery,
-                isPendingTab: showPending,
-                onCollect: () => onCollect(delivery),
-              ),
+              child: tab == _TabKind.toCollect
+                  ? _ToCollectTile(
+                      record: record,
+                      onCollect: () => onCollect(record),
+                    )
+                  : _CollectedCompletedTile(
+                      record: record,
+                      isCompleted: tab == _TabKind.completed,
+                    ),
             ),
           ),
       ],
@@ -300,71 +354,238 @@ class _CollectionContent extends StatelessWidget {
   }
 }
 
-class _CollectionsCard extends StatelessWidget {
-  const _CollectionsCard({required this.data});
+// ===========================================================================
+// Summary cards (per tab)
+// ===========================================================================
 
-  final _CollectionDashboardData data;
+class _SummaryCard extends StatelessWidget {
+  const _SummaryCard({required this.tab, required this.summary});
+
+  final _TabKind tab;
+  final Map<String, dynamic> summary;
+
+  double _d(String key) => (summary[key] as num?)?.toDouble() ?? 0;
+  int _i(String key) => (summary[key] as num?)?.toInt() ?? 0;
 
   @override
   Widget build(BuildContext context) {
-    final rows = [
-      _CollectionInfo(
-        icon: Icons.payments_outlined,
-        label: 'Collected',
-        value: data.formattedTotalCollected,
-        color: AppColors.deliveryGreen,
-        background: AppColors.deliveryGreenSoft,
-      ),
-      _CollectionInfo(
-        icon: Icons.account_balance_wallet_outlined,
-        label: 'Cash in Hand',
-        value: data.formattedCashInHand,
-        color: AppColors.deliveryOrange,
-        background: AppColors.deliveryOrangeSoft,
-      ),
-      _CollectionInfo(
-        icon: Icons.account_balance_outlined,
-        label: 'Bank Transfer',
-        value: data.formattedBankTransfer,
-        color: AppColors.deliveryBlue,
-        background: AppColors.deliveryBlueSoft,
-      ),
-      _CollectionInfo(
-        icon: Icons.pending_actions_outlined,
-        label: 'Pending Amount',
-        value: data.formattedPendingAmount,
-        color: AppColors.deliveryRed,
-        background: AppColors.deliveryRedSoft,
-      ),
-    ];
-    final hasAwaiting = data.awaitingApprovalAmount > 0;
+    return switch (tab) {
+      _TabKind.toCollect => _buildToCollect(),
+      _TabKind.collected => _buildCollected(),
+      _TabKind.completed => _buildCompleted(),
+    };
+  }
+
+  Widget _buildToCollect() {
+    final amountToCollect = _d('total_pending_amount');
+    final customerCount = _i('total_pending');
+    final processing = _d('total_pending_collection_amount');
+    final outstanding = _d('total_outstanding_amount');
+    final showProcessing = processing > 0;
 
     return _SurfaceCard(
       padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _SectionHeader(
-            title: 'Collection',
-            trailingIcon: Icons.receipt_long_outlined,
-          ),
+          const _SectionHeader(title: 'To Collect'),
           const SizedBox(height: 12),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF0F7EC),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: AppColors.deliveryGreen.withValues(alpha: 0.14),
-              ),
+          _ProminentAmountRow(
+            amount: amountToCollect,
+            label: 'Amount To Collect',
+            icon: Icons.currency_rupee_rounded,
+            color: AppColors.deliveryRed,
+            background: AppColors.deliveryRedSoft,
+          ),
+          const SizedBox(height: 10),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: showProcessing ? 3 : 2,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: showProcessing ? 3 : 2,
+              childAspectRatio: showProcessing ? 2.2 : 2.7,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
             ),
+            itemBuilder: (_, i) {
+              final tiles = [
+                _CollectionInfo(
+                  icon: Icons.people_outline_rounded,
+                  label: 'Customers',
+                  value: '$customerCount',
+                  color: AppColors.deliveryBlue,
+                  background: AppColors.deliveryBlueSoft,
+                ),
+                _CollectionInfo(
+                  icon: Icons.account_balance_wallet_outlined,
+                  label: 'Outstanding',
+                  value: _formatMoney(
+                    outstanding > 0 ? outstanding : amountToCollect,
+                  ),
+                  color: AppColors.deliveryOrange,
+                  background: AppColors.deliveryOrangeSoft,
+                ),
+                if (showProcessing)
+                  _CollectionInfo(
+                    icon: Icons.pending_actions_outlined,
+                    label: 'Processing',
+                    value: _formatMoney(processing),
+                    color: AppColors.deliveryGreen,
+                    background: AppColors.deliveryGreenSoft,
+                  ),
+              ];
+              return _CollectionMetricTile(info: tiles[i]);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCollected() {
+    final total = _d('total_collected');
+    final cash = _d('cash_total');
+    final bank = _d('bank_transfer_total');
+    final count = _i('collected_only_count');
+
+    return _SurfaceCard(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const _SectionHeader(title: 'Collected'),
+          const SizedBox(height: 12),
+          _ProminentAmountRow(
+            amount: total,
+            label: 'Total Collected',
+            icon: Icons.payments_outlined,
+            color: AppColors.deliveryGreen,
+            background: AppColors.deliveryGreenSoft,
+          ),
+          const SizedBox(height: 10),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: 3,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              childAspectRatio: 2.2,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
+            ),
+            itemBuilder: (_, i) {
+              final tiles = [
+                _CollectionInfo(
+                  icon: Icons.receipt_long_outlined,
+                  label: 'Payments',
+                  value: '$count',
+                  color: AppColors.deliveryBlue,
+                  background: AppColors.deliveryBlueSoft,
+                ),
+                _CollectionInfo(
+                  icon: Icons.account_balance_wallet_outlined,
+                  label: 'Cash',
+                  value: _formatMoney(cash),
+                  color: AppColors.deliveryOrange,
+                  background: AppColors.deliveryOrangeSoft,
+                ),
+                _CollectionInfo(
+                  icon: Icons.account_balance_outlined,
+                  label: 'Bank',
+                  value: _formatMoney(bank),
+                  color: AppColors.deliveryBlue,
+                  background: AppColors.deliveryBlueSoft,
+                ),
+              ];
+              return _CollectionMetricTile(info: tiles[i]);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCompleted() {
+    final total = _d('completed_amount');
+    final count = _i('completed_count');
+
+    return _SurfaceCard(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const _SectionHeader(title: 'Completed'),
+          const SizedBox(height: 12),
+          _ProminentAmountRow(
+            amount: total,
+            label: 'Total Completed',
+            icon: Icons.check_circle_outline_rounded,
+            color: AppColors.deliveryBlue,
+            background: AppColors.deliveryBlueSoft,
+          ),
+          const SizedBox(height: 10),
+          _CollectionMetricTile(
+            info: _CollectionInfo(
+              icon: Icons.receipt_long_outlined,
+              label: 'Completed Payments',
+              value: '$count',
+              color: AppColors.deliveryBlue,
+              background: AppColors.deliveryBlueSoft,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ===========================================================================
+// To Collect tile (customer-level record)
+// ===========================================================================
+
+class _ToCollectTile extends StatelessWidget {
+  const _ToCollectTile({required this.record, required this.onCollect});
+
+  final _CollectionRecord record;
+  final VoidCallback onCollect;
+
+  @override
+  Widget build(BuildContext context) {
+    final canCollect = record.collectableAmount > 0;
+    final accent = canCollect ? AppColors.deliveryRed : AppColors.deliveryGreen;
+
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppSizes.cardRadius),
+        border: Border.all(color: AppColors.deliverySurfaceBorder),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.secondary.withValues(alpha: 0.035),
+            blurRadius: 14,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            left: 0,
+            top: 0,
+            bottom: 0,
+            child: ColoredBox(color: accent, child: const SizedBox(width: 3)),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 12, 10, 12),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const _MiniIcon(
-                  icon: Icons.currency_rupee_rounded,
-                  color: AppColors.deliveryGreen,
-                  background: AppColors.surface,
+                CustomerAvatar(
+                  name: record.customerName,
+                  photoUrl: record.photoUrl,
+                  size: 56,
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -372,87 +593,461 @@ class _CollectionsCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        data.formattedTotalToCollect,
+                        record.customerName,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.importantNumber.copyWith(
-                          color: AppColors.deliveryInk,
+                        style: AppTextStyles.secondaryStrong.copyWith(
+                          color: AppColors.textPrimary,
                         ),
                       ),
-                      const SizedBox(height: 3),
-                      const Text(
-                        'Total Amount to Collect',
+                      if (record.contactName.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          record.contactName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.small,
+                        ),
+                      ],
+                      const SizedBox(height: 6),
+                      if (record.outstandingAmount > record.collectableAmount &&
+                          record.outstandingAmount > 0)
+                        Text(
+                          'Outstanding: ${_formatMoney(record.outstandingAmount)}',
+                          maxLines: 1,
+                          style: AppTextStyles.small.copyWith(
+                            color: AppColors.textMuted,
+                          ),
+                        ),
+                      if (record.pendingCollectionAmount > 0)
+                        Text(
+                          '${_formatMoney(record.pendingCollectionAmount)} collected',
+                          maxLines: 1,
+                          style: AppTextStyles.small.copyWith(
+                            color: AppColors.deliveryOrange,
+                          ),
+                        ),
+                      Text(
+                        '${_formatMoney(record.collectableAmount)} to collect',
                         maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.small,
+                        style: AppTextStyles.bodyStrong.copyWith(color: accent),
                       ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _SmallAction(
+                          icon: Icons.phone_rounded,
+                          tooltip: 'Call customer',
+                          onTap: record.phone == null
+                              ? null
+                              : () => launchUrl(
+                                  Uri(scheme: 'tel', path: record.phone),
+                                ),
+                        ),
+                        _SmallAction(
+                          icon: Icons.location_on_outlined,
+                          tooltip: 'Open location',
+                          onTap: record.mapUrl == null
+                              ? null
+                              : () => launchUrl(
+                                  Uri.parse(record.mapUrl!),
+                                  mode: LaunchMode.externalApplication,
+                                ),
+                        ),
+                        if (canCollect) ...[
+                          const SizedBox(width: 4),
+                          SizedBox(
+                            height: 32,
+                            child: FilledButton(
+                              onPressed: onCollect,
+                              style: FilledButton.styleFrom(
+                                backgroundColor: AppColors.deliveryRed,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: const Text(
+                                'Collect',
+                                style: TextStyle(
+                                  fontFamily: AppTextStyles.fontFamily,
+                                  fontSize: 12,
+                                  height: 1.3,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ===========================================================================
+// Collected / Completed tile (transaction-level record)
+// ===========================================================================
+
+class _CollectedCompletedTile extends StatelessWidget {
+  const _CollectedCompletedTile({
+    required this.record,
+    required this.isCompleted,
+  });
+
+  final _CollectionRecord record;
+  final bool isCompleted;
+
+  @override
+  Widget build(BuildContext context) {
+    final badgeLabel = isCompleted ? 'Completed' : 'Collected';
+    final badgeColor = isCompleted
+        ? AppColors.deliveryBlue
+        : AppColors.deliveryGreen;
+    final badgeBg = isCompleted
+        ? AppColors.deliveryBlueSoft
+        : AppColors.deliveryGreenSoft;
+
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppSizes.cardRadius),
+        border: Border.all(color: AppColors.deliverySurfaceBorder),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.secondary.withValues(alpha: 0.035),
+            blurRadius: 14,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            left: 0,
+            top: 0,
+            bottom: 0,
+            child: ColoredBox(
+              color: badgeColor,
+              child: const SizedBox(width: 3),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CustomerAvatar(
+                  name: record.customerName,
+                  photoUrl: record.photoUrl,
+                  size: 48,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              record.customerName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.secondaryStrong.copyWith(
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            record.formattedCollected,
+                            style: AppTextStyles.bodyStrong.copyWith(
+                              color: badgeColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          _StatusPill(
+                            label: badgeLabel,
+                            color: badgeColor,
+                            background: badgeBg,
+                          ),
+                          if (record.paymentMode.isNotEmpty) ...[
+                            const SizedBox(width: 8),
+                            Text(
+                              '• ${record.paymentModeLabel}',
+                              style: AppTextStyles.small.copyWith(
+                                color: AppColors.textMuted,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      if (record.collectedAt != null &&
+                          record.collectedAt!.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          _dateLabel(_parseDateTimeString(record.collectedAt)),
+                          style: AppTextStyles.small.copyWith(
+                            color: AppColors.textMuted,
+                          ),
+                        ),
+                      ],
+                      if (record.orderNumber.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          record.orderNumber,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.small.copyWith(
+                            color: AppColors.textMuted,
+                          ),
+                        ),
+                      ],
+                      if (record.deliveryNumber != null &&
+                          record.deliveryNumber!.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          'Delivery: ${record.deliveryNumber}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.small.copyWith(
+                            color: AppColors.textMuted,
+                          ),
+                        ),
+                      ],
+                      if (record.collectedByName != null &&
+                          record.collectedByName!.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          'By: ${record.collectedByName}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.small.copyWith(
+                            color: AppColors.textMuted,
+                          ),
+                        ),
+                      ],
+                      if (record.reference != null &&
+                          record.reference!.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          'Ref: ${record.reference}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.small.copyWith(
+                            color: AppColors.textMuted,
+                          ),
+                        ),
+                      ],
+                      if (record.paymentProofUrl != null &&
+                          record.paymentProofUrl!.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.attach_file_rounded,
+                              size: 13,
+                              color: AppColors.deliveryBlue,
+                            ),
+                            const SizedBox(width: 3),
+                            Text(
+                              'Payment proof attached',
+                              style: AppTextStyles.small.copyWith(
+                                color: AppColors.deliveryBlue,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 10),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: rows.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 2.7,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
-            ),
-            itemBuilder: (context, index) {
-              return _CollectionMetricTile(info: rows[index]);
-            },
+        ],
+      ),
+    );
+  }
+}
+
+// ===========================================================================
+// Small shared widgets
+// ===========================================================================
+
+class _CollectionTab extends StatelessWidget {
+  const _CollectionTab({
+    required this.label,
+    required this.selected,
+    required this.color,
+    required this.onTap,
+  });
+  final String label;
+  final bool selected;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        height: 40,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: selected
+              ? color.withValues(alpha: 0.07)
+              : AppColors.deliveryGreenSoft,
+          borderRadius: BorderRadius.circular(14),
+          border: selected ? Border.all(color: color, width: 2) : null,
+        ),
+        child: Text(
+          label,
+          style: AppTextStyles.secondaryStrong.copyWith(
+            color: selected ? color : AppColors.deliveryGreen,
           ),
-          if (hasAwaiting) ...[
-            const SizedBox(height: 8),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFF8F0),
-                borderRadius: BorderRadius.circular(9),
-                border: Border.all(color: const Color(0xFFFFB74D)),
-              ),
-              child: Row(
-                children: [
-                  const _MiniIcon(
-                    icon: Icons.hourglass_top_rounded,
-                    color: Color(0xFFE65100),
-                    background: AppColors.surface,
+        ),
+      ),
+    );
+  }
+}
+
+class _StatusPill extends StatelessWidget {
+  const _StatusPill({
+    required this.label,
+    required this.color,
+    required this.background,
+  });
+  final String label;
+  final Color color;
+  final Color background;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(99),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontFamily: AppTextStyles.fontFamily,
+          fontSize: 10,
+          height: 1.3,
+          fontWeight: FontWeight.w600,
+          color: color,
+        ),
+      ),
+    );
+  }
+}
+
+class _SmallAction extends StatelessWidget {
+  const _SmallAction({
+    required this.icon,
+    required this.tooltip,
+    required this.onTap,
+  });
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      tooltip: tooltip,
+      visualDensity: VisualDensity.compact,
+      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+      padding: const EdgeInsets.all(8),
+      onPressed: onTap,
+      icon: Icon(
+        icon,
+        size: 20,
+        color: onTap == null ? AppColors.textMuted : AppColors.deliveryGreen,
+      ),
+    );
+  }
+}
+
+class _ProminentAmountRow extends StatelessWidget {
+  const _ProminentAmountRow({
+    required this.amount,
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.background,
+  });
+  final double amount;
+  final String label;
+  final IconData icon;
+  final Color color;
+  final Color background;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withValues(alpha: 0.14)),
+      ),
+      child: Row(
+        children: [
+          _MiniIcon(icon: icon, color: color, background: AppColors.surface),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _formatMoney(amount),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.importantNumber.copyWith(
+                    color: AppColors.deliveryInk,
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          data.formattedAwaitingApproval,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.cardTitle.copyWith(
-                            color: const Color(0xFFE65100),
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Awaiting Admin Approval'
-                          ' (${data.awaitingApprovalCount}'
-                          ' ${data.awaitingApprovalCount == 1 ? 'entry' : 'entries'})',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.small,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.small,
+                ),
+              ],
             ),
-          ],
+          ),
         ],
       ),
     );
@@ -510,344 +1105,6 @@ class _CollectionMetricTile extends StatelessWidget {
   }
 }
 
-class _CollectionListTile extends StatelessWidget {
-  const _CollectionListTile({
-    required this.delivery,
-    required this.isPendingTab,
-    required this.onCollect,
-  });
-
-  final _CollectionDelivery delivery;
-  final bool isPendingTab;
-  final VoidCallback onCollect;
-
-  @override
-  Widget build(BuildContext context) {
-    final hasPendingApproval =
-        isPendingTab && _isAwaitingApproval(delivery.collectionStatus);
-    final canCollect =
-        isPendingTab &&
-        delivery.collectableAmount > 0 &&
-        !_isAwaitingApproval(delivery.collectionStatus);
-    final hasDue = delivery.amountDue > 0;
-    final isAwaiting =
-        !isPendingTab && _isAwaitingApproval(delivery.collectionStatus);
-    final accent = (hasDue || hasPendingApproval)
-        ? AppColors.deliveryRed
-        : AppColors.deliveryGreen;
-
-    return Container(
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppSizes.cardRadius),
-          border: Border.all(color: AppColors.deliverySurfaceBorder),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.secondary.withValues(alpha: 0.035),
-              blurRadius: 14,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Stack(
-          children: [
-            Positioned(
-              left: 0,
-              top: 0,
-              bottom: 0,
-              child: ColoredBox(color: accent, child: const SizedBox(width: 3)),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 10, 12),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  CustomerAvatar(
-                    name: delivery.customerName,
-                    photoUrl: delivery.photoUrl,
-                    size: 56,
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          delivery.customerName,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.secondaryStrong.copyWith(
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          delivery.orderNumber,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.small,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          delivery.contactName,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.smallStrong.copyWith(
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        isPendingTab
-                            ? delivery.formattedDue
-                            : delivery.formattedCollected,
-                        style: AppTextStyles.bodyStrong.copyWith(color: accent),
-                      ),
-                      const SizedBox(height: 4),
-                      if (hasPendingApproval)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFF3E0),
-                            borderRadius: BorderRadius.circular(99),
-                            border: Border.all(
-                              color: const Color(0xFFFFB74D),
-                            ),
-                          ),
-                          child: const Text(
-                            'Awaiting Approval',
-                            style: TextStyle(
-                              fontFamily: AppTextStyles.fontFamily,
-                              fontSize: 10,
-                              height: 1.3,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFFE65100),
-                            ),
-                          ),
-                        )
-                      else if (isAwaiting)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFF3E0),
-                            borderRadius: BorderRadius.circular(99),
-                            border: Border.all(
-                              color: const Color(0xFFFFB74D),
-                            ),
-                          ),
-                          child: const Text(
-                            'Awaiting Approval',
-                            style: TextStyle(
-                              fontFamily: AppTextStyles.fontFamily,
-                              fontSize: 10,
-                              height: 1.3,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFFE65100),
-                            ),
-                          ),
-                        )
-                      else if (!isPendingTab)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.deliveryGreenSoft,
-                            borderRadius: BorderRadius.circular(99),
-                            border: Border.all(
-                              color: AppColors.deliveryGreen.withValues(
-                                alpha: 0.4,
-                              ),
-                            ),
-                          ),
-                          child: const Text(
-                            'Collected',
-                            style: TextStyle(
-                              fontFamily: AppTextStyles.fontFamily,
-                              fontSize: 10,
-                              height: 1.3,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.deliveryGreen,
-                            ),
-                          ),
-                        ),
-                      const SizedBox(height: 4),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _SmallAction(
-                            icon: Icons.phone_rounded,
-                            tooltip: 'Call customer',
-                            onTap: delivery.phone == null
-                                ? null
-                                : () => launchUrl(
-                                    Uri(scheme: 'tel', path: delivery.phone),
-                                  ),
-                          ),
-                          _SmallAction(
-                            icon: Icons.location_on_outlined,
-                            tooltip: 'Open location',
-                            onTap: delivery.mapUrl == null
-                                ? null
-                                : () => launchUrl(
-                                    Uri.parse(delivery.mapUrl!),
-                                    mode: LaunchMode.externalApplication,
-                                  ),
-                          ),
-                          if (canCollect) ...[
-                            const SizedBox(width: 4),
-                            SizedBox(
-                              height: 32,
-                              child: FilledButton(
-                                onPressed: onCollect,
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: AppColors.deliveryRed,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 14,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-                                child: const Text(
-                                  'Collect',
-                                  style: TextStyle(
-                                    fontFamily: AppTextStyles.fontFamily,
-                                    fontSize: 12,
-                                    height: 1.3,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      );
-  }
-}
-
-class _CollectionTab extends StatelessWidget {
-  const _CollectionTab({
-    required this.label,
-    required this.selected,
-    required this.color,
-    required this.onTap,
-  });
-  final String label;
-  final bool selected;
-  final Color color;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        height: 40,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: selected
-              ? color.withValues(alpha: 0.07)
-              : AppColors.deliveryGreenSoft,
-          borderRadius: BorderRadius.circular(14),
-          border: selected ? Border.all(color: color, width: 2) : null,
-        ),
-        child: Text(
-          label,
-          style: AppTextStyles.secondaryStrong.copyWith(
-            color: selected ? color : AppColors.deliveryGreen,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _SmallAction extends StatelessWidget {
-  const _SmallAction({
-    required this.icon,
-    required this.tooltip,
-    required this.onTap,
-  });
-  final IconData icon;
-  final String tooltip;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      tooltip: tooltip,
-      visualDensity: VisualDensity.compact,
-      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-      padding: const EdgeInsets.all(8),
-      onPressed: onTap,
-      icon: Icon(
-        icon,
-        size: 20,
-        color: onTap == null ? AppColors.textMuted : AppColors.deliveryGreen,
-      ),
-    );
-  }
-}
-
-// ignore: unused_element
-class _CollectionCardDetail extends StatelessWidget {
-  const _CollectionCardDetail({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: AppTextStyles.small,
-        ),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: AppTextStyles.smallStrong.copyWith(
-            color: AppColors.deliveryInk,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 class _EmptyCollectionList extends StatelessWidget {
   const _EmptyCollectionList();
 
@@ -862,10 +1119,10 @@ class _EmptyCollectionList extends StatelessWidget {
             color: AppColors.deliveryBlue,
           ),
           SizedBox(height: 12),
-          Text('No collections found', style: AppTextStyles.cardTitle),
+          Text('No records found', style: AppTextStyles.cardTitle),
           SizedBox(height: 6),
           Text(
-            'Collected and pending customer payments will appear here.',
+            'Customer payments will appear here.',
             textAlign: TextAlign.center,
             style: AppTextStyles.fieldLabel,
           ),
@@ -876,10 +1133,9 @@ class _EmptyCollectionList extends StatelessWidget {
 }
 
 class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title, this.trailingIcon});
+  const _SectionHeader({required this.title});
 
   final String title;
-  final IconData? trailingIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -1006,183 +1262,129 @@ class _ErrorPanel extends StatelessWidget {
   }
 }
 
-class _CollectionDashboardData {
-  const _CollectionDashboardData({
-    required this.pendingItems,
-    required this.collectedItems,
-    this.pendingSummary = const {},
-    this.collectedSummary = const {},
-  });
+// ===========================================================================
+// Data models
+// ===========================================================================
 
-  final List<_CollectionDelivery> pendingItems;
-  final List<_CollectionDelivery> collectedItems;
-  final Map<String, dynamic> pendingSummary;
-  final Map<String, dynamic> collectedSummary;
-
-  List<_CollectionDelivery> get pendingRows => pendingItems;
-
-  List<_CollectionDelivery> get collectedRows => collectedItems;
-
-  double _summaryDouble(Map<String, dynamic> s, String key) =>
-      (s[key] as num?)?.toDouble() ?? 0;
-
-  double get totalAmountCollected =>
-      _summaryDouble(collectedSummary, 'total_collected');
-
-  double get cashInHand => _summaryDouble(collectedSummary, 'cash_total');
-
-  double get bankTransfer =>
-      _summaryDouble(collectedSummary, 'bank_transfer_total');
-
-  double get pendingAmount =>
-      _summaryDouble(pendingSummary, 'total_pending_amount');
-
-  double get awaitingApprovalAmount =>
-      _summaryDouble(collectedSummary, 'awaiting_approval_amount');
-
-  double get totalAmountToCollect => pendingAmount + totalAmountCollected;
-
-  int get awaitingApprovalCount => collectedItems
-      .where((d) => _isAwaitingApproval(d.collectionStatus))
-      .length;
-
-  String get formattedTotalToCollect => _formatMoney(totalAmountToCollect);
-  String get formattedTotalCollected => _formatMoney(totalAmountCollected);
-  String get formattedCashInHand => _formatMoney(cashInHand);
-  String get formattedBankTransfer => _formatMoney(bankTransfer);
-  String get formattedPendingAmount => _formatMoney(pendingAmount);
-  String get formattedAwaitingApproval => _formatMoney(awaitingApprovalAmount);
+class _TabData {
+  const _TabData({required this.items, required this.summary});
+  final List<_CollectionRecord> items;
+  final Map<String, dynamic> summary;
 }
 
-class _CollectionDelivery {
-  const _CollectionDelivery({
+class _CollectionRecord {
+  const _CollectionRecord({
     required this.id,
-    required this.orderNumber,
+    required this.customerId,
     required this.customerName,
-    required this.status,
-    required this.amountDue,
+    required this.collectionStatus,
+    required this.outstandingAmount,
+    required this.pendingCollectionAmount,
+    required this.collectableAmount,
     required this.amountCollected,
     required this.paymentMode,
-    required this.paymentProofUrl,
     required this.contactName,
     required this.phone,
     required this.latitude,
     required this.longitude,
-    required this.collectableAmount,
+    required this.orderNumber,
     this.photoUrl,
-    this.collectionStatus,
+    this.paymentProofUrl,
+    this.collectedByName,
+    this.deliveryNumber,
+    this.collectedAt,
+    this.reference,
   });
 
   final String id;
-  final String orderNumber;
+  final String customerId;
   final String customerName;
-  final String status;
-  final double amountDue;
+  final String? collectionStatus;
+  final double outstandingAmount;
+  final double pendingCollectionAmount;
+  final double collectableAmount;
   final double amountCollected;
   final String paymentMode;
-  final String? paymentProofUrl;
   final String contactName;
   final String? phone;
   final double? latitude;
   final double? longitude;
+  final String orderNumber;
   final String? photoUrl;
-  final String? collectionStatus;
-  final double collectableAmount;
+  final String? paymentProofUrl;
+  final String? collectedByName;
+  final String? deliveryNumber;
+  final String? collectedAt;
+  final String? reference;
 
-  factory _CollectionDelivery.fromJson(Map<String, dynamic> json) {
+  factory _CollectionRecord.fromJson(Map<String, dynamic> json) {
+    // For customer-level records (To Collect), id == customer_id.
+    // For transaction records (Collected/Completed), customer_id is separate.
+    final customerId = _readString(json, const ['customer_id', 'id']) ?? '';
     final id =
-        _readString(json, const [
-          'id',
-          'delivery_id',
-          'customer_id',
-          'collection_id',
-        ]) ??
-        '';
-    return _CollectionDelivery(
+        _readString(json, const ['id', 'collection_id', 'customer_id']) ?? '';
+
+    return _CollectionRecord(
       id: id,
-      orderNumber:
-          _readString(json, const ['orderNumber', 'order_number', 'orderNo']) ??
-          'Outstanding balance',
+      customerId: customerId,
       customerName:
-          _readString(json, const ['customerName', 'customer_name']) ??
+          _readString(json, const ['customer_name', 'customerName']) ??
           _readNestedString(json, 'customer', const ['name']) ??
-          (_readString(json, const ['customer_id']) ?? 'Customer'),
-      status: _normalizeStatus(
-        _readString(json, const [
-              'reconciliation_status',
-              'reconciliationStatus',
-              'status',
-              'delivery_status',
-            ]) ??
-            'recorded',
-      ),
-      amountDue: _readDouble(json, const [
+          (customerId.isNotEmpty ? customerId : 'Customer'),
+      collectionStatus: _readString(json, const [
+        'collection_status',
+        'status',
+        'reconciliation_status',
+      ]),
+      outstandingAmount: _readDouble(json, const [
         'outstanding_amount',
         'outstandingAmount',
         'outstanding_at_recording',
-        'outstandingAtRecording',
-        'amountDue',
         'amount_due',
-        'due',
+      ]),
+      pendingCollectionAmount: _readDouble(json, const [
+        'pending_collection_amount',
+        'pendingCollectionAmount',
+      ]),
+      collectableAmount: _readDouble(json, const [
+        'collectable_amount',
+        'collectableAmount',
+        'outstanding_amount',
       ]),
       amountCollected: _readDouble(json, const [
         'amount_collected',
         'amount',
         'amountCollected',
-        'collectedAmount',
         'collected_amount',
-        'paidAmount',
-        'paid_amount',
       ]),
       paymentMode: _normalizePaymentMode(
         _readString(json, const [
-              'paymentMode',
               'payment_mode',
-              'paymentMethod',
+              'paymentMode',
               'payment_method',
-              'collectionMode',
-              'collection_mode',
+              'paymentMethod',
             ]) ??
             '',
       ),
-      paymentProofUrl: _readString(json, const [
-        'payment_proof_url',
-        'paymentProofUrl',
-      ]),
       contactName:
-          _readString(json, const [
-            'contact_name',
-            'contact_person',
-            'contactPerson',
-          ]) ??
+          _readString(json, const ['contact_name', 'contact_person']) ??
           _readNestedString(json, 'customer', const [
             'contact_person',
-            'contactPerson',
+            'contact_name',
           ]) ??
-          'Customer contact',
+          '',
       phone:
           _readString(json, const ['customer_phone', 'phone', 'mobile']) ??
           _readNestedString(json, 'customer', const ['phone', 'mobile']),
       latitude:
-          _readNullableDouble(json, const [
-            'customer_latitude',
-            'latitude',
-            'map_latitude',
-          ]) ??
-          _readNestedDouble(json, 'customer', const [
-            'latitude',
-            'map_latitude',
-          ]),
+          _readNullableDouble(json, const ['customer_latitude', 'latitude']) ??
+          _readNestedDouble(json, 'customer', const ['latitude']),
       longitude:
           _readNullableDouble(json, const [
             'customer_longitude',
             'longitude',
-            'map_longitude',
           ]) ??
-          _readNestedDouble(json, 'customer', const [
-            'longitude',
-            'map_longitude',
-          ]),
+          _readNestedDouble(json, 'customer', const ['longitude']),
       photoUrl:
           _readString(json, const [
             'customer_photo_url',
@@ -1192,66 +1394,51 @@ class _CollectionDelivery {
             'profile_photo_url',
             'photo_url',
           ]),
-      // The current API payload uses reconciliation_status/status for
-      // collection records, while the documented view response uses
-      // collection_status. Accept all three until the backend response is
-      // fully standardized.
-      collectionStatus:
-          _readString(json, const [
-            'collection_status',
-            'reconciliation_status',
-            'status',
-          ]),
-      collectableAmount: _readDouble(json, const [
-        'collectable_amount',
-        'collectableAmount',
-        'outstanding_amount',
-        'amount_due',
+      orderNumber:
+          _readString(json, const ['order_number', 'orderNumber', 'orderNo']) ??
+          '',
+      paymentProofUrl: _readString(json, const [
+        'payment_proof_url',
+        'paymentProofUrl',
+      ]),
+      collectedByName: _readString(json, const [
+        'collected_by_name',
+        'collectedByName',
+        'collected_by',
+      ]),
+      deliveryNumber: _readString(json, const [
+        'delivery_number',
+        'deliveryNumber',
+      ]),
+      collectedAt: _readString(json, const [
+        'collected_at',
+        'collectedAt',
+        'payment_date',
+        'paymentDate',
+      ]),
+      reference: _readString(json, const [
+        'reference',
+        'transaction_id',
+        'transactionId',
+        'ref_number',
       ]),
     );
   }
 
-  double get amountToCollect => amountDue + amountCollected;
-
-  bool get isVoided => status == 'voided';
-
-  String get statusLabel {
-    return status
-        .split('_')
-        .where((part) => part.isNotEmpty)
-        .map((part) => '${part[0].toUpperCase()}${part.substring(1)}')
-        .join(' ');
-  }
+  String get formattedCollected => _formatMoney(amountCollected);
 
   String get paymentModeLabel {
     return switch (paymentMode) {
       'cash' => 'Cash',
       'bank_transfer' => 'Bank',
-      '' => 'Not set',
+      '' => '',
       _ =>
         paymentMode
             .split('_')
-            .where((part) => part.isNotEmpty)
-            .map((part) => '${part[0].toUpperCase()}${part.substring(1)}')
+            .where((p) => p.isNotEmpty)
+            .map((p) => '${p[0].toUpperCase()}${p.substring(1)}')
             .join(' '),
     };
-  }
-
-  String get formattedDue => _formatMoney(amountDue);
-  String get formattedCollected => _formatMoney(amountCollected);
-
-  String get initials {
-    final words = customerName
-        .trim()
-        .split(RegExp(r'\s+'))
-        .where((word) => word.isNotEmpty)
-        .toList();
-    if (words.isEmpty) return 'C';
-    if (words.length == 1) {
-      final end = words.first.length >= 2 ? 2 : 1;
-      return words.first.substring(0, end).toUpperCase();
-    }
-    return '${words.first[0]}${words.last[0]}'.toUpperCase();
   }
 
   String? get mapUrl {
@@ -1276,15 +1463,35 @@ class _CollectionInfo {
   final Color background;
 }
 
-// ignore: unused_element
-class _CollectionException implements Exception {
-  const _CollectionException(this.message);
+// ===========================================================================
+// Status normalization (single centralized helper)
+// ===========================================================================
 
-  final String message;
-
-  @override
-  String toString() => message;
+/// Maps any backend status value to one of: to_collect, collected, completed, voided.
+String _normalizeCollectionStatus(String? raw) {
+  final v = (raw ?? '')
+      .trim()
+      .toLowerCase()
+      .replaceAll('-', '_')
+      .replaceAll(' ', '_');
+  return switch (v) {
+    'to_collect' => 'to_collect',
+    'collected' => 'collected',
+    'completed' || 'reconciled' || 'approved' => 'completed',
+    // legacy values
+    'pending' => 'to_collect',
+    'recorded' ||
+    'pending_approval' ||
+    'awaiting_approval' ||
+    'awaiting_reconciliation' => 'collected',
+    'voided' => 'voided',
+    _ => v,
+  };
 }
+
+// ===========================================================================
+// JSON helpers
+// ===========================================================================
 
 String? _readString(Map<String, dynamic> json, List<String> keys) {
   for (final key in keys) {
@@ -1336,10 +1543,6 @@ double? _readNestedDouble(
   return _readNullableDouble(parent, keys);
 }
 
-String _normalizeStatus(String value) {
-  return value.trim().toLowerCase().replaceAll('-', '_').replaceAll(' ', '_');
-}
-
 String _normalizePaymentMode(String value) {
   final normalized = value
       .trim()
@@ -1360,730 +1563,9 @@ String _normalizePaymentMode(String value) {
   };
 }
 
-class _CustomerPaymentDetailsSheet extends StatefulWidget {
-  const _CustomerPaymentDetailsSheet({
-    required this.customerId,
-    required this.customerName,
-  });
-
-  final String customerId;
-  final String customerName;
-
-  @override
-  State<_CustomerPaymentDetailsSheet> createState() =>
-      _CustomerPaymentDetailsSheetState();
-}
-
-class _CustomerPaymentDetailsSheetState
-    extends State<_CustomerPaymentDetailsSheet>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  bool _loadingPending = true;
-  bool _loadingCollected = true;
-  String? _pendingError;
-  String? _collectedError;
-  List<Map<String, dynamic>> _pendingItems = const [];
-  Map<String, dynamic>? _pendingSummary;
-  List<Map<String, dynamic>> _collectedItems = const [];
-  Map<String, dynamic>? _collectedSummary;
-  List<Map<String, dynamic>> _awaitingApprovalItems = const [];
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadPending();
-      _loadCollected();
-    });
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _loadPending() async {
-    setState(() {
-      _loadingPending = true;
-      _pendingError = null;
-    });
-    try {
-      final result = await ApiProviderScope.of(context)
-          .fetchCustomerPendingPayments(
-        widget.customerId,
-        pageSize: 50,
-        excludeAwaitingApproval: true,
-      );
-      if (!mounted) return;
-      setState(() {
-        final items = result['items'];
-        _pendingItems = items is List
-            ? items.whereType<Map<String, dynamic>>().toList()
-            : const [];
-        final summary = result['summary'];
-        _pendingSummary = summary is Map<String, dynamic> ? summary : null;
-        _loadingPending = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _pendingError = e.toString();
-        _loadingPending = false;
-      });
-    }
-  }
-
-  Future<void> _loadCollected() async {
-    setState(() {
-      _loadingCollected = true;
-      _collectedError = null;
-    });
-    try {
-      final provider = ApiProviderScope.of(context);
-      // Load finalized payments and awaiting-approval collections in parallel.
-      // The awaiting-approval endpoint requires Payments › View permission;
-      // delivery partners get 403 and we silently skip that list.
-      final results = await Future.wait([
-        provider.fetchCustomerCollectedPayments(widget.customerId, pageSize: 50),
-        provider
-            .fetchCustomerCollectedPayments(
-              widget.customerId,
-              paymentStatus: 'awaiting_approval',
-              pageSize: 50,
-            )
-            .catchError((_) => <String, dynamic>{}),
-      ]);
-      if (!mounted) return;
-      final collected = results[0];
-      final awaiting = results[1];
-      setState(() {
-        final items = collected['items'];
-        _collectedItems = items is List
-            ? items.whereType<Map<String, dynamic>>().toList()
-            : const [];
-        final summary = collected['summary'];
-        _collectedSummary = summary is Map<String, dynamic> ? summary : null;
-        final awaitingItems = awaiting['items'];
-        _awaitingApprovalItems = awaitingItems is List
-            ? awaitingItems.whereType<Map<String, dynamic>>().toList()
-            : const [];
-        _loadingCollected = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _collectedError = e.toString();
-        _loadingCollected = false;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return DraggableScrollableSheet(
-      initialChildSize: 0.85,
-      maxChildSize: 0.95,
-      minChildSize: 0.4,
-      builder: (context, scrollController) => Container(
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: AppColors.deliverySurfaceBorder,
-                        borderRadius: BorderRadius.circular(99),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Text(
-                    widget.customerName,
-                    style: AppTextStyles.sectionHeading,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 10),
-                  TabBar(
-                    controller: _tabController,
-                    labelColor: AppColors.deliveryGreen,
-                    unselectedLabelColor: AppColors.textMuted,
-                    indicatorColor: AppColors.deliveryGreen,
-                    tabs: const [
-                      Tab(text: 'Pending'),
-                      Tab(text: 'Collected'),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildPendingTab(scrollController),
-                  _buildCollectedTab(scrollController),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPendingTab(ScrollController scrollController) {
-    if (_loadingPending) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (_pendingError != null && _pendingItems.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(_pendingError!, textAlign: TextAlign.center),
-            const SizedBox(height: 12),
-            TextButton.icon(
-              onPressed: _loadPending,
-              icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Retry'),
-            ),
-          ],
-        ),
-      );
-    }
-
-    final s = _pendingSummary;
-    return ListView(
-      controller: scrollController,
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-      children: [
-        if (s != null) ...[
-          _SheetSummaryCard(
-            color: const Color(0xFFD44A4A),
-            background: const Color(0xFFFFF8F5),
-            border: const Color(0xFFFFD5B8),
-            chips: [
-              _ChipData(
-                'Outstanding',
-                _formatMoney((s['total_outstanding'] as num?)?.toDouble() ?? 0),
-              ),
-              _ChipData(
-                'Overdue',
-                _formatMoney((s['total_overdue'] as num?)?.toDouble() ?? 0),
-              ),
-              _ChipData('Invoices', '${s['pending_invoices'] ?? 0}'),
-              if ((s['collectable_amount'] as num?) != null)
-                _ChipData(
-                  'Collectable',
-                  _formatMoney(
-                      (s['collectable_amount'] as num).toDouble()),
-                ),
-            ],
-          ),
-          const SizedBox(height: 14),
-        ],
-        if (_pendingItems.isEmpty)
-          const Center(
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 24),
-              child: Text(
-                'No pending invoices',
-                style: AppTextStyles.fieldLabel,
-              ),
-            ),
-          )
-        else
-          for (final item in _pendingItems) ...[
-            _SheetPendingCard(item: item),
-            const SizedBox(height: 10),
-          ],
-      ],
-    );
-  }
-
-  Widget _buildCollectedTab(ScrollController scrollController) {
-    if (_loadingCollected) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (_collectedError != null && _collectedItems.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(_collectedError!, textAlign: TextAlign.center),
-            const SizedBox(height: 12),
-            TextButton.icon(
-              onPressed: _loadCollected,
-              icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Retry'),
-            ),
-          ],
-        ),
-      );
-    }
-
-    final s = _collectedSummary;
-    final hasAwaiting = _awaitingApprovalItems.isNotEmpty;
-    return ListView(
-      controller: scrollController,
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-      children: [
-        if (s != null) ...[
-          _SheetSummaryCard(
-            color: AppColors.deliveryGreen,
-            background: const Color(0xFFF3FBF5),
-            border: const Color(0xFFB8DFC3),
-            chips: [
-              _ChipData(
-                'Collected',
-                _formatMoney((s['total_collected'] as num?)?.toDouble() ?? 0),
-              ),
-              _ChipData('Payments', '${s['payment_count'] ?? 0}'),
-              _ChipData(
-                'Advance',
-                _formatMoney((s['total_unallocated'] as num?)?.toDouble() ?? 0),
-              ),
-              if ((s['awaiting_approval_amount'] as num?) != null &&
-                  (s['awaiting_approval_amount'] as num).toDouble() > 0)
-                _ChipData(
-                  'Awaiting Approval',
-                  _formatMoney(
-                      (s['awaiting_approval_amount'] as num).toDouble()),
-                ),
-            ],
-          ),
-          const SizedBox(height: 14),
-        ],
-        if (hasAwaiting) ...[
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFF8F0),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFFFFB74D)),
-            ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.hourglass_top_rounded,
-                  size: 16,
-                  color: Color(0xFFE65100),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Awaiting Admin Approval'
-                  ' (${_awaitingApprovalItems.length}'
-                  ' ${_awaitingApprovalItems.length == 1 ? 'entry' : 'entries'})',
-                  style: AppTextStyles.small.copyWith(
-                    color: const Color(0xFFE65100),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 10),
-          for (final item in _awaitingApprovalItems) ...[
-            _SheetAwaitingCard(item: item),
-            const SizedBox(height: 10),
-          ],
-          const SizedBox(height: 6),
-        ],
-        if (_collectedItems.isEmpty && !hasAwaiting)
-          const Center(
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 24),
-              child: Text(
-                'No collected payments',
-                style: AppTextStyles.fieldLabel,
-              ),
-            ),
-          )
-        else
-          for (final item in _collectedItems) ...[
-            _SheetCollectedCard(item: item),
-            const SizedBox(height: 10),
-          ],
-      ],
-    );
-  }
-}
-
-class _ChipData {
-  const _ChipData(this.label, this.value);
-  final String label;
-  final String value;
-}
-
-class _SheetSummaryCard extends StatelessWidget {
-  const _SheetSummaryCard({
-    required this.chips,
-    required this.color,
-    required this.background,
-    required this.border,
-  });
-
-  final List<_ChipData> chips;
-  final Color color;
-  final Color background;
-  final Color border;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: border),
-      ),
-      child: Wrap(
-        spacing: 20,
-        runSpacing: 10,
-        children: chips
-            .map(
-              (c) => Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    c.label,
-                    style: AppTextStyles.fieldLabel.copyWith(
-                      color: AppColors.textMuted,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    c.value,
-                    style: AppTextStyles.bodyStrong.copyWith(color: color),
-                  ),
-                ],
-              ),
-            )
-            .toList(),
-      ),
-    );
-  }
-}
-
-class _SheetPendingCard extends StatelessWidget {
-  const _SheetPendingCard({required this.item});
-
-  final Map<String, dynamic> item;
-
-  @override
-  Widget build(BuildContext context) {
-    final invoiceNumber = item['invoice_number']?.toString() ?? '-';
-    final dueDate = _parseDateTimeString(item['due_date']?.toString());
-    final invoiceDate = _parseDateTimeString(item['invoice_date']?.toString());
-    // Prefer collectable_outstanding (excludes awaiting-approval portion)
-    // when the server provides it; fall back to raw outstanding.
-    final outstanding = ((item['collectable_outstanding'] ?? item['outstanding'])
-                as num?)
-            ?.toDouble() ??
-        0;
-    final total = (item['total'] as num?)?.toDouble() ?? 0;
-    final isOverdue = item['is_overdue'] == true;
-    final daysOverdue = (item['days_overdue'] as num?)?.toInt() ?? 0;
-    final paymentStatus = item['payment_status']?.toString() ?? '';
-
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isOverdue
-              ? const Color(0xFFFFCDD2)
-              : AppColors.deliverySurfaceBorder,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  invoiceNumber,
-                  style: AppTextStyles.bodyStrong,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              if (isOverdue)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFEDED),
-                    borderRadius: BorderRadius.circular(99),
-                  ),
-                  child: Text(
-                    daysOverdue > 0 ? '${daysOverdue}d overdue' : 'Overdue',
-                    style: AppTextStyles.fieldLabel.copyWith(
-                      color: const Color(0xFFD44A4A),
-                    ),
-                  ),
-                )
-              else if (paymentStatus == 'partial')
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEFF7EA),
-                    borderRadius: BorderRadius.circular(99),
-                  ),
-                  child: Text(
-                    'Partial',
-                    style: AppTextStyles.fieldLabel.copyWith(
-                      color: AppColors.deliveryGreen,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Due: ${_dateLabel(dueDate)}  •  Invoice: ${_dateLabel(invoiceDate)}',
-            style: AppTextStyles.small.copyWith(color: AppColors.textMuted),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              _MiniChip(
-                label: 'Outstanding',
-                value: _formatMoney(outstanding),
-                valueColor: const Color(0xFFD44A4A),
-              ),
-              const SizedBox(width: 16),
-              _MiniChip(
-                label: 'Total',
-                value: _formatMoney(total),
-                valueColor: AppColors.deliveryInk,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SheetCollectedCard extends StatelessWidget {
-  const _SheetCollectedCard({required this.item});
-
-  final Map<String, dynamic> item;
-
-  @override
-  Widget build(BuildContext context) {
-    final receiptNumber = item['receipt_number']?.toString() ?? '-';
-    final paymentDate = _parseDateTimeString(item['payment_date']?.toString());
-    final amount = (item['amount'] as num?)?.toDouble() ?? 0;
-    final paymentMode = item['payment_mode']?.toString() ?? '';
-    final reference = item['reference']?.toString() ?? '';
-    final allocations = item['allocations'];
-    final allocationList = allocations is List
-        ? allocations.whereType<Map<String, dynamic>>().toList()
-        : <Map<String, dynamic>>[];
-    final unallocated = (item['unallocated_amount'] as num?)?.toDouble() ?? 0;
-
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.deliverySurfaceBorder),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(receiptNumber, style: AppTextStyles.bodyStrong),
-              ),
-              Text(
-                _formatMoney(amount),
-                style: AppTextStyles.bodyStrong.copyWith(
-                  color: AppColors.deliveryGreen,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '${_dateLabel(paymentDate)}${paymentMode.isNotEmpty ? '  •  ${_modeLabel(paymentMode)}' : ''}',
-            style: AppTextStyles.small.copyWith(color: AppColors.textMuted),
-          ),
-          if (reference.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(
-              'Ref: $reference',
-              style: AppTextStyles.small.copyWith(color: AppColors.textMuted),
-            ),
-          ],
-          if (allocationList.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 6,
-              runSpacing: 4,
-              children: allocationList
-                  .map(
-                    (a) => Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEFF7EA),
-                        borderRadius: BorderRadius.circular(99),
-                      ),
-                      child: Text(
-                        a['invoice_number']?.toString() ?? '-',
-                        style: AppTextStyles.small.copyWith(
-                          color: AppColors.deliveryGreen,
-                        ),
-                      ),
-                    ),
-                  )
-                  .toList(),
-            ),
-          ],
-          if (unallocated > 0) ...[
-            const SizedBox(height: 6),
-            Text(
-              'Advance: ${_formatMoney(unallocated)}',
-              style: AppTextStyles.small.copyWith(color: AppColors.textMuted),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _SheetAwaitingCard extends StatelessWidget {
-  const _SheetAwaitingCard({required this.item});
-
-  final Map<String, dynamic> item;
-
-  @override
-  Widget build(BuildContext context) {
-    final amount = (item['amount'] as num?)?.toDouble() ?? 0;
-    final collectedBy = item['collected_by']?.toString() ?? '';
-    final paymentMode = item['payment_mode']?.toString() ?? '';
-    final reference = item['reference']?.toString() ?? '';
-    final collectedAt =
-        _parseDateTimeString(item['collected_at']?.toString() ?? '');
-
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFF8F0),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFFFB74D)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.hourglass_top_rounded,
-                size: 14,
-                color: Color(0xFFE65100),
-              ),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  'Awaiting Approval',
-                  style: AppTextStyles.small.copyWith(
-                    color: const Color(0xFFE65100),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              Text(
-                _formatMoney(amount),
-                style: AppTextStyles.bodyStrong.copyWith(
-                  color: const Color(0xFFE65100),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '${_dateLabel(collectedAt)}${paymentMode.isNotEmpty ? '  •  ${_modeLabel(paymentMode)}' : ''}',
-            style: AppTextStyles.small.copyWith(color: AppColors.textMuted),
-          ),
-          if (collectedBy.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(
-              'By: $collectedBy',
-              style: AppTextStyles.small.copyWith(color: AppColors.textMuted),
-            ),
-          ],
-          if (reference.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(
-              'Ref: $reference',
-              style: AppTextStyles.small.copyWith(color: AppColors.textMuted),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _MiniChip extends StatelessWidget {
-  const _MiniChip({
-    required this.label,
-    required this.value,
-    required this.valueColor,
-  });
-  final String label;
-  final String value;
-  final Color valueColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          label,
-          style: AppTextStyles.small.copyWith(color: AppColors.textMuted),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          style: AppTextStyles.smallStrong.copyWith(color: valueColor),
-        ),
-      ],
-    );
-  }
-}
+// ===========================================================================
+// Date / money helpers
+// ===========================================================================
 
 DateTime? _parseDateTimeString(String? value) {
   if (value == null || value.isEmpty) return null;
@@ -2106,22 +1588,8 @@ String _dateLabel(DateTime? date) {
     'Nov',
     'Dec',
   ];
-  return '${date.day.toString().padLeft(2, '0')} ${months[date.month - 1]} ${date.year}';
-}
-
-String _modeLabel(String mode) {
-  return mode
-      .split('_')
-      .where((p) => p.isNotEmpty)
-      .map((p) => '${p[0].toUpperCase()}${p.substring(1)}')
-      .join(' ');
-}
-
-bool _isAwaitingApproval(String? status) {
-  final normalized = status?.trim().toLowerCase().replaceAll('-', '_');
-  return normalized == 'pending_approval' ||
-      normalized == 'awaiting_approval' ||
-      normalized == 'recorded';
+  return '${date.day.toString().padLeft(2, '0')} '
+      '${months[date.month - 1]} ${date.year}';
 }
 
 String _formatMoney(double value) {
@@ -2131,9 +1599,7 @@ String _formatMoney(double value) {
   for (var i = 0; i < source.length; i++) {
     final remaining = source.length - i;
     buffer.write(source[i]);
-    if (remaining > 1 && remaining % 3 == 1) {
-      buffer.write(',');
-    }
+    if (remaining > 1 && remaining % 3 == 1) buffer.write(',');
   }
   return '${rounded < 0 ? '-' : ''}Rs ${buffer.toString()}';
 }
