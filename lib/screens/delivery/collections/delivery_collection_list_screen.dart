@@ -68,7 +68,9 @@ class _DeliveryCollectionListScreenState
 
   void _loadTab(_TabKind tab) {
     final future = _fetchTabData(tab);
-    setState(() => _futures[tab] = future);
+    setState(() {
+      _futures[tab] = future;
+    });
   }
 
   Future<_TabData> _fetchTabData(_TabKind tab) async {
@@ -229,35 +231,59 @@ class _DeliveryCollectionListScreenState
 
   Widget _buildContent() {
     final future = _futures[_activeTab];
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _TabSwitcher(activeTab: _activeTab, onTabSelected: _onTabSelected),
-        const SizedBox(height: 8),
-        if (future == null)
-          const _LoadingPanel()
-        else
-          FutureBuilder<_TabData>(
-            future: future,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting &&
-                  !snapshot.hasData) {
-                return const _LoadingPanel();
-              }
-              if (snapshot.hasError) {
-                return _ErrorPanel(
-                  message: snapshot.error.toString(),
-                  onRetry: () => _loadTab(_activeTab),
-                );
-              }
-              return _TabContent(
+    if (future == null) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const _LoadingPanel(),
+          const SizedBox(height: 8),
+          _TabSwitcher(
+            activeTab: _activeTab,
+            onTabSelected: _onTabSelected,
+            futures: _futures,
+          ),
+        ],
+      );
+    }
+    return FutureBuilder<_TabData>(
+      future: future,
+      builder: (context, snapshot) {
+        final loading =
+            snapshot.connectionState == ConnectionState.waiting &&
+            !snapshot.hasData;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Summary card — yellow part, above tabs
+            if (loading)
+              const _LoadingPanel()
+            else if (snapshot.hasError)
+              const SizedBox.shrink()
+            else
+              _SummaryCard(tab: _activeTab, summary: snapshot.data!.summary),
+            const SizedBox(height: 8),
+            // Tab switcher — green part
+            _TabSwitcher(
+              activeTab: _activeTab,
+              onTabSelected: _onTabSelected,
+              futures: _futures,
+            ),
+            const SizedBox(height: 8),
+            // Items list
+            if (snapshot.hasError)
+              _ErrorPanel(
+                message: snapshot.error.toString(),
+                onRetry: () => _loadTab(_activeTab),
+              )
+            else if (snapshot.hasData)
+              _ItemsList(
                 tab: _activeTab,
                 data: snapshot.data!,
                 onCollect: _openPaymentCollection,
-              );
-            },
-          ),
-      ],
+              ),
+          ],
+        );
+      },
     );
   }
 }
@@ -267,10 +293,46 @@ class _DeliveryCollectionListScreenState
 // ===========================================================================
 
 class _TabSwitcher extends StatelessWidget {
-  const _TabSwitcher({required this.activeTab, required this.onTabSelected});
+  const _TabSwitcher({
+    required this.activeTab,
+    required this.onTabSelected,
+    this.futures = const {},
+  });
 
   final _TabKind activeTab;
   final ValueChanged<_TabKind> onTabSelected;
+  final Map<_TabKind, Future<_TabData>> futures;
+
+  static int _getCount(_TabKind tab, Map<String, dynamic> summary) {
+    int i(String k) => (summary[k] as num?)?.toInt() ?? 0;
+    return switch (tab) {
+      _TabKind.toCollect => i('total_pending'),
+      _TabKind.collected => i('collected_only_count'),
+      _TabKind.completed => i('completed_count'),
+    };
+  }
+
+  Widget _tabButton(_TabKind tab, String label, Color color) {
+    final future = futures[tab];
+    if (future == null) {
+      return _CollectionTab(
+        label: label,
+        selected: activeTab == tab,
+        color: color,
+        onTap: () => onTabSelected(tab),
+      );
+    }
+    return FutureBuilder<_TabData>(
+      future: future,
+      builder: (context, snapshot) => _CollectionTab(
+        label: label,
+        selected: activeTab == tab,
+        color: color,
+        count: snapshot.hasData ? _getCount(tab, snapshot.data!.summary) : null,
+        onTap: () => onTabSelected(tab),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -279,29 +341,26 @@ class _TabSwitcher extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: _CollectionTab(
-              label: 'To Collect',
-              selected: activeTab == _TabKind.toCollect,
-              color: AppColors.deliveryRed,
-              onTap: () => onTabSelected(_TabKind.toCollect),
+            child: _tabButton(
+              _TabKind.toCollect,
+              'To Collect',
+              AppColors.deliveryRed,
             ),
           ),
           const SizedBox(width: 6),
           Expanded(
-            child: _CollectionTab(
-              label: 'Collected',
-              selected: activeTab == _TabKind.collected,
-              color: AppColors.deliveryGreen,
-              onTap: () => onTabSelected(_TabKind.collected),
+            child: _tabButton(
+              _TabKind.collected,
+              'Collected',
+              AppColors.deliveryGreen,
             ),
           ),
           const SizedBox(width: 6),
           Expanded(
-            child: _CollectionTab(
-              label: 'Completed',
-              selected: activeTab == _TabKind.completed,
-              color: AppColors.deliveryBlue,
-              onTap: () => onTabSelected(_TabKind.completed),
+            child: _tabButton(
+              _TabKind.completed,
+              'Completed',
+              AppColors.deliveryBlue,
             ),
           ),
         ],
@@ -314,8 +373,8 @@ class _TabSwitcher extends StatelessWidget {
 // Tab content (summary + list)
 // ===========================================================================
 
-class _TabContent extends StatelessWidget {
-  const _TabContent({
+class _ItemsList extends StatelessWidget {
+  const _ItemsList({
     required this.tab,
     required this.data,
     required this.onCollect,
@@ -327,15 +386,11 @@ class _TabContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (data.items.isEmpty) return const _EmptyCollectionList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _SummaryCard(tab: tab, summary: data.summary),
-        const SizedBox(height: 8),
-        if (data.items.isEmpty)
-          const _EmptyCollectionList()
-        else
-          ...data.items.map(
+      children: data.items
+          .map(
             (record) => Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: tab == _TabKind.toCollect
@@ -348,8 +403,8 @@ class _TabContent extends StatelessWidget {
                       isCompleted: tab == _TabKind.completed,
                     ),
             ),
-          ),
-      ],
+          )
+          .toList(),
     );
   }
 }
@@ -905,11 +960,13 @@ class _CollectionTab extends StatelessWidget {
     required this.selected,
     required this.color,
     required this.onTap,
+    this.count,
   });
   final String label;
   final bool selected;
   final Color color;
   final VoidCallback onTap;
+  final int? count;
 
   @override
   Widget build(BuildContext context) {
@@ -918,7 +975,7 @@ class _CollectionTab extends StatelessWidget {
       borderRadius: BorderRadius.circular(14),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        height: 40,
+        height: 50,
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: selected
@@ -927,11 +984,29 @@ class _CollectionTab extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           border: selected ? Border.all(color: color, width: 2) : null,
         ),
-        child: Text(
-          label,
-          style: AppTextStyles.secondaryStrong.copyWith(
-            color: selected ? color : AppColors.deliveryGreen,
-          ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              label,
+              style: AppTextStyles.secondaryStrong.copyWith(
+                color: selected ? color : AppColors.deliveryGreen,
+              ),
+            ),
+            if (count != null) ...[
+              const SizedBox(height: 2),
+              Text(
+                '$count',
+                style: TextStyle(
+                  fontFamily: AppTextStyles.fontFamily,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: selected ? color : AppColors.textMuted,
+                  height: 1.2,
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );
