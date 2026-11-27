@@ -15,6 +15,7 @@ import '../models/auth_models.dart';
 import '../services/api_service.dart';
 import '../services/push_notification_service.dart';
 import '../models/role_model.dart';
+import '../core/roles/app_role.dart';
 
 class ApiProvider extends ChangeNotifier {
   ApiProvider({ApiService? apiService})
@@ -119,6 +120,26 @@ class ApiProvider extends ChangeNotifier {
     final authMe = await _apiService.fetchAuthMeDetails();
     _authMe = authMe;
     _currentUser = authMe.user ?? session.user;
+
+    final role = _currentUser?.role ?? session.user?.role;
+    final appRole = AppRole.fromRaw(role);
+    if (appRole == AppRole.admin || appRole == AppRole.superAdmin) {
+      // Login responses are persisted by ApiService before auth/me is fetched.
+      // Remove that session so an unsupported role cannot enter on restart.
+      try {
+        await _apiService.logout();
+      } catch (_) {
+        await ApiService.clearLocalAuthState();
+      }
+      _session = null;
+      _currentUser = null;
+      _authMe = null;
+      throw const ApiException(
+        message: 'Admin and Super Admin accounts cannot log in to this app.',
+        code: 'role_not_supported',
+      );
+    }
+
     notifyListeners();
     // Registration is best-effort and must not block the login flow.
     if (kDebugMode)

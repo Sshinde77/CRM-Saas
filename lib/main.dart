@@ -8,6 +8,7 @@ import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 
 import 'app.dart';
+import 'core/roles/app_role.dart';
 import 'services/api_service.dart';
 import 'services/push_notification_service.dart';
 
@@ -45,6 +46,10 @@ Future<void> main() async {
           defaultTargetPlatform == TargetPlatform.iOS);
   if (isMobile) await Firebase.initializeApp();
   await ApiService.restorePersistedAuthState();
+  final savedRole = AppRole.fromRaw(ApiService.savedRole);
+  if (savedRole == AppRole.admin || savedRole == AppRole.superAdmin) {
+    await ApiService.clearLocalAuthState();
+  }
   if (isMobile) await PushNotificationService.instance.initialize();
   if (isMobile && (ApiService.accessToken ?? '').trim().isNotEmpty) {
     unawaited(PushNotificationService.instance.registerForSignedInUser());

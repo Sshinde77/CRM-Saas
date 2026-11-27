@@ -2970,6 +2970,13 @@ class ApiService {
 
   static void setRefreshToken(String? token) => _refreshToken = token?.trim();
 
+  /// Clears only the local session state. Used when the API accepted a login
+  /// but this client does not support the returned role.
+  static Future<void> clearLocalAuthState() async {
+    _clearTokens();
+    await _clearPersistedAuthState();
+  }
+
   static Future<bool> restorePersistedAuthState() async {
     _invalidateResponseCache();
     final prefs = await SharedPreferences.getInstance();
