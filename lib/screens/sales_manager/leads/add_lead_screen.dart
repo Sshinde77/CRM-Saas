@@ -37,12 +37,17 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
 
   final List<String> _leadSources = const [
     'Website',
+    'Website Enquiry',
     'Referral',
-    'Walk-in',
-    'Phone Call',
-    'Campaign',
     'Social Media',
-    'Data Calling',
+    'Google',
+    'Advertisement',
+    'Cold Call',
+    'Walk-in',
+    'Exhibition',
+    'Email Campaign',
+    'Existing Customer',
+    'Other',
   ];
 
   final List<String> _leadTypes = const [
