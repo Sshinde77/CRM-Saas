@@ -111,6 +111,7 @@ class ApiEndpoints {
   static const String followUpsList = '/follow-ups';
   static const String visitFollowUpsTemplate = '/visits/{visit_id}/follow-ups';
   static const String deliveriesList = '/deliveries';
+  static const String deliveriesPartners = '/deliveries/partners';
   static const String deliveryCollections = '/deliveries/collections';
   static const String deliveriesDetailTemplate =
       '/deliveries/by-id/{delivery_id}';

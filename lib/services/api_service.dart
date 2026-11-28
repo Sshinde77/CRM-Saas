@@ -2687,48 +2687,17 @@ class ApiService {
   }
 
   Future<List<AppUser>> fetchDeliveryPartners() async {
-    List<AppUser>? assignableUsers;
-    try {
-      final rawUsers = await fetchRawList(
-        endpoint: ApiEndpoints.usersAssignable,
-        candidateKeys: const ['users', 'staff', 'data', 'items', 'results'],
-        fallbackMessage: 'Invalid assignable users response.',
-      );
-      assignableUsers = rawUsers.map(AppUser.fromJson).toList();
-    } on ApiException {
-      // Older API deployments may only expose the full users list.
-    }
-
-    String normalized(String? value) =>
-        (value ?? '').toLowerCase().replaceAll(RegExp(r'[\s_-]+'), '');
-
-    List<AppUser> deliveryPartners(List<AppUser> users) => users.where((user) {
-      if (user.id.trim().isEmpty ||
-          user.name.trim().isEmpty ||
-          user.isActive == false ||
-          normalized(user.status) == 'inactive' ||
-          normalized(user.employeeStatus) == 'inactive') {
-        return false;
-      }
-      final roles = [
-        user.role,
-        user.systemRole,
-        user.roleDetail?.name,
-      ].map(normalized);
-      return roles.any(
-        (role) => role == 'deliverypartner' || role == 'delivery',
-      );
-    }).toList();
-
-    final assignablePartners = deliveryPartners(assignableUsers ?? []);
-    if (assignablePartners.isNotEmpty) return assignablePartners;
-
-    try {
-      return deliveryPartners(await fetchUsers());
-    } on ApiException {
-      if (assignableUsers != null) return assignablePartners;
-      rethrow;
-    }
+    final rawPartners = await fetchRawList(
+      endpoint: ApiEndpoints.deliveriesPartners,
+      candidateKeys: const ['partners', 'users', 'data', 'items', 'results'],
+      fallbackMessage: 'Invalid delivery partners response.',
+    );
+    return rawPartners
+        .map(AppUser.fromJson)
+        .where(
+          (user) => user.id.trim().isNotEmpty && user.name.trim().isNotEmpty,
+        )
+        .toList();
   }
 
   Future<Map<String, dynamic>> pickDelivery({

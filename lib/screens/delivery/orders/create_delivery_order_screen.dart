@@ -251,6 +251,11 @@ class _CreateDeliveryOrderScreenState extends State<CreateDeliveryOrderScreen> {
       }
     } catch (error) {
       if (mounted) {
+        // If we're refreshing (preserveSelectedPartner) and already have
+        // partners loaded from the current user's profile, a background
+        // refresh failure should not break the UI — the user can still
+        // proceed with the partner that was already selected.
+        if (preserveSelectedPartner && _deliveryPartners.isNotEmpty) return;
         setState(
           () => _partnersError = error is ApiException
               ? error.message
